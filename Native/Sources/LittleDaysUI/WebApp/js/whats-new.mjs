@@ -4,6 +4,28 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.67",
+    date: "2026-11-14",
+    zh: {
+      title: "备份和恢复，一步一步说清楚",
+      items: [
+        "「备份我的手帐」先告诉你会备份什么（几本手帐、几天、几页，照片、视频、声音各几个，大约多大），以及不会备份什么。",
+        "在 iPhone App 里点「选择保存位置」，用系统自己的「存储到文件」面板，推荐存到 iCloud 云盘或电脑。存好后系统会告诉 App，App 核对文件大小后才记为「系统已确认」；取消了就不记录。",
+        "在浏览器里会下载文件，由你确认「我已存好」，设置里也会写明是你确认的。",
+        "「从备份恢复」先说明：恢复会替换这台设备上现在的手帐（不是合并），7 天内可以撤销；然后才选择文件。空间不够时会直接说明，现在的手帐不会改动。",
+      ],
+    },
+    en: {
+      title: "Backup and restore, step by step",
+      items: [
+        "“Back up my journal” first shows what goes in (journals, days, pages, photos, videos, sounds, about how big) and what doesn't.",
+        "In the iPhone app, “Choose where to save” opens the system's own Save to Files panel (iCloud Drive or a computer is best). The app hears back from the system and checks the file's size before calling it confirmed; a cancelled save records nothing.",
+        "In a browser the file downloads and you confirm you kept it — Settings says it was you who confirmed.",
+        "“Restore from a backup” first says it replaces the journal on this device (it doesn't merge) and can be undone for 7 days, then asks for the file. Not enough space is said plainly, and your journal stays as it was.",
+      ],
+    },
+  },
+  {
     version: "10.66",
     date: "2026-11-14",
     zh: {

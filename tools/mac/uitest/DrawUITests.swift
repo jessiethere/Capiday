@@ -319,26 +319,52 @@ final class DrawUITests: XCTestCase {
         print("LDSTEP buttons: " + app.buttons.allElementsBoundByIndex.prefix(40).map { $0.label }.joined(separator: " | "))
         return nil
     }
+    // A button by its visible name, swiping the page up until it can be tapped.
+    func named(_ labels: [String], swipes: Int = 6) -> XCUIElement? {
+        for _ in 0...swipes {
+            for l in labels {
+                let b = app.buttons[l]
+                if b.exists && b.isHittable { return b }
+            }
+            app.webViews.firstMatch.swipeUp(velocity: .slow)
+            Thread.sleep(forTimeInterval: 0.6)
+        }
+        print("LDSTEP buttons: " + app.buttons.allElementsBoundByIndex.prefix(50).map { $0.label }.joined(separator: " | "))
+        return nil
+    }
     func testBackupRoundTrip() throws {
         try? FileManager.default.createDirectory(atPath: "/tmp/ld-uitest/shots", withIntermediateDirectories: true)
         launch()
+        Thread.sleep(forTimeInterval: 2)
+        // A fresh install shows the Home guide first.
+        for l in ["我自己探索", "跳过"] where app.buttons[l].exists { app.buttons[l].tap(); Thread.sleep(forTimeInterval: 1) }
         if rect("skip") != nil { tap("skip") }
-        tap("gear", wait: 1.5)
+        guard let gear = pickerButton(["设置", "设置 · 有新版本 V10.67", "设置 · 有新版本 V10.66"], 5) ?? app.buttons.matching(NSPredicate(format: "label BEGINSWITH '设置'")).firstMatch as XCUIElement? else { XCTFail("gear"); return }
+        gear.tap()
+        Thread.sleep(forTimeInterval: 1.5)
         // 1 · cancel in the system panel → nothing recorded
-        tap("backupBtn", wait: 1.5)
+        guard let backup = named(["备份我的手帐"]) else { log("b0-no-backup"); XCTFail("备份我的手帐"); return }
+        backup.tap()
+        Thread.sleep(forTimeInterval: 1.5)
         log("b1-sheet")
         XCTAssertEqual(state()["bk2"] as? String, "intro")
-        tap("backupGo", wait: 2)
+        print("LDSTEP sheet=\((state()["sheetText"] as? String) ?? "")")
+        guard let go = named(["选择保存位置"], swipes: 0) else { XCTFail("选择保存位置"); return }
+        go.tap()
         guard let cancel = pickerButton(["取消", "Cancel"]) else { log("b2-no-picker"); XCTFail("the save panel"); return }
         log("b2-panel")
         cancel.tap()
         Thread.sleep(forTimeInterval: 2)
         log("b3-cancelled")
         XCTAssertEqual(state()["backupHow"] as? String, "", "cancelled → nothing recorded")
+        print("LDSTEP toast=\((state()["toast"] as? String) ?? "")")
         XCTAssertTrue(((state()["toast"] as? String) ?? "").contains("没有保存"), "says it was not saved")
         // 2 · save to 我的 iPhone → system-verified
-        tap("backupBtn", wait: 1.5)
-        tap("backupGo", wait: 2.5)
+        guard let backup2 = named(["备份我的手帐"]) else { XCTFail("备份我的手帐 again"); return }
+        backup2.tap()
+        Thread.sleep(forTimeInterval: 1.5)
+        named(["选择保存位置"], swipes: 0)?.tap()
+        Thread.sleep(forTimeInterval: 2.5)
         if let onPhone = pickerButton(["我的 iPhone", "On My iPhone"], 6) { onPhone.tap(); Thread.sleep(forTimeInterval: 1.5) }
         log("b4-panel-location")
         guard let save = pickerButton(["存储", "保存", "移动", "Save", "Move", "Done", "完成"]) else { log("b4-no-save"); XCTFail("save button"); return }
@@ -349,25 +375,30 @@ final class DrawUITests: XCTestCase {
         let how = (state()["backupHow"] as? String) ?? ""
         print("LDSTEP how=\(how) text=\((state()["sheetText"] as? String) ?? "")")
         XCTAssertTrue(how.contains("\"verified\""), "recorded as system-verified (size checked)")
-        tap("sheetOk", wait: 1)
+        named(["好"], swipes: 0)?.tap()
+        Thread.sleep(forTimeInterval: 1)
         // 3 · 从备份恢复 → the Files picker → that file → the preview
-        tap("restoreBtn", wait: 1.5)
+        guard let restore = named(["从备份恢复"]) else { XCTFail("从备份恢复"); return }
+        restore.tap()
+        Thread.sleep(forTimeInterval: 1.5)
         XCTAssertEqual(state()["bk2"] as? String, "restore-intro")
         log("b6-restore-intro")
-        tap("restorePick", wait: 3)
-        if let onPhone = pickerButton(["我的 iPhone", "On My iPhone", "浏览", "Browse"], 6) { onPhone.tap(); Thread.sleep(forTimeInterval: 1.5) }
+        named(["选择备份文件"], swipes: 0)?.tap()
+        Thread.sleep(forTimeInterval: 3)
         log("b7-files")
         let file = app.descendants(matching: .any).matching(NSPredicate(format: "label BEGINSWITH 'Capiday-Backup'")).firstMatch
-        if !file.waitForExistence(timeout: 10) {
-            // it may sit in the app's folder
-            if let folder = pickerButton(["开铺手帐", "Capiday", "LittleDays"], 4) { folder.tap(); Thread.sleep(forTimeInterval: 1.5) }
+        if !file.waitForExistence(timeout: 6) {
+            if let browse = pickerButton(["浏览", "Browse"], 3) { browse.tap(); Thread.sleep(forTimeInterval: 1.5) }
+            if let onPhone = pickerButton(["我的 iPhone", "On My iPhone"], 4) { onPhone.tap(); Thread.sleep(forTimeInterval: 1.5) }
         }
+        log("b7b-files")
         XCTAssertTrue(file.waitForExistence(timeout: 10), "the saved backup is in Files")
         file.tap()
         Thread.sleep(forTimeInterval: 1)
         if let open = pickerButton(["打开", "Open"], 3) { open.tap() }
         Thread.sleep(forTimeInterval: 4)
         log("b8-preview")
+        print("LDSTEP preview=\((state()["sheetText"] as? String) ?? "")")
         XCTAssertEqual(state()["bk2"] as? String, "preview", "the file read back and checked: the preview shows")
     }
 }
