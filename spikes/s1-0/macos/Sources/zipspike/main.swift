@@ -33,7 +33,7 @@ func build(_ url: URL, count: Int, mb: Int, forceZip64: Bool) throws -> [String:
     for i in 0..<count {
         let name = "media/m\(i)-0000-synthetic.jpg"
         try w.begin(name)
-        for c in 0..<mb { try w.write(chunk(UInt64(i * 100_000 + c))) }
+        for c in 0..<mb { try autoreleasepool { try w.write(chunk(UInt64(i * 100_000 + c))) } }
         shas[name] = try w.end().sha256
     }
     let manifest = try JSONSerialization.data(withJSONObject: ["media": shas.map { ["path": $0.key, "sha256": $0.value] }])
@@ -103,6 +103,7 @@ case "big":
     let url = dir.appendingPathComponent("big.capiday")
     let t0 = now()
     let shas = try build(url, count: count, mb: 50, forceZip64: false)
+    report["peakRSSAfterWriteMB"] = peakRSSMB()
     let t1 = now()
     let n = try verifyAll(url, expect: shas)
     let t2 = now()

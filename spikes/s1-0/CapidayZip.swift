@@ -114,7 +114,10 @@ final class CapidayZipWriter {
     }
 
     private func put(_ data: Data) throws {
-        try handle.write(contentsOf: data)
+        // Each write in its own pool: FileHandle hands back autoreleased objects,
+        // and a long loop (one GCD block on iOS, or a CLI main) never drains them
+        // otherwise — S1-0 measured 1.1 GB peak for a 4.3 GiB archive without this.
+        try autoreleasepool { try handle.write(contentsOf: data) }
         offset += UInt64(data.count)
     }
 
@@ -306,10 +309,12 @@ final class CapidayZipReader {
         try handle.seek(toOffset: at)
         while left > 0 {
             let n = Int(min(UInt64(chunk), left))
-            guard let d = try handle.read(upToCount: n), d.count == n else { throw CapidayZipError.corrupt("short entry \(e.name)") }
-            crc.update(d)
-            sha.update(data: d)
-            try each?(d)
+            try autoreleasepool {
+                guard let d = try handle.read(upToCount: n), d.count == n else { throw CapidayZipError.corrupt("short entry \(e.name)") }
+                crc.update(d)
+                sha.update(data: d)
+                try each?(d)
+            }
             left -= UInt64(n)
             at += UInt64(n)
         }
