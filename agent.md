@@ -57,8 +57,8 @@
 - **升级测试（Mac，新建的专用 iPhone 17 模拟器 iOS 27.2，测完删除；合成数据）**：`tools/mac/upgrade-check/run-upgrade.sh 330fcee a633c40`。用 TestFlight 构建 1 的代码（330fcee，Debug）写入合成手帐（2 本书含封面照片、3 天 5 页、1 段声音、草稿、计划、习惯 + 打卡、Captain），再覆盖安装 0.2.0 (3)（Debug）：首次启动和第二次启动读回的书名、封面引用、日期、5 页正文、草稿、计划、打卡、Captain 全部相同，5 个媒体引用 5 个可读，schemaVersion 1，没有出现救援页，新版启动时写了 1 份每日快照。旧版写入合成声音超过 45 秒才完成（旧版本自身的行为，不影响结果）。
 - **Release 编译与归档（Mac，Xcode 27.2）**：从 a633c40 的干净副本（git archive，不碰用户工作区）`xcodebuild … -configuration Release -destination generic/platform=iOS archive` → **ARCHIVE SUCCEEDED**，归档在 `~/Library/Developer/Xcode/Archives/2026-11-14/Capiday 0.2.0 (3).xcarchive`（Organizer 可见）。
 - **上传**：`xcodebuild -exportArchive`（method app-store-connect，destination upload，自动签名，团队 7VFYCTCXRS）→ `Upload succeeded`、`Uploaded package is processing`、**EXPORT SUCCEEDED**（2026-11-14 14:31 EST）。**这只表示文件已交给 App Store Connect；Apple 的处理（Processing）尚未确认完成**，构建还没有在 TestFlight 里确认可安装。
-- **全量浏览器回归**：<<REGRESSION>>
-- **在线链接**：发布 V10.65（见下）。
+- **全量浏览器回归（Linux 容器 + Chromium）**：**99/99 套全部通过，0 失败**（含迁移后的 v3 / v31 / v121 / v140 和新的 v161；以前环境性挂起的 v119 这次也通过）。
+- **在线链接**：V10.65 已发布到固定链接（version 118，只发送 7 个改动文件）。
 - **没有验证**：真机安装和真机升级（需要从 TestFlight 安装）；iOS 17 / 18 真机；App Store Connect 里的处理结果和出口合规状态（应自动为「无」）。
 - **下一步**：等 App Store Connect 处理完成（通常几分钟到一小时，会发邮件）→ TestFlight 里确认 0.2.0 (3) 可测试 → 在 iPhone 上从 TestFlight 更新（不要删除旧 App），打开后确认原有手帐、照片、My Books 都在，再试一次「从备份恢复」的预览和撤销。
 
