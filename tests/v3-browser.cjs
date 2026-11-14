@@ -408,7 +408,7 @@ async function streamBytes(download) {
       mimeType: "application/json",
       buffer: backupBytes,
     });
-    await page.locator("#confirm-dialog[open] #confirm-cancel").click();
+    await require("./signed-in.cjs").restoreGo(page, { cancel: "confirm" }); // V10.65: preview → 继续 → cancel the second question
     await page.waitForTimeout(150);
     assert.equal(JSON.stringify(await read()), stable);
     await page.locator("#backup-input").setInputFiles({
@@ -416,7 +416,7 @@ async function streamBytes(download) {
       mimeType: "application/json",
       buffer: backupBytes,
     });
-    await page.locator("#confirm-dialog[open] #confirm-ok").click();
+    await require("./signed-in.cjs").restoreGo(page);
     await page.waitForFunction(() =>
       document
         .querySelector("#toast")

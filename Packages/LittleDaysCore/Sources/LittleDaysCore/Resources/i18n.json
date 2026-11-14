@@ -9986,5 +9986,221 @@
   "pg.orderSaved": {
     "zh": "照片顺序已保存",
     "en": "Photo order saved"
+  },
+  "rs.problemTitle": {
+    "zh": "没有恢复",
+    "en": "Nothing was restored"
+  },
+  "rs.unchanged": {
+    "zh": "你现在的手帐、照片、视频和声音都没有改动。",
+    "en": "Your journal, photos, videos and sounds are unchanged."
+  },
+  "rs.ok": {
+    "zh": "好",
+    "en": "OK"
+  },
+  "rs.err.too-large": {
+    "zh": "这个文件太大（超过 150 MB），现在还不能在这里恢复。",
+    "en": "This file is too large (over 150 MB) to restore here yet."
+  },
+  "rs.err.damaged": {
+    "zh": "这个文件读不出来或已损坏，不是一份完整的开铺手帐备份。",
+    "en": "This file can’t be read or is damaged — it isn’t a complete Capiday backup."
+  },
+  "rs.err.not-backup": {
+    "zh": "这不是开铺手帐的备份文件。",
+    "en": "This isn’t a Capiday backup file."
+  },
+  "rs.err.newer-format": {
+    "zh": "这份备份来自更新版本的开铺手帐，请先更新 App 再恢复。",
+    "en": "This backup comes from a newer Capiday. Update the app, then restore it."
+  },
+  "rs.err.too-many": {
+    "zh": "这份备份里的文件太多（超过 2000 个），现在还不能在这里恢复。",
+    "en": "This backup holds too many files (over 2,000) to restore here yet."
+  },
+  "rs.err.bad-media": {
+    "zh": "备份里有一个照片、视频或声音文件格式不对，整份备份都没有恢复。",
+    "en": "A photo, video or sound in the backup is not in a usable format, so nothing was restored."
+  },
+  "rs.err.media-too-large": {
+    "zh": "备份里有一个文件超过 50 MB，现在还不能在这里恢复。",
+    "en": "A file in the backup is over 50 MB and can’t be restored here yet."
+  },
+  "rs.err.incomplete": {
+    "zh": "备份缺少它的页面用到的照片、视频或声音，且没有说明，可能不完整。",
+    "en": "The backup is missing photos, videos or sounds its pages use, without saying so — it may be incomplete."
+  },
+  "rs.err.unsaved": {
+    "zh": "还有改动没有保存好，所以没有开始恢复。请稍等几秒再试。",
+    "en": "Some changes are not saved yet, so the restore did not start. Wait a few seconds and try again."
+  },
+  "rs.err.snapshot": {
+    "zh": "没能先给现在的手帐留一份快照（空间可能不够），所以没有开始恢复。",
+    "en": "Couldn’t keep a snapshot of your journal first (storage may be full), so the restore did not start."
+  },
+  "rs.err.busy": {
+    "zh": "正在保存照片或视频，请完成后再恢复。",
+    "en": "Photos or videos are still being saved. Try again when that’s done."
+  },
+  "rs.err.failed": {
+    "zh": "恢复中途出了问题，已经停下并回到恢复前的手帐。",
+    "en": "Something went wrong during the restore. It stopped and your journal is as it was before."
+  },
+  "rs.err.undo-media": {
+    "zh": "恢复前用到的照片、视频或声音已经找不到，所以不能撤销。现在的手帐没有改动。",
+    "en": "Photos, videos or sounds the earlier journal used are no longer here, so the restore can’t be undone. Your journal is unchanged."
+  },
+  "rs.err.undo-failed": {
+    "zh": "撤销没有完成，现在的手帐没有改动。",
+    "en": "The undo did not finish. Your journal is unchanged."
+  },
+  "rs.previewTitle": {
+    "zh": "恢复前先看看",
+    "en": "Before you restore"
+  },
+  "rs.previewHelp": {
+    "zh": "下面的数字是从备份文件里实际读出来的，不是文件自己写的。恢复会用备份替换现在的手帐。",
+    "en": "These numbers were counted from what the backup actually holds. Restoring replaces your current journal with the backup."
+  },
+  "rs.inBackup": {
+    "zh": "备份里",
+    "en": "In the backup"
+  },
+  "rs.now": {
+    "zh": "现在",
+    "en": "Now"
+  },
+  "rs.made": {
+    "zh": "备份时间",
+    "en": "Made"
+  },
+  "rs.books": {
+    "zh": "手帐本",
+    "en": "Journals"
+  },
+  "rs.days": {
+    "zh": "天",
+    "en": "Days"
+  },
+  "rs.pages": {
+    "zh": "页",
+    "en": "Pages"
+  },
+  "rs.media": {
+    "zh": "照片 / 视频 / 声音",
+    "en": "Photos / videos / sounds"
+  },
+  "rs.mediaKinds": {
+    "zh": "{photo} 张照片 · {video} 段视频 · {audio} 段声音",
+    "en": "{photo} photos · {video} videos · {audio} sounds"
+  },
+  "rs.drafts": {
+    "zh": "草稿",
+    "en": "Drafts"
+  },
+  "rs.plansHabits": {
+    "zh": "计划 / 习惯",
+    "en": "Plans / habits"
+  },
+  "rs.yes": {
+    "zh": "有",
+    "en": "Yes"
+  },
+  "rs.no": {
+    "zh": "无",
+    "en": "No"
+  },
+  "rs.note.incomplete": {
+    "zh": "这份备份说明有 {count} 个文件没有放进去，恢复后对应位置会显示缺失。",
+    "en": "This backup says {count} files could not be included; those spots will show as missing."
+  },
+  "rs.note.fewer": {
+    "zh": "备份里的天数或页数比现在少，恢复后之后写的内容会被替换。",
+    "en": "The backup has fewer days or pages than now — what you wrote since will be replaced."
+  },
+  "rs.note.drafts": {
+    "zh": "你现在有 {count} 份草稿，恢复后会换成备份里的草稿。",
+    "en": "You have {count} drafts now; they will be replaced by the backup’s drafts."
+  },
+  "rs.safeHint": {
+    "zh": "恢复前会先给现在的手帐留一份快照；7 天内可以在设置里撤销这次恢复。",
+    "en": "A snapshot of your journal is kept first; you can undo this restore in Settings for 7 days."
+  },
+  "rs.continue": {
+    "zh": "继续",
+    "en": "Continue"
+  },
+  "rs.confirm": {
+    "zh": "确定用备份（{days} 天 · {pages} 页 · {media} 个文件）替换现在的手帐吗？",
+    "en": "Replace your current journal with the backup ({days} days · {pages} pages · {media} files)?"
+  },
+  "rs.confirmOk": {
+    "zh": "恢复",
+    "en": "Restore"
+  },
+  "rs.working": {
+    "zh": "正在恢复…请不要关闭",
+    "en": "Restoring… please keep the app open"
+  },
+  "rs.doneTitle": {
+    "zh": "已恢复",
+    "en": "Restored"
+  },
+  "rs.doneBody": {
+    "zh": "已恢复并核对：{days} 天 · {pages} 页 · {media} 个照片/视频/声音引用都在。所有手帐保持私人。",
+    "en": "Restored and checked: {days} days · {pages} pages · all {media} photo/video/sound references are in place. Every journal stays private."
+  },
+  "rs.doneUndo": {
+    "zh": "{days} 天内可以在 设置 → 数据 里撤销这次恢复。",
+    "en": "You can undo this restore in Settings → Data for {days} days."
+  },
+  "rs.recoveredDone": {
+    "zh": "上次的恢复在关闭前已经写好并核对通过，7 天内可撤销。",
+    "en": "The last restore had finished before the app closed and checks out; it can be undone for 7 days."
+  },
+  "rs.recoveredNotDone": {
+    "zh": "上次的恢复没有完成，手帐保持恢复前的样子。",
+    "en": "The last restore did not finish; your journal is as it was before."
+  },
+  "rs.undoTitle": {
+    "zh": "撤销上次恢复",
+    "en": "Undo the last restore"
+  },
+  "rs.undoShort": {
+    "zh": "回到恢复前的手帐，还剩 {days} 天",
+    "en": "Go back to the journal before it — {days} days left"
+  },
+  "rs.undoConfirm": {
+    "zh": "回到恢复前的手帐吗？现在的手帐会先留一份快照。",
+    "en": "Go back to the journal from before the restore? A snapshot of the current journal is kept first."
+  },
+  "rs.undoOk": {
+    "zh": "撤销恢复",
+    "en": "Undo restore"
+  },
+  "rs.undone": {
+    "zh": "已回到恢复前的手帐",
+    "en": "Back to the journal from before the restore"
+  },
+  "rs.snapInfo": {
+    "zh": "手帐数据快照：{count} 份，最新 {date}。",
+    "en": "Journal snapshots: {count}, latest {date}."
+  },
+  "rs.snapNone": {
+    "zh": "还没有手帐数据快照。",
+    "en": "No journal snapshots yet."
+  },
+  "rs.snapNotBackup": {
+    "zh": "快照只含文字和页面排版，不含照片、视频和声音文件，不能代替完整备份。",
+    "en": "Snapshots hold only words and page layouts — no photo, video or sound files — and don’t replace a full backup."
+  },
+  "rs.snapFailed": {
+    "zh": "最近一次快照没能保存（空间可能不够），旧的快照保留，正常保存不受影响。",
+    "en": "The latest snapshot couldn’t be saved (storage may be full); older ones are kept and saving is not affected."
+  },
+  "rs.snapUnknown": {
+    "zh": "暂时读不到快照信息。",
+    "en": "Snapshot info can’t be read right now."
   }
 }

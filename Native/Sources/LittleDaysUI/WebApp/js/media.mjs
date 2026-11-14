@@ -10,6 +10,9 @@
 // place the first time they are read (same id, nothing deleted); one that
 // cannot be read any more is reported as missing, never replaced.
 import { validateStateSnapshot } from "./model.mjs";
+// S1-1: the same media check as the new restore (codecs lists may contain commas).
+const MEDIA_DATA_URL = /^data:(image\/(jpeg|png|webp|gif|heic|heif)|audio\/[a-z0-9.+-]+|video\/[a-z0-9.+-]+)((;[a-z0-9-]+=("[^"]*"|[^;"]*))*);base64,/i;
+const validMediaData = (data) => typeof data === "string" && MEDIA_DATA_URL.test(data);
 
 // A record's bytes as a Blob, whichever way it was stored.
 // A short, lower-case error name for the local log ("notreadableerror").
@@ -100,6 +103,33 @@ export class MediaStore {
       this.onEvent("media_save_failed", { kind: kindOf(metadata.kind, blob?.type), stage, err: errName(error) });
       throw error;
     }
+  }
+  // S1-1: a file from a backup. Same bytes already here → nothing is written
+  // (restoring a backup twice never doubles a file). Looked for under the
+  // backup's own id first, then under `sameAs` (ids that earlier held the same
+  // content hash). Never decided by file name. A new file keeps the backup's
+  // id when that id is free, else gets a new one.
+  // Returns { id, written: boolean }.
+  async putRestored(bytes, mime, metadata = {}, preferredId = "", sameAs = []) {
+    await this.open();
+    const valid = typeof preferredId === "string" && /^[A-Za-z0-9-]{1,64}$/.test(preferredId);
+    const candidates = [...new Set([valid ? preferredId : "", ...sameAs].filter((x) => typeof x === "string" && x))];
+    for (const candidate of candidates) {
+      const existing = await this.get(candidate);
+      if (!existing) continue;
+      const have = existing.bytes instanceof ArrayBuffer ? existing.bytes : existing.blob instanceof Blob ? await existing.blob.arrayBuffer() : null;
+      if (have && sameBuffer(have, bytes)) return { id: candidate, written: false };
+    }
+    const id = valid && !(await this.get(preferredId)) ? preferredId : typeof crypto.randomUUID === "function" ? crypto.randomUUID() : fallbackId();
+    const record = { ...metadata, id, bytes, mime, size: bytes.byteLength, createdAt: metadata.createdAt || new Date().toISOString() };
+    await this.write(record, "add");
+    const check = await this.get(id);
+    if (!(check?.bytes instanceof ArrayBuffer) || check.bytes.byteLength !== bytes.byteLength) {
+      const error = new Error("media-verify");
+      error.code = "media-verify";
+      throw error;
+    }
+    return { id, written: true };
   }
   // Reported once per id and kind of problem (a page re-renders often).
   report(name, id, data = {}) {
@@ -347,9 +377,7 @@ export class MediaStore {
       if (
         mapping.has(record.id) ||
         typeof record.data !== "string" ||
-        !/^data:(image\/(jpeg|png|webp)|audio\/[a-z0-9.+-]+|video\/[a-z0-9.+-]+)(;codecs=[^;,]+)?;base64,/i.test(
-          record.data,
-        )
+        !validMediaData(record.data)
       )
         throw new Error("Invalid media");
       const blob = await (await fetch(record.data)).blob();
@@ -429,6 +457,12 @@ export async function migrateLegacyPhotos(store, media) {
   return changes.length;
 }
 
+function sameBuffer(a, b) {
+  if (a.byteLength !== b.byteLength) return false;
+  const x = new Uint8Array(a), y = new Uint8Array(b);
+  for (let i = 0; i < x.length; i++) if (x[i] !== y[i]) return false;
+  return true;
+}
 const fallbackId = () => "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => ((c === "x" ? Math.random() * 16 : (Math.random() * 4) | 8) | 0).toString(16));
 export const MAX_BACKUP_MEDIA_BYTES = 100 * 1024 * 1024;
 export const MAX_BACKUP_FILES = 2000;

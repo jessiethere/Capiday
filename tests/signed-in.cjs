@@ -393,3 +393,24 @@ module.exports.suggestBook = async (page, preset) => {
 // away; tests that fill them open every section first.
 module.exports.openBookSections = (page) =>
   page.evaluate(() => document.querySelectorAll("#dialog-form details.book-more").forEach((d) => (d.open = true)));
+
+// V10.65 (S1-1): a restore now shows what the backup holds first (继续),
+// then asks once more. Drives both steps and closes the "已恢复" sheet.
+// { cancel: "preview" | "confirm" } stops at that step instead.
+async function restoreGo(page, { cancel = "", timeout = 30000 } = {}) {
+  await page.waitForSelector('#choose-dialog[open] [data-action="restore-continue"]', { timeout });
+  if (cancel === "preview") {
+    await page.locator('#choose-dialog [data-action="restore-cancel"]').click();
+    return;
+  }
+  await page.locator('#choose-dialog [data-action="restore-continue"]').click();
+  await page.waitForSelector("#confirm-dialog[open] #confirm-ok");
+  if (cancel === "confirm") {
+    await page.locator("#confirm-dialog[open] #confirm-cancel").click();
+    return;
+  }
+  await page.locator("#confirm-dialog[open] #confirm-ok").click();
+  await page.waitForSelector("#choose-dialog[open] [data-restore-done]", { timeout });
+  await page.locator('#choose-dialog [data-restore-done] [data-action="choose-close"]').click();
+}
+module.exports.restoreGo = restoreGo;

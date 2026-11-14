@@ -41,6 +41,46 @@ export class MetaStore {
       request.onerror = () => reject(request.error);
     });
   }
+  // S1-1: a separate, NOT coalesced write for a side key (snapshots), read
+  // back and compared before it counts — write() below keeps only the newest
+  // pending value whatever its key, so it must never be used for these.
+  async putVerified(key, value) {
+    if (key === META_KEY) throw new Error("putVerified is for side keys only");
+    await this.open();
+    await new Promise((resolve, reject) => {
+      const tx = this.db.transaction("kv", "readwrite");
+      tx.objectStore("kv").put(value, key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error || new Error("Write aborted"));
+    });
+    const back = await this.read(key);
+    if (back !== value) {
+      const error = new Error("snapshot-verify");
+      error.code = "snapshot-verify";
+      throw error;
+    }
+    return true;
+  }
+  async remove(key) {
+    if (key === META_KEY) throw new Error("the journal itself is never removed here");
+    await this.open();
+    await new Promise((resolve, reject) => {
+      const tx = this.db.transaction("kv", "readwrite");
+      tx.objectStore("kv").delete(key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+  async keys(prefix = "") {
+    await this.open();
+    const all = await new Promise((resolve, reject) => {
+      const request = this.db.transaction("kv", "readonly").objectStore("kv").getAllKeys();
+      request.onsuccess = () => resolve(request.result || []);
+      request.onerror = () => reject(request.error);
+    });
+    return all.filter((key) => typeof key === "string" && key.startsWith(prefix));
+  }
   // Writes are queued and coalesced: only the newest value is written next,
   // in order, so a slow write can never overwrite a newer one.
   write(value, key = META_KEY) {

@@ -48,6 +48,14 @@
 
 ## 更新日志
 
+### 2026-11-14 — Sprint 1 · S1-1 恢复安全（V10.65，实施中，未发布）
+
+- **需求**：用户确认 S1-1 的 10 项要求（预览来自真实解析 + 二次确认；恢复前保存编辑或阻止；快照写入并读回；失败不改手帐和媒体引用，分阶段写入 + 校验 + 安全切换，测试中断和重启；7 天撤销；每日快照 3 份 / 60 MB / 14 天且标明不含媒体；重复恢复不重复媒体；修复 `journal-blocked` 事件；恢复后核对书、页、Calendar、Captain、媒体引用；只用合成数据）。只做 S1-1。
+- **文件**：新增 `Public/js/restore-safety.mjs`（analyzeBackup / summarize / sameJournal / planSnapshots / planBeforeRestore / undoDaysLeft）；`meta-store.mjs`（putVerified / remove / keys）；`media.mjs`（putRestored：先按 id、再按内容哈希候选逐字节比对复用）；`app.js`（预览 → 继续 → 二次确认 → runRestore；recoverInterruptedRestore；undoRestore；dailySnapshot；设置撤销行和快照说明；`journal_blocked`；救援副本改用 putVerified）；i18n `rs.*`；styles；whats-new 10.65；测试 `tests/v161-restore-safety.test.mjs`、`tests/v161-browser.cjs`，`signed-in.cjs` 新增 `restoreGo`，迁移 v3 / v31 / v121 / v140；`docs/SPRINT1_BACKUP_RESTORE_PLAN.md` 增加「S1-1 实施记录」。
+- **决策**：媒体先写、手帐一次切换；切换前失败手帐不动，切换后失败换回快照；失败写入的媒体只记录在 `little-days.restore-orphans`，不删除。去重不看文件名。每日快照在启动时写（=当天编辑前的状态）。
+- **运行 / 测试（Linux 容器 + Chromium）**：Node 单元测试 307/307 通过（新增 8 项）。v161 浏览器套件在中间轮次已逐项通过：预览、取消、拒绝坏文件、快照写入失败停止、中途失败、完整恢复 + 日历、撤销、恢复两次不重复、撤销时缺文件被拒绝、四个中断点重启、切换后缺文件回滚；**草稿保存 / 阻止和每日快照两段尚未在一次完整运行中通过**（有一次运行挂起，已加逐项输出排查）。迁移后的旧恢复测试和全量回归**尚未运行**。Python：`test_app_icon` 1 项失败为既有问题（pbxproj 未改动，Resources 阶段多了 InfoPlist.strings），与本次无关。
+- **未完成**：完整跑通 v161 + 旧测试 + 全量回归；发布在线链接 V10.65；README/agent 最终结果；Mac 快进。Swift / Xcode / 模拟器 / 真机本轮未运行。
+
 ### 2026-11-14 — Sprint 1 · S1-0 技术实验完成（Mac 恢复后补齐）
 
 - **用户**：回复「可以」（同意在 Mac 恢复连接后补齐 S1-0，然后汇报）。

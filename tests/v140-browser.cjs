@@ -109,8 +109,7 @@ const photo = (n) => ({ name: `LD-photo-${n}.jpg`, mimeType: "image/jpeg", buffe
       await p2.waitForSelector('[data-action="restore-backup"]');
       p2.on("dialog", (d) => errors.push(`native dialog: ${d.message()}`));
       await p2.locator("#backup-input").setInputFiles(await download.path());
-      await p2.waitForSelector("#confirm-dialog[open]");
-      await p2.locator("#confirm-ok").click();
+      await require("./signed-in.cjs").restoreGo(p2);
       await p2.waitForFunction(() => (localStorage.getItem("little-days.v1") || "").includes("media:"), null, { timeout: 15000 });
       const restored = await p2.evaluate(() => localStorage.getItem("little-days.v1"));
       assert.ok(restored.includes(`media:${ids[0]}`), "the missing photo keeps its place");

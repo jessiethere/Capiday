@@ -271,7 +271,7 @@ const PHOTOS = ["latte-art", "corner-cafe", "home-dinner", "coffee-cheers", "mor
     await page.goto(base);
     await page.waitForSelector(".hero");
     await page.locator("#backup-input").setInputFiles({ name: "backup.json", mimeType: "application/json", buffer: Buffer.from(backupJSON) });
-    await page.locator("#confirm-dialog[open] #confirm-ok").click();
+    await require("./signed-in.cjs").restoreGo(page);
     await page.waitForFunction(() => /恢复/.test(document.querySelector("#toast")?.innerText || ""), null, { timeout: 30000 });
     await reopenStudio();
     await check("restored on an empty device");

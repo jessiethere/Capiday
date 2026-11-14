@@ -24860,3 +24860,44 @@ body.typing .ctx-caption {
 .po-steps button:disabled {
   opacity: 0.35;
 }
+
+/* S1-1 · restore preview / result sheets */
+.restore-sheet .rs-compare {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0 12px;
+  font-size: 14px;
+}
+.restore-sheet .rs-compare th,
+.restore-sheet .rs-compare td {
+  padding: 7px 4px;
+  border-bottom: 1px solid var(--line, rgba(0, 0, 0, 0.08));
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.restore-sheet .rs-compare th[scope="row"] {
+  text-align: left;
+  font-weight: 500;
+}
+.restore-sheet .rs-compare thead th {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.7;
+}
+.restore-sheet .rs-note {
+  margin: 6px 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(214, 140, 60, 0.12);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.restore-sheet .rs-safe,
+.rs-snap {
+  font-size: 12.5px;
+  line-height: 1.45;
+  opacity: 0.75;
+}
+.restore-sheet .primary.full-width {
+  margin-top: 8px;
+}

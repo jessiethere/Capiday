@@ -4,6 +4,28 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.65",
+    date: "2026-11-14",
+    zh: {
+      title: "从备份恢复更安全",
+      items: [
+        "恢复前先给你看备份里实际有几天、几页、多少照片/视频/声音，和现在对比；确认两次才开始。",
+        "开始前会先保存正在编辑的内容，并给现在的手帐留一份快照；任何一步出问题都会停下，手帐和照片保持原样。",
+        "恢复后 7 天内，可以在 设置 → 数据 里「撤销上次恢复」。同一份备份恢复两次，照片不会多存一份。",
+        "每天自动留一份手帐数据快照（最多 3 份）：只含文字和排版，不含照片和视频，不能代替完整备份。",
+      ],
+    },
+    en: {
+      title: "Safer restore from a backup",
+      items: [
+        "Before a restore you see how many days, pages, photos, videos and sounds the backup really holds, next to what you have now — and you confirm twice.",
+        "Anything you are editing is saved first and a snapshot of your journal is kept; if any step fails, it stops and your journal and photos stay as they were.",
+        "For 7 days you can Undo the last restore in Settings → Data. Restoring the same backup twice never stores a photo twice.",
+        "A daily journal snapshot is kept (up to 3): words and layouts only, no photos or videos — not a replacement for a full backup.",
+      ],
+    },
+  },
+  {
     version: "10.64",
     date: "2026-11-14",
     zh: {

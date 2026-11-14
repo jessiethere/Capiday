@@ -551,7 +551,7 @@ async function noOverflow(page, label) {
     await r.nav("home");
     await restore.page.locator('[data-page="settings"]').click();
     await restore.page.locator("#backup-input").setInputFiles({ name: "backup.json", mimeType: "application/json", buffer: backupBuffer });
-    await restore.page.locator("#confirm-dialog[open] #confirm-ok").click();
+    await require("./signed-in.cjs").restoreGo(restore.page);
     await restore.page.waitForFunction(() => {
       const s = JSON.parse(localStorage.getItem("little-days.v1"));
       return s?.entries.some((e) => e.date === "2026-11-03" && e.moments?.length === 3);

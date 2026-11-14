@@ -1,4 +1,4 @@
-import { MediaStore, migrateLegacyPhotos, mediaReferences, errName } from "./js/media.mjs";
+import { MediaStore, migrateLegacyPhotos, mediaReferences, visitMediaReferences, errName } from "./js/media.mjs";
 import * as MediaCheck from "./js/media-check.mjs";
 import {
   configureI18n,
@@ -140,7 +140,9 @@ import {
   removeSamples,
   stepBook,
   normalizeState,
+  validateStateSnapshot,
 } from "./js/model.mjs";
+import * as RS from "./js/restore-safety.mjs";
 
 // The iOS Swift shell opens index.html?shell=ios (and also injects this marker).
 // Development only: ?dev-local-ai=<model> / =off on a page served from this
@@ -7359,7 +7361,7 @@ function settingsPageHTML() {
   const privacyRow = (id) => toggle(`data-action="privacy-toggle" data-privacy="${id}"`, privacyOn(id), t("privacy." + id), t("s2." + id + "Short"));
   // V10.10: backup first and easy to find; one short line each; the full
   // notes (what a backup holds, size limits) stay in 隐私说明.
-  const data = `<section class="s2-sec privacy-card">${title("s2.data")}<div class="s2-row stack s2-backup"><span><b>${t("s2.backup")}</b><small>${t("s2.backupShort")}</small></span>${backupWhenHTML()}<div class="s2-btns"><button class="primary-outline" data-action="backup">${t("settings.backup")}</button><button data-action="restore-backup">${t("settings.restore")}</button></div><p id="media-usage" class="s2-usage" role="status"></p></div>${more('data-action="media-check"', t("check.title"), t("check.short"))}${lockRowsHTML()}${privacyRow("hideToday")}${privacyRow("shareList")}${toggle('data-action="keeper-toggle" data-key="aiConsent"', false, `${t("s2.ai")}<i class="s2-tag">${t("s2.aiNot")}</i>`, t("s2.aiShort"), true)}${more('data-action="settings-sheet" data-sheet="privacy"', t("s2.privacyNotes"))}</section>`;
+  const data = `<section class="s2-sec privacy-card">${title("s2.data")}<div class="s2-row stack s2-backup"><span><b>${t("s2.backup")}</b><small>${t("s2.backupShort")}</small></span>${backupWhenHTML()}<div class="s2-btns"><button class="primary-outline" data-action="backup">${t("settings.backup")}</button><button data-action="restore-backup">${t("settings.restore")}</button></div><p id="media-usage" class="s2-usage" role="status"></p><p id="rs-snap" class="s2-usage rs-snap"></p></div>${restoreUndoRowHTML()}${more('data-action="media-check"', t("check.title"), t("check.short"))}${lockRowsHTML()}${privacyRow("hideToday")}${privacyRow("shareList")}${toggle('data-action="keeper-toggle" data-key="aiConsent"', false, `${t("s2.ai")}<i class="s2-tag">${t("s2.aiNot")}</i>`, t("s2.aiShort"), true)}${more('data-action="settings-sheet" data-sheet="privacy"', t("s2.privacyNotes"))}</section>`;
   // -- About & more.
   const samples = state().entries.filter((e) => e.isDemo).length;
   const about = `<section class="s2-sec s2-about">${title("s2.about")}${more('data-action="whats-new"', t("news.title"), `V${esc(LATEST)}`, hasUnseen())}${more('data-action="tour-replay"', t("s2.tour"), t("s2.tourAgain"))}${more('data-action="settings-sheet" data-sheet="licenses"', t("settings.licenses"))}${samples ? more('data-action="settings-sheet" data-sheet="samples"', t("samples.title"), t("s2.sampleDays", { count: samples })) : ""}${more('data-action="settings-sheet" data-sheet="testlog"', t("testlog.title"))}${more('data-action="settings-sheet" data-sheet="labs"', t("labs.title"), t(labsOn() ? "s2.on" : "s2.off"))}${labsOn() && account ? more('data-action="sign-out"', t("s2.welcome"), t("s2.dataKept")) : ""}</section>`;
@@ -8257,7 +8259,13 @@ function openDay(date, momentId = null) {
         ?.scrollIntoView({ block: "start" });
   });
 }
+// S1-1: 撤销上次恢复 (7 days), shown only while it is possible.
+function restoreUndoRowHTML() {
+  const days = RS.undoDaysLeft(readJSON(RESTORE_LAST));
+  return days ? `<button class="s2-more-row rs-undo" data-action="restore-undo"><span><b>${t("rs.undoTitle")}</b></span><span class="v">${t("rs.undoShort", { days })}<i class="s2-chev" aria-hidden="true">›</i></span></button>` : "";
+}
 async function showMediaUsage() {
+  showSnapshotInfo();
   const target = $("#media-usage");
   if (!target) return;
   try {
@@ -10126,36 +10134,376 @@ window.addEventListener("beforeunload", (event) => {
     event.returnValue = "";
   }
 });
+// ---------- Sprint 1 · S1-1 恢复安全 ----------
+// docs/SPRINT1_BACKUP_RESTORE_PLAN.md. A restore: (1) checks the file and
+// shows what it REALLY holds (counted from the parsed journal, never from what
+// the file says), (2) asks twice, (3) makes sure nothing is waiting to be
+// saved, (4) writes a snapshot of the current journal and reads it back,
+// (5) writes the media first (same bytes under the same id are reused, never
+// written twice), (6) switches the journal in one write and reads it back to
+// verify books, pages, Calendar days, Captain and every media reference. Any
+// failure before the switch leaves the journal as it was; a failure after it
+// switches back to the snapshot. A restore cut short (the app closed) is
+// finished or undone safely at the next start. For 7 days it can be undone.
+let metaStore = null;
+let restoreCandidate = null;
+const RESTORE_JOURNAL = "little-days.restore-journal"; // in progress: { id, phase, snapshotKey, startedAt, written[] }
+const RESTORE_LAST = "little-days.restore-last"; // the last finished restore (for 撤销)
+const RESTORE_ORPHANS = "little-days.restore-orphans"; // files a failed restore wrote (kept, listed for a later safe clean-up)
+const SNAPSHOT_FAILED = "little-days.snapshot-failed";
+const MEDIA_SHA_KEY = "little-days.media-sha"; // content hash → ids of restored files (journal database side key)
+async function sha256Hex(bytes) {
+  try {
+    return [...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))].map((x) => x.toString(16).padStart(2, "0")).join("");
+  } catch {
+    return ""; // no crypto.subtle: the backup's own id is still checked byte for byte
+  }
+}
+const readJSON = (key) => {
+  try {
+    return JSON.parse(localStorage.getItem(key) || "null");
+  } catch {
+    return null;
+  }
+};
+const writeJSON = (key, value) => {
+  try {
+    if (value == null) localStorage.removeItem(key);
+    else localStorage.setItem(key, JSON.stringify(value));
+  } catch {}
+};
+// Synthetic tests only (tests/v161): stop as if the app had been closed at
+// this point — nothing is cleaned up, so the next start must cope.
+function restoreCrashPoint(stage) {
+  if (localStorage.getItem("test.restore.crash") !== stage) return;
+  localStorage.removeItem("test.restore.crash");
+  const error = new Error("test-crash");
+  error.testCrash = true;
+  throw error;
+}
+function addRestoreOrphans(ids) {
+  if (!ids?.length) return;
+  const list = new Set(readJSON(RESTORE_ORPHANS) || []);
+  ids.forEach((x) => list.add(x));
+  writeJSON(RESTORE_ORPHANS, [...list].slice(-5000));
+}
+// Anything typed or arranged that is not yet in the journal database is
+// saved first; if it cannot be, the restore does not start.
+async function settleBeforeRestore() {
+  try {
+    flushDraft();
+  } catch {}
+  if (editor && draftDirty) return false; // the edit could not be put into the journal
+  return Boolean(await store.stored());
+}
+function showRestoreProblem(code) {
+  const dialog = $("#choose-dialog");
+  dialog.innerHTML = `<div class="choose-sheet restore-sheet" data-restore-problem="${esc(code)}"><div class="choose-grabber" aria-hidden="true"></div><h2>${t("rs.problemTitle")}</h2><p>${t("rs.err." + code)}</p><p class="rs-safe">${t("rs.unchanged")}</p><button class="primary full-width" data-action="choose-close">${t("rs.ok")}</button></div>`;
+  if (!dialog.open) dialog.showModal();
+}
 $("#backup-input").addEventListener("change", async (event) => {
   const file = event.target.files[0];
+  event.target.value = "";
   if (!file) return;
+  if (file.size > RS.MAX_RESTORE_FILE_BYTES) return showRestoreProblem("too-large");
+  let backup;
   try {
-    if (file.size > 150 * 1024 * 1024) throw new Error("Backup is too large");
-    const backup = JSON.parse(await file.text());
-    if (
-      backup.format !== "little-days-backup" ||
-      backup.version !== 1 ||
-      backup.state?.schemaVersion !== 1
-    )
-      throw new Error("Invalid backup");
-    if (!(await askConfirm(t("settings.restoreConfirm")))) return;
-    busyMedia = true;
-    const restored = normalizeState(await media.restore(backup));
-    store.update((next) => {
-      for (const key of Object.keys(next)) delete next[key];
-      Object.assign(next, restored);
-    });
-    editor = null;
+    backup = JSON.parse(await file.text());
+  } catch {
+    return showRestoreProblem("damaged");
+  }
+  const analysis = RS.analyzeBackup(backup);
+  logEvent("restore_checked", { stage: analysis.ok ? "ok" : analysis.error });
+  if (!analysis.ok) return showRestoreProblem(analysis.error);
+  restoreCandidate = { backup, analysis };
+  openRestorePreview();
+});
+function openRestorePreview() {
+  const c = restoreCandidate;
+  if (!c) return;
+  const a = c.analysis;
+  const now = RS.summarize(state());
+  const b = a.summary;
+  const date = a.createdAt ? new Date(a.createdAt).toLocaleString(locale(), { dateStyle: "medium", timeStyle: "short" }) : "—";
+  const row = (label, backupValue, nowValue) => `<tr><th scope="row">${label}</th><td>${backupValue}</td><td>${nowValue}</td></tr>`;
+  const mb = (n) => (n / 1048576).toFixed(n > 10 * 1048576 ? 0 : 1);
+  const notes = [];
+  if (!a.complete) notes.push(t("rs.note.incomplete", { count: a.missing.length }));
+  if (b.days < now.days || b.pages < now.pages) notes.push(t("rs.note.fewer"));
+  if (now.drafts) notes.push(t("rs.note.drafts", { count: now.drafts }));
+  const dialog = $("#choose-dialog");
+  dialog.innerHTML = `<div class="choose-sheet restore-sheet restore-preview"><div class="choose-grabber" aria-hidden="true"></div><h2>${t("rs.previewTitle")}</h2><p class="save-help">${t("rs.previewHelp")}</p><table class="rs-compare"><thead><tr><th></th><th>${t("rs.inBackup")}</th><th>${t("rs.now")}</th></tr></thead><tbody>${row(t("rs.made"), esc(date), "")}${row(t("rs.books"), b.books, now.books)}${row(t("rs.days"), b.days, now.days)}${row(t("rs.pages"), b.pages, now.pages)}${row(t("rs.media"), t("rs.mediaKinds", { photo: a.kinds.photo || 0, video: a.kinds.video || 0, audio: a.kinds.audio || 0 }) + ` · ${mb(a.mediaBytes)} MB`, "")}${row(t("rs.drafts"), b.drafts, now.drafts)}${row(t("rs.plansHabits"), `${b.plans} / ${b.habits}`, `${now.plans} / ${now.habits}`)}${row("Captain", t(b.keeper ? "rs.yes" : "rs.no"), t(now.keeper ? "rs.yes" : "rs.no"))}</tbody></table>${notes.map((n) => `<p class="rs-note">${n}</p>`).join("")}<p class="rs-safe">${t("rs.safeHint")}</p><button class="primary full-width" data-action="restore-continue">${t("rs.continue")}</button><button class="choose-cancel" data-action="restore-cancel">${t("cancel")}</button></div>`;
+  if (!dialog.open) dialog.showModal();
+}
+async function confirmAndRestore() {
+  const c = restoreCandidate;
+  if (!c) return;
+  $("#choose-dialog").close();
+  const b = c.analysis.summary;
+  if (!(await askConfirm(t("rs.confirm", { days: b.days, pages: b.pages, media: c.analysis.media.length }), { ok: t("rs.confirmOk") }))) {
+    restoreCandidate = null;
+    return;
+  }
+  await runRestore();
+}
+function prepareRestored(backupState, mapping) {
+  const restored = structuredClone(backupState);
+  visitMediaReferences(restored, (ref) => (mapping.has(ref.slice(6)) ? "media:" + mapping.get(ref.slice(6)) : ref));
+  for (const book of restored.books || []) book.visibility = "private";
+  for (const entry of [...(restored.entries || []), ...Object.values(restored.drafts || {})]) {
+    entry.visibility = "private";
+    for (const moment of entry.moments || []) moment.visibility = "private";
+  }
+  return restored;
+}
+// After the journal was swapped, an open editor belongs to the old one.
+function leaveEditorAfterSwap() {
+  editor = null;
+  draftDirty = false;
+  if (page === "studio") page = "home";
+}
+async function switchJournal(next) {
+  store.update((draft) => {
+    for (const key of Object.keys(draft)) delete draft[key];
+    Object.assign(draft, structuredClone(next));
+  });
+}
+async function pruneBeforeRestore() {
+  try {
+    const keep = readJSON(RESTORE_LAST)?.snapshotKey;
+    const keys = await metaStore.keys(RS.BEFORE_RESTORE_PREFIX);
+    const list = keys.map((key) => ({ key, at: Date.parse(key.slice(RS.BEFORE_RESTORE_PREFIX.length)) || 0 }));
+    for (const key of RS.planBeforeRestore(list)) if (key !== keep) await metaStore.remove(key);
+  } catch {}
+}
+async function runRestore() {
+  const c = restoreCandidate;
+  restoreCandidate = null;
+  if (!c || !metaStore) return;
+  if (busyMedia) return showRestoreProblem("busy");
+  busyMedia = true;
+  const journal = { id: id(), phase: "prepare", snapshotKey: "", startedAt: new Date().toISOString(), written: [] };
+  let beforeRaw = null;
+  let switched = false;
+  let reused = 0;
+  try {
+    toast(t("rs.working"));
+    if (!(await settleBeforeRestore())) {
+      showRestoreProblem("unsaved");
+      return;
+    }
+    // 1 · a snapshot of the journal as it is, read back before anything else
+    beforeRaw = JSON.stringify(state());
+    const snapshotKey = RS.BEFORE_RESTORE_PREFIX + journal.startedAt;
+    try {
+      await metaStore.putVerified(snapshotKey, beforeRaw);
+    } catch {
+      showRestoreProblem("snapshot");
+      return;
+    }
+    const preMissing = await media.missing([...mediaReferences(state())]).catch(() => []);
+    journal.snapshotKey = snapshotKey;
+    journal.phase = "media";
+    writeJSON(RESTORE_JOURNAL, journal);
+    restoreCrashPoint("after-snapshot");
+    // 2 · the media, one file at a time (the journal is not touched yet)
+    const mapping = new Map();
+    let shaIndex = {};
+    try {
+      shaIndex = JSON.parse((await metaStore.read(MEDIA_SHA_KEY)) || "{}") || {};
+    } catch {}
+    for (const m of c.analysis.media) {
+      const bytes = await (await (await fetch(m.record.data)).blob()).arrayBuffer();
+      const meta = { kind: m.record.kind || m.kind, name: m.record.name || "Restored media", duration: m.record.duration || 0 };
+      for (const key of ["aspect", "edited", "origin", "width", "height", "createdAt"]) if (m.record[key] !== undefined) meta[key] = m.record[key];
+      const sha = await sha256Hex(bytes);
+      if (sha) meta.sha256 = sha;
+      const { id: newId, written } = await media.putRestored(bytes, m.mime, meta, m.id, sha ? shaIndex[sha] || [] : []);
+      mapping.set(m.id, newId);
+      if (sha) shaIndex[sha] = [newId, ...(shaIndex[sha] || []).filter((x) => x !== newId)].slice(0, 4);
+      if (written) {
+        journal.written.push(newId);
+        writeJSON(RESTORE_JOURNAL, journal);
+      } else reused++;
+      restoreCrashPoint("media");
+    }
+    try {
+      await metaStore.putVerified(MEDIA_SHA_KEY, JSON.stringify(shaIndex));
+    } catch {} // only an aid for the next restore; the backup's own ids are still checked
+    // 3 · the new journal, checked before it replaces the current one
+    const restored = normalizeState(prepareRestored(c.backup.state, mapping));
+    validateStateSnapshot(restored);
+    const expect = RS.summarize(restored);
+    const known = new Set(c.analysis.missing);
+    const needed = [...mediaReferences(restored)].filter((x) => !known.has(x));
+    if ((await media.missing(needed)).length) throw new Error("media-missing");
+    // 4 · the switch: one journal write
+    journal.phase = "switching";
+    journal.expect = expect;
+    journal.allowMissing = c.analysis.missing.slice(0, 2000);
+    journal.backupCreatedAt = c.analysis.createdAt;
+    writeJSON(RESTORE_JOURNAL, journal);
+    restoreCrashPoint("before-switch");
+    await switchJournal(restored);
+    switched = true;
+    restoreCrashPoint("after-switch");
+    if (!(await store.stored())) throw new Error("not-stored");
+    // 5 · read back what was written and compare
+    const written = JSON.parse((await metaStore.read()) || "null");
+    if (!written) throw new Error("read-back");
+    const diff = RS.sameJournal(RS.summarize(written), expect);
+    if (diff.length) throw new Error("verify-" + diff[0]);
+    if ((await media.missing(needed)).length) throw new Error("media-missing-after");
+    // 6 · done
+    writeJSON(RESTORE_LAST, { at: new Date().toISOString(), snapshotKey, backupCreatedAt: c.analysis.createdAt, preMissing: preMissing.slice(0, 500), summary: { days: expect.days, pages: expect.pages, media: needed.length } });
+    writeJSON(RESTORE_JOURNAL, null);
+    await pruneBeforeRestore();
+    leaveEditorAfterSwap();
     await media.hydrate(state());
     render();
+    logEvent("restore_done", { count: c.analysis.media.length, size: reused, pages: expect.pages });
+    const dialog = $("#choose-dialog");
+    dialog.innerHTML = `<div class="choose-sheet restore-sheet" data-restore-done="1"><div class="choose-grabber" aria-hidden="true"></div><h2>${t("rs.doneTitle")}</h2><p>${t("rs.doneBody", { days: expect.days, pages: expect.pages, media: needed.length })}</p><p class="rs-safe">${t("rs.doneUndo", { days: RS.UNDO_DAYS })}</p><button class="primary full-width" data-action="choose-close">${t("rs.ok")}</button></div>`;
+    if (!dialog.open) dialog.showModal();
     toast(t("settings.restoreDone"));
-  } catch {
-    toast(t("settings.restoreFailed"));
+  } catch (error) {
+    if (error?.testCrash) return; // a simulated closed app: nothing is cleaned up
+    if (switched && beforeRaw) {
+      try {
+        await switchJournal(JSON.parse(beforeRaw));
+        await store.stored();
+      } catch {}
+    }
+    addRestoreOrphans(journal.written);
+    writeJSON(RESTORE_JOURNAL, null);
+    logEvent("restore_failed", { stage: journal.phase, err: errName(error) });
+    if (switched) {
+      leaveEditorAfterSwap();
+      render();
+    }
+    showRestoreProblem("failed");
   } finally {
     busyMedia = false;
-    event.target.value = "";
   }
-});
+}
+// At start: a restore that was cut short (the app closed during it).
+async function recoverInterruptedRestore() {
+  const j = readJSON(RESTORE_JOURNAL);
+  if (!j || !metaStore) return;
+  let outcome = "kept"; // the journal is the one from before the restore
+  try {
+    const beforeRaw = j.snapshotKey ? await metaStore.read(j.snapshotKey) : null;
+    const nowRaw = JSON.stringify(state());
+    if (j.phase === "switching" && j.expect && beforeRaw && beforeRaw !== nowRaw && !RS.sameJournal(RS.summarize(state()), j.expect).length) {
+      // The new journal was written: check it the way a finished restore is checked.
+      const allowed = new Set(j.allowMissing || []);
+      const needed = [...mediaReferences(state())].filter((x) => !allowed.has(x));
+      if ((await media.missing(needed)).length) {
+        await switchJournal(normalizeState(JSON.parse(beforeRaw)));
+        await store.stored();
+        outcome = "rolled-back";
+      } else {
+        outcome = "finished";
+        writeJSON(RESTORE_LAST, { at: j.startedAt, snapshotKey: j.snapshotKey, backupCreatedAt: j.backupCreatedAt || "", recovered: true });
+      }
+    }
+  } catch {
+    outcome = "kept";
+  }
+  if (outcome !== "finished") addRestoreOrphans(j.written || []);
+  writeJSON(RESTORE_JOURNAL, null);
+  logEvent("restore_recovered", { stage: outcome });
+  toast(t(outcome === "finished" ? "rs.recoveredDone" : "rs.recoveredNotDone"));
+  if (outcome === "rolled-back") {
+    await media.hydrate(state()).catch(() => {});
+    render();
+  }
+}
+async function undoRestore() {
+  const last = readJSON(RESTORE_LAST);
+  if (!RS.undoDaysLeft(last) || !metaStore) return;
+  if (!(await askConfirm(t("rs.undoConfirm"), { ok: t("rs.undoOk") }))) return;
+  if (busyMedia) return showRestoreProblem("busy");
+  busyMedia = true;
+  let beforeRaw = null;
+  let switched = false;
+  try {
+    if (!(await settleBeforeRestore())) return showRestoreProblem("unsaved");
+    const raw = await metaStore.read(last.snapshotKey);
+    if (!raw) throw new Error("snapshot-gone");
+    const target = normalizeState(validateStateSnapshot(JSON.parse(raw)));
+    // Every photo, video and sound the earlier journal used must still be here.
+    const was = new Set(last.preMissing || []);
+    const absent = (await media.missing([...mediaReferences(target)])).filter((x) => !was.has(x));
+    if (absent.length) throw new Error("media-gone");
+    beforeRaw = JSON.stringify(state());
+    await metaStore.putVerified(RS.BEFORE_RESTORE_PREFIX + new Date().toISOString(), beforeRaw);
+    await switchJournal(target);
+    switched = true;
+    if (!(await store.stored())) throw new Error("not-stored");
+    const written = JSON.parse((await metaStore.read()) || "null");
+    if (!written || RS.sameJournal(RS.summarize(written), RS.summarize(target)).length) throw new Error("verify");
+    writeJSON(RESTORE_LAST, null);
+    await pruneBeforeRestore();
+    leaveEditorAfterSwap();
+    await media.hydrate(state());
+    render();
+    logEvent("restore_undone", {});
+    toast(t("rs.undone"));
+  } catch (error) {
+    if (switched && beforeRaw) {
+      try {
+        await switchJournal(JSON.parse(beforeRaw));
+        await store.stored();
+      } catch {}
+    }
+    logEvent("restore_undo_failed", { err: errName(error) });
+    if (switched) {
+      leaveEditorAfterSwap();
+      render();
+    }
+    showRestoreProblem(error?.message === "media-gone" ? "undo-media" : "undo-failed");
+  } finally {
+    busyMedia = false;
+  }
+}
+// Daily journal snapshots (S1-1): a copy of the journal's words and pages —
+// no photo, video or sound files — once a day when it changed; 3 days,
+// 60 MB, 14 days (RS.planSnapshots). Never presented as a backup.
+async function dailySnapshot() {
+  if (!metaStore || !(state().entries || []).some((e) => e && e.isDemo !== true)) return;
+  const today = dateKey();
+  const key = RS.SNAPSHOT_PREFIX + today;
+  try {
+    const keys = (await metaStore.keys(RS.SNAPSHOT_PREFIX)).sort();
+    if (!keys.includes(key)) {
+      const raw = JSON.stringify(state());
+      const latest = keys.at(-1);
+      const latestRaw = latest ? await metaStore.read(latest) : null;
+      if (latestRaw !== raw) await metaStore.putVerified(key, raw); // read back before anything old is removed
+    }
+    const list = [];
+    for (const k of await metaStore.keys(RS.SNAPSHOT_PREFIX)) list.push({ key: k, bytes: new Blob([(await metaStore.read(k)) || ""]).size });
+    for (const k of RS.planSnapshots(list, today)) await metaStore.remove(k);
+    localStorage.removeItem(SNAPSHOT_FAILED);
+  } catch (error) {
+    // Not enough room (or another failure): older snapshots stay, saving goes on.
+    writeJSON(SNAPSHOT_FAILED, { at: today, err: errName(error) });
+    logEvent("snapshot_failed", { err: errName(error) });
+  }
+}
+async function showSnapshotInfo() {
+  const box = document.querySelector("#rs-snap");
+  if (!box || !metaStore) return;
+  try {
+    const keys = (await metaStore.keys(RS.SNAPSHOT_PREFIX)).sort();
+    const latest = keys.at(-1)?.slice(RS.SNAPSHOT_PREFIX.length);
+    const failed = readJSON(SNAPSHOT_FAILED);
+    box.textContent = (keys.length ? t("rs.snapInfo", { count: keys.length, date: latest }) : t("rs.snapNone")) + " " + t("rs.snapNotBackup") + (failed ? " " + t("rs.snapFailed") : "");
+  } catch {
+    box.textContent = t("rs.snapUnknown");
+  }
+}
 function applyShellLanguage() {
   $("#navigation").setAttribute("aria-label", t("nav.label"));
   // 2026-11-14: Chinese name 开铺手帐, English name Capiday.
@@ -11870,6 +12218,13 @@ async function v3Action(target) {
     }
     return true;
   }
+  if (name === "restore-continue") return confirmAndRestore();
+  if (name === "restore-cancel") {
+    restoreCandidate = null;
+    $("#choose-dialog").close();
+    return;
+  }
+  if (name === "restore-undo") return undoRestore();
   if (name === "restore-backup") {
     $("#backup-input").click();
     return true;
@@ -12939,7 +13294,7 @@ async function start() {
   tellShellLock();
   // V7.5: the journal itself lives in IndexedDB (room for years of pages);
   // LocalStorage keeps a mirror while it fits.
-  const meta = new MetaStore();
+  const meta = (metaStore = new MetaStore());
   let durableRaw = null,
     durableError = false;
   try {
@@ -13016,6 +13371,9 @@ async function start() {
   });
   render();
   if (warning) toast(warning);
+  // S1-1: a restore cut short last time is settled first; then today's snapshot.
+  await recoverInterruptedRestore().catch(() => {});
+  if (!volatile) dailySnapshot().then(pruneBeforeRestore).catch(() => {});
   maybeStartOnboarding();
   // The iPhone app: refresh the reminders, and hear about a tapped one.
   syncReminder();
@@ -13029,7 +13387,7 @@ async function start() {
 function showJournalRescue(decision, meta) {
   const reason = decision.reason;
   const app = $("#app");
-  logEvent("journal-blocked", { reason });
+  logEvent("journal_blocked", { reason });
   return new Promise((resolve) => {
     const draw = (note = "") => {
       app.innerHTML = `<section class="error-panel rescue-panel" role="alert" data-rescue="${esc(reason)}">
@@ -13077,7 +13435,8 @@ function showJournalRescue(decision, meta) {
         // when that worked does the app go on with the earlier copy.
         const damaged = decision.copies.find((copy) => copy.source === "local")?.text;
         try {
-          await meta.write(JSON.stringify({ keptAt: new Date().toISOString(), reason, text: damaged }), RESCUE_KEY);
+          // A direct write read back (S1-1): write() coalesces whatever its key.
+          await meta.putVerified(RESCUE_KEY, JSON.stringify({ keptAt: new Date().toISOString(), reason, text: damaged }));
         } catch {
           draw(t("rescue.keepFailed"));
           return;
