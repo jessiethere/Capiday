@@ -135,6 +135,37 @@ final class LittleDaysHaptics: NSObject, WKScriptMessageHandler {
     }
 }
 
+/// V10.69 · Where the keyboard really starts. iOS draws its own bar above the
+/// keyboard (⌃ ⌄ ✓); the page's visual viewport did not count all of it, so
+/// the text bar (Aa 样式 · B I U S · 完成) sat under that bar. The keyboard
+/// frame iOS reports includes it: the page gets how much of the web view the
+/// keyboard covers, in points (= CSS px), and 0 when it goes away.
+@MainActor
+final class LittleDaysKeyboard: NSObject {
+    weak var webView: WKWebView?
+
+    func start(_ webView: WKWebView) {
+        self.webView = webView
+        let center = NotificationCenter.default
+        center.addObserver(self, selector: #selector(changed(_:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
+        center.addObserver(self, selector: #selector(hidden(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+
+    @objc private func changed(_ note: Notification) {
+        guard let webView, let window = webView.window,
+              let end = (note.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue else { return }
+        let frame = webView.convert(end, from: window.screen.coordinateSpace)
+        let covered = max(0, webView.bounds.maxY - frame.minY)
+        send(frame.minY >= webView.bounds.maxY || frame.height < 1 ? 0 : covered)
+    }
+
+    @objc private func hidden(_ note: Notification) { send(0) }
+
+    private func send(_ covered: CGFloat) {
+        webView?.evaluateJavaScript("window.capidayKeyboard && window.capidayKeyboard(\(Int(covered.rounded())))", completionHandler: nil)
+    }
+}
+
 struct LittleDaysWebView: UIViewRepresentable {
     func makeCoordinator() -> LittleDaysWebCoordinator { LittleDaysWebCoordinator() }
 
@@ -168,6 +199,7 @@ struct LittleDaysWebView: UIViewRepresentable {
         let webView = WKWebView(frame: .zero, configuration: configuration)
         lockBridge.webView = webView
         LittleDaysReminders.shared.webView = webView
+        context.coordinator.keyboard.start(webView)
         webView.uiDelegate = context.coordinator
         webView.navigationDelegate = context.coordinator
         webView.isOpaque = false
@@ -193,6 +225,8 @@ struct LittleDaysWebView: UIViewRepresentable {
 @MainActor
 final class LittleDaysWebCoordinator: NSObject, WKUIDelegate, WKNavigationDelegate, WKDownloadDelegate, UIDocumentPickerDelegate {
     private var downloads: [ObjectIdentifier: URL] = [:]
+    // V10.69 · tells the page where the keyboard (with iOS's own bar) starts.
+    let keyboard = LittleDaysKeyboard()
     // V10.67 · A backup being saved with the system "Save to Files" panel.
     private var pendingBackup: (source: URL, size: Int, webView: WKWebView)?
 

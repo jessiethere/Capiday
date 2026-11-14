@@ -434,7 +434,13 @@ final class DrawUITests: XCTestCase {
         tap("addText", wait: 1.5)
         let s2 = state()
         let before = s2["textTops"] as? String ?? ""
-        print("LDTEXT added editing=\(s2["editing"] ?? "-") tops=\(before)")
+        print("LDTEXT added editing=\(s2["editing"] ?? "-") tops=\(before) typeBar=\(s2["typeBar"] ?? "-") kb=\(s2["kbVar"] ?? "-") vv=\(s2["vv"] ?? "-")")
+        // The text bar must be above iOS's own bar over the keyboard (⌃ ⌄ ✓).
+        let accessory = app.toolbars.firstMatch
+        if accessory.exists, let bar = s2["typeBar"] as? [Double], bar.count == 4 {
+            let web = app.webViews.firstMatch.frame
+            print("LDTEXT accessoryTop=\(accessory.frame.minY) typeBarBottom=\(web.minY + bar[1] + bar[3])")
+        }
         log("t3-added")
         guard let box = waitFor("editText", 5) else { XCTFail("new box is not being typed in"); return }
         point(box, 0.5, 0.5).press(forDuration: 0.05, thenDragTo: point(box, 0.5, 0.5).withOffset(CGVector(dx: 0, dy: -140)))

@@ -13943,13 +13943,22 @@ function setAudioSkin(skin) {
 // visualViewport where the browser reports it; otherwise the upper half).
 const TYPING_FIELD = 'textarea, input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="file"]):not([type="date"]):not([type="time"]), [contenteditable="plaintext-only"], [contenteditable="true"]';
 let typingTimer;
+// V10.69 · In the iPhone app the shell also says how much of the screen the
+// keyboard covers, iOS's own ⌃ ⌄ ✓ bar included (LittleDaysKeyboard). The
+// visual viewport left part of that bar out, so the text bar sat under it.
+let nativeKeyboard = 0;
+window.capidayKeyboard = (px) => {
+  nativeKeyboard = Math.max(0, Math.min(window.innerHeight * 0.8, Number(px) || 0));
+  updateVisibleArea();
+  if (nativeKeyboard) keepFieldInView();
+};
 function updateVisibleArea() {
   const vv = window.visualViewport;
   const root = document.documentElement;
   if (!vv) return;
-  const keyboard = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+  const keyboard = keyboardHeight();
   root.style.setProperty("--vv-top", `${Math.round(vv.offsetTop)}px`);
-  if (keyboard > 80) root.style.setProperty("--vv-h", `${Math.round(vv.height)}px`);
+  if (keyboard > 80) root.style.setProperty("--vv-h", `${Math.round(window.innerHeight - keyboard - vv.offsetTop)}px`);
   else root.style.removeProperty("--vv-h");
   // How much of the bottom the keyboard covers (a bottom sheet lifts by this much).
   if (keyboard > 80) root.style.setProperty("--kb", `${Math.round(keyboard)}px`);
@@ -13973,7 +13982,11 @@ function keepFieldInView() {
 // V10.68 · How much of the screen bottom the keyboard covers (0 when down).
 function keyboardHeight() {
   const vv = window.visualViewport;
-  return vv ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop) : 0;
+  const measured = vv ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop) : 0;
+  // The shell's number only while the page itself also sees a keyboard (or a
+  // field is focused), so a late "hidden" can never leave a gap behind.
+  const native = nativeKeyboard && document.activeElement?.matches?.(TYPING_FIELD) ? nativeKeyboard : 0;
+  return Math.max(measured, native);
 }
 // V10.68 · A field in a page or a dialog: the line being typed goes to the
 // upper part of what is still visible (scrollIntoView "center" centred it in
