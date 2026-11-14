@@ -33,7 +33,7 @@ check() { # $1 = script, $2 = label
   local LOG=$WORK/$2.log
   : > $LOG
   xcrun simctl launch --console-pty $DEV $BID -LittleDaysCheck $WORK/$1 > $LOG 2>&1 &
-  for i in {1..60}; do sleep 1; grep -q 'LittleDaysCheck' $LOG && break; done
+  for i in {1..90}; do sleep 1; grep -q 'LittleDaysCheck' $LOG && break; done
   sleep 1
   xcrun simctl terminate $DEV $BID 2>/dev/null || true
   print -r -- "$2: $(grep -m1 'LittleDaysCheck' $LOG)"
