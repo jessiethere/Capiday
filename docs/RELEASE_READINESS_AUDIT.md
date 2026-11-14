@@ -231,6 +231,18 @@
   - WebView 用 `.ignoresSafeArea()` 铺满全屏，安全区交给 CSS 处理；
   - **Swift 不响应尺寸变化**（`updateUIView` 是空的）。【代码】`project.pbxproj:161-229`；`LittleDaysWebShellView.swift:17-18, 175-187`
 
+### I1-b. Apple 官方指南（2026-11-14 查阅）
+
+来源：Apple Developer Tech Talk「Prepare your app for iPhone Duo」（developer.apple.com/videos/play/tech-talks/111461/）。要点：
+- 用 iOS 27.1 SDK 构建的 App（我们用 Xcode 27.2）在外屏上会**延伸到屏幕边缘**，位置在状态栏和摄像头旁边；标准的导航栏和工具栏按钮会改为垂直排列在状态栏下方。我们的 WKWebView 用 `.ignoresSafeArea()` 铺满，所以避让完全靠 CSS 的安全区。和我们的截图（齿轮被遮住）一致。
+- **安全区经常不对称**：要分别处理每一边，不能假设相对的两边相等。
+- **内屏不遵守 App 声明的支持方向**：我们的「只支持竖屏」在内屏上不能保证。布局要按尺寸（宽度）判断，不能按方向判断。
+- 外屏的方向行为和普通 iPhone 一样；内屏的 size class 是横竖都 regular。
+- 即使设置了 `UIRequiresFullScreen`，展开和折叠时 App **仍然会改变尺寸**；内屏还有分屏（Split View）。
+- 不要用 `UIScreen.main`，从窗口场景取屏幕（我们的外壳没有用到 `UIScreen`，符合要求）。
+- 测试方法：Xcode 27.1 起的 **Device Hub** 里可以对 iPhone Duo 模拟器做打开、合上、旋转、折叠；分屏要把 App 拖到左右两侧分别检查。这些操作只在图形界面里，命令行 `simctl` 没有对应的命令（这次已经确认：`simctl io` 只能对两块屏幕分别截图）。
+- 讲座**没有提到 WKWebView 或网页内容**的专门指南。所以我们按照「网页用 `viewport-fit=cover` 加 `env(safe-area-inset-*)` 四边」的 WebKit 通用做法，并以模拟器实测为准。
+
 ### I2. 兼容性评估
 
 | 区域 | 外屏（466 pt） | 内屏（669 pt） | 折叠和展开的切换 |
@@ -245,7 +257,7 @@
 
 ### I3. 适配方案（响应式，不复制页面代码）
 
-1. **安全区（P0）**：在 `.phone`、`.home-top`、`.bottom-nav` 和弹窗上加入 `env(safe-area-inset-left / right)`；页面顶部的操作按钮避开传感器区域。
+1. **安全区（P0）**：在 `.phone`、`.home-top`、`.bottom-nav`、Studio 顶栏和工具栏、弹窗上分别加入 `env(safe-area-inset-left)` 和 `env(safe-area-inset-right)`，**四边各自处理，不假设对称**；页面顶部的操作按钮避开传感器区域；在内屏横向和分屏时都按宽度布局（不依赖竖屏锁定）。
 2. **尺寸变化（P0）**：
    - 加一个统一的 `onViewportChange`（`ResizeObserver(#app-scroll)`，加上 `visualViewport` 的 resize，去抖 100 ms），重新计算 `--studio-h` 和 `--strip-h`；
    - 关闭进行中的拖动和捏合；
