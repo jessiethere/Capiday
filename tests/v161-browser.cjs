@@ -415,18 +415,22 @@ function failingPuts() {
     assert.match(info, /不含照片、视频和声音文件，不能代替完整备份/);
     passed.push(`daily snapshot of today written and read back; retention keeps ${kept.length} (3 days, none older than 14) ; Settings says「${info.trim()}」`);
 
-    await page.evaluate(() => localStorage.setItem("test.idb.fail", "little-days.v1.snap.*"));
-    await kvPut("little-days.v1.snap." + today, "{}"); // make today's differ… then remove it so a new one is due
-    await page.evaluate(() => new Promise((res) => { const q = indexedDB.open("little-days-meta"); q.onsuccess = () => { const tx = q.result.transaction("kv", "readwrite"); tx.objectStore("kv").delete(Object.keys({}).length ? "" : "little-days.v1.snap." + new Date().toISOString().slice(0, 0)); tx.oncomplete = () => { res(); q.result.close(); }; }; }));
+    // Remove today's snapshot (so one is due at the next start), THEN make snapshot writes fail.
     await idb((k) => new Promise((res) => { const q = indexedDB.open("little-days-meta"); q.onsuccess = () => { const tx = q.result.transaction("kv", "readwrite"); tx.objectStore("kv").delete(k); tx.oncomplete = () => { res(); q.result.close(); }; }; }), "little-days.v1.snap." + today);
+    const olderRaw = await Promise.all([shift(2), shift(1)].map((d) => kvGet("little-days.v1.snap." + d)));
+    await page.evaluate(() => localStorage.setItem("test.idb.fail", "little-days.v1.snap.*"));
     await page.reload();
     await page.waitForSelector(".hero");
     await page.waitForFunction(() => localStorage.getItem("little-days.snapshot-failed"), null, { timeout: 8000 });
     assert.equal((await lastEvent("snapshot_failed"))?.err !== undefined, true);
-    assert.equal((await kvKeys("little-days.v1.snap.")).length, 2, "older snapshots stay");
+    assert.deepEqual((await kvKeys("little-days.v1.snap.")).sort(), [shift(2), shift(1)].map((d) => "little-days.v1.snap." + d), "older snapshots stay");
+    assert.deepEqual(await Promise.all([shift(2), shift(1)].map((d) => kvGet("little-days.v1.snap." + d))), olderRaw, "…unchanged");
+    const savedBefore = await journalRaw();
     await SS.touchStore(page); // the journal itself still saves
-    await page.waitForTimeout(400);
-    assert.equal(JSON.parse(await journalRaw()).schemaVersion, 1);
+    await page.waitForTimeout(600);
+    const savedAfter = await journalRaw();
+    assert.notEqual(savedAfter, savedBefore, "a normal edit was written to the journal database while snapshots fail");
+    assert.equal(JSON.parse(savedAfter).schemaVersion, 1);
     await openSettings();
     await page.waitForFunction(() => /没能保存/.test(document.querySelector("#rs-snap")?.textContent || ""));
     await page.evaluate(() => localStorage.removeItem("test.idb.fail"));

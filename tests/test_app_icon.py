@@ -27,9 +27,12 @@ class AppIconTests(unittest.TestCase):
         project = (ROOT / 'Native/LittleDays.xcodeproj/project.pbxproj').read_text(encoding='utf-8')
         self.assertIn('path = Assets.xcassets;', project)
         self.assertIn('lastKnownFileType = folder.assetcatalog;', project)
-        self.assertIn('files = (A00000000000000000000016,)', project, 'the catalog is in the Resources build phase')
+        self.assertIn('A00000000000000000000016 /* Assets.xcassets in Resources */,', project, 'the catalog is in the Resources build phase')
         self.assertEqual(project.count('ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;'), 2, 'Debug and Release')
-        self.assertEqual(project.count('PRODUCT_BUNDLE_IDENTIFIER = com.jessiethere.littledays;'), 2, 'bundle id unchanged')
+        # 2026-11-14: the App Store Connect / TestFlight app is com.capiday.app (App ID 6834636756).
+        # Changing it would install a different app and leave existing journals behind.
+        self.assertEqual(project.count('PRODUCT_BUNDLE_IDENTIFIER = com.capiday.app;'), 2, 'bundle id = the TestFlight app')
+        self.assertEqual(project.count('INFOPLIST_KEY_CFBundleDisplayName = Capiday;'), 2, 'shown as Capiday')
         self.assertEqual(project.count('{'), project.count('}'))
         self.assertEqual(project.count('('), project.count(')'))
 

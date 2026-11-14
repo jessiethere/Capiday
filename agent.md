@@ -55,6 +55,7 @@
 - **决策**：媒体先写、手帐一次切换；切换前失败手帐不动，切换后失败换回快照；失败写入的媒体只记录在 `little-days.restore-orphans`，不删除。去重不看文件名。每日快照在启动时写（=当天编辑前的状态）。
 - **运行 / 测试（Linux 容器 + Chromium）**：Node 单元测试 307/307 通过（新增 8 项）。v161 浏览器套件在中间轮次已逐项通过：预览、取消、拒绝坏文件、快照写入失败停止、中途失败、完整恢复 + 日历、撤销、恢复两次不重复、撤销时缺文件被拒绝、四个中断点重启、切换后缺文件回滚；**草稿保存 / 阻止和每日快照两段尚未在一次完整运行中通过**（有一次运行挂起，已加逐项输出排查）。迁移后的旧恢复测试和全量回归**尚未运行**。Python：`test_app_icon` 1 项失败为既有问题（pbxproj 未改动，Resources 阶段多了 InfoPlist.strings），与本次无关。
 - **未完成**：完整跑通 v161 + 旧测试 + 全量回归；发布在线链接 V10.65；README/agent 最终结果；Mac 快进。Swift / Xcode / 模拟器 / 真机本轮未运行。
+- **TestFlight 准备（进行中）**：版本 0.1.0 → **0.2.0**，构建号 2 → **3**（Mac 上只有 0.1.0 (1) 的归档并已上传，构建 2 从未归档；用 3 避免任何冲突）；Bundle ID 保持 `com.capiday.app`；`tests/test_app_icon.py` 改为校验当前事实（Resources 阶段的写法、Bundle ID = TestFlight 的 `com.capiday.app`、显示名 Capiday），原断言还是旧的 `com.jessiethere.littledays`。新增 `tools/mac/upgrade-check/`（专用新模拟器：旧版写合成数据 → 覆盖安装新版 → 读回核对）。
 
 ### 2026-11-14 — Sprint 1 · S1-0 技术实验完成（Mac 恢复后补齐）
 
