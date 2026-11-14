@@ -101,6 +101,13 @@ sequenceDiagram
 3. 导出到 iCloud Drive 以后，能否通过 bookmark 读到 `ubiquitousItemIsUploaded`。
 4. 输出：在 agent.md 里记录结论，以及选定的通道。
 
+> **S1-0 结论（2026-11-14 完成）**
+> - 备份通道：4 MB ArrayBuffer 分块 PUT（约 725 MB/s，模拟器），先用 1 KB 探测，失败就降级到 base64 消息；**不用 Blob 请求体**（WebKit 不会把它交给 scheme handler）。
+> - 恢复通道：拉取式 GET。
+> - 端到端：JS 用 `crypto.subtle` 计算的 SHA 必须和原生计算的一致。
+> - Swift 读写：每个分块一个 `autoreleasepool`（不加时，4.3 GiB 的峰值是 1.13 GB；加了以后约 10 MB）。
+> - 详见 `spikes/s1-0/README.md`。
+
 ### S1-1 · 恢复安全和完整性保护（只改 JS，风险最低，先发布）
 
 | 改动 | 文件和位置 |
