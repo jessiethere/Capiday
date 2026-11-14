@@ -386,13 +386,27 @@ final class LittleDaysWebCoordinator: NSObject, WKUIDelegate, WKNavigationDelega
         defer { if scoped { saved.stopAccessingSecurityScopedResource() } }
         let values = try? saved.resourceValues(forKeys: [.fileSizeKey, .isUbiquitousItemKey])
         let size = values?.fileSize ?? -1
-        let folder = saved.deletingLastPathComponent().lastPathComponent
         let cloud = values?.isUbiquitousItem == true || saved.path.contains("/Mobile Documents/")
+        // Where it went, in words the page can say: iCloud Drive, this iPhone
+        // ("On My iPhone" is a folder iOS calls "File Provider Storage"), or
+        // another provider; plus the folder inside it ("" at the top level).
+        var folder = saved.deletingLastPathComponent().lastPathComponent
+        let place: String
+        if cloud {
+            place = "icloud"
+            if folder == "com~apple~CloudDocs" || folder == "Documents" { folder = "" }
+        } else if saved.path.contains("/File Provider Storage") {
+            place = "phone"
+            if folder == "File Provider Storage" { folder = "" }
+        } else {
+            place = "other"
+        }
         finishBackup([
             "status": "saved",
             "verified": size == pending.size && size > 0,
             "size": size,
             "expected": pending.size,
+            "place": place,
             "folder": folder,
             "cloud": cloud,
         ])

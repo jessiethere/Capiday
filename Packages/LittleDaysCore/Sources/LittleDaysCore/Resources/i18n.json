@@ -10382,5 +10382,21 @@
   "rs.err.space": {
     "zh": "这台设备的空间不够，照片和视频没能全部放回来，已经停下。你现在的手帐没有改动；清理一些空间后再试。",
     "en": "There isn't enough space on this device for the photos and videos, so the restore stopped. Your journal is unchanged — free up some space and try again."
+  },
+  "bk2.placeICloud": {
+    "zh": "iCloud 云盘",
+    "en": "iCloud Drive"
+  },
+  "bk2.placePhone": {
+    "zh": "我的 iPhone",
+    "en": "On My iPhone"
+  },
+  "bk2.placeChosen": {
+    "zh": "你选的位置",
+    "en": "the place you chose"
+  },
+  "bk2.phoneNote": {
+    "zh": "它在「我的 iPhone」里：删除开铺手帐不会删掉它，但换手机或手机丢失时它不会跟着走。建议再存一份到 iCloud 云盘或电脑。",
+    "en": "It is “On My iPhone”: deleting Capiday won't remove it, but it won't come with you to a new phone or survive a lost one. Keep another copy in iCloud Drive or on a computer."
   }
 }

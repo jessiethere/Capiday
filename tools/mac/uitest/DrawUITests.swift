@@ -375,6 +375,9 @@ final class DrawUITests: XCTestCase {
         let how = (state()["backupHow"] as? String) ?? ""
         print("LDSTEP how=\(how) text=\((state()["sheetText"] as? String) ?? "")")
         XCTAssertTrue(how.contains("\"verified\""), "recorded as system-verified (size checked)")
+        let shown = (state()["sheetText"] as? String) ?? ""
+        XCTAssertFalse(how.contains("File Provider Storage") || shown.contains("File Provider Storage"), "iOS's folder name is never shown")
+        XCTAssertTrue(how.contains("我的 iPhone"), "said as 我的 iPhone")
         named(["好"], swipes: 0)?.tap()
         Thread.sleep(forTimeInterval: 1)
         // 3 · 从备份恢复 → the Files picker → that file → the preview

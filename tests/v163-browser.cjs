@@ -139,13 +139,15 @@ async function seed(page) {
         assert.match(await page.locator("#choose-dialog").innerText(), /没有任何改动/);
         assert.deepEqual(await keys(), { at: null, how: null }, "no space → nothing recorded");
         await openSettings();
-        await answer({ status: "saved", verified: false, folder: "Downloads", cloud: false, size: -1 });
+        await answer({ status: "saved", verified: false, place: "phone", folder: "", cloud: false, size: -1 });
         await page.waitForSelector('#choose-dialog[open] [data-bk2="saved"]');
         assert.match(await page.locator("#choose-dialog").innerText(), /无法读回核对/);
+        assert.match(await page.locator("#choose-dialog").innerText(), /「我的 iPhone」/, "On My iPhone in words (not iOS's folder name)");
+        assert.match(await page.locator("#choose-dialog").innerText(), /换手机或手机丢失时它不会跟着走/);
         assert.equal((await keys()).how.how, "system");
         await openSettings();
         assert.match(await page.locator(".backup-when").innerText(), /未能核对/);
-        const dl = await answer({ status: "saved", verified: true, folder: "开铺手帐备份", cloud: true, size: 12345 });
+        const dl = await answer({ status: "saved", verified: true, place: "icloud", folder: "开铺手帐备份", cloud: true, size: 12345 });
         assert.ok(dl);
         await page.waitForSelector('#choose-dialog[open] [data-bk2="saved"]');
         const savedText = await page.locator("#choose-dialog").innerText();
@@ -153,7 +155,7 @@ async function seed(page) {
         assert.match(savedText, /上传到云端由 iCloud 完成/);
         assert.equal((await keys()).how.how, "verified");
         await openSettings();
-        assert.match(await page.locator(".backup-when").innerText(), /系统已确认存到「开铺手帐备份」/);
+        assert.match(await page.locator(".backup-when").innerText(), /系统已确认存到「iCloud 云盘 › 开铺手帐备份」/);
         passed.push("iPhone app C · cancelled → 「没有保存」, nothing recorded; no space → clear words, nothing recorded; saved but not checkable → 「未能核对」; saved + size checked → 「系统已确认」, and the iCloud upload is said to be iCloud's");
 
         // D · too much media for one backup

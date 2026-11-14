@@ -2540,6 +2540,12 @@ function recordBackup(backup, how) {
   writeKey(BACKUP_HOW_KEY, JSON.stringify({ ...how, date: dateKey() }));
   logEvent("backup_kept", { complete: backup.complete, way: how.how });
 }
+// "iCloud 云盘 › 手帐备份", "我的 iPhone", or the other provider's folder.
+function backupPlaceName(r) {
+  const top = r.place === "icloud" ? t("bk2.placeICloud") : r.place === "phone" ? t("bk2.placePhone") : "";
+  const sub = String(r.folder || "");
+  return top ? (sub ? `${top} › ${sub}` : top) : sub || t("bk2.placeChosen");
+}
 let backupWaiter = null;
 window.capidayBackupSaved = (result) => {
   const done = backupWaiter;
@@ -2588,9 +2594,9 @@ async function runBackup() {
     const r = await answer;
     logEvent("backup_saved", { stage: r.status, err: r.err || "", way: r.verified ? "verified" : "" });
     if (r.status === "saved") {
-      const folder = r.folder || "";
+      const folder = backupPlaceName(r);
       recordBackup(backup, { how: r.verified ? "verified" : "system", folder, cloud: Boolean(r.cloud), size: r.size });
-      backupStep(`<h2>${t("bk2.savedTitle")}</h2><p class="save-help">${t(r.verified ? "bk2.savedVerified" : "bk2.savedUnchecked", { folder: esc(folder), size })}</p>${r.cloud ? `<p class="rs-safe">${t("bk2.cloudNote")}</p>` : ""}${backup.complete ? "" : `<p class="rs-note">${t("backup.partialKept", { count: backup.missing.length })}</p>`}<button class="primary full-width" data-action="choose-close">${t("rs.ok")}</button>`, "saved");
+      backupStep(`<h2>${t("bk2.savedTitle")}</h2><p class="save-help">${t(r.verified ? "bk2.savedVerified" : "bk2.savedUnchecked", { folder: esc(folder), size })}</p>${r.cloud ? `<p class="rs-safe">${t("bk2.cloudNote")}</p>` : ""}${r.place === "phone" ? `<p class="rs-note">${t("bk2.phoneNote")}</p>` : ""}${backup.complete ? "" : `<p class="rs-note">${t("backup.partialKept", { count: backup.missing.length })}</p>`}<button class="primary full-width" data-action="choose-close">${t("rs.ok")}</button>`, "saved");
     } else if (r.status === "cancelled") {
       $("#choose-dialog").close();
       toast(t("bk2.cancelled"));

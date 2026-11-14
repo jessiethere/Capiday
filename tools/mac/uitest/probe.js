@@ -38,7 +38,7 @@ const tick = () => {
     gear: r(".settings-gear"), backupBtn: r('[data-action="backup"]'), backupGo: r('#choose-dialog[open] [data-action="backup-go"]'), sheetOk: r('#choose-dialog[open] [data-action="choose-close"]'),
     restoreBtn: r('[data-action="restore-backup"]'), restorePick: r('#choose-dialog[open] [data-action="restore-pick"]'), restoreContinue: r('#choose-dialog[open] [data-action="restore-continue"]'),
     bk2: document.querySelector("#choose-dialog[open] [data-bk2]")?.dataset.bk2 || (document.querySelector("#choose-dialog[open] .restore-preview") ? "preview" : ""),
-    sheetText: (document.querySelector("#choose-dialog[open]")?.innerText || "").slice(0, 160),
+    sheetText: (document.querySelector("#choose-dialog[open]")?.innerText || "").slice(0, 240),
     backupHow: localStorage.getItem("little-days.last-backup-how") || "", lastBackup: localStorage.getItem("little-days.last-backup") || "",
     toast: document.querySelector("#toast")?.textContent || "",
     dayInk: [...document.querySelectorAll(".chapter-canvas .drawing-layer img")].filter((i) => i.complete && i.naturalWidth > 0).length,
