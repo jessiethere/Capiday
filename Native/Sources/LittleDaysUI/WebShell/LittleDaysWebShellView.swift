@@ -135,11 +135,12 @@ final class LittleDaysHaptics: NSObject, WKScriptMessageHandler {
     }
 }
 
-/// V10.69 · Where the keyboard really starts. iOS draws its own bar above the
-/// keyboard (⌃ ⌄ ✓); the page's visual viewport did not count all of it, so
-/// the text bar (Aa 样式 · B I U S · 完成) sat under that bar. The keyboard
-/// frame iOS reports includes it: the page gets how much of the web view the
-/// keyboard covers, in points (= CSS px), and 0 when it goes away.
+/// V10.69 · Where the keyboard really starts. On iOS 27 the page scrolls
+/// itself when the keyboard opens and could no longer tell the keyboard was
+/// up, so the text bar (Aa 样式 · B I U S · 完成) stayed under iOS's own bar
+/// above the keyboard (⌃ ⌄ ✓). The keyboard frame iOS reports includes that
+/// bar: the page gets the keyboard's top in the web view, in points (= CSS
+/// px), and 0 when it goes away.
 @MainActor
 final class LittleDaysKeyboard: NSObject {
     weak var webView: WKWebView?
@@ -155,14 +156,13 @@ final class LittleDaysKeyboard: NSObject {
         guard let webView, let window = webView.window,
               let end = (note.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue else { return }
         let frame = webView.convert(end, from: window.screen.coordinateSpace)
-        let covered = max(0, webView.bounds.maxY - frame.minY)
-        send(frame.minY >= webView.bounds.maxY || frame.height < 1 ? 0 : covered)
+        send(frame.minY >= webView.bounds.maxY || frame.height < 1 ? 0 : max(1, frame.minY - webView.bounds.minY))
     }
 
     @objc private func hidden(_ note: Notification) { send(0) }
 
-    private func send(_ covered: CGFloat) {
-        webView?.evaluateJavaScript("window.capidayKeyboard && window.capidayKeyboard(\(Int(covered.rounded())))", completionHandler: nil)
+    private func send(_ top: CGFloat) {
+        webView?.evaluateJavaScript("window.capidayKeyboard && window.capidayKeyboard(\(Int(top.rounded())))", completionHandler: nil)
     }
 }
 

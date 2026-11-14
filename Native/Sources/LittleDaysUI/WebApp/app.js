@@ -13943,23 +13943,31 @@ function setAudioSkin(skin) {
 // visualViewport where the browser reports it; otherwise the upper half).
 const TYPING_FIELD = 'textarea, input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="file"]):not([type="date"]):not([type="time"]), [contenteditable="plaintext-only"], [contenteditable="true"]';
 let typingTimer;
-// V10.69 · In the iPhone app the shell also says how much of the screen the
-// keyboard covers, iOS's own ⌃ ⌄ ✓ bar included (LittleDaysKeyboard). The
-// visual viewport left part of that bar out, so the text bar sat under it.
-let nativeKeyboard = 0;
-window.capidayKeyboard = (px) => {
-  nativeKeyboard = Math.max(0, Math.min(window.innerHeight * 0.8, Number(px) || 0));
-  document.documentElement.dataset.kbNative = String(Math.round(nativeKeyboard));
+// V10.69 · In the iPhone app the shell also says where the keyboard starts
+// (LittleDaysKeyboard: px from the web view's top, iOS's own ⌃ ⌄ ✓ bar
+// included; 0 when it is down). On iOS 27 the page scrolls itself when the
+// keyboard opens (innerHeight 613, visual viewport 477 high at 261 on an
+// 874-pt screen), so "innerHeight − visual height − top" stayed under 80 and
+// the app thought the keyboard was down: the text bar stayed under the paper,
+// behind iOS's bar.
+let nativeKeyboardTop = 0;
+window.capidayKeyboard = (top) => {
+  nativeKeyboardTop = Math.max(0, Number(top) || 0);
+  document.documentElement.dataset.kbNative = String(Math.round(nativeKeyboardTop));
   updateVisibleArea();
-  if (nativeKeyboard) keepFieldInView();
+  if (nativeKeyboardTop) keepFieldInView();
 };
+// Counts only while a field is focused, so a late "hidden" can never leave a gap.
+function nativeTop() {
+  return nativeKeyboardTop && document.activeElement?.matches?.(TYPING_FIELD) ? nativeKeyboardTop : 0;
+}
 function updateVisibleArea() {
   const vv = window.visualViewport;
   const root = document.documentElement;
   if (!vv) return;
   const keyboard = keyboardHeight();
   root.style.setProperty("--vv-top", `${Math.round(vv.offsetTop)}px`);
-  if (keyboard > 80) root.style.setProperty("--vv-h", `${Math.round(visibleHeight())}px`);
+  if (keyboard > 80 || nativeTop()) root.style.setProperty("--vv-h", `${Math.round(visibleHeight())}px`);
   else root.style.removeProperty("--vv-h");
   // How much of the bottom the keyboard covers (a bottom sheet lifts by this much).
   if (keyboard > 80) root.style.setProperty("--kb", `${Math.round(keyboard)}px`);
@@ -13981,16 +13989,14 @@ function keepFieldInView() {
   });
 }
 // V10.68 · How much of the screen bottom the keyboard covers (0 when down).
-// The height of what can be seen: the visual viewport, made shorter by the
-// shell's keyboard line when that is higher (the shell's number is on screen;
-// the view may be scrolled by iOS, which the visual viewport's top carries).
-// The shell's number counts only while a field is focused, so a late
-// "hidden" can never leave a gap behind.
+// The height of what can be seen: the visual viewport, cut at the shell's
+// keyboard line when that is higher (both measured from the top of the screen
+// area the page is drawn in).
 function visibleHeight() {
   const vv = window.visualViewport;
   if (!vv) return window.innerHeight;
-  const native = nativeKeyboard && document.activeElement?.matches?.(TYPING_FIELD) ? nativeKeyboard : 0;
-  return native ? Math.min(vv.height, window.innerHeight - native) : vv.height;
+  const native = nativeTop();
+  return native ? Math.min(vv.height, native) : vv.height;
 }
 function keyboardHeight() {
   const vv = window.visualViewport;
@@ -14000,14 +14006,23 @@ function keyboardHeight() {
 // upper part of what is still visible (scrollIntoView "center" centred it in
 // the whole screen, so with the keyboard up a low field stayed under it —
 // e.g. 今天的计划 on a 375 × 667 phone).
+// V10.69 · The part of the screen above the keyboard, in the coordinates
+// getBoundingClientRect uses. In the iPhone app (the shell gives the
+// keyboard's top) those are measured from the top of what is seen, which
+// iOS may have scrolled; elsewhere from the layout viewport as before.
+function visibleBand() {
+  if (nativeTop()) return { up: true, top: 0, bottom: visibleHeight() };
+  const keyboard = keyboardHeight();
+  return { up: keyboard >= 80, top: window.visualViewport?.offsetTop || 0, bottom: window.innerHeight - keyboard };
+}
 function revealField(field) {
   // A bottom sheet rises above the keyboard by itself (CSS, V10.66); inside
   // it the field only needs to be in view once it has slid up.
   if (field.closest(".choose-dialog")) return setTimeout(() => field.scrollIntoView({ block: "nearest" }), 260);
-  const keyboard = keyboardHeight();
-  if (keyboard < 80) return field.scrollIntoView({ block: "nearest" });
-  const visibleTop = window.visualViewport?.offsetTop || 0;
-  const visibleBottom = window.innerHeight - keyboard;
+  const band = visibleBand();
+  if (!band.up) return field.scrollIntoView({ block: "nearest" });
+  const visibleTop = band.top;
+  const visibleBottom = band.bottom;
   const r = field.getBoundingClientRect();
   const line = Math.min(r.bottom, r.top + 48);
   if (r.top >= visibleTop + 56 && line <= visibleBottom - 12) return;
@@ -14028,10 +14043,10 @@ function revealField(field) {
 function liftPaper(field) {
   const wrap = field.closest(".canvas-wrap");
   if (!wrap) return;
-  const keyboard = keyboardHeight();
-  if (keyboard < 80) return dropPaper();
+  const band = visibleBand();
+  if (!band.up) return dropPaper();
   const current = Number(wrap.dataset.lift || 0);
-  let limit = window.innerHeight - keyboard - 8;
+  let limit = band.bottom - 8;
   const barTop = document.querySelector("#type-bar:not([hidden])")?.getBoundingClientRect().top;
   if (barTop > 0 && barTop < limit + 8) limit = barTop - 8;
   const r = field.getBoundingClientRect();
