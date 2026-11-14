@@ -4,6 +4,30 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.69",
+    date: "2026-11-14",
+    zh: {
+      title: "文字框随手拖、默认黑体",
+      items: [
+        "新加的文字框不用先打字，按住拖就能移动；拖完可以直接接着打字。轻点仍然是放光标。",
+        "「只写几句话」页上的标题和正文也能拖了：一拖就变成可以自由摆放的文字框，字都在；撤销可以回到原来的样子。",
+        "新文字框默认用黑体，并且加粗一档。",
+        "给 Captain 起名字等单行输入框，按键盘上的「完成」就会收起键盘。",
+        "在固定链接里打字时，字体工具条停在键盘上方，不再被键盘挡住。",
+      ],
+    },
+    en: {
+      title: "Drag text boxes right away; Sans by default",
+      items: [
+        "A new text box moves as soon as you drag it, before typing anything, and you can keep typing after the drag. A tap still places the caret.",
+        "On a Just write page the title and words can be dragged too: they become free text boxes with all their words; Undo brings the page back.",
+        "New text boxes start in Sans, one step bolder.",
+        "One-line fields such as Captain's name close the keyboard on Done.",
+        "In the pinned link the type bar stays above the keyboard while you type.",
+      ],
+    },
+  },
+  {
     version: "10.68",
     date: "2026-11-14",
     zh: {

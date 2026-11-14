@@ -25059,3 +25059,28 @@ body:has(#choose-dialog[open] .choose-sheet.sw) #app-scroll {
 @media (prefers-reduced-motion: reduce) {
   .studio-stage .canvas-wrap { transition: none; }
 }
+
+/* V10.69 · A note's title and words, and a text box being typed in, can be
+   dragged: a pan on them is ours (a tap still places the caret). */
+.journal-canvas.moment-canvas.text-only [data-inline] {
+  touch-action: none;
+}
+body.text-dragging,
+body.text-dragging * {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* V10.69 · The pinned link inside another page on iPhone: the keyboard
+   cannot be measured there, so the type bar sits above an estimated keyboard
+   line (app.js keyboardGuess). The iPhone app measures it (rule above). */
+@media (pointer: coarse) {
+  html.kb-guess:not([style*="--vv-h"]) body.typing #type-bar:not([hidden]) {
+    position: fixed;
+    left: 8px;
+    right: 8px;
+    top: calc(var(--kb-line, 52dvh) - 6px);
+    transform: translateY(-100%);
+    z-index: 41;
+  }
+}

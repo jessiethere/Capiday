@@ -3971,7 +3971,10 @@ function pageBarHTML() {
 }
 // A note page becomes a free layout: what was written on the paper stays on
 // it as text boxes (the title also stays the page's name in the contents).
-function noteToLayout(page) {
+// V10.69: { keep: "title" | "body" } makes that one a box even while it is
+// still empty (it is the one being dragged). Returns the new boxes' ids.
+function noteToLayout(page, { keep = "" } = {}) {
+  const made = {};
   const fromSmart = page.layoutTemplate === "smart";
   page.layoutTemplate = null;
   if (fromSmart) {
@@ -3996,10 +3999,19 @@ function noteToLayout(page) {
   };
   const box = (text, y, fontId, look, marks) => ({ id: id(), kind: "text", text: text.slice(0, 500), x: 50, y, w: 80, scale: 1, rotation: 0, fontId: fontId || "serif", ...look, weight: 400, spacing: 0, ...marks });
   // Where the note had them, so nothing jumps.
-  if (title) page.layers.push(box(title, 27, page.font, pick(page.textStyle, 24, "#2F2A26"), marksFor(page.title, title, page.titleMarks)));
-  if (words) page.layers.push(box(words, title ? 52 : 40, page.bodyFont || page.font, pick(page.bodyStyle, 15, "#5D554B"), marksFor(page.body, words, page.bodyMarks)));
+  if (title || keep === "title") {
+    const b = box(title, 27, page.font, pick(page.textStyle, 24, "#2F2A26"), marksFor(page.title, title, page.titleMarks));
+    page.layers.push(b);
+    made.title = b.id;
+  }
+  if (words || keep === "body") {
+    const b = box(words, title ? 52 : 40, page.bodyFont || page.font, pick(page.bodyStyle, 15, "#5D554B"), marksFor(page.body, words, page.bodyMarks));
+    page.layers.push(b);
+    made.body = b.id;
+  }
   page.body = "";
   delete page.bodyMarks;
+  return made;
 }
 function setPageMode(mode, { quiet = false } = {}) {
   if (isDayPage()) return;
@@ -10012,7 +10024,14 @@ $("#app").addEventListener("pointerdown", (event) => {
   const canvas = event.target.closest("#journal-canvas");
   if (!canvas) return;
   if (event.target.closest(".layer-play, .canvas-add-row, .canvas-scene-link, .layer-bar, .photo-placeholder")) return;
-  if (event.target.closest('[data-inline], .layer-text[contenteditable="plaintext-only"], .layer-text[contenteditable="true"]')) return;
+  const typingIn = event.target.closest('[data-inline], .layer-text[contenteditable="plaintext-only"], .layer-text[contenteditable="true"]');
+  if (typingIn) {
+    // V10.69: words being typed — a new text box, or a note's title and
+    // words — still move. A tap places the caret as before; only a finger
+    // that really travels picks the box up (textPressMove below).
+    textPress = pointers.size === 0 && event.isPrimary !== false ? { pointerId: event.pointerId, x: event.clientX, y: event.clientY, type: event.pointerType, el: typingIn } : null;
+    return;
+  }
   // Touching the paper puts the keyboard away so the tools come back.
   if (document.activeElement?.matches?.(TYPING_FIELD)) document.activeElement.blur();
   const touched = event.target.closest("[data-layer]");
@@ -10059,7 +10078,60 @@ $("#app").addEventListener("pointerdown", (event) => {
   } catch {}
   event.preventDefault();
 });
+// V10.69 · A drag that starts on words being typed. The press was left to
+// the text (tap = caret); once the finger travels past the slop the box is
+// picked up and follows the finger in paper coordinates (the paper may
+// move under it while the keyboard goes down).
+let textPress = null;
+function textPressMove(event) {
+  const press = textPress;
+  if (!press || press.pointerId !== event.pointerId || drag || page !== "studio") return false;
+  if (Math.hypot(event.clientX - press.x, event.clientY - press.y) < (DRAG_SLOP[press.type] ?? DRAG_SLOP.touch) + 4) return true;
+  textPress = null;
+  const before = structuredClone(editor);
+  let layer = null;
+  if (press.el.dataset.inlineLayer) layer = activePage().layers.find((l) => l.id === press.el.dataset.inlineLayer);
+  else if (press.el.dataset.inline && !isDayPage() && activePage().layoutTemplate === "text") {
+    // A note's title or words: the note becomes a free layout (as 自由排版
+    // does) and the one you dragged becomes a text box under your finger.
+    const field = press.el.dataset.inline;
+    const from = press.el.getBoundingClientRect(),
+      paper = canvasRect();
+    press.el.blur();
+    const made = noteToLayout(activePage(), { keep: field });
+    const madeLayer = made?.[field] && activePage().layers.find((l) => l.id === made[field]);
+    if (madeLayer && paper?.width) {
+      // Where it was on the paper, so it does not jump before it moves.
+      madeLayer.x = Math.round((((from.left + from.right) / 2 - paper.left) / paper.width) * 1000) / 10;
+      madeLayer.y = Math.round((((from.top + from.bottom) / 2 - paper.top) / paper.height) * 1000) / 10;
+    }
+    layer = madeLayer || null;
+    if (layer) {
+      selectedLayer = layer.id;
+      logEvent("note_drag", { way: field });
+      render();
+    }
+  }
+  if (!layer) return true;
+  selectedLayer = layer.id;
+  pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+  beginGesture(layer, "move", { clientX: press.x, clientY: press.y, pointerType: press.type });
+  const paper = canvasRect();
+  drag.before = before;
+  drag.moved = true;
+  drag.follow = paper ? { left: press.x - paper.left, top: press.y - paper.top } : null;
+  getSelection()?.removeAllRanges?.();
+  document.body.classList.add("text-dragging");
+  try {
+    $("#journal-canvas").setPointerCapture(event.pointerId);
+  } catch {}
+  return true;
+}
+$("#app").addEventListener("pointerup", (event) => {
+  if (textPress?.pointerId === event.pointerId) textPress = null;
+});
 $("#app").addEventListener("pointermove", (event) => {
+  if (textPress && textPressMove(event) && !drag) return;
   if (!pointers.has(event.pointerId)) return;
   pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
   if (!drag) return;
@@ -10069,8 +10141,16 @@ $("#app").addEventListener("pointermove", (event) => {
     if (drag.mode !== "pinch" && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < drag.slop) return;
     drag.moved = true;
   }
-  const dx = ((event.clientX - drag.startX) / rect.width) * 100,
+  let dx = ((event.clientX - drag.startX) / rect.width) * 100,
     dy = ((event.clientY - drag.startY) / rect.height) * 100;
+  if (drag.follow) {
+    // Measured on the paper as it is now (it may slide while the keyboard goes).
+    const now = canvasRect();
+    if (now?.width) {
+      dx = ((event.clientX - now.left - drag.follow.left) / now.width) * 100;
+      dy = ((event.clientY - now.top - drag.follow.top) / now.height) * 100;
+    }
+  }
   if (drag.mode === "move") {
     layer.x = Math.max(0, Math.min(100, start.x + dx));
     layer.y = Math.max(0, Math.min(100, start.y + dy));
@@ -10188,6 +10268,7 @@ function commitGesture() {
   if (!drag) return;
   const { moved, before, layer, swapWith, start, mode, startX, startY } = drag;
   drag = null;
+  document.body.classList.remove("text-dragging");
   document.querySelectorAll("#journal-canvas .swap-target").forEach((el) => el.classList.remove("swap-target"));
   const other = swapWith && activePage().layers.find((l) => l.id === swapWith);
   if (moved && other) {
@@ -12336,10 +12417,12 @@ async function v3Action(target) {
         y: [60, 78, 40, 18].find((y) => !entry.layers.some((l) => l.kind === "text" && Math.abs((l.y ?? 50) - y) < 12)) ?? 60,
         scale: 1,
         rotation: 0,
-        fontId: "handwritten",
+        // V10.69 (user): 黑体, a little bolder — clearer for Chinese than the
+        // handwriting face (Caveat has no Chinese and fell back unevenly).
+        fontId: "hei",
         fontSize: 18,
         color: "#6A7059",
-        weight: 400,
+        weight: 600,
         spacing: 0,
         align: "left",
       };
@@ -14002,6 +14085,59 @@ document.addEventListener(
 );
 window.visualViewport?.addEventListener("resize", keepFieldInView);
 window.visualViewport?.addEventListener("scroll", updateVisibleArea);
+// V10.69 · The pinned link runs inside another page (the Claude app shows it
+// in a frame). On iPhone the keyboard then covers the frame without making
+// anything we can measure smaller, so the type bar stayed under the paper,
+// behind the keyboard (字体 could not be reached). There — and only there —
+// the keyboard's height is estimated from the screen, and the type bar sits
+// above that line. In the iPhone app the real measurement is used (above).
+const EMBEDDED = (() => {
+  try {
+    return window.self !== window.top;
+  } catch {
+    return true;
+  }
+})();
+const IOS_TOUCH = /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+let kbGuessTimer = 0;
+let restHeight = window.innerHeight;
+function keyboardGuess(screenHeight, screenWidth, innerHeight) {
+  const tall = Math.max(screenHeight, screenWidth);
+  const portrait = innerHeight >= Math.min(screenHeight, screenWidth);
+  // iPhone keyboards with the Chinese candidate row are 0.36–0.39 of the
+  // screen's height (portrait); a little more is safer than less.
+  const guess = portrait ? tall * 0.4 : innerHeight * 0.55;
+  return Math.round(Math.min(guess, innerHeight * 0.6));
+}
+function clearKeyboardGuess() {
+  clearTimeout(kbGuessTimer);
+  document.documentElement.classList.remove("kb-guess");
+  document.documentElement.style.removeProperty("--kb-line");
+}
+document.addEventListener("focusin", (event) => {
+  if (!EMBEDDED || !IOS_TOUCH || !event.target?.matches?.(TYPING_FIELD)) return;
+  clearTimeout(kbGuessTimer);
+  const field = event.target;
+  kbGuessTimer = setTimeout(() => {
+    if (document.activeElement !== field) return;
+    // Measured after all (or the frame itself got shorter): nothing to guess.
+    if (keyboardHeight() >= 80 || restHeight - window.innerHeight >= 80) return clearKeyboardGuess();
+    const kb = keyboardGuess(screen.height, screen.width, window.innerHeight);
+    document.documentElement.style.setProperty("--kb-line", `${window.innerHeight - kb}px`);
+    document.documentElement.classList.add("kb-guess");
+  }, 450);
+});
+document.addEventListener("focusout", () => {
+  setTimeout(() => {
+    if (!document.activeElement?.matches?.(TYPING_FIELD)) {
+      clearKeyboardGuess();
+      restHeight = window.innerHeight;
+    }
+  }, 0);
+});
+window.visualViewport?.addEventListener("resize", () => {
+  if (keyboardHeight() >= 80) clearKeyboardGuess();
+});
 
 // A picture that can't be shown (file missing on this device or a format the
 // browser can't read) gets a soft placeholder instead of the broken-image icon.
@@ -14090,4 +14226,19 @@ document.addEventListener("pointerup", (event) => {
     else studioTool = null;
     render();
   }
+});
+// V10.69 · Return on a one-line field puts the keyboard away (iPhone kept it
+// up: naming Captain needed the ✓ above the keyboard to finish). Fields that
+// use Return themselves (add a plan, tags, a form's own submit) keep doing so.
+const ONE_LINE = 'input:not([type]), input[type="text"], input[type="search"], input[type="email"], input[type="url"], input[type="tel"], input[type="number"]';
+document.addEventListener("focusin", (event) => {
+  const field = event.target;
+  if (field?.matches?.(ONE_LINE) && !field.hasAttribute("enterkeyhint") && !field.form) field.setAttribute("enterkeyhint", "done");
+});
+document.addEventListener("keydown", (event) => {
+  const field = event.target;
+  if (event.key !== "Enter" || event.isComposing || event.keyCode === 229 || !field?.matches?.(ONE_LINE) || field.form) return;
+  setTimeout(() => {
+    if (!event.defaultPrevented && document.activeElement === field) field.blur();
+  }, 0);
 });
