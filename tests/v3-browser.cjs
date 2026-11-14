@@ -396,7 +396,7 @@ async function streamBytes(download) {
     await nav("home");
     await page.locator('[data-page="settings"]').click();
     const backupPromise = page.waitForEvent("download");
-    await page.locator('[data-action="backup"]').click();
+    await require("./signed-in.cjs").backupGo(page);
     const backupBytes = await streamBytes(await backupPromise),
       backup = JSON.parse(backupBytes);
     await page.locator('#choose-dialog [data-bk="yes"]').click(); // V10.40 (C3): say the file was kept

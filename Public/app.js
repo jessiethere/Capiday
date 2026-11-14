@@ -2429,28 +2429,8 @@ function backupMissingSheet(missing) {
     dialog.addEventListener("close", onClose);
   });
 }
-// C3: after the file is handed over, ask whether it was kept.
-function backupKeptSheet(backup) {
-  const dialog = $("#choose-dialog");
-  const partial = !backup.complete;
-  dialog.innerHTML = `<div class="choose-sheet backup-kept" role="alertdialog" aria-labelledby="bk-title"><div class="choose-grabber" aria-hidden="true"></div><h2 id="bk-title">${t("backup.keptTitle")}</h2><p class="save-help">${t(partial ? "backup.keptBodyPartial" : "backup.keptBody", { count: backup.missing?.length || 0 })}</p><button class="primary full-width" data-bk="yes">${t("backup.keptYes")}</button><button class="choose-cancel" data-bk="no">${t("backup.keptNo")}</button></div>`;
-  if (!dialog.open) dialog.showModal();
-  return new Promise((resolve) => {
-    const done = (value) => {
-      dialog.removeEventListener("click", onClick);
-      dialog.removeEventListener("close", onClose);
-      if (dialog.open) dialog.close();
-      resolve(value);
-    };
-    const onClick = (event) => {
-      const b = event.target.closest("[data-bk]");
-      if (b) done(b.dataset.bk === "yes");
-    };
-    const onClose = () => done(false);
-    dialog.addEventListener("click", onClick);
-    dialog.addEventListener("close", onClose);
-  });
-}
+// C3 → V10.67: the old "did you keep it?" question after a share sheet is
+// replaced by runBackup (the system save panel says so in the iPhone app).
 const BACKUP_SNOOZE_KEY = "little-days.backup-snooze";
 const readKey = (key) => {
   try {
@@ -2493,7 +2473,166 @@ function backupWhenHTML() {
   if (partial?.date && (!last || partial.date > last)) return `<p class="backup-when partial">${t("backup.whenPartial", { date: friendlyDate(partial.date), count: partial.missing })}${last ? ` ${t("backup.lastComplete", { date: friendlyDate(last) })}` : ""}</p>`;
   if (!last) return `<p class="backup-when">${t("backup.whenNever")}</p>`;
   const days = daysBetween(last, dateKey());
-  return `<p class="backup-when">${t("backup.when", { date: friendlyDate(last), days })}</p>`;
+  let how = null;
+  try {
+    how = JSON.parse(readKey(BACKUP_HOW_KEY) || "null");
+  } catch {}
+  // V10.67: who confirmed it — the system (file written, size checked) or the person.
+  const by = how?.date === last ? (how.how === "verified" ? t("bk2.byVerified", { folder: how.folder || "" }) : how.how === "system" ? t("bk2.bySystem", { folder: how.folder || "" }) : how.how === "user" ? t("bk2.byUser") : "") : "";
+  return `<p class="backup-when">${t("backup.when", { date: friendlyDate(last), days })}${by ? ` <span class="bk2-by">${esc(by)}</span>` : ""}</p>`;
+}
+
+// ---------- V10.67 · Backup and restore, step by step ----------
+// 备份我的手帐: what goes in (counted from this journal), what does not, then
+// "choose where to save". In the iPhone app the system's own Save-to-Files
+// panel is used (LittleDaysWebShellView.swift): it says whether the file was
+// saved and where, and the copy's size is checked — only then is the backup
+// recorded as confirmed by the system. In a browser the file is downloaded;
+// nothing can see where it went, so it is recorded only when the person says
+// so, and shown as "you confirmed". A cancelled save records nothing.
+const BACKUP_HOW_KEY = "little-days.last-backup-how"; // { how: "verified" | "system" | "user", folder, cloud, size, date }
+const shellSavesBackup = () => Boolean(window.capidayFiles?.saveBackup && window.webkit?.messageHandlers);
+function backupFacts() {
+  const s = state();
+  const sum = RS.summarize(s);
+  const kinds = { photo: mediaReferences(s, "image").size, video: new Set(), audio: new Set() };
+  for (const entry of [...(s.entries || []), ...Object.values(s.drafts || {})])
+    for (const pg of [entry, ...(entry.moments || [])])
+      for (const clip of pg.media || []) if (clip.source?.startsWith("media:")) (clip.kind === "video" ? kinds.video : kinds.audio).add(clip.source);
+  return { sum, photos: kinds.photo, videos: kinds.video.size, sounds: kinds.audio.size };
+}
+const mbText = (n) => `${new Intl.NumberFormat(locale(), { maximumFractionDigits: n >= 10 * 1048576 ? 0 : 1 }).format(n / 1048576)} MB`;
+async function openBackupSheet() {
+  flushDraft();
+  const f = backupFacts();
+  const dialog = $("#choose-dialog");
+  const go = shellSavesBackup() ? t("bk2.choosePlace") : t("bk2.download");
+  dialog.innerHTML = `<div class="choose-sheet bk2-sheet" data-bk2="intro"><div class="choose-grabber" aria-hidden="true"></div><h2>${t("bk2.title")}</h2><p class="save-help">${t("bk2.intro")}</p><div class="bk2-facts"><p><b>${t("bk2.has")}</b>${t("bk2.counts", { books: f.sum.books, days: f.sum.days, pages: f.sum.pages })}<br>${t("bk2.media", { photos: f.photos, videos: f.videos, sounds: f.sounds })}<br><span class="bk2-size">${t("bk2.sizeWorking")}</span></p><p class="bk2-not"><b>${t("bk2.hasNot")}</b>${t("bk2.notList")}</p></div><p class="bk2-note" hidden></p><button class="primary full-width" data-action="backup-go">${go}</button><button class="choose-cancel" data-action="choose-close">${t("bk2.later")}</button></div>`;
+  if (!dialog.open) dialog.showModal();
+  // The size: the media this journal uses, as stored here (+ about a third in the file).
+  try {
+    const usage = await media.usage(state());
+    const sheet = dialog.querySelector('[data-bk2="intro"]');
+    if (!sheet) return;
+    const est = Math.round(usage.bytes * 1.34 + JSON.stringify(state()).length);
+    sheet.querySelector(".bk2-size").textContent = t("bk2.size", { size: mbText(est) });
+    sheet.dataset.est = String(est);
+    const note = sheet.querySelector(".bk2-note");
+    if (usage.bytes > MAX_BACKUP_MEDIA) {
+      note.hidden = false;
+      note.textContent = t("error.backupSize");
+      sheet.querySelector('[data-action="backup-go"]').disabled = true;
+    } else if (usage.missing) {
+      note.hidden = false;
+      note.textContent = t("bk2.missingNote", { count: usage.missing });
+    }
+  } catch {}
+}
+const MAX_BACKUP_MEDIA = 100 * 1024 * 1024;
+function backupStep(html, step) {
+  const dialog = $("#choose-dialog");
+  dialog.innerHTML = `<div class="choose-sheet bk2-sheet" data-bk2="${step}"><div class="choose-grabber" aria-hidden="true"></div>${html}</div>`;
+  if (!dialog.open) dialog.showModal();
+}
+function recordBackup(backup, how) {
+  if (backup.complete) writeKey(BACKUP_AT_KEY, dateKey());
+  else writeKey(BACKUP_PARTIAL_KEY, JSON.stringify({ date: dateKey(), missing: backup.missing.length }));
+  writeKey(BACKUP_HOW_KEY, JSON.stringify({ ...how, date: dateKey() }));
+  logEvent("backup_kept", { complete: backup.complete, way: how.how });
+}
+let backupWaiter = null;
+window.capidayBackupSaved = (result) => {
+  const done = backupWaiter;
+  backupWaiter = null;
+  done?.(result || { status: "failed" });
+};
+async function runBackup() {
+  if (busyMedia) return toast(t("media.busy"));
+  flushDraft();
+  backupStep(`<h2>${t("bk2.title")}</h2><div class="vr-line" role="status"><span class="vr-spin" aria-hidden="true"></span><b>${t("bk2.preparing")}</b></div>`, "preparing");
+  let backup;
+  try {
+    try {
+      backup = await media.backup(state());
+    } catch (error) {
+      if (error.code !== "backup-missing") throw error;
+      // C2: a file that can't be read is listed, and left out only when the person chooses to.
+      if (!(await backupMissingSheet(error.missing))) return;
+      backupStep(`<h2>${t("bk2.title")}</h2><div class="vr-line" role="status"><span class="vr-spin" aria-hidden="true"></span><b>${t("bk2.preparing")}</b></div>`, "preparing");
+      backup = await media.backup(state(), { allowMissing: true });
+    }
+  } catch (error) {
+    logEvent("backup_failed", { err: errName(error) });
+    return backupStep(`<h2>${t("bk2.failedTitle")}</h2><p class="save-help">${t(error?.code === "backup-size" ? "error.backupSize" : "bk2.failedBody")}</p><p class="rs-safe">${t("bk2.nothingChanged")}</p><button class="primary full-width" data-action="choose-close">${t("rs.ok")}</button>`, "failed");
+  }
+  let blob;
+  try {
+    blob = new Blob([JSON.stringify(backup)], { type: "application/json" });
+  } catch (error) {
+    logEvent("backup_failed", { err: errName(error) });
+    return backupStep(`<h2>${t("bk2.failedTitle")}</h2><p class="save-help">${t("bk2.memory")}</p><p class="rs-safe">${t("bk2.nothingChanged")}</p><button class="primary full-width" data-action="choose-close">${t("rs.ok")}</button>`, "failed");
+  }
+  const name = `Capiday-Backup-${dateKey()}${backup.complete ? "" : "-incomplete"}.json`;
+  logEvent("backup", { complete: backup.complete, missing: backup.missing?.length || 0, size: Math.round(blob.size / 1024) });
+  const native = shellSavesBackup();
+  const answer = native ? new Promise((resolve) => (backupWaiter = resolve)) : null;
+  if (native) backupStep(`<h2>${t("bk2.title")}</h2><div class="vr-line" role="status"><span class="vr-spin" aria-hidden="true"></span><b>${t("bk2.waiting")}</b></div><p class="save-help">${t("bk2.waitingHint")}</p>`, "waiting");
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = name;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  const size = mbText(blob.size);
+  if (native) {
+    const r = await answer;
+    logEvent("backup_saved", { stage: r.status, err: r.err || "", way: r.verified ? "verified" : "" });
+    if (r.status === "saved") {
+      const folder = r.folder || "";
+      recordBackup(backup, { how: r.verified ? "verified" : "system", folder, cloud: Boolean(r.cloud), size: r.size });
+      backupStep(`<h2>${t("bk2.savedTitle")}</h2><p class="save-help">${t(r.verified ? "bk2.savedVerified" : "bk2.savedUnchecked", { folder: esc(folder), size })}</p>${r.cloud ? `<p class="rs-safe">${t("bk2.cloudNote")}</p>` : ""}${backup.complete ? "" : `<p class="rs-note">${t("backup.partialKept", { count: backup.missing.length })}</p>`}<button class="primary full-width" data-action="choose-close">${t("rs.ok")}</button>`, "saved");
+    } else if (r.status === "cancelled") {
+      $("#choose-dialog").close();
+      toast(t("bk2.cancelled"));
+    } else {
+      backupStep(`<h2>${t("bk2.failedTitle")}</h2><p class="save-help">${t(r.err === "space" ? "bk2.space" : "bk2.saveFailed")}</p><p class="rs-safe">${t("bk2.nothingChanged")}</p><button class="primary full-width" data-action="choose-close">${t("rs.ok")}</button>`, "failed");
+    }
+  } else {
+    // A browser: nothing can see where the download went — the person says.
+    backupStep(`<h2>${t("bk2.downloadedTitle")}</h2><p class="save-help">${t("bk2.downloadedBody", { name: esc(name), size })}</p><button class="primary full-width" data-bk="yes">${t("bk2.userYes")}</button><button class="choose-cancel" data-bk="no">${t("bk2.userNo")}</button>`, "downloaded");
+    const kept = await new Promise((resolve) => {
+      const dialog = $("#choose-dialog");
+      const finish = (v) => {
+        dialog.removeEventListener("click", onClick);
+        dialog.removeEventListener("close", onClose);
+        if (dialog.open) dialog.close();
+        resolve(v);
+      };
+      const onClick = (event) => {
+        const b = event.target.closest("[data-bk]");
+        if (b) finish(b.dataset.bk === "yes");
+      };
+      const onClose = () => finish(false);
+      dialog.addEventListener("click", onClick);
+      dialog.addEventListener("close", onClose);
+    });
+    if (kept) {
+      recordBackup(backup, { how: "user" });
+      toast(backup.complete ? t("bk2.userRecorded") : t("backup.partialKept", { count: backup.missing.length }));
+    }
+  }
+  if (["home", "settings"].includes(page)) {
+    render();
+    if (page === "settings") showMediaUsage();
+  }
+}
+// 从备份恢复: a short word first (it REPLACES the journal here — unchanged
+// meaning), then the Files picker; the S1-1 preview and checks follow.
+function openRestoreIntro() {
+  const dialog = $("#choose-dialog");
+  const last = readKey(BACKUP_AT_KEY).slice(0, 10);
+  dialog.innerHTML = `<div class="choose-sheet bk2-sheet" data-bk2="restore-intro"><div class="choose-grabber" aria-hidden="true"></div><h2>${t("rs2.title")}</h2><p class="save-help">${t("rs2.intro")}</p><p class="rs-note">${t("rs2.replace")}</p><p class="rs-safe">${t("rs2.safe")}</p><button class="primary full-width" data-action="restore-pick">${t("rs2.pick")}</button><button class="choose-cancel" data-action="choose-close">${t("cancel")}</button></div>`;
+  if (!dialog.open) dialog.showModal();
 }
 
 /* ---------- App lock (V7.4): passcode, Face ID in the iPhone app ---------- */
@@ -10452,7 +10591,8 @@ async function runRestore() {
       leaveEditorAfterSwap();
       render();
     }
-    showRestoreProblem("failed");
+    // V10.67: no room on the device says so (the journal is as it was).
+    showRestoreProblem(/quota|space/i.test(String(error?.name || "") + errName(error)) ? "space" : "failed");
   } finally {
     busyMedia = false;
   }
@@ -12297,46 +12437,20 @@ async function v3Action(target) {
   }
   if (name === "restore-undo") return undoRestore();
   if (name === "restore-backup") {
+    openRestoreIntro();
+    return true;
+  }
+  if (name === "restore-pick") {
+    // Still inside the tap, so iOS opens the Files picker.
     $("#backup-input").click();
     return true;
   }
   if (name === "backup") {
-    flushDraft();
-    // C2: a file that can't be read is listed, and left out only when the
-    // person chooses to — the file then says it is incomplete.
-    let backup;
-    try {
-      backup = await media.backup(state());
-    } catch (error) {
-      if (error.code !== "backup-missing") throw error;
-      if (!(await backupMissingSheet(error.missing))) return true;
-      backup = await media.backup(state(), { allowMissing: true });
-    }
-    const url = URL.createObjectURL(
-      new Blob([JSON.stringify(backup)], { type: "application/json" }),
-    );
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `Capiday-Backup-${dateKey()}${backup.complete ? "" : "-incomplete"}.json`;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 10000);
-    logEvent("backup", { complete: backup.complete, missing: backup.missing?.length || 0 });
-    // C3: the file was only handed over (download / share sheet, which can be
-    // cancelled): it counts as a backup once the person says it is kept.
-    if (await backupKeptSheet(backup)) {
-      if (backup.complete) {
-        writeKey(BACKUP_AT_KEY, dateKey());
-        toast(t("settings.backupDone"));
-      } else {
-        writeKey(BACKUP_PARTIAL_KEY, JSON.stringify({ date: dateKey(), missing: backup.missing.length }));
-        toast(t("backup.partialKept", { count: backup.missing.length }));
-      }
-      logEvent("backup_kept", { complete: backup.complete });
-    }
-    if (["home", "settings"].includes(page)) {
-      render();
-      if (page === "settings") showMediaUsage();
-    }
+    openBackupSheet();
+    return true;
+  }
+  if (name === "backup-go") {
+    await runBackup();
     return true;
   }
   return false;

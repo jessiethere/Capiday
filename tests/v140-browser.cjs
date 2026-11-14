@@ -52,7 +52,7 @@ const photo = (n) => ({ name: `LD-photo-${n}.jpg`, mimeType: "image/jpeg", buffe
 
       // C3 · A complete backup: 没有 records nothing; 存好了 records it.
       await settings();
-      let [download] = await Promise.all([page.waitForEvent("download"), page.locator('[data-action="backup"]').click()]);
+      let [download] = await Promise.all([page.waitForEvent("download"), require("./signed-in.cjs").backupGo(page)]);
       assert.doesNotMatch(download.suggestedFilename(), /incomplete/);
       let file = JSON.parse(fs.readFileSync(await download.path(), "utf8"));
       assert.equal(file.complete, true);
@@ -61,7 +61,7 @@ const photo = (n) => ({ name: `LD-photo-${n}.jpg`, mimeType: "image/jpeg", buffe
       await page.locator('#choose-dialog [data-bk="no"]').click();
       await page.waitForTimeout(300);
       assert.deepEqual(await keys(), { at: null, partial: null }, `${where}: handed over but not kept → no backup recorded`);
-      [download] = await Promise.all([page.waitForEvent("download"), page.locator('[data-action="backup"]').click()]);
+      [download] = await Promise.all([page.waitForEvent("download"), require("./signed-in.cjs").backupGo(page)]);
       await page.locator('#choose-dialog [data-bk="yes"]').click();
       await page.waitForTimeout(300);
       assert.ok((await keys()).at, `${where}: 存好了 → recorded`);
@@ -75,7 +75,7 @@ const photo = (n) => ({ name: `LD-photo-${n}.jpg`, mimeType: "image/jpeg", buffe
       await page.evaluate(() => localStorage.removeItem("little-days.last-backup"));
       let got = false;
       page.once("download", () => (got = true));
-      await page.locator('[data-action="backup"]').click();
+      await require("./signed-in.cjs").backupGo(page);
       await page.waitForSelector("#choose-dialog[open] .backup-missing");
       const sheet = await page.locator(".backup-missing").innerText();
       assert.match(sheet, zh ? /有 1 个文件读不出来[\s\S]*照片/ : /1 file\(s\) can't be read[\s\S]*Photo/, `${where}: the unreadable photo is listed`);
@@ -84,7 +84,7 @@ const photo = (n) => ({ name: `LD-photo-${n}.jpg`, mimeType: "image/jpeg", buffe
       await page.locator('#choose-dialog [data-bk="stop"]').click();
       await page.waitForTimeout(500);
       assert.equal(got, false, `${where}: cancel → nothing exported`);
-      [download] = await Promise.all([page.waitForEvent("download"), (async () => { await page.locator('[data-action="backup"]').click(); await page.locator('#choose-dialog [data-bk="go"]').click(); })()]);
+      [download] = await Promise.all([page.waitForEvent("download"), (async () => { await require("./signed-in.cjs").backupGo(page); await page.locator('#choose-dialog [data-bk="go"]').click(); })()]);
       assert.match(download.suggestedFilename(), /-incomplete\.json$/, "the file name says incomplete");
       file = JSON.parse(fs.readFileSync(await download.path(), "utf8"));
       assert.equal(file.complete, false);

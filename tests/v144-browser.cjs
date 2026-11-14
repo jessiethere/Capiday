@@ -104,7 +104,7 @@ const today = (() => { const d = new Date(); return `${d.getFullYear()}-${String
       await page.locator('#navigation [data-page="home"]').tap().catch(() => {});
       await page.waitForSelector(".hero");
       await page.locator(".settings-gear").click();
-      const [download] = await Promise.all([page.waitForEvent("download"), page.locator('[data-action="backup"]').click()]);
+      const [download] = await Promise.all([page.waitForEvent("download"), require("./signed-in.cjs").backupGo(page)]);
       const backup = JSON.parse(fs.readFileSync(await download.path(), "utf8"));
       const inBackup = backup.state.entries.find((e) => e.date === today);
       assert.equal(inBackup.dayCoverHidden, true);

@@ -532,7 +532,7 @@ async function noOverflow(page, label) {
 
     // 12. Full backup includes photos, Moments, layouts, notes and reflections.
     const downloadPromise = page.waitForEvent("download");
-    await page.locator('[data-action="backup"]').click();
+    await require("./signed-in.cjs").backupGo(page);
     const download = await downloadPromise;
     await page.locator('#choose-dialog [data-bk="yes"]').click(); // V10.40 (C3): say the file was kept
     const chunks = [];

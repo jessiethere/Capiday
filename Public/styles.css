@@ -24987,3 +24987,51 @@ body.typing:not(.typing-dialog) .ctx-caption {
 body:has(#choose-dialog[open] .choose-sheet.sw) #app-scroll {
   padding-bottom: 60dvh;
 }
+
+/* V10.67 · 备份我的手帐 / 从备份恢复: one calm sheet per step. */
+.bk2-sheet .bk2-facts {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--c-fffdf8, #fffdf8);
+  box-shadow: 0 0 0 1px var(--line);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.bk2-sheet .bk2-facts p {
+  margin: 0;
+}
+.bk2-sheet .bk2-not {
+  color: var(--t-675d54, #675d54);
+  font-size: 13px;
+}
+.bk2-sheet .bk2-size {
+  color: var(--t-675d54, #675d54);
+  font-size: 13px;
+}
+.bk2-sheet .bk2-note,
+.bk2-sheet .rs-note {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(214, 140, 60, 0.12);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.bk2-sheet .rs-safe {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  opacity: 0.75;
+}
+.bk2-sheet .vr-line {
+  justify-content: center;
+  min-height: 48px;
+}
+.bk2-sheet .primary.full-width:disabled {
+  opacity: 0.45;
+}
+.backup-when .bk2-by {
+  opacity: 0.75;
+}

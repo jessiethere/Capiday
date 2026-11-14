@@ -301,4 +301,73 @@ final class DrawUITests: XCTestCase {
         XCTAssertEqual(state()["voicePlaying"] as? Bool, true, "plays after the app was closed")
         XCTAssertGreaterThan(state()["voiceT"] as? Double ?? 0, 0.5)
     }
+
+    // V10.67 · 备份我的手帐 through the system's own Save-to-Files panel
+    // (UIDocumentPickerViewController, LittleDaysWebShellView.swift): cancel →
+    // nothing recorded; save to 我的 iPhone → recorded as system-verified with
+    // the folder; then 从备份恢复 reads that very file back through the Files
+    // picker and shows the preview. A fresh install, nothing personal.
+    func pickerButton(_ labels: [String], _ seconds: Double = 20) -> XCUIElement? {
+        let end = Date().addingTimeInterval(seconds)
+        while Date() < end {
+            for l in labels {
+                let b = app.buttons[l]
+                if b.exists && b.isHittable { return b }
+            }
+            Thread.sleep(forTimeInterval: 0.5)
+        }
+        print("LDSTEP buttons: " + app.buttons.allElementsBoundByIndex.prefix(40).map { $0.label }.joined(separator: " | "))
+        return nil
+    }
+    func testBackupRoundTrip() throws {
+        try? FileManager.default.createDirectory(atPath: "/tmp/ld-uitest/shots", withIntermediateDirectories: true)
+        launch()
+        if rect("skip") != nil { tap("skip") }
+        tap("gear", wait: 1.5)
+        // 1 · cancel in the system panel → nothing recorded
+        tap("backupBtn", wait: 1.5)
+        log("b1-sheet")
+        XCTAssertEqual(state()["bk2"] as? String, "intro")
+        tap("backupGo", wait: 2)
+        guard let cancel = pickerButton(["取消", "Cancel"]) else { log("b2-no-picker"); XCTFail("the save panel"); return }
+        log("b2-panel")
+        cancel.tap()
+        Thread.sleep(forTimeInterval: 2)
+        log("b3-cancelled")
+        XCTAssertEqual(state()["backupHow"] as? String, "", "cancelled → nothing recorded")
+        XCTAssertTrue(((state()["toast"] as? String) ?? "").contains("没有保存"), "says it was not saved")
+        // 2 · save to 我的 iPhone → system-verified
+        tap("backupBtn", wait: 1.5)
+        tap("backupGo", wait: 2.5)
+        if let onPhone = pickerButton(["我的 iPhone", "On My iPhone"], 6) { onPhone.tap(); Thread.sleep(forTimeInterval: 1.5) }
+        log("b4-panel-location")
+        guard let save = pickerButton(["存储", "保存", "移动", "Save", "Move", "Done", "完成"]) else { log("b4-no-save"); XCTFail("save button"); return }
+        save.tap()
+        Thread.sleep(forTimeInterval: 3)
+        log("b5-saved")
+        XCTAssertEqual(state()["bk2"] as? String, "saved", "the page heard back from the panel")
+        let how = (state()["backupHow"] as? String) ?? ""
+        print("LDSTEP how=\(how) text=\((state()["sheetText"] as? String) ?? "")")
+        XCTAssertTrue(how.contains("\"verified\""), "recorded as system-verified (size checked)")
+        tap("sheetOk", wait: 1)
+        // 3 · 从备份恢复 → the Files picker → that file → the preview
+        tap("restoreBtn", wait: 1.5)
+        XCTAssertEqual(state()["bk2"] as? String, "restore-intro")
+        log("b6-restore-intro")
+        tap("restorePick", wait: 3)
+        if let onPhone = pickerButton(["我的 iPhone", "On My iPhone", "浏览", "Browse"], 6) { onPhone.tap(); Thread.sleep(forTimeInterval: 1.5) }
+        log("b7-files")
+        let file = app.descendants(matching: .any).matching(NSPredicate(format: "label BEGINSWITH 'Capiday-Backup'")).firstMatch
+        if !file.waitForExistence(timeout: 10) {
+            // it may sit in the app's folder
+            if let folder = pickerButton(["开铺手帐", "Capiday", "LittleDays"], 4) { folder.tap(); Thread.sleep(forTimeInterval: 1.5) }
+        }
+        XCTAssertTrue(file.waitForExistence(timeout: 10), "the saved backup is in Files")
+        file.tap()
+        Thread.sleep(forTimeInterval: 1)
+        if let open = pickerButton(["打开", "Open"], 3) { open.tap() }
+        Thread.sleep(forTimeInterval: 4)
+        log("b8-preview")
+        XCTAssertEqual(state()["bk2"] as? String, "preview", "the file read back and checked: the preview shows")
+    }
 }

@@ -39,7 +39,7 @@ const shots = process.env.SHOTS_DIR || "";
     assert.match(await page.locator(".backup-nudge").innerText(), /还没备份过/);
     if (shots) await page.screenshot({ path: `${shots}/v68-nudge.png` });
     const download = page.waitForEvent("download");
-    await page.locator('.backup-nudge [data-action="backup"]').click();
+    await require("./signed-in.cjs").backupGo(page, ".backup-nudge");
     assert.match((await download).suggestedFilename(), /Capiday-Backup-.*\.json/);
     await page.locator('#choose-dialog [data-bk="yes"]').click(); // V10.40 (C3): say the file was kept
     await page.waitForSelector(".backup-nudge", { state: "detached" });

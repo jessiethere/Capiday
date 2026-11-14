@@ -34,6 +34,13 @@ const tick = () => {
     voiceSrc: !!document.querySelector('.audio-layer audio[src^="blob:"]'), session: navigator.audioSession ? navigator.audioSession.type : "none",
     voices: (() => { try { const s = JSON.parse(localStorage.getItem("little-days.v1") || "null"); return (s?.entries || []).flatMap((e) => [e, ...(e.moments || [])]).flatMap((p) => p.media || []).filter((c) => c.origin === "recording").length; } catch { return -1; } })(),
     confirmText: document.querySelector("#confirm-dialog[open] #confirm-message")?.textContent || "",
+    // V10.67 · backup / restore
+    gear: r(".settings-gear"), backupBtn: r('[data-action="backup"]'), backupGo: r('#choose-dialog[open] [data-action="backup-go"]'), sheetOk: r('#choose-dialog[open] [data-action="choose-close"]'),
+    restoreBtn: r('[data-action="restore-backup"]'), restorePick: r('#choose-dialog[open] [data-action="restore-pick"]'), restoreContinue: r('#choose-dialog[open] [data-action="restore-continue"]'),
+    bk2: document.querySelector("#choose-dialog[open] [data-bk2]")?.dataset.bk2 || (document.querySelector("#choose-dialog[open] .restore-preview") ? "preview" : ""),
+    sheetText: (document.querySelector("#choose-dialog[open]")?.innerText || "").slice(0, 160),
+    backupHow: localStorage.getItem("little-days.last-backup-how") || "", lastBackup: localStorage.getItem("little-days.last-backup") || "",
+    toast: document.querySelector("#toast")?.textContent || "",
     dayInk: [...document.querySelectorAll(".chapter-canvas .drawing-layer img")].filter((i) => i.complete && i.naturalWidth > 0).length,
     saved, draftDrawings, down: ev.down, up: ev.up, cancel: ev.cancel, appUp: ev.appUp, log: ev.log.slice(-8).join(" ") };
   box.setAttribute("aria-label", "LDSTATE:" + JSON.stringify(st));

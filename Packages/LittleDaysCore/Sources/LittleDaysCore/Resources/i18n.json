@@ -772,8 +772,8 @@
     "en": "Your words, photos, videos and sounds stay on this device and are never uploaded. Before switching phones or browsers, export a backup."
   },
   "settings.backup": {
-    "zh": "导出完整本机备份",
-    "en": "Export full local backup"
+    "zh": "备份我的手帐",
+    "en": "Back up my journal"
   },
   "settings.backupNote": {
     "zh": "备份文件里有你的私人文字和照片，请放在安全的地方，不要分享给别人。单次导出最多 100 MB 媒体，导入文件最大 150 MB。",
@@ -10218,5 +10218,169 @@
   "sw.expandLabel": {
     "zh": "回到写字",
     "en": "Back to writing"
+  },
+  "bk2.title": {
+    "zh": "备份我的手帐",
+    "en": "Back up my journal"
+  },
+  "bk2.intro": {
+    "zh": "把这台设备上的手帐，连同照片、视频和声音，存成一个备份文件，放到你选的地方（例如 iCloud 云盘或电脑）。换手机或重装 App 后，可以用它恢复。",
+    "en": "Keep your journal — with its photos, videos and sounds — as one backup file in a place you choose (iCloud Drive, a computer…). You can restore it on a new phone or after reinstalling."
+  },
+  "bk2.has": {
+    "zh": "会备份：",
+    "en": "Included: "
+  },
+  "bk2.counts": {
+    "zh": "{books} 本手帐 · {days} 天 · {pages} 页，草稿、计划、习惯和 Captain",
+    "en": "{books} journals · {days} days · {pages} pages, drafts, plans, habits and Captain"
+  },
+  "bk2.media": {
+    "zh": "照片 {photos} · 视频 {videos} · 声音 {sounds}",
+    "en": "Photos {photos} · videos {videos} · sounds {sounds}"
+  },
+  "bk2.sizeWorking": {
+    "zh": "正在估算大小…",
+    "en": "Working out the size…"
+  },
+  "bk2.size": {
+    "zh": "文件约 {size}",
+    "en": "About {size}"
+  },
+  "bk2.hasNot": {
+    "zh": "不会备份：",
+    "en": "Not included: "
+  },
+  "bk2.notList": {
+    "zh": "外观和语言、每日提醒、App 锁、个人资料（名字和头像）。手帐数据快照只留在这台设备上。",
+    "en": "appearance and language, the daily reminder, App Lock, your profile (name and picture). Journal snapshots stay on this device only."
+  },
+  "bk2.missingNote": {
+    "zh": "有 {count} 个照片或声音文件在这台设备上找不到，备份时会先告诉你是哪几个。",
+    "en": "{count} photo or sound files can't be found on this device; you'll see which before the backup is made."
+  },
+  "bk2.choosePlace": {
+    "zh": "选择保存位置",
+    "en": "Choose where to save"
+  },
+  "bk2.download": {
+    "zh": "下载备份文件",
+    "en": "Download the backup file"
+  },
+  "bk2.later": {
+    "zh": "以后再说",
+    "en": "Not now"
+  },
+  "bk2.preparing": {
+    "zh": "正在准备备份…",
+    "en": "Preparing the backup…"
+  },
+  "bk2.waiting": {
+    "zh": "请在系统面板里选择保存位置",
+    "en": "Choose where to save it in the panel"
+  },
+  "bk2.waitingHint": {
+    "zh": "推荐存到「iCloud 云盘」或电脑上，不要只存在「我的 iPhone」里——删除 App 或换手机时，那里的文件可能一起不见。",
+    "en": "iCloud Drive or a computer is best — a file kept only “On My iPhone” can disappear with the app or the phone."
+  },
+  "bk2.savedTitle": {
+    "zh": "备份已存好",
+    "en": "Backup saved"
+  },
+  "bk2.savedVerified": {
+    "zh": "已存到「{folder}」。系统已确认文件完整写入（{size}）。",
+    "en": "Saved to “{folder}”. The system confirmed the whole file was written ({size})."
+  },
+  "bk2.savedUnchecked": {
+    "zh": "已交给系统存到「{folder}」，但 Capiday 无法读回核对这份文件。请在「文件」里看一眼。",
+    "en": "Handed to the system for “{folder}”, but Capiday could not read it back to check. Please have a look in Files."
+  },
+  "bk2.cloudNote": {
+    "zh": "它在 iCloud 云盘里。上传到云端由 iCloud 完成，Capiday 看不到上传进度。",
+    "en": "It is in iCloud Drive. iCloud uploads it; Capiday cannot see that upload."
+  },
+  "bk2.cancelled": {
+    "zh": "没有保存，这次备份没有记录",
+    "en": "Not saved — this backup was not recorded"
+  },
+  "bk2.failedTitle": {
+    "zh": "备份没有完成",
+    "en": "The backup did not finish"
+  },
+  "bk2.failedBody": {
+    "zh": "准备备份时出了问题。",
+    "en": "Something went wrong while preparing the backup."
+  },
+  "bk2.memory": {
+    "zh": "这份备份太大，这台设备一次处理不了。可以先把一部分视频移出页面再试。",
+    "en": "This backup is too large for this device to make in one go. Try again after taking some videos off pages."
+  },
+  "bk2.space": {
+    "zh": "这台设备的空间不够，备份文件没有做成。清理一些空间后再试。",
+    "en": "There isn't enough space on this device to make the backup file. Free up some space and try again."
+  },
+  "bk2.saveFailed": {
+    "zh": "备份文件没有存成。",
+    "en": "The backup file was not saved."
+  },
+  "bk2.nothingChanged": {
+    "zh": "你的手帐没有任何改动。",
+    "en": "Nothing in your journal has changed."
+  },
+  "bk2.downloadedTitle": {
+    "zh": "备份文件已开始下载",
+    "en": "The backup file is downloading"
+  },
+  "bk2.downloadedBody": {
+    "zh": "文件「{name}」（{size}）交给了浏览器下载。浏览器不会告诉 Capiday 它存到了哪里，请把它放到安全的地方后再点下面。",
+    "en": "“{name}” ({size}) was handed to the browser. The browser doesn't tell Capiday where it went — put it somewhere safe, then tap below."
+  },
+  "bk2.userYes": {
+    "zh": "我已存好",
+    "en": "I've kept it"
+  },
+  "bk2.userNo": {
+    "zh": "还没有",
+    "en": "Not yet"
+  },
+  "bk2.userRecorded": {
+    "zh": "已记下这次备份（你确认已存好）",
+    "en": "Backup recorded (you confirmed you kept it)"
+  },
+  "bk2.byVerified": {
+    "zh": "· 系统已确认存到「{folder}」",
+    "en": "· system confirmed, in “{folder}”"
+  },
+  "bk2.bySystem": {
+    "zh": "· 已交给系统存到「{folder}」，未能核对",
+    "en": "· handed to the system for “{folder}”, not checked"
+  },
+  "bk2.byUser": {
+    "zh": "· 你确认已存好",
+    "en": "· you confirmed you kept it"
+  },
+  "rs2.title": {
+    "zh": "从备份恢复",
+    "en": "Restore from a backup"
+  },
+  "rs2.intro": {
+    "zh": "选一个之前存好的开铺手帐备份文件。恢复前会先告诉你备份里有什么，确认后才开始。",
+    "en": "Choose a Capiday backup you saved before. You'll see what it holds before anything changes."
+  },
+  "rs2.replace": {
+    "zh": "恢复会用备份<b>替换</b>这台设备上现在的手帐，不是合并。",
+    "en": "Restoring <b>replaces</b> the journal on this device with the backup — it doesn't merge."
+  },
+  "rs2.safe": {
+    "zh": "替换前会自动保留现在的手帐，7 天内可以在设置里撤销。",
+    "en": "Your current journal is kept first; you can undo for 7 days in Settings."
+  },
+  "rs2.pick": {
+    "zh": "选择备份文件",
+    "en": "Choose the backup file"
+  },
+  "rs.err.space": {
+    "zh": "这台设备的空间不够，照片和视频没能全部放回来，已经停下。你现在的手帐没有改动；清理一些空间后再试。",
+    "en": "There isn't enough space on this device for the photos and videos, so the restore stopped. Your journal is unchanged — free up some space and try again."
   }
 }

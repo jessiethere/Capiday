@@ -152,7 +152,7 @@ struct LittleDaysWebView: UIViewRepresentable {
         configuration.mediaTypesRequiringUserActionForPlayback = []
         // Lets the shared CSS drop the "web preview" phone frame and use real safe areas.
         let marker = WKUserScript(
-            source: "window.littleDaysBiometry = '\(LittleDaysLockBridge.biometry())'; document.documentElement.dataset.shell = 'ios'; document.documentElement.dataset.biometric = window.littleDaysBiometry;",
+            source: "window.littleDaysBiometry = '\(LittleDaysLockBridge.biometry())'; document.documentElement.dataset.shell = 'ios'; document.documentElement.dataset.biometric = window.littleDaysBiometry; window.capidayFiles = { saveBackup: 1 };",
             injectionTime: .atDocumentStart,
             forMainFrameOnly: true
         )
@@ -191,8 +191,10 @@ struct LittleDaysWebView: UIViewRepresentable {
 /// protect manual layouts, Moments and restores), microphone recording,
 /// downloads for backups/PNG export, and keeping the app on its own origin.
 @MainActor
-final class LittleDaysWebCoordinator: NSObject, WKUIDelegate, WKNavigationDelegate, WKDownloadDelegate {
+final class LittleDaysWebCoordinator: NSObject, WKUIDelegate, WKNavigationDelegate, WKDownloadDelegate, UIDocumentPickerDelegate {
     private var downloads: [ObjectIdentifier: URL] = [:]
+    // V10.67 · A backup being saved with the system "Save to Files" panel.
+    private var pendingBackup: (source: URL, size: Int, webView: WKWebView)?
 
     // MARK: JavaScript dialogs
 
@@ -327,24 +329,85 @@ final class LittleDaysWebCoordinator: NSObject, WKUIDelegate, WKNavigationDelega
     }
 
     func download(_ download: WKDownload, decideDestinationUsing response: URLResponse, suggestedFilename: String, completionHandler: @escaping (URL?) -> Void) {
-        // Backups and PNG exports land in the app's Documents folder (visible in Files).
-        let folder = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let safeName = suggestedFilename.replacingOccurrences(of: "/", with: "-")
+        // V10.67: a backup is written to a temporary file first; the person then
+        // chooses where it goes (Files / iCloud Drive / another app's folder).
+        // The app's own Documents folder is deleted with the app, so it is no
+        // backup at all. PNG exports and other files still land in Documents.
+        let isBackup = Self.isBackup(safeName)
+        let folder = isBackup
+            ? FileManager.default.temporaryDirectory.appendingPathComponent("capiday-backup", isDirectory: true)
+            : FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         let destination = folder.appendingPathComponent(safeName.isEmpty ? "Capiday-Export" : safeName)
         try? FileManager.default.removeItem(at: destination)
         downloads[ObjectIdentifier(download)] = destination
         completionHandler(destination)
     }
 
+    static func isBackup(_ name: String) -> Bool {
+        name.hasPrefix("Capiday-Backup-") && name.hasSuffix(".json")
+    }
+
     func downloadDidFinish(_ download: WKDownload) {
         guard let url = downloads.removeValue(forKey: ObjectIdentifier(download)), let webView = download.webView else { return }
+        if Self.isBackup(url.lastPathComponent) {
+            let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+            // The system's own "save to Files" panel (export a copy). It tells
+            // us whether the person saved it and where — no guessing.
+            let picker = UIDocumentPickerViewController(forExporting: [url], asCopy: true)
+            picker.delegate = self
+            picker.shouldShowFileExtensions = false
+            pendingBackup = (url, size, webView)
+            present(picker, from: webView) { [weak self] in self?.finishBackup(["status": "failed", "err": "present"]) }
+            return
+        }
         let share = UIActivityViewController(activityItems: [url], applicationActivities: nil)
         share.popoverPresentationController?.sourceView = webView
         present(share, from: webView, fallback: {})
     }
 
     func download(_ download: WKDownload, didFailWithError error: Error, resumeData: Data?) {
-        downloads.removeValue(forKey: ObjectIdentifier(download))
+        guard let url = downloads.removeValue(forKey: ObjectIdentifier(download)) else { return }
+        // A backup that could not even be written here (most often: no space).
+        if Self.isBackup(url.lastPathComponent), let webView = download.webView {
+            let space = (error as NSError).code == NSFileWriteOutOfSpaceError || (error as NSError).domain == NSPOSIXErrorDomain && (error as NSError).code == Int(ENOSPC)
+            pendingBackup = (url, 0, webView)
+            finishBackup(["status": "failed", "err": space ? "space" : "write"])
+        }
+    }
+
+    // MARK: Save a backup to Files
+
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let pending = pendingBackup, let saved = urls.first else { return finishBackup(["status": "failed", "err": "nourl"]) }
+        // Check the copy that was written: same size as the backup made here.
+        let scoped = saved.startAccessingSecurityScopedResource()
+        defer { if scoped { saved.stopAccessingSecurityScopedResource() } }
+        let values = try? saved.resourceValues(forKeys: [.fileSizeKey, .isUbiquitousItemKey])
+        let size = values?.fileSize ?? -1
+        let folder = saved.deletingLastPathComponent().lastPathComponent
+        let cloud = values?.isUbiquitousItem == true || saved.path.contains("/Mobile Documents/")
+        finishBackup([
+            "status": "saved",
+            "verified": size == pending.size && size > 0,
+            "size": size,
+            "expected": pending.size,
+            "folder": folder,
+            "cloud": cloud,
+        ])
+    }
+
+    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+        finishBackup(["status": "cancelled"])
+    }
+
+    private func finishBackup(_ result: [String: Any]) {
+        guard let pending = pendingBackup else { return }
+        pendingBackup = nil
+        try? FileManager.default.removeItem(at: pending.source) // the temporary copy only
+        let json = (try? JSONSerialization.data(withJSONObject: result)).flatMap { String(data: $0, encoding: .utf8) } ?? "{\"status\":\"failed\"}"
+        pending.webView.evaluateJavaScript("window.capidayBackupSaved && window.capidayBackupSaved(\(json))", completionHandler: nil)
     }
 
     // MARK: Helpers

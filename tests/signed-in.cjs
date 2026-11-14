@@ -414,3 +414,12 @@ async function restoreGo(page, { cancel = "", timeout = 30000 } = {}) {
   await page.locator('#choose-dialog [data-restore-done] [data-action="choose-close"]').click();
 }
 module.exports.restoreGo = restoreGo;
+
+// V10.67: 备份我的手帐 first shows what goes in (and what does not); the file
+// is made on 下载备份文件 / 选择保存位置. Drives both taps.
+async function backupGo(page, scope = "") {
+  await page.locator(`${scope} [data-action="backup"]`.trim()).first().click();
+  await page.waitForSelector('#choose-dialog[open] [data-action="backup-go"]');
+  await page.locator('#choose-dialog [data-action="backup-go"]').click();
+}
+module.exports.backupGo = backupGo;
