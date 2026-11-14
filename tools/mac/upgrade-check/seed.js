@@ -3,6 +3,9 @@
 // cover photo), 3 days, 5 pages with photos and a sound, a draft, plans,
 // habits + check-ins, Captain notes. Generated pixels/bytes only — no real
 // photos, nothing sent anywhere. Then reloads so the app opens it as its own.
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+for (let i = 0; i < 150 && !document.querySelector(".hero, #navigation"); i++) await wait(200);
+await wait(1500);
 const { MediaStore } = await import("./js/media.mjs");
 const m = new MediaStore();
 const png = async (hue) => {
@@ -16,7 +19,14 @@ const png = async (hue) => {
 const ids = {};
 for (const [k, h] of [["p1", 15], ["p2", 95], ["p3", 175], ["cover", 255]]) ids[k] = await m.put(await png(h), { kind: "photo", name: "synthetic " + k }, null);
 ids.voice = await m.put(new Blob([new Uint8Array(6000).map((_, i) => (i * 13) & 255)], { type: "audio/mp4" }), { kind: "audio", name: "synthetic voice", duration: 3 }, null);
-const s = JSON.parse(localStorage.getItem("little-days.v1"));
+// A fresh install keeps nothing until the first change: start from the app's
+// own starting journal (shared/seed.json, like a new install) when there is none.
+let s = JSON.parse(localStorage.getItem("little-days.v1") || "null");
+if (!s) {
+  const seed = await (await fetch("shared/seed.json")).json();
+  s = { ...seed, books: seed.books.slice(0, 1), journals: [], sampleDays: [], entries: [], drafts: {}, habits: [], checks: [] };
+  delete s.sampleDays;
+}
 const photo = (id, ref) => ({ id, kind: "photo", text: "", mediaRef: "media:" + ref, x: 50, y: 50, w: 40, h: 30, rotation: 0, scale: 1 });
 const pg = (id, title, body, layers, media = []) => ({ id, time: "09:00", title, body, tags: ["合成"], bookId: "up-book", layers, media });
 const day = (date, moments) => ({ id: "up-" + date, date, title: "", body: "", photo: "", bookId: "up-book", mood: "", layers: [], media: [], isDemo: false, moments });
