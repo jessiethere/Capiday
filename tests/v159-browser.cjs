@@ -80,6 +80,9 @@ function wav(seconds = 3) {
       await page.locator("#audio-input").setInputFiles({ name: "wind.wav", mimeType: "audio/wav", buffer: wav(3) });
       await page.waitForSelector("#journal-canvas .audio-layer.skin-minimal");
       await page.waitForFunction(() => document.querySelector("#draft-status")?.dataset.state === "saved", null, { timeout: 15000 });
+      // V10.66: the sound is on the page as soon as its file is saved; its 20
+      // bars are worked out right after (nothing waits for them).
+      await page.waitForFunction((d) => { const s = JSON.parse(localStorage.getItem("little-days.v1")); const day = s.drafts[d] || s.entries.find((e) => e.date === d); return [day, ...(day?.moments || [])].some((p) => (p?.media || []).some((c) => c.kind === "audio" && c.peaks?.length === 20)); }, today, { timeout: 15000 });
       const first = await now();
       assert.equal(first.clip.peaks?.length, 20, "20 bars, worked out once");
       const quiet = first.clip.peaks.slice(0, 9), loud = first.clip.peaks.slice(11);

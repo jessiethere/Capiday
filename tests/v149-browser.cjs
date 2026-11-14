@@ -53,18 +53,26 @@ const photo = (n) => `${__dirname}/../Packages/LittleDaysCore/Sources/LittleDays
     assert.ok(box && box.height >= 110 && box.y >= sheet.y, "the live page sits at the top of the sheet");
     passed.push("words sheet: the real page shows live at its top, centred on the words, as they are typed");
 
-    // 2. Font, size, colour, alignment: seen at once in the live page.
-    const l0 = await look();
+    // 2. Font, size, colour, alignment: seen at once. V10.66: the type tools
+    //    make the sheet compact, so the REAL page shows above it (the small
+    //    window at the top of the sheet is for writing).
+    const lookPage = () => page.evaluate(() => {
+      const el = [...document.querySelectorAll(".story-canvas *")].find((e) => e.children.length === 0 && /周六的咖啡/.test(e.textContent));
+      const cs = el && getComputedStyle(el.closest("[data-layer]") || el);
+      return cs ? { font: cs.fontFamily, size: parseFloat(cs.fontSize), color: cs.color, align: cs.textAlign } : null;
+    });
+    const l0 = await lookPage();
     await page.locator("#choose-dialog .sw-more summary").tap().catch(() => {});
     await page.locator('#choose-dialog [data-action="sw-font"][data-font="song"]').first().tap();
-    await page.waitForFunction((f) => { const el = [...document.querySelectorAll("#choose-dialog .sw-preview *")].find((e) => e.children.length === 0 && /周六的咖啡/.test(e.textContent)); return el && getComputedStyle(el.closest("[data-layer]") || el).fontFamily !== f; }, l0.font, { timeout: 5000 });
-    const l1 = await look();
+    await page.waitForFunction((f) => { const el = [...document.querySelectorAll(".story-canvas *")].find((e) => e.children.length === 0 && /周六的咖啡/.test(e.textContent)); return el && getComputedStyle(el.closest("[data-layer]") || el).fontFamily !== f; }, l0.font, { timeout: 5000 });
+    const l1 = await lookPage();
     await page.locator('#choose-dialog [data-action="sw-size"][data-dir="1"]').first().tap();
-    await page.waitForFunction((s) => { const el = [...document.querySelectorAll("#choose-dialog .sw-preview *")].find((e) => e.children.length === 0 && /周六的咖啡/.test(e.textContent)); return el && parseFloat(getComputedStyle(el.closest("[data-layer]") || el).fontSize) > s; }, l1.size, { timeout: 5000 });
+    await page.waitForFunction((s) => { const el = [...document.querySelectorAll(".story-canvas *")].find((e) => e.children.length === 0 && /周六的咖啡/.test(e.textContent)); return el && parseFloat(getComputedStyle(el.closest("[data-layer]") || el).fontSize) > s; }, l1.size, { timeout: 5000 });
     await page.locator('#choose-dialog [data-action="sw-color"]').nth(3).tap();
-    await page.waitForFunction((c) => { const el = [...document.querySelectorAll("#choose-dialog .sw-preview *")].find((e) => e.children.length === 0 && /周六的咖啡/.test(e.textContent)); return el && getComputedStyle(el.closest("[data-layer]") || el).color !== c; }, l1.color, { timeout: 5000 });
-    assert.ok((await look()).font !== l0.font);
-    passed.push("宋体 / A+ / a colour: each shows at once in the live page (no closing the sheet)");
+    await page.waitForFunction((c) => { const el = [...document.querySelectorAll(".story-canvas *")].find((e) => e.children.length === 0 && /周六的咖啡/.test(e.textContent)); return el && getComputedStyle(el.closest("[data-layer]") || el).color !== c; }, l1.color, { timeout: 5000 });
+    assert.ok((await lookPage()).font !== l0.font);
+    assert.equal(await page.locator('#choose-dialog .sw[data-size="compact"]').count(), 1, "compact while changing the type");
+    passed.push("宋体 / A+ / a colour: each shows at once on the real page above the compact sheet (no closing the sheet)");
 
     // 3. 保存 → the reader opens on the page this story made, not the day's first page.
     await page.locator('#choose-dialog [data-action="story-text-done"]').tap();

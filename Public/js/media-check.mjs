@@ -236,7 +236,7 @@ export function reportText({ env, result, events, version, now = new Date() }) {
     lines.push(`  ${item.status.padEnd(10)} ${item.kind.padEnd(6)} ${item.date || "-"}${item.page ? " p" + item.page : " cover"}${item.draft ? " draft" : ""} ${item.id || "-"} ${item.err || ""}`.trimEnd());
   if (events.length) {
     lines.push("recent media events:");
-    for (const e of events) lines.push(`  ${new Date(e.t).toISOString().slice(0, 19)} ${e.e}${e.kind ? " " + e.kind : ""}${e.stage ? " stage=" + e.stage : ""}${e.err ? " err=" + e.err : ""}${e.count != null ? " count=" + e.count : ""}`);
+    for (const e of events) lines.push(`  ${new Date(e.t).toISOString().slice(0, 19)} ${e.e}${e.kind ? " " + e.kind : ""}${e.stage ? " stage=" + e.stage : ""}${e.way ? " way=" + e.way : ""}${Number.isFinite(e.ms) ? " ms=" + e.ms : ""}${e.err ? " err=" + e.err : ""}${e.count != null ? " count=" + e.count : ""}`);
   }
   return lines.join("\n");
 }

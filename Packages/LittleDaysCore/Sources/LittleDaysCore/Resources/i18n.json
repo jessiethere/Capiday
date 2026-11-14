@@ -10202,5 +10202,21 @@
   "rs.snapUnknown": {
     "zh": "暂时读不到快照信息。",
     "en": "Snapshot info can’t be read right now."
+  },
+  "sw.compact": {
+    "zh": "Aa 字体",
+    "en": "Aa Type"
+  },
+  "sw.compactLabel": {
+    "zh": "只显示字体工具，看着页面调整",
+    "en": "Show only the type tools and watch the page"
+  },
+  "sw.expand": {
+    "zh": "✎ 写字",
+    "en": "✎ Write"
+  },
+  "sw.expandLabel": {
+    "zh": "回到写字",
+    "en": "Back to writing"
   }
 }

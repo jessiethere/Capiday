@@ -142,7 +142,8 @@ export function layerHTML(layer, ctx, options = {}) {
     inner =
       layer.kind === "video"
         ? `<span class="video-frame">${src ? `<video src="${esc(src)}" ${poster ? `poster="${esc(poster)}"` : ""} playsinline preload="metadata"></video>` : ""}${play}</span>`
-        : audioSkinHTML(skinOf(layer), clip, play, src ? `<audio src="${esc(src)}" preload="metadata"></audio>` : "");
+        : // V10.66: a voice note is small — load it whole ahead of the tap, so the first play starts at once.
+          audioSkinHTML(skinOf(layer), clip, play, src ? `<audio src="${esc(src)}" preload="auto"></audio>` : "");
     if (layer.kind === "audio") classes += ` skin-${skinOf(layer)}`;
   } else if (layer.kind === "growth") {
     classes += " growth-layer";
@@ -282,7 +283,7 @@ export function mediaCardHTML(clip, ctx, options = {}) {
   else if (clip.kind === "video")
     body = `<video controls playsinline preload="metadata" src="${esc(src)}" ${poster ? `poster="${esc(poster)}"` : ""}></video>`;
   else
-    body = `<div class="ld-player" data-player data-duration="${num(clip.duration, 0)}"><button type="button" class="ld-play" data-action="player-toggle" aria-label="${t("media.play")}" data-label-play="${t("media.play")}" data-label-pause="${t("media.pause")}"><span class="ld-play-icon" aria-hidden="true"></span></button><div class="ld-player-track"><input type="range" class="ld-seek" data-player-seek min="0" max="1000" step="1" value="0" aria-label="${t("media.progress")}"><div class="ld-time"><span class="ld-current">0:00</span><span class="media-duration">${formatDuration(clip.duration)}</span></div></div><span class="ld-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><audio preload="metadata" src="${esc(src)}"></audio></div>`;
+    body = `<div class="ld-player" data-player data-duration="${num(clip.duration, 0)}"><button type="button" class="ld-play" data-action="player-toggle" aria-label="${t("media.play")}" data-label-play="${t("media.play")}" data-label-pause="${t("media.pause")}"><span class="ld-play-icon" aria-hidden="true"></span></button><div class="ld-player-track"><input type="range" class="ld-seek" data-player-seek min="0" max="1000" step="1" value="0" aria-label="${t("media.progress")}"><div class="ld-time"><span class="ld-current">0:00</span><span class="media-duration">${formatDuration(clip.duration)}</span></div></div><span class="ld-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><audio preload="auto" src="${esc(src)}"></audio></div>`;
   const size =
     Number(clip.size || 0) > 0
       ? new Intl.NumberFormat(ctx.locale, { maximumFractionDigits: 1 }).format(

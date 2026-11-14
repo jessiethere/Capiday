@@ -6793,11 +6793,11 @@ details.check-history[open] > summary > span:first-child::after {
 /* V3.8 · Typing on a phone: menu and tool icons step aside; an open panel
    sits just above the keyboard so its options stay visible. */
 @media (pointer: coarse) {
-  body.typing .bottom-nav,
-  body.typing .tool-dock {
+  body.typing:not(.typing-dialog) .bottom-nav,
+  body.typing:not(.typing-dialog) .tool-dock {
     display: none;
   }
-  body.typing .app-scroll {
+  body.typing:not(.typing-dialog) .app-scroll {
     height: 100%;
   }
   body.typing-sheet .tool-dock-wrap {
@@ -7011,12 +7011,12 @@ details.check-history[open] > summary > span:first-child::after {
    status row at the top and the phone's home indicator at the bottom. */
 .phone.in-studio .app-scroll,
 .phone.signed-out .app-scroll,
-body.typing .phone .app-scroll {
+body.typing:not(.typing-dialog) .phone .app-scroll {
   height: calc(100% - 35px - env(safe-area-inset-bottom));
 }
 html[data-shell="ios"] .phone.in-studio .app-scroll,
 html[data-shell="ios"] .phone.signed-out .app-scroll,
-html[data-shell="ios"] body.typing .phone .app-scroll {
+html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
   height: calc(100% - env(safe-area-inset-top) - env(safe-area-inset-bottom));
 }
 
@@ -16312,7 +16312,7 @@ html[data-shell="ios"] .phone.sv ~ .toast {
 }
 /* A phone hides the bottom row while typing — the selected item's row too. */
 @media (pointer: coarse) {
-  body.typing .tool-dock.sv-tools.ctx {
+  body.typing:not(.typing-dialog) .tool-dock.sv-tools.ctx {
     display: none;
   }
 }
@@ -21190,7 +21190,7 @@ dialog.crop-editor::backdrop {
   gap: 8px;
 }
 /* while typing the item's tools step aside, and so does the line naming it */
-body.typing .ctx-caption {
+body.typing:not(.typing-dialog) .ctx-caption {
   display: none;
 }
 
@@ -24900,4 +24900,90 @@ body.typing .ctx-caption {
 }
 .restore-sheet .primary.full-width {
   margin-top: 8px;
+}
+
+/* V10.66 · a tapped voice note that has not started yet: a real "starting"
+   state (not "playing") until its time moves. */
+.ld-player.starting .ld-play {
+  position: relative;
+}
+.ld-player.starting .ld-play::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: var(--accent);
+  animation: ld-starting 0.8s linear infinite;
+}
+@keyframes ld-starting {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ld-player.starting .ld-play::after { animation: none; border-color: var(--accent); opacity: 0.5; }
+}
+
+/* V10.66 (P2) · 写字 · 改字体: two heights. Compact = the type tools only,
+   low at the bottom; the real page stays in sight above it. */
+.sw-head-btns {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+.sw-size-btn {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--c-fffdf8, #fffdf8);
+  color: var(--ink);
+  font: 600 14px var(--ui-sans);
+}
+.choose-sheet.sw .choose-grabber {
+  width: 48px;
+  height: 6px;
+  margin: 2px 0 4px;
+  touch-action: none;
+  cursor: grab;
+}
+.choose-sheet.sw[data-size="compact"] {
+  max-height: min(46dvh, 360px);
+}
+.choose-sheet.sw[data-size="compact"] .sw-preview,
+.choose-sheet.sw[data-size="compact"] .sw-moments,
+.choose-sheet.sw[data-size="compact"] .sw-strip,
+.choose-sheet.sw[data-size="compact"] .sw-edit,
+.choose-sheet.sw[data-size="compact"] .sw-optional,
+.choose-sheet.sw[data-size="compact"] .sw-more > summary {
+  display: none;
+}
+/* In compact the type tools show even if the keyboard was up a moment ago. */
+.choose-sheet.sw[data-size="compact"] .sw-type {
+  display: grid !important;
+}
+#choose-dialog:has(.choose-sheet.sw[data-size="compact"]) {
+  margin-bottom: 0;
+}
+
+/* V10.66 (P2) · Any bottom sheet with a field being typed in (e.g. a voice
+   note's 标题) sits right above the iPhone keyboard — measured with
+   visualViewport (--kb / --vv-h, updateVisibleArea), so the Chinese
+   candidate bar is included. The WKWebView keyboard covers the page
+   without shrinking it, so a sheet at the bottom was under the keyboard. */
+.choose-dialog[open]:has(:is(input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="file"]), textarea, [contenteditable="true"], [contenteditable="plaintext-only"]):focus) {
+  margin-bottom: var(--kb, 0px);
+  max-height: calc(var(--vv-h, 88dvh) - 8px);
+  transition: margin-bottom 0.18s ease-out;
+}
+/* 16 px: iOS does not zoom the page in when the field gets the caret. */
+.title-sheet input {
+  font-size: 16px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .choose-dialog[open] { transition: none; }
+}
+/* While the words sheet is open the page can scroll up behind it, so the
+   words being styled can always be brought above a compact sheet. */
+body:has(#choose-dialog[open] .choose-sheet.sw) #app-scroll {
+  padding-bottom: 60dvh;
 }

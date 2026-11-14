@@ -108,8 +108,8 @@ async function syntheticVideo(page) {
     await page.waitForSelector("#journal-canvas .audio-layer.playing", { timeout: 5000 });
     await page.waitForFunction(() => JSON.parse(localStorage.getItem("little-days.events") || "[]").some((e) => e.e === "media_play"));
     const plays = await events("media_play");
-    assert.equal(plays.at(-1).stage, "playing");
-    assert.equal(plays.at(-1).kind, "audio");
+    // V10.66: "playing" and then "moving" (time really advanced), both with the ms since the tap.
+    assert.ok(plays.some((e) => e.stage === "playing" && e.kind === "audio"), JSON.stringify(plays));
     passed.push("play: 'playing' shows only once sound plays (not on the tap); logged locally");
 
     // 3. A clip that cannot play says so (no silent "playing").

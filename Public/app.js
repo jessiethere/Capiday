@@ -5594,9 +5594,64 @@ document.addEventListener(
 // magazine page behind updates as you type.
 let storyWords = null; // { momentId, target: "moment" | <photo layer id> }
 let swTypeOpen = false; // V10.29: fonts and colours stay folded until asked for
+// V10.66 (P2, iPhone: the words sheet covered the page while changing the
+// type): two heights. "full" = writing (field, photo strip, a small live
+// view); "compact" = only the type tools, low at the bottom, so the real
+// page stays in sight above it while font / size / colour / alignment
+// change. Opening 更多样式 or touching a type tool goes compact; 写字 (or
+// dragging the handle up) goes back. Nothing in the page changes.
+let swCompact = false;
 document.addEventListener("toggle", (event) => {
   if (event.target.matches?.(".sw-more")) swTypeOpen = event.target.open;
 }, true);
+// Only a real tap on 更多样式 goes compact — not the sheet being drawn with it
+// already open (that would take the caret away from the words being typed).
+document.addEventListener("click", (event) => {
+  const summary = event.target.closest?.(".choose-sheet.sw .sw-more > summary");
+  if (!summary || summary.parentElement.open || swCompact) return;
+  requestAnimationFrame(() => setStoryTextSize(true));
+}, true);
+function swHeadHTML() {
+  const toggle = swCompact
+    ? `<button class="sw-size-btn" data-action="sw-expand" aria-label="${t("sw.expandLabel")}">${t("sw.expand")}</button>`
+    : `<button class="sw-size-btn" data-action="sw-compact" aria-label="${t("sw.compactLabel")}">${t("sw.compact")}</button>`;
+  return `<div class="sw-head"><h2>${t("sw.title")}</h2><span class="sw-head-btns">${toggle}<button class="sw-done" data-action="story-text-done">${t("pages.done")}</button></span></div>`;
+}
+function setStoryTextSize(compact) {
+  const sheet = $("#choose-dialog .choose-sheet.sw");
+  if (!sheet) return;
+  swCompact = compact;
+  sheet.dataset.size = compact ? "compact" : "full";
+  sheet.querySelector(".sw-head").outerHTML = swHeadHTML();
+  if (compact) {
+    swTypeOpen = true;
+    const more = sheet.querySelector(".sw-more");
+    if (more) more.open = true;
+    // The type tools are tapped, not typed: the keyboard goes away and the page shows.
+    const field = sheet.querySelector("[data-sw-text]");
+    if (field && document.activeElement === field) field.blur();
+  } else {
+    const field = sheet.querySelector("[data-sw-text]");
+    field?.focus({ preventScroll: true });
+    queueStoryPreview();
+  }
+  requestAnimationFrame(revealStoryTarget);
+}
+// Drag the handle (or the title) down for the type tools only, up for writing; a tap switches.
+let swDrag = null;
+document.addEventListener("pointerdown", (event) => {
+  const grip = event.target.closest?.(".choose-sheet.sw .choose-grabber, .choose-sheet.sw .sw-head h2");
+  if (grip) swDrag = { y: event.clientY, id: event.pointerId };
+});
+document.addEventListener("pointerup", (event) => {
+  if (!swDrag || event.pointerId !== swDrag.id) return;
+  const dy = event.clientY - swDrag.y;
+  swDrag = null;
+  if (dy > 36 && !swCompact) setStoryTextSize(true);
+  else if (dy < -36 && swCompact) setStoryTextSize(false);
+  else if (Math.abs(dy) < 8 && event.target.closest?.(".choose-grabber")) setStoryTextSize(!swCompact);
+});
+document.addEventListener("pointercancel", () => (swDrag = null));
 let storyWordsTimer = 0;
 // A3 · Words are never cut to fit. WORDS_MAX is only a safety net (the same
 // as a page's body text); near it the count shows, and at it the person is
@@ -5659,13 +5714,15 @@ function openStoryText(target = null) {
   else if (!storyWords || !moments.some((m) => m.id === storyWords.momentId)) storyWords = { momentId: moments[0].id, target: "moment" };
   const dialog = $("#choose-dialog");
   dialog.classList.add("see-through");
-  dialog.innerHTML = `<div class="choose-sheet story-text-sheet sw"><div class="choose-grabber" aria-hidden="true"></div><div class="sw-head"><h2>${t("sw.title")}</h2><button class="sw-done" data-action="story-text-done">${t("pages.done")}</button></div><div class="sw-preview" aria-hidden="true"></div><div class="sw-body">${storyWordsHTML()}</div></div>`;
+  swCompact = false;
+  dialog.innerHTML = `<div class="choose-sheet story-text-sheet sw" data-size="full"><div class="choose-grabber" aria-hidden="true"></div>${swHeadHTML()}<div class="sw-preview" aria-hidden="true"></div><div class="sw-body">${storyWordsHTML()}</div></div>`;
   if (!dialog.open) dialog.showModal();
   watchStoryPreview();
   dialog.addEventListener(
     "close",
     () => {
       dialog.classList.remove("see-through");
+      swCompact = false;
       swObserver?.disconnect();
       swObserver = null;
     },
@@ -5743,9 +5800,19 @@ function revealStoryTarget() {
   if (!scroll || !canvas || !storyWords) return;
   const layer = storyTargetLayer();
   const rect = canvas.getBoundingClientRect();
-  const y = layer ? rect.top + (rect.height * (Number(layer.y) || 50)) / 100 : rect.top;
   const sheetTop = $("#choose-dialog .sw")?.getBoundingClientRect().top || innerHeight * 0.55;
   const room = sheetTop - 12;
+  // V10.66: the words' whole box (not only its middle) stays in sight above the sheet.
+  // (the story page is drawn read-only: its layers carry no id, so the words are found by their text)
+  const said = String(layer?.text || "").trim();
+  const el = layer && (canvas.querySelector(`[data-layer="${CSS.escape(layer.id)}"]`) || (said && [...canvas.querySelectorAll(".layer")].find((x) => x.textContent.trim() === said)));
+  const box = el?.getBoundingClientRect();
+  if (box && box.height) {
+    if (box.top >= 70 && box.bottom <= room) return;
+    const centre = box.top + box.height / 2;
+    return scroll.scrollBy({ top: centre - Math.max(90, Math.min(room * 0.5, room - box.height / 2 - 8)), behavior: "smooth" });
+  }
+  const y = layer ? rect.top + (rect.height * (Number(layer.y) || 50)) / 100 : rect.top;
   if (y < 70 || y > room) scroll.scrollBy({ top: y - Math.max(90, room * 0.45), behavior: "smooth" });
 }
 // Typed words: kept at once on the Moment / photo; the page follows shortly.
@@ -5838,6 +5905,8 @@ function storyType(change) {
   refreshStoryCanvas();
   const tools = $("#choose-dialog .sw-type");
   if (tools) tools.outerHTML = storyTypeHTML();
+  // A bigger size can move the words: keep them in sight above the sheet.
+  if (swCompact) requestAnimationFrame(revealStoryTarget);
   logEvent("story_type", {});
 }
 async function saveStoryText() {
@@ -8203,7 +8272,7 @@ async function openMediaCheck() {
   const counts = result.counts;
   const problems = result.items.filter((i) => i.status !== "ok");
   const mediaHTML = `<h3>${t("check.media")}</h3>${result.referenced || problems.length ? `${row(t("check.used"), result.referenced)}${row(t("check.stored"), result.stored)}${MediaCheck.STATUSES.map((s) => row(t("check.s." + s), counts[s], s !== "ok" && s !== "unchecked" && counts[s] > 0)).join("")}${result.legacy ? row(t("check.legacy"), result.legacy) : ""}${result.unused ? row(t("check.unused"), result.unused) : ""}` : `<p class="check-note">${t("check.none")}</p>`}${problems.length ? `<ul class="check-list">${problems.slice(0, 60).map((i) => `<li><b>${t("check.s." + i.status)}</b> · ${t(i.kind === "video" ? "media.kindVideo" : i.kind === "audio" || i.kind === "clip" ? "check.clip" : "check.photo")} · ${esc(i.date || "")}${i.page ? " · " + t("check.page", { n: i.page }) : ""}${i.draft ? " · " + t("check.draft") : ""}${i.err ? ` · <code>${esc(i.err)}</code>` : ""}</li>`).join("")}</ul>` : ""}`;
-  const eventsHTML = `<h3>${t("check.events")}</h3>${events.length ? `<ul class="check-list">${events.slice(-12).reverse().map((e) => `<li>${esc(new Date(e.t).toLocaleString(locale(), { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }))} · ${t("check.e." + e.e) || esc(e.e)}${e.kind ? " · " + esc(e.kind) : ""}${e.stage ? " · " + esc(e.stage) : ""}${e.err ? ` · <code>${esc(e.err)}</code>` : ""}</li>`).join("")}</ul>` : `<p class="check-note">${t("check.noEvents")}</p>`}`;
+  const eventsHTML = `<h3>${t("check.events")}</h3>${events.length ? `<ul class="check-list">${events.slice(-12).reverse().map((e) => `<li>${esc(new Date(e.t).toLocaleString(locale(), { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }))} · ${t("check.e." + e.e) || esc(e.e)}${e.kind ? " · " + esc(e.kind) : ""}${e.stage ? " · " + esc(e.stage) : ""}${e.way ? " · " + esc(e.way) : ""}${Number.isFinite(e.ms) ? " · " + e.ms + " ms" : ""}${e.err ? ` · <code>${esc(e.err)}</code>` : ""}</li>`).join("")}</ul>` : `<p class="check-note">${t("check.noEvents")}</p>`}`;
   body.innerHTML = `${mediaHTML}${envHTML}${eventsHTML}<button class="primary full-width" data-action="media-check-copy">${t("check.copy")}</button><textarea class="check-text" readonly aria-label="${t("check.copy")}" hidden></textarea>`;
   logEvent("media_check", { count: problems.length });
 }
@@ -9231,6 +9300,8 @@ async function action(target) {
       if (leaving) relayoutStoryWords([leaving]);
       return refreshStoryWords(true);
     }
+    if (actionName === "sw-compact" || actionName === "sw-expand") return setStoryTextSize(actionName === "sw-compact");
+    if (["sw-font", "sw-color", "sw-align", "sw-bold", "sw-size"].includes(actionName) && !swCompact) setStoryTextSize(true);
     if (actionName === "sw-font") return storyType((x) => ({ ...x, fontId: target.dataset.font || null }));
     if (actionName === "sw-color") return storyType((x) => ({ ...x, color: x.color === target.dataset.color ? null : target.dataset.color }));
     if (actionName === "sw-align") return storyType((x) => ({ ...x, align: x.align === target.dataset.align ? null : target.dataset.align }));
@@ -11540,8 +11611,8 @@ async function v31Action(target) {
       if (element.paused) {
         if (!recorder) setAudioSession("playback");
         const kind = element.tagName === "VIDEO" ? "video" : "audio";
-        const started = Date.now();
-        const played = () => logEvent("media_play", { kind, stage: "playing", ms: Date.now() - started });
+        markTap(element);
+        const played = () => {};
         element
           .play()
           .then(played)
@@ -12764,10 +12835,47 @@ async function audioPeaks(blob) {
     return null;
   }
 }
+// The waveform of a new sound, added to the clip once it is known — without
+// an undo step, and only if the clip is still there. Nothing waits for it.
+async function fillPeaks(clipId, blob) {
+  const peaks = await audioPeaks(blob);
+  if (!peaks) return;
+  const patch = (entry) => {
+    for (const pg of [entry, ...(entry?.moments || [])]) {
+      const clip = (pg?.media || []).find((c) => c.id === clipId);
+      if (clip && !clip.peaks) {
+        clip.peaks = peaks;
+        return true;
+      }
+    }
+    return false;
+  };
+  if (editor && patch(editor)) {
+    for (const snapshot of [...history, ...future]) patch(snapshot); // undo / redo keep the same waveform
+    scheduleDraft();
+    // Only the bars are redrawn, in place: re-rendering the page would replace
+    // the <audio> element and cut off a sound that is already playing.
+    const pages = [editor, ...(editor.moments || [])];
+    for (const layer of pages.flatMap((pg) => pg.layers || []).filter((l) => l.clipId === clipId)) {
+      const wave = document.querySelector(`[data-layer="${CSS.escape(layer.id)}"] .audio-wave`);
+      if (wave) wave.innerHTML = Voice.peaksOf({ peaks }).map((v) => `<i style="--h:${Math.round(v * 100)}%"></i>`).join("");
+    }
+    return;
+  }
+  try {
+    store.update((s) => {
+      for (const entry of [...(s.entries || []), ...Object.values(s.drafts || {})]) if (patch(entry)) return;
+    });
+  } catch {}
+}
 async function attachClip(blob, kind, name, duration = 0, options = {}) {
   options.onStage?.("write");
   const mediaId = await media.put(blob, { kind, name, duration }, "studio");
-  const peaks = kind === "audio" ? await audioPeaks(blob) : null;
+  // V10.66: the clip goes on the page as soon as its file is saved. Its
+  // waveform (decorative) is worked out afterwards — before, the save waited
+  // for decodeAudioData (up to 6 s on an iPhone) and that decode kept running
+  // while the person pressed play.
+  const peaks = null;
   // Videos get a first cover right away (changeable later).
   options.onStage?.("cover");
   const poster = kind === "video" ? await autoCover(mediaId, duration) : "";
@@ -12788,6 +12896,7 @@ async function attachClip(blob, kind, name, duration = 0, options = {}) {
       ...(peaks ? { peaks } : {}),
     };
     page.media.push(clip);
+    if (kind === "audio") setTimeout(() => fillPeaks(clip.id, blob), 0);
     // New clips go straight onto the paper, like photos; a video keeps its
     // own orientation (portrait phone videos stand upright).
     const spot = clipSpot(page, entry, clip);
@@ -13036,12 +13145,15 @@ async function startRecording() {
   busyMedia = true;
   try {
     setAudioSession("play-and-record");
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    // V10.66: no echo cancellation for a voice note (nothing plays while it
+    // records). On an iPhone, echo cancellation records through Apple's
+    // voice-processing audio unit, which turns other sound down and can route
+    // it to the earpiece — and that can last a while after recording stops,
+    // so the first play right after could not be heard.
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false } });
     voice.mic = "granted";
     recordingStream = stream;
-    const mime = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm"].find(
-      (type) => MediaRecorder.isTypeSupported(type),
-    );
+    const mime = Voice.recordingMime(navigator.userAgent, (type) => MediaRecorder.isTypeSupported(type));
     const current = new MediaRecorder(stream, mime ? { mimeType: mime } : {});
     recorder = current;
     recordingTargetId = activeMomentId;
@@ -13177,12 +13289,45 @@ function togglePlayer(button) {
   if (!audio) return;
   if (audio.paused) {
     if (!recorder) setAudioSession("playback");
+    markTap(audio);
     audio.play().catch((error) => {
       logEvent("media_play", { kind: "audio", stage: "failed", err: playErr(error, audio) });
       toast(t("media.missing"));
     });
   } else audio.pause();
 }
+// V10.66 · How long a tap really takes to be heard, written to the local log
+// (Settings → 媒体检查 shows it): "playing" = the element says it plays,
+// "moving" = its time has really advanced. Nothing is faked: the player
+// shows "starting" until then.
+const tapAt = new WeakMap();
+function markTap(element) {
+  tapAt.set(element, { at: performance.now(), playing: false });
+  const player = element.closest?.("[data-player]");
+  player?.classList.add("starting");
+}
+for (const type of ["playing", "timeupdate"])
+  document.addEventListener(
+    type,
+    (event) => {
+      const element = event.target;
+      const tap = element?.matches?.("audio,video") && tapAt.get(element);
+      if (!tap) return;
+      const kind = element.tagName === "VIDEO" ? "video" : "audio";
+      const fresh = element.dataset.played ? "again" : "first";
+      if (type === "playing" && !tap.playing) {
+        tap.playing = true;
+        logEvent("media_play", { kind, stage: "playing", way: fresh, ms: performance.now() - tap.at });
+      }
+      if (type === "timeupdate" && element.currentTime > 0.05) {
+        tapAt.delete(element);
+        element.dataset.played = "1";
+        element.closest?.("[data-player]")?.classList.remove("starting");
+        logEvent("media_play", { kind, stage: "moving", way: fresh, ms: performance.now() - tap.at });
+      }
+    },
+    true,
+  );
 function playerDuration(audio, player) {
   return Number.isFinite(audio.duration) && audio.duration > 0
     ? audio.duration
@@ -13206,8 +13351,11 @@ function updatePlayer(audio) {
       .closest(".media-card")
       ?.querySelectorAll(".media-duration")
       .forEach((label) => (label.textContent = formatDuration(duration)));
-  const playing = !audio.paused && !audio.ended;
+  // "Playing" only once it really plays (V10.66: the card turned to
+  // "playing" on the request, so a slow start looked like silence).
+  const playing = !audio.paused && !audio.ended && audio.readyState >= 3 && !tapAt.has(audio);
   player.classList.toggle("playing", playing);
+  if (audio.paused || audio.ended) player.classList.remove("starting");
   const button = player.querySelector(".ld-play");
   button.setAttribute(
     "aria-label",
@@ -13217,6 +13365,7 @@ function updatePlayer(audio) {
 }
 for (const type of [
   "play",
+  "playing",
   "pause",
   "ended",
   "timeupdate",
@@ -13624,13 +13773,17 @@ document.addEventListener("focusin", (event) => {
   typingFocusAt = performance.now();
   document.body.classList.add("typing");
   document.body.classList.toggle("typing-sheet", Boolean(event.target.closest(".tool-sheet")));
+  // V10.66 (P2): a field in a sheet / dialog (e.g. a voice note's 标题). The
+  // sheet itself moves above the keyboard; the editor behind it must not
+  // re-lay out (hiding its tool rows made the paper jump 46 px and back).
+  document.body.classList.toggle("typing-dialog", Boolean(event.target.closest("dialog[open]")));
   setTimeout(keepFieldInView, 250);
 });
 document.addEventListener("focusout", () => {
   // Moving from one field to the next keeps typing mode on.
   typingTimer = setTimeout(() => {
     if (document.activeElement?.matches?.(TYPING_FIELD)) return;
-    document.body.classList.remove("typing", "typing-sheet");
+    document.body.classList.remove("typing", "typing-sheet", "typing-dialog");
   }, 120);
 });
 // iPhone: closing the keyboard (or tapping elsewhere) can leave the caret in
@@ -13644,7 +13797,7 @@ function leaveTyping() {
   const field = document.activeElement;
   if (field?.matches?.(TYPING_FIELD)) field.blur();
   clearTimeout(typingTimer);
-  document.body.classList.remove("typing", "typing-sheet");
+  document.body.classList.remove("typing", "typing-sheet", "typing-dialog");
 }
 window.visualViewport?.addEventListener("resize", () => {
   const vv = window.visualViewport;

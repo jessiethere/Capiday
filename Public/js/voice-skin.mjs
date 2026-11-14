@@ -62,3 +62,15 @@ export function clock(seconds) {
   const s = Math.max(0, Math.floor(Number(seconds) || 0));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
+
+// V10.66 (P1, iPhone: a new recording played ~7 s late): which format a
+// voice note is recorded in. On Apple WebKit (the iPhone app, Safari) AAC in
+// MP4 — the format iOS plays natively; WebM/Opus goes through WebKit's own
+// WebM player there, and once stored its duration is lost (NaN in the
+// Simulator probe tools/mac/uitest/voice-latency.js) and it is ~6× larger.
+// Other browsers keep WebM/Opus. Recordings already saved are not changed.
+export function recordingMime(ua = "", isSupported = () => false) {
+  const appleWebKit = /AppleWebKit/.test(ua) && !/Chrome|Chromium|CriOS|Edg|OPR|Firefox|FxiOS/.test(ua);
+  const order = appleWebKit ? ["audio/mp4", "audio/webm;codecs=opus", "audio/webm"] : ["audio/webm;codecs=opus", "audio/mp4", "audio/webm"];
+  return order.find((type) => isSupported(type)) || "";
+}

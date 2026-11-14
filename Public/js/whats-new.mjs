@@ -4,6 +4,26 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.66",
+    date: "2026-11-14",
+    zh: {
+      title: "录音、标题、字体面板：三处 iPhone 修复",
+      items: [
+        "新录的语音：在 iPhone 上改用系统原生的 AAC 格式录制，不再开回声消除；录完立刻放到页面上（波形稍后补上），播放器在真正出声前显示「准备中」而不是假装在播放。已有的录音不变。",
+        "选中声音后点「标题」：输入框会停在键盘（含中文候选栏）上方，后面的编辑器不再跳动。",
+        "「写字 · 改字体」：点「Aa 字体」或改字体、字号、颜色、对齐时，面板收成一条低矮的工具栏，上面直接看到真实页面的文字效果；点「✎ 写字」或把把手往上拖回到写字。",
+      ],
+    },
+    en: {
+      title: "Three iPhone fixes: voice notes, titles, the type sheet",
+      items: [
+        "New voice notes on iPhone are recorded in the system's own AAC format without echo cancellation, go onto the page at once (the waveform follows), and the player shows “starting” until sound really plays. Existing recordings are unchanged.",
+        "A voice note's Title field now sits above the keyboard (and the Chinese candidate bar); the editor behind it no longer jumps.",
+        "Words & type: tap “Aa Type” or change the font, size, colour or alignment and the sheet folds down to a low tool row, so you see the real page change above it; “✎ Write” or dragging the handle up goes back.",
+      ],
+    },
+  },
+  {
     version: "10.65",
     date: "2026-11-14",
     zh: {

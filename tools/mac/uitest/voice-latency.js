@@ -14,9 +14,9 @@ function setSession(type) {
     if (navigator.audioSession && navigator.audioSession.type !== type) navigator.audioSession.type = type;
   } catch {}
 }
-async function record(mime) {
+async function record(mime, constraints = { echoCancellation: false }) {
   setSession("play-and-record");
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: constraints });
   const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : {});
   const chunks = [];
   rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
@@ -30,7 +30,8 @@ async function record(mime) {
   const stopMs = now() - tStop;
   stream.getTracks().forEach((t) => t.stop());
   setSession("playback");
-  return { blob: new Blob(chunks, { type: rec.mimeType }), recMime: rec.mimeType, chunks: chunks.length, stopMs, recordedMs: tStop - t0 };
+  const settings = stream.getAudioTracks()[0]?.getSettings?.() || {};
+  return { blob: new Blob(chunks, { type: rec.mimeType }), recMime: rec.mimeType, chunks: chunks.length, stopMs, recordedMs: tStop - t0, echo: settings.echoCancellation };
 }
 async function silence(blob) {
   try {
@@ -95,7 +96,7 @@ for (const mime of ["audio/webm;codecs=opus", "audio/mp4"]) {
   }
   try {
     const rec = await record(mime);
-    const f = { recMime: rec.recMime, size: rec.blob.size, chunks: rec.chunks, stopMs: rec.stopMs, ...(await silence(rec.blob)) };
+    const f = { recMime: rec.recMime, echo: rec.echo, size: rec.blob.size, chunks: rec.chunks, stopMs: rec.stopMs, ...(await silence(rec.blob)) };
     f.player = await player(rec.blob);
     // The same bytes after the app's save path: an ArrayBuffer turned back into a Blob.
     const copy = new Blob([await rec.blob.arrayBuffer()], { type: rec.blob.type });
@@ -105,6 +106,7 @@ for (const mime of ["audio/webm;codecs=opus", "audio/mp4"]) {
     out.formats[mime] = "error:" + e.name + ":" + e.message;
   }
 }
-out.appWouldRecord = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm"].find((t) => MediaRecorder.isTypeSupported(t)) || "";
+// What the app records in since V10.66 (Apple WebKit: AAC/MP4 first).
+out.appWouldRecord = ["audio/mp4", "audio/webm;codecs=opus", "audio/webm"].find((t) => MediaRecorder.isTypeSupported(t)) || "";
 out.sessionEnd = navigator.audioSession ? navigator.audioSession.type : "none";
 return JSON.stringify(out);
