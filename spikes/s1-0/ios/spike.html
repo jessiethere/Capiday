@@ -1,0 +1,116 @@
+<!doctype html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Capiday S1-0 spike</title>
+<style>body{font:13px -apple-system,sans-serif;padding:24px 14px;background:#fffdf8}pre{white-space:pre-wrap;word-break:break-all;margin:4px 0}</style>
+<h3>Capiday S1-0 spike (synthetic data only)</h3>
+<script type="module">
+// Runs once, writes Documents/spike-results.json through the native handler.
+const out = { userAgent: navigator.userAgent, isSecureContext, startedAt: new Date().toISOString(), tests: {} };
+const log = (key, value) => {
+  out.tests[key] = value;
+  const pre = document.createElement("pre");
+  pre.textContent = `${key}: ${JSON.stringify(value)}`;
+  document.body.append(pre);
+};
+const blobOf = (mb) => {
+  const a = new Uint8Array(mb << 20);
+  for (let i = 0; i < a.length; i += 4096) a[i] = (i >> 12) & 255;
+  return new Blob([a], { type: "application/octet-stream" });
+};
+const b64 = (blob) =>
+  new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).slice(String(r.result).indexOf(",") + 1));
+    r.onerror = () => reject(r.error);
+    r.readAsDataURL(blob);
+  });
+const hex = (buf) => [...new Uint8Array(buf)].map((x) => x.toString(16).padStart(2, "0")).join("");
+const native = window.webkit?.messageHandlers?.spikeChunk;
+
+// T1 · crypto.subtle on the custom littledays:// origin
+try {
+  const t = performance.now();
+  const d = await crypto.subtle.digest("SHA-256", await blobOf(16).arrayBuffer());
+  log("subtle", { ok: true, ms16MB: Math.round(performance.now() - t), sample: hex(d).slice(0, 16) });
+} catch (e) {
+  log("subtle", { ok: false, err: String(e) });
+}
+
+// T2 · fetch(PUT, Blob) → WKURLSchemeHandler: is the body delivered?
+for (const mb of [1, 16, 50]) {
+  const blob = blobOf(mb);
+  const expect = hex(await crypto.subtle.digest("SHA-256", await blob.arrayBuffer()).catch(() => new ArrayBuffer(0)));
+  const t = performance.now();
+  try {
+    const r = await fetch(`littledays://app/spike/put?mb=${mb}`, { method: "PUT", body: blob });
+    const j = await r.json();
+    log(`putBlob${mb}MB`, { ...j, shaMatches: expect ? j.sha256 === expect : "n/a", jsMs: Math.round(performance.now() - t) });
+  } catch (e) {
+    log(`putBlob${mb}MB`, { err: String(e) });
+  }
+}
+// The same with an ArrayBuffer body (16 MB).
+try {
+  const buf = await blobOf(16).arrayBuffer();
+  const r = await fetch("littledays://app/spike/put?mb=16&kind=ab", { method: "PUT", body: buf });
+  log("putArrayBuffer16MB", await r.json());
+} catch (e) {
+  log("putArrayBuffer16MB", { err: String(e) });
+}
+
+// T3 · base64 chunks through a reply handler: 50 MB in 4 MB chunks (backpressure: await each reply)
+if (native) {
+  try {
+    const blob = blobOf(50);
+    await native.postMessage({ op: "begin" });
+    const t = performance.now();
+    for (let o = 0; o < blob.size; o += 4 << 20) await native.postMessage({ op: "chunk", b64: await b64(blob.slice(o, o + (4 << 20))) });
+    const r = await native.postMessage({ op: "end" });
+    const expect = hex(await crypto.subtle.digest("SHA-256", await blob.arrayBuffer()).catch(() => new ArrayBuffer(0)));
+    const ms = Math.round(performance.now() - t);
+    log("base64Chunks50MB", { ...r, shaMatches: expect ? r.sha256 === expect : "n/a", jsMs: ms, MBps: +(50 / (ms / 1000)).toFixed(1) });
+  } catch (e) {
+    log("base64Chunks50MB", { err: String(e) });
+  }
+} else log("base64Chunks50MB", { err: "no native handler" });
+
+// T4 · pull model: a 50 MB streamed response read as a Blob
+try {
+  const t = performance.now();
+  const r = await fetch("littledays://app/spike/get?mb=50");
+  const blob = await r.blob();
+  const ms = Math.round(performance.now() - t);
+  log("pullGet50MB", { bytes: blob.size, ms, MBps: +(50 / (ms / 1000)).toFixed(1) });
+} catch (e) {
+  log("pullGet50MB", { err: String(e) });
+}
+
+// T5 · IndexedDB: one 50 MB record written and read back (what a media.get costs)
+try {
+  const db = await new Promise((res, rej) => { const q = indexedDB.open("capiday-spike", 1); q.onupgradeneeded = () => q.result.createObjectStore("m"); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); });
+  const bytes = await blobOf(50).arrayBuffer();
+  let t = performance.now();
+  await new Promise((res, rej) => { const tx = db.transaction("m", "readwrite"); tx.objectStore("m").put({ bytes }, "x"); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+  const putMs = Math.round(performance.now() - t);
+  t = performance.now();
+  const got = await new Promise((res, rej) => { const g = db.transaction("m").objectStore("m").get("x"); g.onsuccess = () => res(g.result); g.onerror = () => rej(g.error); });
+  log("indexedDB50MB", { putMs, getMs: Math.round(performance.now() - t), bytes: got.bytes.byteLength });
+  db.close();
+  indexedDB.deleteDatabase("capiday-spike");
+} catch (e) {
+  log("indexedDB50MB", { err: String(e) });
+}
+
+// T6 · native container: 20 × 50 MB written + verified by Swift (page memory not involved)
+try {
+  const r = await fetch("littledays://app/spike/zip?count=20");
+  log("nativeZip1GB", await r.json());
+} catch (e) {
+  log("nativeZip1GB", { err: String(e) });
+}
+
+out.finishedAt = new Date().toISOString();
+await native?.postMessage({ op: "done", json: JSON.stringify(out) });
+log("done", true);
+</script>
