@@ -7,6 +7,7 @@ import { cropView } from "./crop.mjs";
 import { captionFit } from "./story-style.mjs";
 import { boundText, boundMarks } from "./scrapbook-layout.mjs";
 import { richHTML } from "./rich-text.mjs";
+import { skinOf, peaksOf, clock } from "./voice-skin.mjs";
 // Words with their formatting (bold / italic / underline / strikethrough on
 // parts of the text); plain text when a page has none.
 const rich = (text, marks) => richHTML(text, marks, esc);
@@ -87,6 +88,21 @@ export function growthCardInner(check, habit, ctx, layer = {}) {
   return `<span class="growth-card"><span class="growth-card-top"><span class="growth-check" aria-hidden="true"></span><b>${esc(habit.title)}</b>${check.mood ? `<i>${esc(check.mood)}</i>` : ""}</span>${facts.length ? `<small>${esc(facts.join(" · "))}</small>` : ""}${check.note ? `<span class="growth-card-note">${esc(check.note)}</span>` : ""}</span>`;
 }
 
+// V10.63 · one sound clip, three looks (js/voice-skin.mjs). The real play key
+// is the only control; the bars fill as it plays, and the time is always shown
+// (a turning record or reel is not the only sign of where it is). ⏮ ⏭ on the
+// recorder are only drawings (hidden from VoiceOver).
+export function audioSkinHTML(skin, clip, play, audio) {
+  const title = `<b class="audio-title">${esc(clip.name)}</b>`;
+  const time = `<span class="audio-time"><span class="audio-now">0:00</span> / ${clock(clip.duration)}</span>`;
+  const bars = `<span class="audio-wave" aria-hidden="true">${peaksOf(clip).map((v) => `<i style="--h:${Math.round(v * 100)}%"></i>`).join("")}</span>`;
+  if (skin === "recorder")
+    return `<span class="audio-ticket skin-recorder"><span class="rec-window" aria-hidden="true"><i class="reel"></i><i class="rec-tape"></i><i class="reel"></i></span><span class="rec-label">${title}${time}</span><span class="rec-keys"><i aria-hidden="true">⏮</i>${play}<i aria-hidden="true">⏭</i></span>${audio}</span>`;
+  if (skin === "vinyl")
+    return `<span class="audio-ticket skin-vinyl"><span class="vinyl-disc" aria-hidden="true"><i class="vinyl-label"></i></span><span class="vinyl-sleeve"><small class="vinyl-kicker" aria-hidden="true">SIDE A</small>${title}${time}${play}</span>${audio}</span>`;
+  return `<span class="audio-ticket skin-minimal">${play}<span class="audio-copy">${title}${bars}${time}</span>${audio}</span>`;
+}
+
 export function layerHTML(layer, ctx, options = {}) {
   const { catalog, media, t, state } = ctx;
   const readOnly = Boolean(options.readOnly),
@@ -126,7 +142,8 @@ export function layerHTML(layer, ctx, options = {}) {
     inner =
       layer.kind === "video"
         ? `<span class="video-frame">${src ? `<video src="${esc(src)}" ${poster ? `poster="${esc(poster)}"` : ""} playsinline preload="metadata"></video>` : ""}${play}</span>`
-        : `<span class="audio-ticket">${play}<span class="audio-copy"><b>${esc(clip.name)}</b><span class="audio-wave" aria-hidden="true">${"<i></i>".repeat(12)}</span></span>${src ? `<audio src="${esc(src)}" preload="metadata"></audio>` : ""}</span>`;
+        : audioSkinHTML(skinOf(layer), clip, play, src ? `<audio src="${esc(src)}" preload="metadata"></audio>` : "");
+    if (layer.kind === "audio") classes += ` skin-${skinOf(layer)}`;
   } else if (layer.kind === "growth") {
     classes += " growth-layer";
     const check = state?.checks.find(

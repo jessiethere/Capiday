@@ -125,14 +125,15 @@ const lib = path.join(__dirname, "../Packages/LittleDaysCore/Sources/LittleDaysC
       assert.equal(places(await oldNow()), before, "after a reload");
       await SS.menu(page, "calendar");
       await page.locator(`[data-action="select-date"][data-date="${today}"]`).first().tap();
-      await page.waitForSelector(".day-detail .day-contents");
-      await page.locator(".day-contents button").first().tap();
+      await page.waitForSelector('.day-detail [data-action="day-toc"]');
+      await page.locator('.day-detail [data-action="day-toc"]').tap();
+      await page.locator(".day-toc-read").first().tap();
       await page.waitForSelector("#phone.in-reader");
       await SS.leaveReader(page);
       assert.equal(places(await oldNow()), before, "after the calendar and the reader");
       await SS.menu(page, "calendar");
       await page.locator(`[data-action="select-date"][data-date="${today}"]`).first().tap();
-      await page.waitForSelector(".day-detail .day-contents");
+      await page.waitForSelector('.day-detail [data-action="day-toc"]');
       await page.locator('.day-detail .chapter-edit[data-moment="old-pair-page"]').tap();
       await page.waitForSelector("#canvas-wrap");
       await page.waitForTimeout(300);

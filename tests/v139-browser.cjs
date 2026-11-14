@@ -31,6 +31,12 @@ const ACCOUNT = JSON.stringify({ version: 1, method: "local", name: "", avatar: 
     page.on("dialog", (d) => errors.push(`native dialog: ${d.message()}`));
     await page.goto(base);
     await page.waitForSelector(".hero");
+    // V10.62: a real first start meets the Home guide (v158); 我自己探索 closes it.
+    if (!ls) {
+      await page.waitForSelector('#home-guide[data-step="welcome"]');
+      await page.locator('#home-guide [data-action="hg-skip"]').tap();
+      await page.waitForFunction(() => !document.querySelector("#home-guide"));
+    }
     return { context, page, errors };
   };
   const journal = (page) => page.evaluate(async () => {

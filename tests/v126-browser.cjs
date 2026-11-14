@@ -56,27 +56,35 @@ const sets = [["latte-art", "corner-cafe"], ["beach-day", "balloons", "above-clo
       // ---------------------------------------------- Flow E: the day's list tells them apart
       await SS.menu(page, "calendar");
       await page.locator(`[data-action="select-date"][data-date="${today}"]`).first().tap();
-      await page.waitForSelector(".day-detail .day-contents");
+      // V10.61: the list of pages is behind 目录 (a sheet), the pages come first.
+      await page.waitForSelector('.day-detail [data-action="day-toc"]');
       await noUntitled("calendar day");
-      const rows = await page.$$eval(".day-contents button b", (els) => els.map((e) => e.innerText.trim()));
+      await page.locator('.day-detail [data-action="day-toc"]').tap();
+      await page.waitForSelector(".day-toc-sheet .day-toc-row");
+      await noUntitled("calendar day contents");
+      const rows = await page.$$eval(".day-toc-row b", (els) => els.map((e) => e.innerText.trim()));
       // V10.58: these sample files carry only a file date — not a capture time — so the page has no time of its own.
       const want = zh ? [/^(\d\d:\d\d · )?2 张照片$/, /^(\d\d:\d\d · )?3 张照片$/, /^(\d\d:\d\d · )?1 张照片$/] : [/^(\d\d:\d\d · )?2 photos$/, /^(\d\d:\d\d · )?3 photos$/, /^(\d\d:\d\d · )?1 photo$/];
       rows.forEach((row, i) => assert.match(row, want[i], JSON.stringify(rows)));
-      assert.equal(await page.locator(".day-contents img.day-contents-thumb").count(), 3, "a picture for each page");
-      assert.equal(await page.locator(".day-detail .title-add").count(), 3);
-      assert.match(await page.locator(".day-detail .title-add").first().innerText(), zh ? /起个名字（选填）/ : /Add a name \(optional\)/);
-      if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/v126-day-${run.lang}-${run.w}.png` });
-      // a row opens that page in the reader
-      await page.locator(".day-contents button").nth(1).tap();
+      assert.equal(await page.locator(".day-toc-thumb img").count(), 3, "a picture for each page");
+      if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/v126-toc-${run.lang}-${run.w}.png` });
+      // a row's ↗ opens that page in the reader
+      await page.locator(".day-toc-read").nth(1).tap();
       await page.waitForSelector("#phone.in-reader");
       await noUntitled("reader from the day list");
       await SS.leaveReader(page);
+      await SS.menu(page, "calendar");
+      await page.locator(`[data-action="select-date"][data-date="${today}"]`).first().tap();
+      await page.waitForSelector('.day-detail [data-action="day-toc"]');
+      assert.equal(await page.locator(".day-detail .title-add").count(), 3);
+      assert.match(await page.locator(".day-detail .title-add").first().innerText(), zh ? /起个名字（选填）/ : /Add a name \(optional\)/);
+      if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/v126-day-${run.lang}-${run.w}.png` });
       passed.push(`${run.lang} ${run.w}: the day's list reads ${rows.join(" / ")} with a picture each; the optional name link says so; a row opens the reader`);
 
       // ---------------------------------------------- Flow D: add a title later, then remove it
       await SS.menu(page, "calendar");
       await page.locator(`[data-action="select-date"][data-date="${today}"]`).first().tap();
-      await page.waitForSelector(".day-detail .day-contents");
+      await page.waitForSelector('.day-detail [data-action="day-toc"]');
       const first = entry.moments[0];
       const layersBefore = first.layers.length;
       const title = page.locator(`.day-detail [data-title-edit][data-moment="${first.id}"]`);
@@ -84,13 +92,19 @@ const sets = [["latte-art", "corner-cafe"], ["beach-day", "balloons", "above-clo
       await page.keyboard.type(zh ? "周六的咖啡" : "Saturday coffee");
       await page.keyboard.press("Enter");
       await page.waitForFunction(([d, id, v]) => JSON.parse(localStorage.getItem("little-days.v1")).entries.find((e) => e.date === d).moments.find((m) => m.id === id).title === v, [today, first.id, zh ? "周六的咖啡" : "Saturday coffee"]);
-      await page.waitForFunction((v) => document.querySelector(".day-contents button b")?.innerText.includes(v), zh ? "周六的咖啡" : "Saturday coffee");
+      await page.waitForFunction((v) => document.querySelector(`.day-detail .chapter-title`)?.innerText.includes(v), zh ? "周六的咖啡" : "Saturday coffee");
+      await page.locator('.day-detail [data-action="day-toc"]').tap();
+      await page.waitForFunction((v) => document.querySelector(".day-toc-row b")?.innerText.includes(v), zh ? "周六的咖啡" : "Saturday coffee");
+      await page.locator('#choose-dialog [data-action="choose-close"]').tap();
+      await page.waitForFunction(() => !document.querySelector("#choose-dialog").open);
       await title.dblclick();
       await page.keyboard.press("ControlOrMeta+a");
       await page.keyboard.press("Backspace");
       await page.locator(".day-masthead").click();
       await page.waitForFunction(([d, id]) => JSON.parse(localStorage.getItem("little-days.v1")).entries.find((e) => e.date === d).moments.find((m) => m.id === id).title === "", [today, first.id]);
-      await page.waitForFunction((re) => new RegExp(re).test(document.querySelector(".day-contents button b")?.innerText || ""), zh ? "^(\\d\\d:\\d\\d · )?2 张照片$" : "^(\\d\\d:\\d\\d · )?2 photos$");
+      await page.locator('.day-detail [data-action="day-toc"]').tap();
+      await page.waitForFunction((re) => new RegExp(re).test(document.querySelector(".day-toc-row b")?.innerText || ""), zh ? "^(\\d\\d:\\d\\d · )?2 张照片$" : "^(\\d\\d:\\d\\d · )?2 photos$");
+      await page.locator('#choose-dialog [data-action="choose-close"]').tap();
       const after = (await saved()).moments[0];
       assert.equal(after.layers.length, layersBefore, "photos and words untouched");
       await noUntitled("calendar after removing the title");

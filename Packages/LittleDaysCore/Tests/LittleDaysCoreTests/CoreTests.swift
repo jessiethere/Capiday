@@ -167,6 +167,14 @@ final class CoreTests: XCTestCase {
         // V10.19: a photo's own words and the line bound to them, and a page's quick type.
         let captioned = try JSONDecoder().decode(StickerLayer.self, from: Data(#"{"id":"p1","kind":"photo","text":"a.jpg","x":50,"y":40,"scale":1,"rotation":0,"mediaRef":"media:p1","caption":"第一杯：拉花是一只小熊"}"#.utf8))
         XCTAssertEqual(captioned.caption, "第一杯：拉花是一只小熊")
+        // V10.63: a sound's look on the paper and its 20 bars (optional; older ones have neither).
+        let vinyl = try JSONDecoder().decode(StickerLayer.self, from: Data(#"{"id":"a1","kind":"audio","text":"","x":50,"y":80,"scale":1,"rotation":0,"clipId":"c1","w":56,"skin":"vinyl"}"#.utf8))
+        XCTAssertEqual(vinyl.skin, "vinyl")
+        XCTAssertEqual(try JSONDecoder().decode(StickerLayer.self, from: JSONEncoder().encode(vinyl)).skin, "vinyl")
+        let voice = try JSONDecoder().decode(JournalMedia.self, from: Data(#"{"id":"c1","kind":"audio","name":"Voice","mime":"audio/webm","source":"media:c1","duration":12,"peaks":[0.2,1,0.5]}"#.utf8))
+        XCTAssertEqual(voice.peaks?.count, 3)
+        let oldVoice = try JSONDecoder().decode(JournalMedia.self, from: Data(#"{"id":"c1","kind":"audio","name":"Voice","mime":"audio/webm","source":"media:c1"}"#.utf8))
+        XCTAssertNil(oldVoice.peaks)
         // V10.60: a book's page order (optional; older books have none).
         let ordered = try JSONDecoder().decode(JournalBook.self, from: Data(#"{"id":"b","title":"T","category":"c","color":"blush","cover":"🌷","pageOrder":"custom","customOrder":["2026-11-13|m1","2026-11-10|"]}"#.utf8))
         XCTAssertEqual(ordered.pageOrder, "custom")

@@ -9774,5 +9774,217 @@
   "pm.kindDrawing": {
     "zh": "手绘",
     "en": "Drawing"
+  },
+  "day.toc": {
+    "zh": "目录",
+    "en": "Contents"
+  },
+  "day.tidy": {
+    "zh": "整理这一天",
+    "en": "Tidy this day"
+  },
+  "day.storyTitle": {
+    "zh": "这一天的故事",
+    "en": "The story of this day"
+  },
+  "day.readFull": {
+    "zh": "全屏阅读",
+    "en": "Read full screen"
+  },
+  "day.readFullHint": {
+    "zh": "在这本书里一页一页翻",
+    "en": "Turn the pages in its book"
+  },
+  "hg.welcome": {
+    "zh": "嗨！我是 Captain。带你认识一下开铺手帐吧？",
+    "en": "Hi, I'm Captain. Want a quick look around?"
+  },
+  "hg.go": {
+    "zh": "带我看看",
+    "en": "Show me around"
+  },
+  "hg.explore": {
+    "zh": "我自己探索",
+    "en": "I'll explore"
+  },
+  "hg.photos": {
+    "zh": "选几张喜欢的照片，就能排成漂亮的一页。",
+    "en": "Pick a few photos and they become a page."
+  },
+  "hg.ways": {
+    "zh": "没有照片也行：写一句、画几笔、录一段声音都可以。",
+    "en": "No photos? Write a line, draw, or record a sound."
+  },
+  "hg.nav": {
+    "zh": "记下的每一天都在日历里，也收在你的手帐本里。",
+    "en": "Every day lands in your calendar and your books."
+  },
+  "hg.invite": {
+    "zh": "要不要现在做你的第一页？",
+    "en": "Shall we make your first page now?"
+  },
+  "hg.start": {
+    "zh": "开始我的第一篇",
+    "en": "Start my first page"
+  },
+  "hg.later": {
+    "zh": "以后再说",
+    "en": "Maybe later"
+  },
+  "fp.title": {
+    "zh": "你的第一篇手帐完成啦！",
+    "en": "Your first page is done!"
+  },
+  "fp.body": {
+    "zh": "已经好好保存在这台设备上了。",
+    "en": "It's saved on this device."
+  },
+  "fp.books": {
+    "zh": "看看我的手帐",
+    "en": "See my journal"
+  },
+  "fp.home": {
+    "zh": "回到首页",
+    "en": "Back to Home"
+  },
+  "voice.title": {
+    "zh": "标题",
+    "en": "Title"
+  },
+  "voice.look": {
+    "zh": "外观",
+    "en": "Look"
+  },
+  "voice.lookHint": {
+    "zh": "只换外观，声音、标题和时长都不变。",
+    "en": "Only the look changes — the sound, its title and length stay."
+  },
+  "voice.skin.minimal": {
+    "zh": "简约",
+    "en": "Minimal"
+  },
+  "voice.skin.recorder": {
+    "zh": "录音机",
+    "en": "Recorder"
+  },
+  "voice.skin.vinyl": {
+    "zh": "黑胶",
+    "en": "Vinyl"
+  },
+  "voice.lookChanged": {
+    "zh": "已换成「{name}」外观",
+    "en": "Changed to {name}"
+  },
+  "voice.lookMoved": {
+    "zh": "已换成「{name}」，位置往上挪了一点，整块都在纸上",
+    "en": "Changed to {name}; moved up a little to stay on the page"
+  },
+  "pg.moveTo": {
+    "zh": "移到…",
+    "en": "Move to…"
+  },
+  "pg.order": {
+    "zh": "顺序",
+    "en": "Order"
+  },
+  "pg.pick": {
+    "zh": "选择",
+    "en": "Select"
+  },
+  "pg.pickTitle": {
+    "zh": "已选 {count} 页",
+    "en": "{count} selected"
+  },
+  "pg.pickHelp": {
+    "zh": "勾选几页，可以合并成一页，或一起删除。合并时照片、文字、贴纸和声音都会带过去。",
+    "en": "Pick pages to merge into one or delete together. Merging brings every photo, word, sticker and sound along."
+  },
+  "pg.merge": {
+    "zh": "合并（{count}）",
+    "en": "Merge ({count})"
+  },
+  "pg.deleteMany": {
+    "zh": "删除（{count}）",
+    "en": "Delete ({count})"
+  },
+  "pg.deleteConfirm": {
+    "zh": "删除选中的 {count} 页？照片和声音文件不会被删除。",
+    "en": "Delete the {count} selected pages? Photo and sound files are kept."
+  },
+  "pg.merged": {
+    "zh": "已把 {count} 页合并成一页，位置没动，可以用「排版」整理",
+    "en": "Merged {count} pages into one — places unchanged; tidy it with Layout"
+  },
+  "pg.deleted": {
+    "zh": "已删除 {count} 页",
+    "en": "Deleted {count} pages"
+  },
+  "pg.failed": {
+    "zh": "没有改动：找不到那一页",
+    "en": "Nothing changed — that page wasn't found"
+  },
+  "pg.moveHelp": {
+    "zh": "照片连同它的说明一起移过去，裁剪和边框都不变。",
+    "en": "The photo moves with its words; its crop and frame stay."
+  },
+  "pg.ownPage": {
+    "zh": "单独成一页",
+    "en": "On a page of its own"
+  },
+  "pg.ownPageHint": {
+    "zh": "放到紧跟在这一页后面的新页上",
+    "en": "A new page right after this one"
+  },
+  "pg.split": {
+    "zh": "从这张起分成新的一页",
+    "en": "Split from this photo"
+  },
+  "pg.splitHint": {
+    "zh": "这张和后面的照片（共 {count} 张，连同说明）移到紧跟其后的新页",
+    "en": "This photo and the ones after it ({count}, with their words) go to a new page right after"
+  },
+  "pg.moved": {
+    "zh": "照片已移到第 {n} 页",
+    "en": "Photo moved to page {n}"
+  },
+  "pg.movedOwn": {
+    "zh": "照片已单独成为第 {n} 页",
+    "en": "The photo is now page {n}"
+  },
+  "pg.splitDone": {
+    "zh": "已分成两页",
+    "en": "Split into two pages"
+  },
+  "pg.orderHelp": {
+    "zh": "长按拖动，或用 ‹ › 调整照片的先后。只改顺序，不会自动重新排版。",
+    "en": "Long-press and drag, or use ‹ ›. Only the order changes — nothing is rearranged by itself."
+  },
+  "pg.earlier": {
+    "zh": "往前",
+    "en": "Earlier"
+  },
+  "pg.later": {
+    "zh": "往后",
+    "en": "Later"
+  },
+  "pg.orderRelayout": {
+    "zh": "要按新的顺序重新排版吗？照片的位置会重新安排，文字和贴纸都保留。",
+    "en": "Lay the page out again in the new order? The photos move; words and stickers stay."
+  },
+  "pg.relayout": {
+    "zh": "重新排版",
+    "en": "Lay out again"
+  },
+  "pg.keepPlaces": {
+    "zh": "保持现在的位置",
+    "en": "Keep their places"
+  },
+  "pg.relaidOut": {
+    "zh": "已按新顺序重新排版",
+    "en": "Laid out in the new order"
+  },
+  "pg.orderSaved": {
+    "zh": "照片顺序已保存",
+    "en": "Photo order saved"
   }
 }

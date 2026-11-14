@@ -20,6 +20,9 @@ function seedAccount() {
     // The Studio guide (V10.12) is tested in v112; older suites have seen it.
     if (localStorage.getItem("little-days.studio-guide") === null)
       localStorage.setItem("little-days.studio-guide", JSON.stringify({ tour: "skipped", tips: { dblTap: true } }));
+    // V10.62: the Home guide and the first-page card are tested in v158; older suites have seen them.
+    if (localStorage.getItem("little-days.onboarding") === null)
+      localStorage.setItem("little-days.onboarding", JSON.stringify({ v: 1, home: "skipped", firstPage: "done", at: "2026-11-14T00:00:00.000Z" }));
     if (!localStorage.getItem("little-days.account"))
       localStorage.setItem(
         "little-days.account",

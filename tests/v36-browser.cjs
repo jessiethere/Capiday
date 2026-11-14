@@ -21,6 +21,8 @@ const sample = fs.readFileSync(path.join(__dirname, "../Packages/LittleDaysCore/
       if (localStorage.getItem("little-days.labs") === null) localStorage.setItem("little-days.labs", "1");
       // V10.39 (B1): this suite was written with the sample journal.
       if (localStorage.getItem("little-days.with-samples") === null) localStorage.setItem("little-days.with-samples", "1");
+      // V10.62: the Home guide is tested in v158 (this suite tests the Labs sign-in tour).
+      if (localStorage.getItem("little-days.onboarding") === null) localStorage.setItem("little-days.onboarding", JSON.stringify({ v: 1, home: "skipped", firstPage: "done" }));
     });
     const page = await context.newPage();
     const errors = [];
@@ -77,10 +79,12 @@ const sample = fs.readFileSync(path.join(__dirname, "../Packages/LittleDaysCore/
     await page.locator(".settings-nav .back-button").click();
     await page.waitForSelector(".hero");
     await page.locator('[data-action="nav"][data-page="settings"]').click();
+    // V10.62: 功能介绍 shows the Home guide again (v158 covers it).
     await page.locator('[data-action="tour-replay"]').click();
-    await page.waitForSelector(".tour-card");
-    await page.locator('[data-action="tour-skip"]').click();
-    await page.waitForSelector("#tour", { state: "hidden" });
+    await page.waitForSelector('#home-guide[data-step="welcome"]');
+    await page.locator('#home-guide [data-action="hg-skip"]').click();
+    await page.waitForFunction(() => !document.querySelector("#home-guide"));
+    await page.locator('[data-action="nav"][data-page="settings"]').click();
     const before = await page.evaluate(() => localStorage.getItem("little-days.v1"));
     await page.locator('[data-action="sign-out"]').click();
     await page.locator("#confirm-dialog[open] #confirm-ok").click();

@@ -210,8 +210,10 @@ const photoFile = (n) => path.join(lib, `LD-photo-${n}.jpg`);
       // The reader shows the replaced photos.
       await SS.menu(page, "calendar");
       await page.locator(`[data-action="select-date"][data-date="${today}"]`).first().tap();
-      await page.waitForSelector(".day-detail .day-contents");
-      await page.locator(".day-contents button").last().tap();
+      // V10.61: a day with one page has no 目录 — its ··· menu opens it full screen.
+      await page.waitForSelector(".day-detail .chapter-more");
+      await page.locator(".day-detail .chapter-more").last().tap();
+      await page.locator('#choose-dialog [data-action="toc-read"]').tap();
       await page.waitForSelector("#phone.in-reader");
       await page.waitForFunction(() => document.querySelectorAll(".reader-stage .photo-layer img[src^='blob:']").length >= 2, null, { timeout: 8000 });
       await SS.leaveReader(page);

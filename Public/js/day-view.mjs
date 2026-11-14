@@ -1,7 +1,6 @@
 import { dayCounts, isDayCover } from "./pages.mjs";
 // Calendar "Day Detail": a read-only, magazine-like view of a finished day.
 import { richHTML } from "./rich-text.mjs";
-import { pageLine, pageCoverRef } from "./page-label.mjs";
 import { findTrack, musicChipHTML, dayMusic } from "./music.mjs";
 import { canvasHTML, mediaCardHTML, growthCardInner } from "./canvas.mjs";
 import { escapeHTML as esc, fieldLabel } from "./personal-ui.mjs";
@@ -63,7 +62,7 @@ export function momentChapterHTML(moment, index, ctx, date = "") {
   const title = moment.title
     ? esc(moment.title)
     : `<span class="title-add">＋ ${t("read.addTitle")}</span>`;
-  return `<section class="moment-chapter" id="moment-${esc(moment.id)}" data-moment-view="${esc(moment.id)}"><div class="chapter-head"><span class="chapter-no">${t("moment.chapter", { number: String(index + 1).padStart(2, "0") })}</span>${moment.time ? `<span class="chapter-time">${esc(moment.time)}</span>` : ""}${moment.mood ? `<span class="chapter-mood">${esc(moment.mood)}</span>` : ""}${moment.music && moment.music !== ctx.dayMusic ? musicChipHTML(findTrack(ctx.catalog, moment.music), ctx) : ""}${date && !moment.isDemo ? `<button class="chapter-edit" data-action="read-edit" data-date="${esc(date)}" data-moment="${esc(moment.id)}" aria-label="${t("read.edit")}">✎ ${t("day.edit")}</button>` : ""}${date ? `<button class="chapter-more" data-action="page-menu" data-date="${esc(date)}" data-moment="${esc(moment.id)}" aria-label="${t("read.more")}">⋯</button>` : ""}</div><h2 class="chapter-title ${moment.title ? "" : "untitled"}" ${date ? `data-title-edit data-date="${esc(date)}" data-moment="${esc(moment.id)}" tabindex="0" title="${t("read.titleHint")}"` : ""} style="font-family:${esc(fontFamily(moment.font, ctx.catalog))}">${title}</h2>${moment.tags?.length ? `<div class="chapter-tags">${moment.tags.map((tag) => `<span>#${esc(tag)}</span>`).join("")}</div>` : ""}${moment.layoutTemplate === "text" || moment.layoutTemplate === "line" || moment.backdrop || moment.layers?.some((layer) => !(layer.kind === "photo" && !layer.mediaRef)) ? `<div class="chapter-canvas">${canvasHTML(moment, ctx, { readOnly: true, dayPage: false })}</div>` : ""}${moment.layoutTemplate === "text" || moment.layoutTemplate === "line" ? "" : pageBodyHTML(moment, ctx)}${mediaListHTML(moment, ctx)}<footer class="chapter-foot">${bookBadge(moment.bookId, ctx)}${moment.isDemo ? `<span class="badge">${t("entry.sample")}</span>` : ""}</footer></section>`;
+  return `<section class="moment-chapter" id="moment-${esc(moment.id)}" data-moment-view="${esc(moment.id)}"><div class="chapter-head"><span class="chapter-no">${t("moment.chapter", { number: String(index + 1).padStart(2, "0") })}</span>${moment.time ? `<span class="chapter-time">${esc(moment.time)}</span>` : ""}${ctx.bookOf ? `<span class="chapter-book">${esc(ctx.bookOf(moment) || "")}</span>` : ""}${moment.mood ? `<span class="chapter-mood">${esc(moment.mood)}</span>` : ""}${moment.music && moment.music !== ctx.dayMusic ? musicChipHTML(findTrack(ctx.catalog, moment.music), ctx) : ""}${date && !moment.isDemo ? `<button class="chapter-edit" data-action="read-edit" data-date="${esc(date)}" data-moment="${esc(moment.id)}" aria-label="${t("read.edit")}">✎ ${t("day.edit")}</button>` : ""}${date ? `<button class="chapter-more" data-action="page-menu" data-date="${esc(date)}" data-moment="${esc(moment.id)}" aria-label="${t("read.more")}">⋯</button>` : ""}</div><h2 class="chapter-title ${moment.title ? "" : "untitled"}" ${date ? `data-title-edit data-date="${esc(date)}" data-moment="${esc(moment.id)}" tabindex="0" title="${t("read.titleHint")}"` : ""} style="font-family:${esc(fontFamily(moment.font, ctx.catalog))}">${title}</h2>${moment.tags?.length ? `<div class="chapter-tags">${moment.tags.map((tag) => `<span>#${esc(tag)}</span>`).join("")}</div>` : ""}${moment.layoutTemplate === "text" || moment.layoutTemplate === "line" || moment.backdrop || moment.layers?.some((layer) => !(layer.kind === "photo" && !layer.mediaRef)) ? `<div class="chapter-canvas">${canvasHTML(moment, ctx, { readOnly: true, dayPage: false })}</div>` : ""}${moment.layoutTemplate === "text" || moment.layoutTemplate === "line" ? "" : pageBodyHTML(moment, ctx)}${mediaListHTML(moment, ctx)}<footer class="chapter-foot">${bookBadge(moment.bookId, ctx)}${moment.isDemo ? `<span class="badge">${t("entry.sample")}</span>` : ""}</footer></section>`;
 }
 
 function growthHTML(date, ctx) {
@@ -116,8 +115,11 @@ export function dayDetailHTML(date, ctx, helpers) {
       : "";
   // The day's music plays while it is read; a page with another piece has its own chip.
   const music = findTrack(ctx.catalog, dayMusic(entry, state.books));
+  // V10.61: pages of different books say which book (a small label).
+  const bookIds = new Set((entry?.moments || []).map((moment) => moment.bookId || entry.bookId || ""));
+  const bookOf = bookIds.size > 1 ? (moment) => state.books.find((book) => book.id === (moment.bookId || entry.bookId))?.title || "" : null;
   const moments = (entry?.moments || [])
-    .map((moment, index) => momentChapterHTML(moment, index, { ...ctx, dayMusic: music?.id || "" }, date))
+    .map((moment, index) => momentChapterHTML(moment, index, { ...ctx, dayMusic: music?.id || "", bookOf }, date))
     .join("");
   const growth = growthHTML(date, ctx);
   // V10.7: a record still being made says so, quietly, with a way back in.
@@ -128,12 +130,12 @@ export function dayDetailHTML(date, ctx, helpers) {
       : draft || saved?.status === "draft"
         ? `<div class="draft-banner is-draft"><span class="draft-tag">${t("status.draft")}</span>${t("day.draftOnly")} ${resume}</div>`
         : "";
-  const contents = (entry?.moments || []).length
-    ? `<div class="day-pages-head"><b>${t("day.pagesCount", { count: entry.moments.length })}</b><button class="text-button" data-action="pages-manage" data-date="${date}">${t("pages.manage")}</button></div><nav class="day-contents" aria-label="${t("day.contents")}">${entry.moments.map((moment, index) => `<button type="button" data-action="read-page" data-date="${esc(date)}" data-moment="${esc(moment.id)}"><span>${String(index + 1).padStart(2, "0")}</span>${(() => { const src = pageCoverRef(moment) ? ctx.media?.resolve?.(pageCoverRef(moment)) : ""; return src ? `<img class="day-contents-thumb" src="${esc(src)}" alt="" loading="lazy">` : `<i class="day-contents-thumb words" aria-hidden="true"></i>`; })()}<b>${esc(pageLine(moment, { t, index }))}</b></button>`).join("")}</nav>`
-    : "";
+  // V10.61 · reading first: the list of pages is behind 目录 (2+ pages),
+  // a bottom sheet with 整理这一天 (the page manager); the pages follow at once.
+  const contents = "";
   const empty =
     !dayPage && !moments && !growth
       ? `<div class="empty">${t("calendar.empty")}<br><button class="primary" data-action="edit-date" data-date="${date}">${helpers.icon("plus")} ${t("calendar.add")}</button></div>`
       : "";
-  return `<article class="day-detail"><header class="day-detail-top"><button class="back-button" data-action="day-back">${helpers.icon("back")} ${t("calendar.title")}</button><button class="primary" data-action="edit-date" data-date="${date}">${t("day.edit")}</button></header><div class="day-masthead"><span class="day-eyebrow">CAPIDAY · ${t("day.reading")}</span><h1>${esc(helpers.friendlyDate(date))}</h1>${stats.length ? `<p class="day-stats">${stats.map(esc).join(" · ")}</p>` : ""}${music ? `<div class="day-music">${musicChipHTML(music, ctx)}</div>` : ""}<span class="day-seal">${esc(entry?.mood || "✿")}</span></div>${banner}${contents}${dayPage}${moments}${growth}<button class="moment-cta in-day" data-action="quick-open" data-date="${date}"><span>✎</span><span><b>${t("moment.ctaDay")}</b><small>${t("moment.ctaHint")}</small></span><i>›</i></button>${empty}<p class="home-quote">Some days become memories. All days become you.</p></article>`;
+  return `<article class="day-detail"><header class="day-detail-top"><button class="back-button" data-action="day-back">${helpers.icon("back")} ${t("calendar.title")}</button><span class="day-top-actions">${pagesHere > 1 ? `<button class="secondary day-toc-open" data-action="day-toc" data-date="${date}">${t("day.toc")}</button>` : ""}<button class="primary" data-action="edit-date" data-date="${date}">${t("day.edit")}</button></span></header><div class="day-masthead"><span class="day-eyebrow">CAPIDAY · ${t("day.reading")}</span><h1>${esc(helpers.friendlyDate(date))}</h1><p class="day-story-title">${t("day.storyTitle")}</p>${stats.length ? `<p class="day-stats">${stats.map(esc).join(" · ")}</p>` : ""}${music ? `<div class="day-music">${musicChipHTML(music, ctx)}</div>` : ""}<span class="day-seal">${esc(entry?.mood || "✿")}</span></div>${banner}${contents}${dayPage}${moments}${growth}<button class="moment-cta in-day" data-action="quick-open" data-date="${date}"><span>✎</span><span><b>${t("moment.ctaDay")}</b><small>${t("moment.ctaHint")}</small></span><i>›</i></button>${empty}<p class="home-quote">Some days become memories. All days become you.</p></article>`;
 }

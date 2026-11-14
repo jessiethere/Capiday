@@ -49,6 +49,7 @@ import * as Rich from "./js/rich-text.mjs";
 import * as Reader from "./js/reader.mjs";
 import * as Wall from "./js/photo-wall.mjs";
 import * as Guide from "./js/studio-guide.mjs";
+import * as Onboard from "./js/onboarding.mjs";
 import * as PM from "./js/profile-mark.mjs";
 import * as CaptainAI from "./js/captain-ai.mjs";
 import { keeperImage, keeperLooks, DEFAULT_OUTFIT } from "./js/keeper-art.mjs";
@@ -65,7 +66,10 @@ import {
   formatDuration,
   growthCardInner,
   textCSS,
+  audioSkinHTML,
 } from "./js/canvas.mjs";
+import * as Voice from "./js/voice-skin.mjs";
+import * as PageOps from "./js/page-ops.mjs";
 import { dayDetailHTML } from "./js/day-view.mjs";
 import * as PL from "./js/page-label.mjs";
 import { habitJourneyHTML, journeyPageCount } from "./js/journey-view.mjs";
@@ -3532,7 +3536,9 @@ function pageThumbHTML(p, cover = false) {
   return `<span class="page-thumb lines ${cover ? "cover" : ""}" aria-hidden="true"><i></i><i></i><i></i></span>`;
 }
 // 整理这一天: the cover and the pages in order — move up / down, delete.
+let pagesPick = null; // V10.64: a Set of picked page ids while 选择 is on
 function openPagesManage() {
+  pagesPick = null;
   renderPagesManage();
   const dialog = $("#choose-dialog");
   if (!dialog.open) dialog.showModal();
@@ -3548,13 +3554,178 @@ function renderPagesManage() {
     : moments.length
       ? ""
       : `<li class="pages-empty">${t("pages.empty")}</li>`;
-  $("#choose-dialog").innerHTML = `<div class="choose-sheet pages-sheet"><div class="choose-grabber" aria-hidden="true"></div><h2>${t("pages.title")}</h2><p class="save-help">${t("pages.help")}</p><ul class="pages-list">${coverRow}${moments
+  if (pagesPick) {
+    // V10.64: 选择 → 合并 / 删除 several pages at once (one undo each).
+    const picked = moments.filter((m) => pagesPick.has(m.id));
+    $("#choose-dialog").innerHTML = `<div class="choose-sheet pages-sheet picking"><div class="choose-grabber" aria-hidden="true"></div><div class="pages-pick-head"><h2>${t("pg.pickTitle", { count: picked.length })}</h2><button class="text-button" data-action="pages-pick-toggle">${t("cancel")}</button></div><p class="save-help">${t("pg.pickHelp")}</p><ul class="pages-list">${moments.map((m, i) => `<li class="pages-row${pagesPick.has(m.id) ? " picked" : ""}"><button class="pages-pick" data-action="pages-pick" data-moment="${esc(m.id)}" role="checkbox" aria-checked="${pagesPick.has(m.id)}"><span class="pages-check" aria-hidden="true">${pagesPick.has(m.id) ? "✓" : ""}</span>${pageThumbHTML(m)}<span class="pages-pick-copy"><small>${t("moment.chapter", { number: String(i + 1).padStart(2, "0") })}${m.time ? " · " + esc(m.time) : ""}</small><b>${esc(PL.pageLabel(m, { t, index: i }).label)}</b></span></button></li>`).join("")}</ul><div class="pages-actions"><button class="primary" data-action="pages-merge" ${picked.length > 1 ? "" : "disabled"}>${t("pg.merge", { count: picked.length })}</button><button class="secondary danger-text" data-action="pages-delete-many" ${picked.length ? "" : "disabled"}>${t("pg.deleteMany", { count: picked.length })}</button></div></div>`;
+    return;
+  }
+  $("#choose-dialog").innerHTML = `<div class="choose-sheet pages-sheet"><div class="choose-grabber" aria-hidden="true"></div><div class="pages-pick-head"><h2>${t("pages.title")}</h2>${moments.length > 1 ? `<button class="text-button" data-action="pages-pick-toggle">${t("pg.pick")}</button>` : ""}</div><p class="save-help">${t("pages.help")}</p><ul class="pages-list">${coverRow}${moments
     .map(
       (m, i) =>
         `<li class="pages-row${m.id === activeMomentId ? " current" : ""}">${pageThumbHTML(m)}<button class="pages-open" data-action="pages-open" data-moment="${esc(m.id)}"><small>${t("moment.chapter", { number: String(i + 1).padStart(2, "0") })}${m.time ? " · " + esc(m.time) : ""}${book(m.bookId) ? " · " + esc(book(m.bookId)) : ""}</small><b>${esc(PL.pageLabel(m, { t, index: i }).label)}</b></button><span class="pages-move"><button data-action="page-move" data-moment="${esc(m.id)}" data-dir="-1" aria-label="${t("pages.up")}" ${i ? "" : "disabled"}>↑</button><button data-action="page-move" data-moment="${esc(m.id)}" data-dir="1" aria-label="${t("pages.down")}" ${i < moments.length - 1 ? "" : "disabled"}>↓</button></span><button class="pages-copy" data-action="page-copy" data-moment="${esc(m.id)}" aria-label="${t("pages.copyLabel")}">${t("copy")}</button><button class="pages-del" data-action="page-remove" data-moment="${esc(m.id)}" aria-label="${t("write.deleteStory")}">🗑 ${t("delete")}</button></li>`,
     )
     .join("")}</ul><div class="pages-actions"><button class="secondary" data-action="pages-add">＋ ${t("moment.addShort")}</button><button class="secondary" data-action="pages-details">${t("more.details")}</button></div><button class="text-button pages-more" data-action="pages-more">${t("pages.more")} ›</button><button class="primary full-width" data-action="choose-close">${t("pages.done")}</button></div>`;
 }
+// ---------- V10.64 · 照片分组第二阶段 (docs/PHOTO_GROUPING_PLAN.md §5) ----------
+// Merge pages, split a page, move a photo, the order of the photos. Each is
+// one changeEditor (one undo brings it all back, with 撤销 on the toast);
+// layers move whole and no media file is made or removed (js/page-ops.mjs).
+function undoToast(key, values) {
+  toast(t(key, values), { action: "undo", label: t("studio.undo") });
+}
+function mergePickedPages() {
+  const ids = (editor.moments || []).filter((m) => pagesPick?.has(m.id)).map((m) => m.id);
+  if (ids.length < 2) return;
+  let merged = null;
+  changeEditor((entry) => (merged = PageOps.mergeMoments(entry, ids, { makeId: id })), false);
+  if (!merged) return toast(t("pg.failed"));
+  pagesPick = null;
+  $("#choose-dialog").close();
+  selectMoment(merged);
+  logEvent("pages_merge", { count: ids.length });
+  undoToast("pg.merged", { count: ids.length });
+}
+async function deletePickedPages() {
+  const ids = (editor.moments || []).filter((m) => pagesPick?.has(m.id)).map((m) => m.id);
+  if (!ids.length) return;
+  // Every page and no cover: the day itself is cleared (V10.47 rule, asked first).
+  if (ids.length === editor.moments.length && !hasDayPageContent(editor)) return removeLastPage();
+  if (!(await askConfirm(t("pg.deleteConfirm", { count: ids.length }), { ok: t("delete") }))) return;
+  changeEditor((entry) => ids.forEach((m) => removeMoment(entry, m)), false);
+  pagesPick = null;
+  if (!findMoment(editor, activeMomentId)) selectMoment(editor.moments[0]?.id || null);
+  else render();
+  renderPagesManage();
+  logEvent("pages_delete_many", { count: ids.length });
+  undoToast("pg.deleted", { count: ids.length });
+}
+function openPhotoMove() {
+  const layer = selectedLayerOf();
+  const page = findMoment(editor, activeMomentId);
+  if (!page || !PageOps.isPhoto(layer)) return;
+  const seq = PageOps.photoSequence(page);
+  const others = editor.moments
+    .map((m, i) => ({ m, i }))
+    .filter(({ m }) => m.id !== page.id)
+    .map(({ m, i }) => `<button class="pages-pick" data-action="photo-move-to" data-to="${esc(m.id)}">${pageThumbHTML(m)}<span class="pages-pick-copy"><small>${t("moment.chapter", { number: String(i + 1).padStart(2, "0") })}${m.time ? " · " + esc(m.time) : ""}</small><b>${esc(PL.pageLabel(m, { t, index: i }).label)}</b></span></button>`)
+    .join("");
+  const dialog = $("#choose-dialog");
+  dialog.innerHTML = `<div class="choose-sheet photo-move-sheet"><div class="choose-grabber" aria-hidden="true"></div><h2>${t("pg.moveTo")}</h2><p class="save-help">${t("pg.moveHelp")}</p>${others ? `<div class="pages-list">${others}</div>` : ""}<button class="contribute-option" data-action="photo-move-to" data-to=""><b>＋ ${t("pg.ownPage")}</b><small>${t("pg.ownPageHint")}</small></button>${seq.indexOf(layer) > 0 ? `<button class="contribute-option" data-action="photo-split"><b>✂ ${t("pg.split")}</b><small>${t("pg.splitHint", { count: seq.length - seq.indexOf(layer) })}</small></button>` : ""}<button class="choose-cancel" data-action="choose-close">${t("cancel")}</button></div>`;
+  dialog.showModal();
+}
+function movePhotoToPage(toId) {
+  const layer = selectedLayerOf();
+  const fromId = activeMomentId;
+  $("#choose-dialog").close();
+  let went = null;
+  changeEditor((entry) => (went = PageOps.movePhoto(entry, fromId, layer?.id, toId, { makeMoment: createMoment })), false);
+  if (!went) return toast(t("pg.failed"));
+  selectedLayer = null;
+  render();
+  logEvent("photo_move", { own: !toId });
+  undoToast(toId ? "pg.moved" : "pg.movedOwn", { n: editor.moments.findIndex((m) => m.id === went) + 1 });
+}
+function splitFromPhoto() {
+  const layer = selectedLayerOf();
+  const fromId = activeMomentId;
+  $("#choose-dialog").close();
+  let made = null;
+  changeEditor((entry) => (made = PageOps.splitAt(entry, fromId, layer?.id, { makeMoment: createMoment })), false);
+  if (!made) return toast(t("pg.failed"));
+  selectedLayer = null;
+  render();
+  logEvent("page_split", {});
+  undoToast("pg.splitDone");
+}
+// 顺序: the page's photos in a row; long-press and drag one, or use ‹ ›.
+let po = null; // { momentId, ids }
+let poDrag = null;
+function openPhotoOrder() {
+  const page = findMoment(editor, activeMomentId);
+  if (!page) return;
+  po = { momentId: page.id, ids: PageOps.photoSequence(page).map((l) => l.id) };
+  const dialog = $("#choose-dialog");
+  dialog.innerHTML = `<div class="choose-sheet photo-order-sheet"><div class="choose-grabber" aria-hidden="true"></div><h2>${t("pg.order")}</h2><p class="save-help">${t("pg.orderHelp")}</p><div class="po-strip" data-po-strip></div><div class="pages-actions"><button class="secondary" data-action="choose-close">${t("cancel")}</button><button class="primary" data-action="po-done">${t("pages.done")}</button></div></div>`;
+  renderPhotoOrder();
+  dialog.showModal();
+}
+function renderPhotoOrder() {
+  const strip = document.querySelector("[data-po-strip]");
+  const page = po && findMoment(editor, po.momentId);
+  if (!strip || !page) return;
+  strip.innerHTML = po.ids
+    .map((lid, i) => {
+      const layer = page.layers.find((l) => l.id === lid);
+      return `<div class="po-item${poDrag?.id === lid && poDrag.active ? " dragging" : ""}" data-po-id="${esc(lid)}"><span class="po-no">${i + 1}</span><img src="${esc(safePhoto(layer.mediaRef))}" alt="" draggable="false"><span class="po-steps"><button data-action="po-step" data-id="${esc(lid)}" data-dir="-1" aria-label="${t("pg.earlier")}" ${i ? "" : "disabled"}>‹</button><button data-action="po-step" data-id="${esc(lid)}" data-dir="1" aria-label="${t("pg.later")}" ${i < po.ids.length - 1 ? "" : "disabled"}>›</button></span></div>`;
+    })
+    .join("");
+}
+function stepPhotoOrder(lid, dir) {
+  if (!po) return;
+  const from = po.ids.indexOf(lid);
+  const to = from + dir;
+  if (from < 0 || to < 0 || to >= po.ids.length) return;
+  po.ids.splice(to, 0, ...po.ids.splice(from, 1));
+  renderPhotoOrder();
+}
+async function savePhotoOrder() {
+  if (!po) return;
+  const { momentId, ids } = po;
+  po = null;
+  $("#choose-dialog").close();
+  const page = findMoment(editor, momentId);
+  if (!page || PageOps.photoSequence(page).map((l) => l.id).join() === ids.join()) return;
+  // Only a page the layout made is offered a new layout; nothing is rearranged
+  // without asking. The order (and the layout, if chosen) is one step to undo.
+  const relayout = page.layoutTemplate === "scrapbook" && (await askConfirm(t("pg.orderRelayout"), { ok: t("pg.relayout"), cancel: t("pg.keepPlaces") }));
+  changeEditor((entry) => {
+    const target = findMoment(entry, momentId);
+    if (!target) return;
+    PageOps.setPhotoOrder(target, ids);
+    if (relayout) layoutStoryPage(target, false);
+  }, false);
+  render();
+  logEvent("photo_order", { count: ids.length, relayout });
+  undoToast(relayout ? "pg.relaidOut" : "pg.orderSaved");
+}
+document.addEventListener("pointerdown", (event) => {
+  const item = event.target.closest?.(".po-item");
+  if (!item || event.target.closest("button")) return;
+  const start = { x: event.clientX, y: event.clientY };
+  poDrag = { id: item.dataset.poId, start, active: false, timer: setTimeout(() => {
+    if (!poDrag) return;
+    poDrag.active = true;
+    renderPhotoOrder();
+  }, 320) };
+});
+document.addEventListener("pointermove", (event) => {
+  if (!poDrag) return;
+  if (!poDrag.active) {
+    if (Math.hypot(event.clientX - poDrag.start.x, event.clientY - poDrag.start.y) > 8) {
+      clearTimeout(poDrag.timer);
+      poDrag = null;
+    }
+    return;
+  }
+  const over = document.elementFromPoint(event.clientX, event.clientY)?.closest?.(".po-item");
+  if (!over || over.dataset.poId === poDrag.id || !po) return;
+  const from = po.ids.indexOf(poDrag.id);
+  const to = po.ids.indexOf(over.dataset.poId);
+  if (from < 0 || to < 0) return;
+  po.ids.splice(to, 0, ...po.ids.splice(from, 1));
+  renderPhotoOrder();
+});
+const endPoDrag = () => {
+  if (!poDrag) return;
+  clearTimeout(poDrag.timer);
+  const was = poDrag.active;
+  poDrag = null;
+  if (was) renderPhotoOrder();
+};
+document.addEventListener("pointerup", endPoDrag);
+document.addEventListener("pointercancel", endPoDrag);
+document.addEventListener("touchmove", (event) => poDrag?.active && event.preventDefault(), { passive: false });
 // V10.47: the last page of a day without a cover — the day is cleared (after asking).
 function isLastPage(momentId) {
   return editor.moments.length === 1 && editor.moments[0].id === momentId && !hasDayPageContent(editor);
@@ -4491,12 +4662,15 @@ function ctxDockHTML(tool) {
   const own =
     kind === "photo" && layer.mediaRef
       ? // V10.20: shape (the frame) · crop (what shows inside) · adjust · replace.
-        tool(`data-action="tool" data-tool="shape" aria-expanded="${on("shape")}"`, "shape", t("shape.title"), `dock-btn ${on("shape") ? "open" : ""}`) + tool('data-action="crop-open"', "crop", t("crop.tool")) + tool('data-action="photo-edit"', "adjust", t("ctx.adjust")) + tool('data-action="replace-photo"', "replace", t("photo.replaceShort"))
+        tool(`data-action="tool" data-tool="shape" aria-expanded="${on("shape")}"`, "shape", t("shape.title"), `dock-btn ${on("shape") ? "open" : ""}`) + tool('data-action="crop-open"', "crop", t("crop.tool")) + tool('data-action="photo-edit"', "adjust", t("ctx.adjust")) + tool('data-action="replace-photo"', "replace", t("photo.replaceShort")) + (activeMomentId && findMoment(editor, activeMomentId) && PageOps.isPhoto(layer) ? tool('data-action="photo-move"', "pages", t("pg.moveTo")) + (PageOps.photoSequence(activePage()).length > 1 ? tool('data-action="photo-order"', "photos", t("pg.order")) : "") : "")
       : kind === "text"
         ? tool('data-action="ctx-edit-text"', "pen", t("edit")) + style("font", "font", "ctx.font") + style("color", "color", "ctx.color") + style("align", "align", "ctx.align")
         : kind === "video"
           ? // V10.23: 播放 · 换封面 · 形状 (frame) — the cover and the frame are separate things.
             tool('data-action="ctx-play"', "play", t("media.play")) + tool(`data-action="video-cover" data-clip="${esc(layer.clipId)}"`, "photo", t("poster.change")) + tool(`data-action="tool" data-tool="shape" aria-expanded="${on("shape")}"`, "shape", t("shape.title"), `dock-btn ${on("shape") ? "open" : ""}`)
+          : kind === "audio"
+            ? // V10.63: 播放 · 标题 · 外观 (the look only; the sound is untouched).
+              tool('data-action="ctx-play"', "play", t("media.play")) + tool('data-action="audio-title"', "pen", t("voice.title")) + tool('data-action="audio-skin"', "shape", t("voice.look"))
           : kind === "drawing"
             ? tool('data-action="draw-edit"', "draw", t("draw.again"))
             : kind === "sticker" && layer.assetId
@@ -4958,7 +5132,7 @@ function fontsArrived() {
 // Lay out one page in the story's style (its own variant), replacing only
 // what the engine made before; the user's own stickers / text stay.
 function layoutStoryPage(target, isCover) {
-  const style = styleOf(target.layoutStyle || story.style);
+  const style = styleOf(target.layoutStyle || story?.style);
   const variant = Number(target.layoutVariant) || 0;
   const look = STYLE_LOOK[style];
   let result;
@@ -4986,9 +5160,12 @@ function layoutStoryPage(target, isCover) {
     applyType(result.layers, target.typeStyle);
     target.layers = target.layers.filter((l) => !l.gen && !l.deco).concat(result.layers);
   } else {
-    const visuals = visualLayers(target);
+    // V10.64: photos in the order the person gave them (photoOrder), videos where they are.
+    const seq = PageOps.photoSequence(target).map((l) => l.id);
+    const rank = (l, i) => (seq.includes(l.id) ? seq.indexOf(l.id) : i);
+    const visuals = visualLayers(target).map((l, i) => ({ l, r: rank(l, i), i })).sort((a, b) => a.r - b.r || a.i - b.i).map(({ l }) => l);
     const audio = target.layers.filter((l) => l.kind === "audio");
-    const day = new Date(`${story.date}T12:00:00`);
+    const day = new Date(`${story?.date || editor?.date || dateKey()}T12:00:00`);
     const folio = `CAPIDAY · NO. ${String(day.getDate()).padStart(2, "0")}`;
     // V10.19: each photo's own words (on the photo layer, by its id) are laid
     // out right by that photo; the page's quick type comes along.
@@ -6557,6 +6734,8 @@ function render() {
   if (page === "studio") maybeStartGuide();
   if (guideStep != null) placeGuide();
   else if (page !== "studio") hideDoubleTapTip();
+  if (hgStep != null) placeHomeGuide();
+  else maybeFirstPageCard();
   syncMusic();
   const dock = $(".tool-dock");
   if (dock) {
@@ -7028,6 +7207,27 @@ const endPmDrag = (event) => {
 document.addEventListener("pointerup", endPmDrag);
 document.addEventListener("pointercancel", endPmDrag);
 document.addEventListener("touchmove", (event) => pmDrag?.active && event.preventDefault(), { passive: false });
+// V10.61 · 目录 of a Calendar day: a quick list to jump to a page, and
+// 整理这一天 (the page manager for that day).
+function openDayToc(date) {
+  const items = visiblePages(state(), { date, samples: dayOf(state(), date, { samples: "include" })?.isDemo ? "only" : "exclude" });
+  const rows = items
+    .map((item, i) => {
+      const p = item.moment || item.entry;
+      const src = pmThumb(item);
+      const book = state().books.find((b) => b.id === (item.moment ? item.moment.bookId || item.entry.bookId : item.entry.bookId));
+      const photos = (p.layers || []).filter((l) => l.kind === "photo" && l.mediaRef && !l.drawing && !l.gen).length;
+      const line = [item.moment?.time || "", photos ? t("ts.statPhotos", { count: photos }) : "", book?.title || ""].filter(Boolean).join(" · ");
+      const title = item.moment ? PL.pageLabel(p, { t, dayPage: false }).label : t("pm.cover");
+      // A row jumps to the page here; ↗ opens it full screen in the book's reader.
+      const read = item.moment ? `<button class="day-toc-read" data-action="toc-read" data-date="${esc(date)}" data-moment="${esc(item.moment.id)}" aria-label="${t("day.readFull")}">↗</button>` : "";
+      return `<div class="day-toc-item"><button class="day-toc-row" data-action="day-jump" data-moment="${esc(item.moment?.id || "")}"><span class="day-toc-thumb ${src ? "" : "words"}">${src ? `<img src="${esc(src)}" alt="" loading="lazy">` : ""}</span><span class="day-toc-no">${String(i + 1).padStart(2, "0")}</span><span class="day-toc-copy"><b>${esc(title)}</b><small>${esc(line)}</small></span></button>${read}</div>`;
+    })
+    .join("");
+  const dialog = $("#choose-dialog");
+  dialog.innerHTML = `<div class="choose-sheet day-toc-sheet"><div class="choose-grabber" aria-hidden="true"></div><div class="kp-title"><span></span><b>${t("day.toc")}</b><button class="kp-x" data-action="choose-close" aria-label="${t("close")}">×</button></div><div class="day-toc-list">${rows}</div><button class="secondary full-width" data-action="pm-open" data-date="${esc(date)}">${t("day.tidy")}</button></div>`;
+  if (!dialog.open) dialog.showModal();
+}
 function readCopies(date) {
   // The saved day and its draft (if any) both change, so they stay in step.
   return (next) => [next.entries.find((e) => e.date === date), next.drafts[date]].filter(Boolean);
@@ -7085,7 +7285,7 @@ document.addEventListener("click", (event) => {
 function openPageMenu(date, momentId) {
   const dialog = $("#choose-dialog");
   const isCover = !momentId;
-  dialog.innerHTML = `<div class="choose-sheet page-menu-sheet"><div class="choose-grabber" aria-hidden="true"></div><h2>${t(isCover ? "day.cover" : "read.pageMenu")}</h2><button class="contribute-option" data-action="read-edit" data-date="${esc(date)}" data-moment="${esc(momentId)}"><b>✎ ${t("read.edit")}</b><small>${t("read.editHint")}</small></button>${isCover && isDayCover(dayOf(state(), date) || {}) ? `<button class="contribute-option" data-action="day-cover-toggle" data-date="${esc(date)}" data-hide="1"><b>${t("cover.hide")}</b><small>${t("cover.hideHint")}</small></button>` : ""}${isCover ? "" : `<button class="contribute-option" data-action="read-rename" data-date="${esc(date)}" data-moment="${esc(momentId)}"><b>Aa ${t("read.rename")}</b><small>${t("read.titleHint")}</small></button>`}<button class="contribute-option danger-option" data-action="read-delete" data-date="${esc(date)}" data-moment="${esc(momentId)}"><b>${t(isCover ? "write.clearDay" : "write.deleteStory")}</b><small>${t("read.deleteHint")}</small></button><button class="choose-cancel" data-action="choose-close">${t("cancel")}</button></div>`;
+  dialog.innerHTML = `<div class="choose-sheet page-menu-sheet"><div class="choose-grabber" aria-hidden="true"></div><h2>${t(isCover ? "day.cover" : "read.pageMenu")}</h2><button class="contribute-option" data-action="read-edit" data-date="${esc(date)}" data-moment="${esc(momentId)}"><b>✎ ${t("read.edit")}</b><small>${t("read.editHint")}</small></button>${isCover || page === "reader" ? "" : `<button class="contribute-option" data-action="toc-read" data-date="${esc(date)}" data-moment="${esc(momentId)}"><b>↗ ${t("day.readFull")}</b><small>${t("day.readFullHint")}</small></button>`}${isCover && isDayCover(dayOf(state(), date) || {}) ? `<button class="contribute-option" data-action="day-cover-toggle" data-date="${esc(date)}" data-hide="1"><b>${t("cover.hide")}</b><small>${t("cover.hideHint")}</small></button>` : ""}${isCover ? "" : `<button class="contribute-option" data-action="read-rename" data-date="${esc(date)}" data-moment="${esc(momentId)}"><b>Aa ${t("read.rename")}</b><small>${t("read.titleHint")}</small></button>`}<button class="contribute-option danger-option" data-action="read-delete" data-date="${esc(date)}" data-moment="${esc(momentId)}"><b>${t(isCover ? "write.clearDay" : "write.deleteStory")}</b><small>${t("read.deleteHint")}</small></button><button class="choose-cancel" data-action="choose-close">${t("cancel")}</button></div>`;
   dialog.showModal();
 }
 async function deleteReadPage(date, momentId) {
@@ -7547,6 +7747,153 @@ window.addEventListener("resize", () => {
   placeLayerBar();
   if (guideStep != null) placeGuide();
 });
+// ---------- 新手引导 · Home (V10.62, design round V10.52 §3) ----------
+// Welcome (Captain) → three rings on the real Home (照片卡 · 其他方式 · 日历 +
+// 书架) → an invitation (Captain). It reads only where things are; it never
+// makes a page and never changes the journal (js/onboarding.mjs keeps whether
+// it was seen, on this device). Opens by itself once, for someone new;
+// Settings → 功能介绍 shows it again.
+let hgStep = null; // 0–4 while open
+let hgReplay = false;
+let hgFollow = null;
+function maybeStartOnboarding() {
+  if (!Account.isSignedIn(account) || !$("#tour")?.hidden) return;
+  if (Onboard.decide(localStorage, state()) !== "start") return;
+  if (page !== "home" || !document.querySelector(".v9-home")) return;
+  openHomeGuide();
+}
+function openHomeGuide({ replay = false } = {}) {
+  hgReplay = replay;
+  if (!replay) Onboard.begin();
+  if (page !== "home") {
+    page = "home";
+    render();
+  }
+  $("#app-scroll").scrollTop = 0;
+  hgStep = 0;
+  logEvent("onboarding_open", { replay });
+  placeHomeGuide();
+}
+function closeHomeGuide(outcome) {
+  if (hgStep == null) return;
+  if (!hgReplay) Onboard.finishHome(outcome);
+  logEvent("onboarding_" + (outcome === "done" ? "done" : "skip"), { step: hgStep, replay: hgReplay });
+  hgStep = null;
+  clearInterval(hgFollow);
+  $("#home-guide")?.remove();
+}
+function hgTargets(step) {
+  return step.target ? [...document.querySelectorAll(step.target)] : [];
+}
+function placeHomeGuide() {
+  if (hgStep == null) return;
+  if (page !== "home") return closeHomeGuide("skipped");
+  const step = Onboard.STEPS[hgStep];
+  const middle = Onboard.STEPS.filter((s) => s.target);
+  const index = middle.indexOf(step);
+  let box = $("#home-guide");
+  if (!box) {
+    box = document.createElement("div");
+    box.id = "home-guide";
+    box.className = "hg";
+    $("#phone").append(box);
+  }
+  box.dataset.step = step.id;
+  box.classList.toggle("hg-captain-step", Boolean(step.captain));
+  const art = step.captain ? `<div class="hg-captain" aria-hidden="true">${keeperArt(step.id === "invite" ? "happy" : "idle", { follow: false })}</div>` : "";
+  const head = step.captain
+    ? ""
+    : `<div class="hg-head"><span class="hg-avatar" aria-hidden="true">${keeperArt("idle", { follow: false })}</span><span class="hg-count">${t("guide.count", { n: index + 1, count: middle.length })}</span><button type="button" class="hg-skip" data-action="hg-skip">${t("guide.skip")}</button></div>`;
+  const actions =
+    step.id === "welcome"
+      ? `<button type="button" class="primary" data-action="hg-next">${t("hg.go")}</button><button type="button" class="secondary" data-action="hg-skip">${t("hg.explore")}</button>`
+      : step.id === "invite"
+        ? `<button type="button" class="primary" data-action="hg-start">${t("hg.start")}</button><button type="button" class="secondary" data-action="hg-later">${t("hg.later")}</button>`
+        : `${index ? `<button type="button" class="secondary" data-action="hg-prev">${t("guide.prev")}</button>` : ""}<button type="button" class="primary" data-action="hg-next">${t("guide.next")}</button>`;
+  box.innerHTML = `<div class="hg-shade" aria-hidden="true"></div><div class="hg-ring" aria-hidden="true" hidden></div><section class="hg-card" role="dialog" aria-modal="true" aria-describedby="hg-body">${art}${head}<p id="hg-body" class="hg-body" aria-live="polite">${t("hg." + step.id)}</p><div class="hg-actions">${actions}</div></section>`;
+  const targets = hgTargets(step);
+  // A place further down Home comes into view first (the menu is always there).
+  if (targets[0] && !targets[0].closest("#navigation")) targets[0].scrollIntoView({ block: "center" });
+  positionHomeGuide();
+  if (!box.contains(document.activeElement)) box.querySelector(".hg-card .primary")?.focus({ preventScroll: true });
+  clearInterval(hgFollow);
+  hgFollow = setInterval(() => (hgStep == null ? clearInterval(hgFollow) : positionHomeGuide()), 250);
+}
+// The ring goes around the real place (both menu buttons for 日历 + 书架);
+// the card sits next to it, on the side with room — never over it.
+function positionHomeGuide() {
+  const box = $("#home-guide");
+  if (!box || hgStep == null) return;
+  const step = Onboard.STEPS[hgStep];
+  const ring = box.querySelector(".hg-ring");
+  const card = box.querySelector(".hg-card");
+  const rects = hgTargets(step).map((el) => el.getBoundingClientRect()).filter((r) => r.width && r.height);
+  card.style.top = card.style.bottom = "";
+  if (!rects.length) {
+    ring.hidden = true;
+    card.classList.add("at-bottom");
+    return;
+  }
+  const phone = box.getBoundingClientRect();
+  const r = { left: Math.min(...rects.map((x) => x.left)), top: Math.min(...rects.map((x) => x.top)), right: Math.max(...rects.map((x) => x.right)), bottom: Math.max(...rects.map((x) => x.bottom)) };
+  const pad = 6;
+  Object.assign(ring.style, { left: `${r.left - phone.left - pad}px`, top: `${r.top - phone.top - pad}px`, width: `${r.right - r.left + pad * 2}px`, height: `${r.bottom - r.top + pad * 2}px` });
+  ring.hidden = false;
+  card.classList.remove("at-bottom");
+  const above = r.top - phone.top;
+  const below = phone.bottom - r.bottom;
+  if (below >= above) card.style.top = `${r.bottom - phone.top + pad + 14}px`;
+  else card.style.bottom = `${phone.bottom - r.top + pad + 14}px`;
+}
+function homeGuideAction(name) {
+  if (hgStep == null) return false;
+  if (name === "hg-skip") closeHomeGuide("skipped");
+  else if (name === "hg-later") closeHomeGuide("done");
+  else if (name === "hg-start") {
+    closeHomeGuide("done");
+    // The same "how shall we keep today?" sheet as ＋ — no other editor.
+    const go = document.createElement("button");
+    Object.assign(go.dataset, { action: "quick-open", photo: "" });
+    action(go);
+  } else if (name === "hg-prev") {
+    hgStep = Math.max(1, hgStep - 1);
+    placeHomeGuide();
+  } else if (name === "hg-next") {
+    hgStep = Math.min(Onboard.STEPS.length - 1, hgStep + 1);
+    placeHomeGuide();
+  } else return false;
+  return true;
+}
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && hgStep != null) {
+    event.preventDefault();
+    closeHomeGuide("skipped");
+  }
+});
+window.addEventListener("resize", () => hgStep != null && positionHomeGuide());
+// After the first page of one's own is really in the journal database: once.
+let firstPageCheck = false;
+function maybeFirstPageCard() {
+  if (firstPageCheck || hgStep != null || page === "studio" || page === "story") return;
+  if (!Onboard.shouldShowFirstPage(Onboard.load(), state())) return;
+  firstPageCheck = true;
+  store
+    .stored()
+    .then((stored) => {
+      firstPageCheck = false;
+      if (!stored || hgStep != null || page === "studio" || page === "story" || $("#choose-dialog").open) return;
+      if (!Onboard.shouldShowFirstPage(Onboard.load(), state())) return;
+      Onboard.markFirstPage();
+      logEvent("onboarding_first_page", {});
+      const dialog = $("#choose-dialog");
+      dialog.innerHTML = `<div class="choose-sheet first-page-card" role="document"><div class="choose-grabber" aria-hidden="true"></div><div class="fp-art" aria-hidden="true">${keeperArt("happy", { follow: false })}</div><h2>${t("fp.title")}</h2><p>${t("fp.body")}</p><button class="primary full-width" data-action="fp-books">${t("fp.books")}</button><button class="secondary full-width" data-action="fp-home">${t("fp.home")}</button></div>`;
+      dialog.showModal();
+      dialog.querySelector(".primary")?.focus({ preventScroll: true });
+    })
+    .catch(() => {
+      firstPageCheck = false;
+    });
+}
 function accountAction(target) {
   const name = target.dataset.action;
   switch (name) {
@@ -7631,10 +7978,23 @@ function accountAction(target) {
       return true;
     }
     case "tour-replay":
+      // V10.62: 功能介绍 shows the Home guide again (it makes nothing).
       if ($("#choose-dialog").open) $("#choose-dialog").close();
-      account = Account.replayTour(localStorage);
-      tourStep = 0;
-      renderTour();
+      openHomeGuide({ replay: true });
+      return true;
+    case "hg-skip":
+    case "hg-later":
+    case "hg-start":
+    case "hg-prev":
+    case "hg-next":
+      return homeGuideAction(name);
+    case "fp-books":
+    case "fp-home":
+      $("#choose-dialog").close();
+      page = name === "fp-books" ? "books" : "home";
+      if (page === "books") booksView = "shelf";
+      render();
+      $("#app-scroll").scrollTop = 0;
       return true;
     case "theme": {
       const id = target.dataset.themeId;
@@ -7967,10 +8327,10 @@ function openReflectionDialog(period, key) {
 }
 // In-page confirmation: works the same on localhost, in the iOS shell and on a
 // hosted link (where browser confirm() dialogs are unavailable).
-function askConfirm(message, { ok = "" } = {}) {
+function askConfirm(message, { ok = "", cancel = "" } = {}) {
   const dialog = $("#confirm-dialog");
   $("#confirm-message").textContent = message;
-  $("#confirm-cancel").textContent = t("cancel");
+  $("#confirm-cancel").textContent = cancel || t("cancel");
   $("#confirm-ok").textContent = ok || t("confirm.ok");
   dialog.returnValue = "";
   dialog.showModal();
@@ -8094,6 +8454,19 @@ async function action(target) {
     calendarMode = target.dataset.mode;
     render();
     if (calendarMode === "wall") logEvent("wall_open", { count: wallItems.length });
+  }
+  if (actionName === "day-toc") return openDayToc(target.dataset.date);
+  if (actionName === "toc-read") {
+    $("#choose-dialog")?.close();
+    const go = document.createElement("button");
+    Object.assign(go.dataset, { action: "read-page", date: target.dataset.date, moment: target.dataset.moment });
+    return action(go);
+  }
+  if (actionName === "day-jump") {
+    $("#choose-dialog")?.close();
+    const el = target.dataset.moment ? document.getElementById(`moment-${target.dataset.moment}`) : document.querySelector(".day-detail .day-page");
+    el?.scrollIntoView({ block: "start", behavior: "smooth" });
+    return;
   }
   if (actionName === "pm-open") return openPageManager({ bookId: target.dataset.book || null, date: target.dataset.date || null });
   if (actionName?.startsWith("pm-") && pmAction(actionName, target)) return;
@@ -10799,6 +11172,18 @@ async function v31Action(target) {
       refreshImportCard();
       render();
       return true;
+    case "audio-title":
+      openAudioTitle();
+      return true;
+    case "audio-title-save":
+      saveAudioTitle();
+      return true;
+    case "audio-skin":
+      openAudioSkins();
+      return true;
+    case "audio-skin-set":
+      setAudioSkin(target.dataset.skin);
+      return true;
     case "ctx-play":
     case "layer-play": {
       // From the selected video's tools (V10.23) or the play button on the paper.
@@ -10874,6 +11259,42 @@ async function v31Action(target) {
       toast(t("pages.copied"));
       return true;
     }
+    case "pages-pick-toggle":
+      pagesPick = pagesPick ? null : new Set();
+      renderPagesManage();
+      return true;
+    case "pages-pick":
+      if (pagesPick) {
+        const m = target.dataset.moment;
+        if (pagesPick.has(m)) pagesPick.delete(m);
+        else pagesPick.add(m);
+        renderPagesManage();
+      }
+      return true;
+    case "pages-merge":
+      mergePickedPages();
+      return true;
+    case "pages-delete-many":
+      await deletePickedPages();
+      return true;
+    case "photo-move":
+      openPhotoMove();
+      return true;
+    case "photo-move-to":
+      movePhotoToPage(target.dataset.to || null);
+      return true;
+    case "photo-split":
+      splitFromPhoto();
+      return true;
+    case "photo-order":
+      openPhotoOrder();
+      return true;
+    case "po-step":
+      stepPhotoOrder(target.dataset.id, Number(target.dataset.dir) || 0);
+      return true;
+    case "po-done":
+      await savePhotoOrder();
+      return true;
     case "page-move":
       changeEditor((entry) => moveMoment(entry, target.dataset.moment, Number(target.dataset.dir) || 0));
       renderPagesManage();
@@ -11973,9 +12394,25 @@ async function autoCover(mediaId, duration) {
     return "";
   }
 }
+// V10.63: a sound's 20 bars, worked out once when it is added (never while
+// playing). An offline context only reads the file — it plays nothing.
+async function audioPeaks(blob) {
+  try {
+    if (!blob || blob.size > 25 * 1024 * 1024) return null;
+    const Offline = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    if (!Offline) return null;
+    const context = new Offline(1, 1, 44100);
+    const buffer = await Promise.race([context.decodeAudioData(await blob.arrayBuffer()), new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 6000))]);
+    const peaks = Voice.peaksFrom(buffer.getChannelData(0));
+    return peaks.length === Voice.BARS ? peaks : null;
+  } catch {
+    return null;
+  }
+}
 async function attachClip(blob, kind, name, duration = 0, options = {}) {
   options.onStage?.("write");
   const mediaId = await media.put(blob, { kind, name, duration }, "studio");
+  const peaks = kind === "audio" ? await audioPeaks(blob) : null;
   // Videos get a first cover right away (changeable later).
   options.onStage?.("cover");
   const poster = kind === "video" ? await autoCover(mediaId, duration) : "";
@@ -11993,6 +12430,7 @@ async function attachClip(blob, kind, name, duration = 0, options = {}) {
       poster,
       ...(options.origin ? { origin: options.origin } : {}),
       ...(options.width && options.height ? { width: options.width, height: options.height } : {}),
+      ...(peaks ? { peaks } : {}),
     };
     page.media.push(clip);
     // New clips go straight onto the paper, like photos; a video keeps its
@@ -12578,6 +13016,7 @@ async function start() {
   });
   render();
   if (warning) toast(warning);
+  maybeStartOnboarding();
   // The iPhone app: refresh the reminders, and hear about a tapped one.
   syncReminder();
   try {
@@ -12692,6 +13131,100 @@ for (const type of ["playing", "pause", "ended", "error", "emptied"])
     },
     true,
   );
+
+// V10.63: a sound's bars fill and its time counts as it really plays.
+for (const type of ["timeupdate", "seeked", "ended", "emptied", "loadedmetadata"])
+  document.addEventListener(
+    type,
+    (event) => {
+      const audio = event.target;
+      if (audio?.tagName !== "AUDIO") return;
+      const layer = audio.closest(".media-layer.audio-layer");
+      if (!layer) return;
+      const now = type === "ended" || type === "emptied" ? 0 : audio.currentTime || 0;
+      const duration = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0;
+      const shown = layer.querySelector(".audio-now");
+      if (shown) shown.textContent = Voice.clock(now);
+      const lit = Voice.playedBars(now, duration);
+      layer.querySelectorAll(".audio-wave i").forEach((bar, i) => bar.classList.toggle("on", i < lit));
+    },
+    true,
+  );
+function selectedClip() {
+  const layer = selectedLayerOf();
+  return layer?.kind === "audio" ? { layer, clip: activePage().media.find((c) => c.id === layer.clipId) } : null;
+}
+function openAudioTitle() {
+  const sel = selectedClip();
+  if (!sel?.clip) return;
+  const dialog = $("#choose-dialog");
+  dialog.innerHTML = `<div class="choose-sheet title-sheet"><div class="choose-grabber" aria-hidden="true"></div><h2>${t("voice.title")}</h2><input id="voice-title" maxlength="60" value="${esc(sel.clip.name)}" aria-label="${t("voice.title")}" enterkeyhint="done"><button class="primary full-width" data-action="audio-title-save">${t("save")}</button><button class="choose-cancel" data-action="choose-close">${t("cancel")}</button></div>`;
+  dialog.showModal();
+  const input = $("#voice-title");
+  input.focus();
+  input.select();
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      saveAudioTitle();
+    }
+  });
+}
+function saveAudioTitle() {
+  const sel = selectedClip();
+  const name = ($("#voice-title")?.value || "").trim();
+  $("#choose-dialog").close();
+  // An empty title keeps the one it had (a sound always has a name to show).
+  if (!sel?.clip || !name || name === sel.clip.name) return;
+  changeTarget((page) => {
+    const clip = page.media.find((c) => c.id === sel.clip.id);
+    if (clip) clip.name = name;
+  });
+  logEvent("voice_title", {});
+}
+function openAudioSkins() {
+  const sel = selectedClip();
+  if (!sel?.clip) return;
+  const current = Voice.skinOf(sel.layer);
+  const play = `<span class="layer-play"><span class="ld-play-icon" aria-hidden="true"></span></span>`;
+  const options = Voice.SKINS.map((skin) => `<button class="skin-option ${skin === current ? "selected" : ""}" data-action="audio-skin-set" data-skin="${skin}" aria-pressed="${skin === current}"><span class="skin-mini" aria-hidden="true">${audioSkinHTML(skin, sel.clip, play, "")}</span>${t("voice.skin." + skin)}</button>`).join("");
+  const dialog = $("#choose-dialog");
+  dialog.innerHTML = `<div class="choose-sheet skin-sheet"><div class="choose-grabber" aria-hidden="true"></div><h2>${t("voice.look")}</h2><p class="save-help">${t("voice.lookHint")}</p><div class="skin-options">${options}</div><button class="choose-cancel" data-action="choose-close">${t("cancel")}</button></div>`;
+  dialog.showModal();
+}
+// Only the look changes. A bigger look that would run off the paper moves up
+// so all of it stays on the page (and says so).
+function setAudioSkin(skin) {
+  const sel = selectedClip();
+  $("#choose-dialog").close();
+  if (!sel || !Voice.SKINS.includes(skin) || skin === Voice.skinOf(sel.layer)) return;
+  changeTarget((page) => {
+    const layer = page.layers.find((l) => l.id === sel.layer.id);
+    if (!layer) return;
+    if (skin === "minimal") delete layer.skin;
+    else layer.skin = skin;
+  });
+  logEvent("voice_skin", { skin });
+  requestAnimationFrame(() => {
+    const paper = $("#journal-canvas")?.getBoundingClientRect();
+    const el = layerElement(sel.layer.id);
+    const box = el?.getBoundingClientRect();
+    let moved = false;
+    if (paper && box && paper.height) {
+      const over = box.bottom - paper.bottom + 4;
+      const under = paper.top + 4 - box.top;
+      const shift = over > 0 ? -over : under > 0 ? under : 0;
+      if (shift) {
+        moved = true;
+        changeTarget((page) => {
+          const layer = page.layers.find((l) => l.id === sel.layer.id);
+          if (layer) layer.y = Math.round((Number(layer.y ?? 50) + (shift / paper.height) * 100) * 10) / 10;
+        });
+      }
+    }
+    toast(t(moved ? "voice.lookMoved" : "voice.lookChanged", { name: t("voice.skin." + skin) }));
+  });
+}
 
 // ---------- Typing on a phone: the keyboard must never cover the options ----------
 // While a text field has focus on a touch screen, the menu and tool icons step

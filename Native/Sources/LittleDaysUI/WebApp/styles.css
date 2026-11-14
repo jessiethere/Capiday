@@ -24269,3 +24269,591 @@ body.typing .ctx-caption {
     animation: none;
   }
 }
+
+/* V10.61 · Calendar day: reading first; 目录 is a sheet. */
+.day-top-actions {
+  display: flex;
+  gap: 8px;
+}
+.day-toc-open {
+  min-height: 38px;
+  padding: 0 14px;
+}
+.day-story-title {
+  margin: 2px 0 0;
+  font: 500 15px Georgia, "Songti SC", serif;
+  color: var(--ink);
+}
+.day-detail .day-stats {
+  font-size: 12px;
+  margin-top: 2px;
+}
+.day-detail .moment-chapter + .moment-chapter,
+.day-detail .day-page + .moment-chapter {
+  margin-top: 28px;
+}
+.day-detail .moment-chapter + .moment-chapter::before,
+.day-detail .day-page + .moment-chapter::before {
+  content: "";
+  position: absolute;
+  left: 30%;
+  right: 30%;
+  top: -16px;
+  border-top: 1px solid var(--line);
+}
+.day-detail .chapter-no {
+  white-space: nowrap;
+}
+.chapter-book {
+  min-width: 0;
+  max-width: 34%;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--c-ece5d8, #ece5d8);
+  font-size: 11px;
+  color: var(--t-6f675d, #6f675d);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.day-toc-list {
+  display: grid;
+  gap: 2px;
+  max-height: 55dvh;
+  overflow-y: auto;
+  margin: 4px 0 12px;
+}
+.day-toc-item {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+}
+.day-toc-read {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  font-size: 18px;
+  color: var(--t-7d8e66, #7d8e66);
+}
+.day-toc-row {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 44px 26px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 60px;
+  padding: 6px 4px;
+  border: 0;
+  background: none;
+  text-align: left;
+  color: var(--ink);
+}
+.day-toc-thumb {
+  width: 44px;
+  height: 52px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--c-fffdf8, #fffdf8);
+  box-shadow: 0 0 0 1px var(--line);
+}
+.day-toc-thumb.words {
+  background: repeating-linear-gradient(var(--c-fffdf8, #fffdf8) 0 9px, var(--c-e8dfcf, #e8dfcf) 9px 10px);
+}
+.day-toc-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.day-toc-no {
+  font: 600 13px var(--ui-sans);
+  color: var(--t-7d8e66, #7d8e66);
+}
+.day-toc-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.day-toc-copy b {
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.day-toc-copy small {
+  font-size: 12px;
+  color: var(--t-8a7f70, #8a7f70);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* V10.62 · 新手引导 on Home: a ring on the real place, a small card beside it. */
+.hg {
+  position: absolute;
+  inset: 0;
+  z-index: 70;
+}
+.hg-shade {
+  position: absolute;
+  inset: 0;
+}
+.hg-captain-step .hg-shade {
+  background: var(--c-1f1b1673, #1f1b1673);
+}
+.hg-ring {
+  position: absolute;
+  border-radius: 18px;
+  box-shadow: 0 0 0 2px var(--sageDeep), 0 0 0 200vmax var(--c-1f1b1673, #1f1b1673);
+  pointer-events: none;
+}
+.hg-ring[hidden] {
+  display: none;
+}
+.hg-card {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  padding: 14px 16px 14px;
+  border-radius: 20px;
+  background: var(--paper);
+  box-shadow: 0 10px 30px var(--c-3c2d1e2e, #3c2d1e2e), 0 0 0 1px var(--line);
+  color: var(--ink);
+  font-family: var(--ui-sans);
+}
+.hg-card.at-bottom {
+  bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}
+.hg-captain-step .hg-card {
+  padding-top: 64px;
+  text-align: center;
+}
+.hg-captain {
+  position: absolute;
+  left: 50%;
+  top: -56px;
+  width: 112px;
+  height: 112px;
+  transform: translateX(-50%);
+}
+.hg-captain .keeper,
+.hg-captain img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.hg-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.hg-avatar {
+  width: 30px;
+  height: 30px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--c-ece5d8, #ece5d8);
+}
+.hg-avatar .keeper,
+.hg-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+.hg-count {
+  flex: 1;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--t-6f675d, #6f675d);
+}
+.hg-skip {
+  min-height: 44px;
+  margin: -10px -8px -10px 0;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  font: 500 14px var(--ui-sans);
+  color: var(--t-6f675d, #6f675d);
+}
+.hg-body {
+  margin: 4px 0 12px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.hg-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.hg-captain-step .hg-actions {
+  flex-direction: column;
+}
+.hg-actions button {
+  min-height: 44px;
+  padding: 0 18px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hg-ring {
+    transition: left 0.25s ease, top 0.25s ease, width 0.25s ease, height 0.25s ease;
+  }
+  .hg-card {
+    animation: hg-in 0.25s ease both;
+  }
+}
+@keyframes hg-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.first-page-card {
+  text-align: center;
+  display: grid;
+  gap: 10px;
+}
+.first-page-card .fp-art {
+  width: 104px;
+  height: 104px;
+  margin: 0 auto;
+}
+.first-page-card .fp-art .keeper,
+.first-page-card .fp-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.first-page-card h2 {
+  margin: 0;
+  font-size: 20px;
+}
+.first-page-card p {
+  margin: 0 0 6px;
+  color: var(--t-6f675d, #6f675d);
+}
+
+/* V10.63 · 语音播放器的三种外观 — one clip, three looks; only the play key is a control. */
+.audio-ticket .layer-play {
+  position: relative;
+  min-width: 36px;
+  min-height: 36px;
+}
+.audio-ticket .layer-play::after {
+  /* the key looks small on the paper, but takes a 44 pt tap */
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+}
+.audio-title {
+  font-size: 3cqw;
+  font-weight: 600;
+  color: var(--t-4d463e, #4d463e);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.audio-time {
+  font: 500 2.4cqw var(--ui-sans);
+  font-variant-numeric: tabular-nums;
+  color: var(--t-7a6f62, #7a6f62);
+  white-space: nowrap;
+}
+/* A · Minimal */
+.audio-ticket.skin-minimal {
+  border-radius: 4cqw;
+  padding: 2.4cqw 3.2cqw;
+}
+.audio-ticket.skin-minimal .audio-copy {
+  gap: 0.8cqw;
+}
+.audio-ticket.skin-minimal .audio-wave i,
+.media-layer.playing .audio-ticket.skin-minimal .audio-wave i {
+  height: var(--h, 50%);
+  background: var(--c-d6cab6, #d6cab6);
+  animation: none;
+}
+.audio-ticket.skin-minimal .audio-wave i.on {
+  background: var(--accent);
+}
+/* B · 录音机 — flat layers, no metal shine */
+.audio-ticket.skin-recorder {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.6cqw;
+  padding: 2.6cqw 3cqw 2.2cqw;
+  border-radius: 3.4cqw;
+  background: var(--c-e9dfcd, #e9dfcd);
+  border: 1px solid var(--c-d8c9b0, #d8c9b0);
+}
+.rec-window {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3cqw;
+  height: 9cqw;
+  border-radius: 2cqw;
+  background: var(--c-5b5147, #5b5147);
+}
+.rec-window .reel {
+  width: 6.4cqw;
+  height: 6.4cqw;
+  border-radius: 50%;
+  background: repeating-conic-gradient(var(--c-f6f1e6, #f6f1e6) 0 18deg, var(--c-cdbfa8, #cdbfa8) 18deg 60deg);
+  box-shadow: inset 0 0 0 1.4cqw var(--c-f6f1e6, #f6f1e6);
+}
+.rec-window .rec-tape {
+  width: 8cqw;
+  height: 3.4cqw;
+  border-radius: 1cqw;
+  background: var(--c-8a6f55, #8a6f55);
+}
+.rec-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2cqw;
+  padding: 1.2cqw 2cqw;
+  border-radius: 1.4cqw;
+  background: var(--c-fffdf8, #fffdf8);
+  min-width: 0;
+}
+.rec-keys {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4cqw;
+}
+.rec-keys > i {
+  font-style: normal;
+  font-size: 3cqw;
+  color: var(--t-8a7f70, #8a7f70);
+}
+/* C · 黑胶 — a cream sleeve, the record half out */
+.audio-ticket.skin-vinyl {
+  display: block;
+  position: relative;
+  padding: 0 14cqw 0 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+.vinyl-disc {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 30cqw;
+  height: 30cqw;
+  margin-top: -15cqw;
+  border-radius: 50%;
+  background: repeating-radial-gradient(circle, var(--c-2f2a25, #2f2a25) 0 1.2cqw, var(--c-3a342e, #3a342e) 1.2cqw 1.6cqw);
+}
+.vinyl-label {
+  position: absolute;
+  inset: 32%;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: inset 0 0 0 1.6cqw var(--c-8fa07c, #8fa07c);
+}
+.vinyl-sleeve {
+  position: relative;
+  display: grid;
+  gap: 1cqw;
+  align-content: center;
+  min-height: 32cqw;
+  padding: 3cqw 3.4cqw;
+  border-radius: 1.6cqw;
+  background: var(--c-f6f1e6, #f6f1e6);
+  border: 1px solid var(--c-e6dac5, #e6dac5);
+  box-shadow: 0 2px 6px var(--c-5d493c22, #5d493c22);
+}
+.vinyl-kicker {
+  font: 600 2cqw var(--ui-sans);
+  letter-spacing: 0.12em;
+  color: var(--t-7d8e66, #7d8e66);
+}
+.vinyl-sleeve .layer-play {
+  justify-self: start;
+  margin-top: 1cqw;
+}
+/* The reels and the record turn only while it really plays (and never with reduced motion). */
+@media (prefers-reduced-motion: no-preference) {
+  .media-layer.playing .rec-window .reel {
+    animation: ld-turn 2.4s linear infinite;
+  }
+  .media-layer.playing .vinyl-disc {
+    animation: ld-turn 6s linear infinite;
+  }
+}
+@keyframes ld-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* The look picker */
+.skin-sheet .skin-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 8px 0 14px;
+}
+.skin-option {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  min-height: 44px;
+  padding: 10px 6px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 500 13px var(--ui-sans);
+}
+.skin-option.selected {
+  border-color: var(--sageDeep);
+  box-shadow: 0 0 0 2px var(--sageDeep);
+}
+.skin-option .skin-mini {
+  container-type: inline-size;
+  width: 100%;
+  pointer-events: none;
+}
+.skin-option .skin-mini .layer-play {
+  min-width: 0;
+  min-height: 0;
+  width: 12cqw;
+  height: 12cqw;
+}
+.skin-option .skin-mini .ld-play-icon {
+  transform: scale(0.6);
+}
+.title-sheet input {
+  width: 100%;
+  min-height: 44px;
+  margin: 8px 0 14px;
+}
+
+/* V10.64 · 照片分组第二阶段: 选择 pages, move a photo, the photos' order. */
+.pages-pick-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pages-pick-head .text-button {
+  min-height: 44px;
+}
+.pages-pick {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 56px;
+  padding: 6px 4px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: none;
+  text-align: left;
+  color: var(--ink);
+}
+.photo-move-sheet .pages-pick {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+.pages-pick-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.pages-pick-copy b {
+  font-weight: 500;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.pages-pick-copy small {
+  color: var(--t-8a7f70, #8a7f70);
+}
+.pages-check {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid var(--t-b5a993, #b5a993);
+  color: var(--t-ffffff, #fff);
+  font-size: 14px;
+}
+.pages-row.picked .pages-check {
+  background: var(--sageDeep);
+  border-color: var(--sageDeep);
+}
+.pages-sheet.picking .pages-row {
+  display: block;
+  padding: 0;
+}
+.danger-text {
+  color: var(--t-b0533c, #b0533c);
+}
+.po-strip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 8px 2px 12px;
+  touch-action: pan-x;
+}
+.po-item {
+  position: relative;
+  flex: none;
+  width: 92px;
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.po-item img {
+  width: 92px;
+  height: 92px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px var(--line);
+  pointer-events: none;
+}
+.po-item.dragging img {
+  box-shadow: 0 0 0 3px var(--sageDeep), 0 8px 18px var(--c-3c2d1e2e, #3c2d1e2e);
+  transform: scale(1.05);
+}
+.po-no {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 11px;
+  background: var(--c-fffdf8e6, #fffdf8e6);
+  font: 600 12px/22px var(--ui-sans);
+  text-align: center;
+}
+.po-steps {
+  display: flex;
+  gap: 4px;
+}
+.po-steps button {
+  min-width: 44px;
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper);
+  font-size: 18px;
+}
+.po-steps button:disabled {
+  opacity: 0.35;
+}

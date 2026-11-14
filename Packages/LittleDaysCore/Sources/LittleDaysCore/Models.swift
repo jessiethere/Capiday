@@ -90,6 +90,9 @@ public struct JournalMedia: Codable, Identifiable, Equatable {
     /// V3.8: a video's own pixel size, so portrait clips land upright.
     public var width: Double?
     public var height: Double?
+    /// V10.63: a sound's loudness in 20 bars (0–1), worked out once when it
+    /// is added; nil for older clips (the player draws a steady pattern).
+    public var peaks: [Double]?
 }
 
 public struct JournalTextStyle: Codable, Equatable {
@@ -233,6 +236,9 @@ public struct StickerLayer: Codable, Identifiable, Equatable {
     public var capturedAt: String?
     public var captureTimeSource: String?
     public var photoOrder: Int?
+    // V10.63 (kind == "audio"): the player's look on the paper —
+    // "minimal" (nil = minimal), "recorder" or "vinyl". Only the look.
+    public var skin: String?
 
     public init(text: String, x: Double = 80, y: Double = 60) {
         self.id = UUID().uuidString

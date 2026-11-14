@@ -4,6 +4,94 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.64",
+    date: "2026-11-14",
+    zh: {
+      title: "照片分组：合并、拆分、移到另一页",
+      items: [
+        "页面目录里点「选择」，勾几页就能「合并」成一页（照片、文字、贴纸、声音都带过去，标题变成一个文字框），或一起删除。",
+        "选中一张照片，「移到…」可以把它（连同说明）移到另一页、单独成一页，或者「从这张起分成新的一页」。",
+        "「顺序」里长按拖动或点 ‹ › 调整照片的先后；只改顺序，要不要按新顺序重新排版会先问你。",
+        "每个操作都可以在提示里点「撤销」一步还原；照片和声音文件不会被复制或删除。",
+      ],
+    },
+    en: {
+      title: "Photo groups: merge, split, move to another page",
+      items: [
+        "In the page list, Select a few pages to Merge them into one (photos, words, stickers and sounds all come along; a title becomes a text box) or delete them together.",
+        "Select a photo and Move to… another page, a page of its own, or Split from this photo.",
+        "In Order, long-press and drag or tap ‹ › to change which photo comes first; you are asked before anything is laid out again.",
+        "Each change can be undone in one tap from the note; photo and sound files are never copied or deleted.",
+      ],
+    },
+  },
+  {
+    version: "10.63",
+    date: "2026-11-14",
+    zh: {
+      title: "声音的三种外观，还能改标题",
+      items: [
+        "选中页面上的声音，底部有「播放 · 标题 · 外观」。",
+        "外观有三种：简约（默认）、录音机、黑胶。换外观只改样子，声音文件、标题和时长都不变；换成大外观放不下时，会自动往上挪，整块留在纸上。",
+        "简约外观的 20 根声波条按这段声音真实的大小画出来，播放到哪里就填色到哪里；三种外观都显示「0:12 / 0:48」这样的时间。",
+        "录音机的磁带轮、黑胶唱片只在真正发出声音时才转；打开「减弱动态效果」后不转，时间照常走。",
+      ],
+    },
+    en: {
+      title: "Three looks for a sound, and its title",
+      items: [
+        "Select a sound on the page for Play · Title · Look.",
+        "Three looks: Minimal (default), Recorder and Vinyl. Only the look changes — the sound file, title and length stay; a bigger look that would run off the page moves up to stay on it.",
+        "Minimal's 20 bars follow the sound's real loudness and fill as it plays; every look shows the time, like 0:12 / 0:48.",
+        "The reels and the record turn only while sound is really playing, and stay still with Reduce Motion (the time still runs).",
+      ],
+    },
+  },
+  {
+    version: "10.62",
+    date: "2026-11-14",
+    zh: {
+      title: "新手引导：Captain 带你认识首页",
+      items: [
+        "第一次打开开铺手帐时，Captain 会打个招呼，用三步带你看首页：选照片的大卡片、其他记录方式、底部的日历和书架。",
+        "每一步都圈出真实的按钮，说明卡片放在旁边，不挡住按钮；随时可以跳过，选「我自己探索」也行。",
+        "最后可以直接「开始我的第一篇」；第一页真正保存好之后，会出现一次「你的第一篇手帐完成啦！」。",
+        "已经有手帐的老用户不会看到；想再看一次，在「设置 → 功能介绍」，重看不会创建任何内容。",
+      ],
+    },
+    en: {
+      title: "A first look around, with Captain",
+      items: [
+        "The first time you open Capiday, Captain says hi and shows Home in three steps: the photo card, the other ways to record, and Calendar and My Books.",
+        "Each step rings the real button, with the note beside it, never over it. Skip any time, or choose I'll explore.",
+        "At the end you can start your first page; once it is really saved, you see Your first page is done! once.",
+        "If you already have pages you won't see it. Replay it from Settings → Feature tour; replaying makes nothing.",
+      ],
+    },
+  },
+  {
+    version: "10.61",
+    date: "2026-11-14",
+    zh: {
+      title: "日历里的一天：先读内容",
+      items: [
+        "点开日历里的一天，标题下面直接就是第 1 页，不用先翻过统计卡和目录。",
+        "一天有两页以上时，右上角有「目录」：每页的缩略图、时间、照片数和所属的书；点一行跳到那一页，点 ↗ 全屏阅读。",
+        "目录底部的「整理这一天」会打开页面管理，可以给这一天的页面排序。",
+        "同一天的页面属于不同的书时，每页旁边会标出书名；每页的「···」里也有「全屏阅读」。",
+      ],
+    },
+    en: {
+      title: "A day in the Calendar: read first",
+      items: [
+        "Open a day in the Calendar and page 1 is right under the date — no stats card or list in front of it.",
+        "With two or more pages, Contents at the top lists each page with a picture, time, photos and book; tap a row to jump there, or ↗ to read full screen.",
+        "Tidy this day at the bottom of Contents opens the page manager to put that day's pages in order.",
+        "When a day's pages belong to different books, each page shows its book; every page's ··· also has Read full screen.",
+      ],
+    },
+  },
+  {
     version: "10.60",
     date: "2026-11-14",
     zh: {
