@@ -40,7 +40,7 @@ const shots = process.env.SHOTS || "";
     assert.equal(await page.locator(".tool-sheet").count(), 0, "adding a photo opens no Layout sheet");
     // V10.64: on a page (not the cover) 移到… follows.
     assert.deepEqual(await dock(), ["layer-deselect", "shape", "crop-open", "photo-edit", "replace-photo", "photo-move", "layer", "layer-delete"]);
-    assert.deepEqual(await page.$$eval(".tool-dock.ctx .sv-tool small", (els) => els.slice(1).map((el) => el.textContent)), ["形状", "裁剪画面", "调整", "替换", "图层", "删除"]);
+    assert.deepEqual(await page.$$eval(".tool-dock.ctx .sv-tool small", (els) => els.slice(1).map((el) => el.textContent)), ["形状", "裁剪画面", "调整", "替换", "移到…", "图层", "删除"]);
     await shot("01-photo-tools");
     passed.push("one photo added → selected with its own tools (形状 · 裁剪画面 · 调整 · 替换 · 图层 · 删除); no Layout sheet");
 

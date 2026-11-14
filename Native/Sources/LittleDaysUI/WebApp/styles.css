@@ -24540,7 +24540,10 @@ body.typing .ctx-caption {
 
 /* V10.63 · 语音播放器的三种外观 — one clip, three looks; only the play key is a control. */
 .audio-ticket .layer-play {
+  /* in the flow of the ticket (the base rule centres a video's key with left/top 50%) */
   position: relative;
+  left: auto;
+  top: auto;
   min-width: 36px;
   min-height: 36px;
 }

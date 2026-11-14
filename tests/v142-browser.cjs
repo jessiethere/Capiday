@@ -25,6 +25,7 @@ if (require.main === module) (async () => {
       const context = await browser.newContext({ viewport: { width: run.w, height: run.h }, isMobile: true, hasTouch: true, locale: zh ? "zh-CN" : "en-US" });
       // V10.58: the grouping preview — accept the suggestion with one tap (tests/v155 covers the preview).
       await context.addInitScript(SS.acceptGroups);
+      await context.addInitScript(SS.seenOnboarding); // V10.62: the Home guide is tested in v158
       const page = await context.newPage();
       const errors = [];
       page.on("pageerror", (e) => errors.push(e.message));

@@ -41,6 +41,8 @@ const today = (() => { const d = new Date(); return `${d.getFullYear()}-${String
     await page.goto(`${base}/__seed`);
     await page.evaluate(async ({ journal, lang, account, mirrorOff }) => {
       localStorage.clear();
+      // V10.62: the Home guide is tested in v158.
+      localStorage.setItem("little-days.onboarding", JSON.stringify({ v: 1, home: "skipped", firstPage: "done" }));
       if (!journal) return;
       localStorage.setItem("little-days.language", lang === "zh" ? "zh-CN" : "en");
       localStorage.setItem("little-days.account", account);

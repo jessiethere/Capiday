@@ -85,6 +85,15 @@ async function leaveStudio(page) {
 module.exports.leaveStudio = leaveStudio;
 module.exports.seed = seedAccount; // for persistent profiles (launchPersistentContext)
 module.exports.acceptGroups = acceptGroups;
+// V10.62: suites that start as a brand-new user (no helper) but test something
+// else than the Home guide: the guide counts as already seen (tests/v158 tests it).
+function seenOnboarding() {
+  try {
+    if (localStorage.getItem("little-days.onboarding") === null)
+      localStorage.setItem("little-days.onboarding", JSON.stringify({ v: 1, home: "skipped", firstPage: "done", at: "2026-11-14T00:00:00.000Z" }));
+  } catch {}
+}
+module.exports.seenOnboarding = seenOnboarding;
 // V10.11: saving opens the full-screen reader (no bottom menu there): ‹ goes back to the book.
 async function leaveReader(page) {
   if (!(await page.locator("#phone.in-reader").count())) return;
