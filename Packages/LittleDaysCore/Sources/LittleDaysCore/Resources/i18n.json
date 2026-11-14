@@ -9658,5 +9658,121 @@
   "story.dropNew": {
     "zh": "拖到这里，新起一页",
     "en": "Drop here for a new page"
+  },
+  "pm.manage": {
+    "zh": "管理页面",
+    "en": "Manage pages"
+  },
+  "pm.manageShelf": {
+    "zh": "管理页面与顺序",
+    "en": "Pages and order"
+  },
+  "pm.manageShelfHint": {
+    "zh": "看整本书的页面，调整顺序或删除",
+    "en": "See every page, reorder or delete"
+  },
+  "pm.dayTitle": {
+    "zh": "{date} 的页面",
+    "en": "Pages of {date}"
+  },
+  "pm.done": {
+    "zh": "完成",
+    "en": "Done"
+  },
+  "pm.orderLabel": {
+    "zh": "排序方式",
+    "en": "Order"
+  },
+  "pm.order.date": {
+    "zh": "日期正序",
+    "en": "Oldest first"
+  },
+  "pm.order.date-desc": {
+    "zh": "日期倒序",
+    "en": "Newest first"
+  },
+  "pm.order.custom": {
+    "zh": "自定义",
+    "en": "Custom"
+  },
+  "pm.toCustom": {
+    "zh": "已切换到「自定义」顺序。点「完成」保存。",
+    "en": "Switched to a custom order. Tap Done to keep it."
+  },
+  "pm.hint": {
+    "zh": "长按拖动调整顺序，也可以用 ↑ ↓。点一页打开阅读。",
+    "en": "Long-press to drag, or use ↑ ↓. Tap a page to read it."
+  },
+  "pm.selectHint": {
+    "zh": "点选要删除的页面。照片和视频文件不会被删除。",
+    "en": "Tap the pages to delete. Photo and video files are kept."
+  },
+  "pm.select": {
+    "zh": "选择",
+    "en": "Select"
+  },
+  "pm.selectDone": {
+    "zh": "取消选择",
+    "en": "Cancel"
+  },
+  "pm.delete": {
+    "zh": "删除（{count}）",
+    "en": "Delete ({count})"
+  },
+  "pm.deleteConfirm": {
+    "zh": "删除这 {count} 页？照片、视频和声音文件不会被删除；如果某一天删空了，可以在提示里撤销。",
+    "en": "Delete these {count} pages? Photo, video and sound files are kept; a day left empty can be undone from the note."
+  },
+  "pm.deleted": {
+    "zh": "已删除 {count} 页",
+    "en": "{count} pages deleted"
+  },
+  "pm.saved": {
+    "zh": "页面顺序已保存",
+    "en": "Page order saved"
+  },
+  "pm.cover": {
+    "zh": "封面（可选）",
+    "en": "Cover (optional)"
+  },
+  "pm.byTime": {
+    "zh": "按时间排一次",
+    "en": "Sort once by time"
+  },
+  "pm.empty": {
+    "zh": "这里还没有页面。",
+    "en": "No pages here yet."
+  },
+  "pm.up": {
+    "zh": "往前",
+    "en": "Move earlier"
+  },
+  "pm.down": {
+    "zh": "往后",
+    "en": "Move later"
+  },
+  "pm.edit": {
+    "zh": "编辑这一页",
+    "en": "Edit this page"
+  },
+  "pm.kindPhoto": {
+    "zh": "照片",
+    "en": "Photos"
+  },
+  "pm.kindText": {
+    "zh": "文字",
+    "en": "Words"
+  },
+  "pm.kindSound": {
+    "zh": "声音",
+    "en": "Sound"
+  },
+  "pm.kindVideo": {
+    "zh": "视频",
+    "en": "Video"
+  },
+  "pm.kindDrawing": {
+    "zh": "手绘",
+    "en": "Drawing"
   }
 }

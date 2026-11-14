@@ -41,7 +41,7 @@ import { photoTime, reliableTime } from "./js/exif.mjs";
 import * as AppLock from "./js/app-lock.mjs";
 import { MetaStore } from "./js/meta-store.mjs";
 import { decideJournalOpen, hasTraces, RESCUE_KEY } from "./js/journal-open.mjs";
-import { isSampleDay, dayOf, dayCounts, bookCounts, visiblePages, isDayCover } from "./js/pages.mjs";
+import { isSampleDay, dayOf, dayCounts, bookCounts, visiblePages, isDayCover, orderPages, pageKey, moveKey } from "./js/pages.mjs";
 import { searchJournal, onThisDay, terms as searchTerms } from "./js/search.mjs";
 import * as Keeper from "./js/keeper.mjs";
 import { understand as understandChat, REQUEST_INTENTS } from "./js/keeper-chat.mjs";
@@ -3010,7 +3010,7 @@ function openReaderMore() {
   // (a display choice only: nothing is deleted).
   const coverRow = item && isDayCover(item.entry) ? row(`data-action="day-cover-toggle" data-date="${esc(item.date)}" data-hide="${item.entry.dayCoverHidden ? "" : "1"}"`, t(item.entry.dayCoverHidden ? "cover.show" : "cover.hide")) : "";
   const dialog = $("#choose-dialog");
-  dialog.innerHTML = `<div class="choose-sheet kp reader-sheet"><div class="choose-grabber" aria-hidden="true"></div><div class="kp-title"><span></span><b>${item ? esc(Reader.positionLabel(flipIndex, pages.length, t)) : t("reader.more")}</b><button class="kp-x" data-action="choose-close" aria-label="${t("close")}">×</button></div>${checklist}${item ? row(`data-action="open-day" data-date="${esc(item.date)}"`, t("flip.openDay")) : ""}${coverRow}${row('data-action="music-sheet" data-target="book"', t("music.bookTitle"), track ? esc(trackName(track, languageCode())) : "")}${flipIndex > 0 ? row('data-action="reader-go" data-at="0"', t("reader.toCover")) : ""}${item && !demo ? `<div class="reader-keeper">${keeperAskHTML(item.date, item.moment?.id || "")}</div>` : ""}</div>`;
+  dialog.innerHTML = `<div class="choose-sheet kp reader-sheet"><div class="choose-grabber" aria-hidden="true"></div><div class="kp-title"><span></span><b>${item ? esc(Reader.positionLabel(flipIndex, pages.length, t)) : t("reader.more")}</b><button class="kp-x" data-action="choose-close" aria-label="${t("close")}">×</button></div>${checklist}<div class="reader-menu-group">${row(`data-action="pm-open" data-book="${esc(readerBook)}"`, t("pm.manage"))}${item ? row(`data-action="open-day" data-date="${esc(item.date)}"`, t("flip.openDay")) : ""}</div><div class="reader-menu-group">${row('data-action="music-sheet" data-target="book"', t("music.bookTitle"), track ? esc(trackName(track, languageCode())) : "")}${flipIndex > 0 ? row('data-action="reader-go" data-at="0"', t("reader.toCover")) : ""}${coverRow}</div>${item && !demo ? `<div class="reader-menu-group reader-keeper">${keeperAskHTML(item.date, item.moment?.id || "")}</div>` : ""}</div>`;
   if (!dialog.open) dialog.showModal();
 }
 // The whole words of a page that do not fit on the paper (read only; from the journal itself).
@@ -6732,6 +6732,302 @@ function openStreak({ celebrate = false } = {}) {
   dialog.showModal();
 }
 // ---------- Reading a day: rename, edit or delete a page in place ----------
+// ---------- V10.60 · 页面管理 (one place to see, order and delete pages) ----------
+// Opened from the reader's ···, the shelf card's ··· (a whole book) or a
+// Calendar day (that day only). Full screen, so dragging never fights a
+// sheet. Nothing changes until 完成: the book's order (pageOrder /
+// customOrder — display only) or, for one day, the order of its Moments.
+// 删除 asks first and follows the same rules as deleting one page (a day
+// with nothing left is cleared and can be brought back once); photo, video
+// and sound files are never deleted.
+let pm = null;
+function pmItems() {
+  if (!pm) return [];
+  if (pm.scope === "day") return visiblePages(state(), { date: pm.date });
+  // The book's pages in date order (the order bar arranges them from here).
+  return visiblePages(state()).filter((item) => ((item.moment ? item.moment.bookId || item.entry.bookId : item.entry.bookId) || "") === pm.bookId);
+}
+function pmOrdered(order, items = pmItems()) {
+  return orderPages(items, { pageOrder: order, customOrder: pm.custom }).map(pageKey);
+}
+function openPageManager({ bookId = null, date = null } = {}) {
+  if ($("#choose-dialog")?.open) $("#choose-dialog").close();
+  if (date) {
+    pm = { scope: "day", date, bookId: null, order: "custom", selecting: false, selected: new Set(), notice: "" };
+    pm.keys = visiblePages(state(), { date }).map(pageKey);
+  } else {
+    const book = state().books.find((b) => b.id === bookId);
+    if (!book) return;
+    pm = { scope: "book", bookId, order: book.pageOrder || "date", custom: Array.isArray(book.customOrder) ? [...book.customOrder] : [], selecting: false, selected: new Set(), notice: "" };
+    pm.keys = pmOrdered(pm.order);
+  }
+  logEvent("pages_manage_open", { kind: pm.scope });
+  pmRender();
+}
+function pmDialog() {
+  let dialog = $("#page-manager");
+  if (!dialog) {
+    dialog = document.createElement("dialog");
+    dialog.id = "page-manager";
+    dialog.className = "page-manager";
+    document.body.append(dialog);
+    dialog.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      closePageManager();
+    });
+  }
+  return dialog;
+}
+function pmThumb(item) {
+  const p = item.moment || item.entry;
+  const layer = (p.layers || []).find((l) => l.kind === "photo" && l.mediaRef && !l.gen && !l.deco);
+  const ref = layer?.mediaRef || (!item.moment && item.entry.photo) || (/^(media:|photo:)/.test(p.backdrop || "") ? p.backdrop : "") || (p.media || []).find((c) => c.poster)?.poster || "";
+  return ref ? safePhoto(ref) : "";
+}
+function pmKinds(item) {
+  const p = item.moment || item.entry;
+  const layers = p.layers || [];
+  const photos = layers.filter((l) => l.kind === "photo" && l.mediaRef && !l.drawing && !l.gen).length;
+  const marks = [];
+  if (photos) marks.push(`<i title="${esc(t("pm.kindPhoto"))}">▢ ${photos}</i>`);
+  if (String(p.title || p.body || "").trim()) marks.push(`<i title="${esc(t("pm.kindText"))}">Aa</i>`);
+  if ((p.media || []).some((c) => c.kind === "audio")) marks.push(`<i title="${esc(t("pm.kindSound"))}">♪</i>`);
+  if ((p.media || []).some((c) => c.kind === "video")) marks.push(`<i title="${esc(t("pm.kindVideo"))}">▶</i>`);
+  if (layers.some((l) => l.drawing)) marks.push(`<i title="${esc(t("pm.kindDrawing"))}">✎</i>`);
+  return marks.join("");
+}
+function pmRender() {
+  if (!pm) return;
+  const dialog = pmDialog();
+  const items = new Map(pmItems().map((item) => [pageKey(item), item]));
+  pm.keys = pm.keys.filter((key) => items.has(key));
+  for (const key of items.keys()) if (!pm.keys.includes(key)) pm.keys.push(key);
+  const book = pm.bookId ? state().books.find((b) => b.id === pm.bookId) : null;
+  const title = pm.scope === "day" ? t("pm.dayTitle", { date: shortDate(pm.date) }) : book?.title || "";
+  const cover = pm.scope === "day" ? pm.keys.find((key) => key.endsWith("|")) : null;
+  const sortable = pm.keys.filter((key) => key !== cover);
+  const card = (key, n) => {
+    const item = items.get(key);
+    const p = item.moment || item.entry;
+    const thumb = pmThumb(item);
+    const isCover = !item.moment;
+    const label = isCover ? t("pm.cover") : PL.pageLabel(p, { t, dayPage: false }).label;
+    const on = pm.selected.has(key);
+    const fixed = key === cover;
+    const index = sortable.indexOf(key);
+    const moves = pm.selecting || fixed ? "" : `<span class="pm-moves"><button data-action="pm-move" data-key="${esc(key)}" data-dir="-1" aria-label="${esc(t("pm.up"))}" ${index <= 0 ? "disabled" : ""}>↑</button><button data-action="pm-move" data-key="${esc(key)}" data-dir="1" aria-label="${esc(t("pm.down"))}" ${index >= sortable.length - 1 ? "disabled" : ""}>↓</button></span>`;
+    const edit = pm.selecting ? "" : `<button class="pm-edit" data-action="pm-edit" data-key="${esc(key)}" aria-label="${esc(t("pm.edit"))}">✎</button>`;
+    return `<div class="pm-card ${on ? "selected" : ""} ${fixed ? "fixed" : ""}" data-key="${esc(key)}"><button class="pm-open" data-action="${pm.selecting ? "pm-pick" : "pm-open"}" data-key="${esc(key)}" aria-pressed="${pm.selecting ? on : "false"}"><span class="pm-thumb ${thumb ? "" : "words"}">${thumb ? `<img src="${esc(thumb)}" alt="" loading="lazy" draggable="false">` : `<span>${esc(String(p.title || p.body || "").slice(0, 40))}</span>`}${pm.selecting ? `<i class="pm-check" aria-hidden="true">${on ? "✓" : ""}</i>` : ""}</span><span class="pm-meta"><b>${fixed ? "" : String(n).padStart(2, "0")}</b><small>${esc(shortDate(item.date))}${item.moment?.time ? ` · ${esc(item.moment.time)}` : ""}</small></span><span class="pm-title">${esc(label)}</span><span class="pm-kinds">${pmKinds(item)}</span></button>${moves}${edit}</div>`;
+  };
+  const orderBar = pm.scope === "book" ? `<div class="pm-order" role="group" aria-label="${esc(t("pm.orderLabel"))}">${["date", "date-desc", "custom"].map((o) => `<button data-action="pm-order" data-order="${o}" class="${pm.order === o ? "selected" : ""}" aria-pressed="${pm.order === o}">${t("pm.order." + o)}</button>`).join("")}</div>` : `<div class="pm-order"><button class="text-button" data-action="pm-bytime">${t("pm.byTime")}</button></div>`;
+  const grid = pm.keys.length ? `${cover ? `<div class="pm-grid pm-cover-row">${card(cover, 0)}</div>` : ""}<div class="pm-grid" data-pm-grid>${sortable.map((key, i) => card(key, i + 1)).join("")}</div>` : `<p class="pm-empty">${t("pm.empty")}</p>`;
+  const foot = pm.selecting ? `<div class="pm-foot"><button class="secondary" data-action="pm-select">${t("pm.selectDone")}</button><button class="primary danger-fill" data-action="pm-delete" ${pm.selected.size ? "" : "disabled"}>${t("pm.delete", { count: pm.selected.size })}</button></div>` : "";
+  dialog.innerHTML = `<header class="pm-top"><button class="text-button" data-action="pm-cancel">${t("cancel")}</button><b>${esc(title)}</b><button class="primary" data-action="pm-done">${t("pm.done")}</button></header><div class="pm-sub">${orderBar}<button class="text-button pm-select" data-action="pm-select">${pm.selecting ? t("pm.selectDone") : t("pm.select")}</button></div>${pm.notice ? `<p class="pm-notice" role="status">${esc(pm.notice)}</p>` : `<p class="pm-hint">${t(pm.selecting ? "pm.selectHint" : "pm.hint")}</p>`}<div class="pm-body">${grid}</div>${foot}`;
+  if (!dialog.open) dialog.showModal();
+}
+function closePageManager() {
+  pm = null;
+  const dialog = $("#page-manager");
+  if (dialog?.open) dialog.close();
+}
+function pmMove(key, to) {
+  const cover = pm.scope === "day" ? pm.keys.find((k) => k.endsWith("|")) : null;
+  const sortable = pm.keys.filter((k) => k !== cover);
+  const from = sortable.indexOf(key);
+  if (from < 0) return;
+  const moved = moveKey(sortable, from, to);
+  pm.keys = cover ? [cover, ...moved] : moved;
+  if (pm.scope === "book" && pm.order !== "custom") {
+    pm.order = "custom";
+    pm.notice = t("pm.toCustom");
+  }
+}
+async function pmSave() {
+  if (!pm) return;
+  const done = pm;
+  if (done.scope === "book") {
+    store.update((next) => {
+      const book = next.books.find((b) => b.id === done.bookId);
+      if (!book) return;
+      book.pageOrder = done.order;
+      if (done.order === "custom") book.customOrder = [...done.keys];
+    });
+    logEvent("pages_order_saved", { kind: done.order });
+  } else {
+    const ids = done.keys.filter((k) => !k.endsWith("|")).map((k) => k.split("|")[1]);
+    store.update((next) => {
+      for (const day of readCopies(done.date)(next)) {
+        const at = new Map(ids.map((momentId, i) => [momentId, i]));
+        day.moments = [...(day.moments || [])].sort((a, b) => (at.get(a.id) ?? 1e9) - (at.get(b.id) ?? 1e9));
+      }
+    });
+    if (editor?.date === done.date) {
+      const at = new Map(ids.map((momentId, i) => [momentId, i]));
+      editor.moments = [...(editor.moments || [])].sort((a, b) => (at.get(a.id) ?? 1e9) - (at.get(b.id) ?? 1e9));
+    }
+    logEvent("pages_order_saved", { kind: "day" });
+  }
+  const key = page === "reader" ? readerKey() : "";
+  closePageManager();
+  if (page === "reader" && key) flipIndex = Reader.positionOf(readerPages(), key);
+  render();
+  toast(t("pm.saved"));
+}
+async function pmDelete() {
+  const keys = [...pm.selected];
+  if (!keys.length) return;
+  if (!(await askConfirm(t("pm.deleteConfirm", { count: keys.length }), { ok: t("delete") }))) return;
+  const byDate = new Map();
+  for (const key of keys) {
+    const [date, momentId] = key.split("|");
+    if (!byDate.has(date)) byDate.set(date, []);
+    byDate.get(date).push(momentId);
+  }
+  for (const [date, ids] of byDate) {
+    const left = visiblePages(state(), { date }).filter((item) => !keys.includes(pageKey(item))).length;
+    if (!left) {
+      clearDay(date);
+      continue;
+    }
+    store.update((next) => {
+      for (const day of readCopies(date)(next))
+        for (const momentId of ids) {
+          if (momentId) removeMoment(day, momentId);
+          else Object.assign(day, { title: "", body: "", photo: "", layers: [], media: [], fieldValues: {} });
+        }
+    });
+    if (editor?.date === date) for (const momentId of ids) if (momentId) removeMoment(editor, momentId);
+  }
+  logEvent("pages_deleted", { count: keys.length });
+  pm.selected = new Set();
+  pm.selecting = false;
+  pm.keys = pm.keys.filter((key) => !keys.includes(key));
+  pmRender();
+  render();
+  toast(t("pm.deleted", { count: keys.length }));
+}
+function pmAction(name, target) {
+  if (!pm) return false;
+  const key = target.dataset.key;
+  if (name === "pm-cancel") return closePageManager(), true;
+  if (name === "pm-done") return pmSave(), true;
+  if (name === "pm-order") {
+    pm.order = target.dataset.order;
+    pm.notice = "";
+    pm.keys = pmOrdered(pm.order === "custom" && !pm.custom.length ? "date" : pm.order);
+  } else if (name === "pm-move") {
+    const cover = pm.scope === "day" ? pm.keys.find((k) => k.endsWith("|")) : null;
+    const sortable = pm.keys.filter((k) => k !== cover);
+    pmMove(key, sortable.indexOf(key) + Number(target.dataset.dir));
+  } else if (name === "pm-bytime") {
+    const items = new Map(pmItems().map((item) => [pageKey(item), item]));
+    const cover = pm.keys.find((k) => k.endsWith("|"));
+    const rest = pm.keys.filter((k) => k !== cover);
+    const time = (k) => items.get(k)?.moment?.time || "99:99";
+    rest.sort((a, b) => time(a).localeCompare(time(b)));
+    pm.keys = cover ? [cover, ...rest] : rest;
+  } else if (name === "pm-select") {
+    pm.selecting = !pm.selecting;
+    pm.selected = new Set();
+  } else if (name === "pm-pick") {
+    if (pm.selected.has(key)) pm.selected.delete(key);
+    else pm.selected.add(key);
+  } else if (name === "pm-delete") {
+    pmDelete();
+    return true;
+  } else if (name === "pm-open" || name === "pm-edit") {
+    if (Date.now() - pmDragEnded < 450) return true;
+    const [date, momentId] = key.split("|");
+    const scope = pm;
+    closePageManager();
+    if (name === "pm-edit") {
+      openStudio(date);
+      selectMoment(momentId || null);
+      return true;
+    }
+    if (scope.scope === "book") openReader(scope.bookId, key);
+    else openDay(date, momentId || undefined);
+    return true;
+  } else return false;
+  pmRender();
+  return true;
+}
+// Long-press a card to drag it (the same feel as the grouping preview).
+let pmDrag = null;
+let pmDragEnded = 0;
+document.addEventListener("pointerdown", (event) => {
+  const cardEl = event.target.closest?.("#page-manager [data-pm-grid] .pm-card");
+  if (!cardEl || !pm || pm.selecting || event.target.closest(".pm-moves, .pm-edit") || event.button > 0) return;
+  const start = { x: event.clientX, y: event.clientY };
+  pmDrag = {
+    card: cardEl,
+    start,
+    active: false,
+    timer: setTimeout(() => {
+      if (!pmDrag || pmDrag.card !== cardEl) return;
+      pmDrag.active = true;
+      const r = cardEl.getBoundingClientRect();
+      const ghost = cardEl.cloneNode(true);
+      ghost.classList.add("pm-ghost");
+      Object.assign(ghost.style, { width: `${r.width}px`, left: `${start.x - r.width / 2}px`, top: `${start.y - 30}px` });
+      $("#page-manager").append(ghost);
+      pmDrag.ghost = ghost;
+      cardEl.classList.add("dragging");
+      navigator.vibrate?.(10);
+    }, 320),
+  };
+});
+document.addEventListener("pointermove", (event) => {
+  if (!pmDrag) return;
+  if (!pmDrag.active) {
+    if (Math.hypot(event.clientX - pmDrag.start.x, event.clientY - pmDrag.start.y) > 8) {
+      clearTimeout(pmDrag.timer);
+      pmDrag = null;
+    }
+    return;
+  }
+  event.preventDefault();
+  pmDrag.ghost.style.left = `${event.clientX - pmDrag.ghost.offsetWidth / 2}px`;
+  pmDrag.ghost.style.top = `${event.clientY - 30}px`;
+  document.querySelectorAll("#page-manager .drop-before, #page-manager .drop-after").forEach((el) => el.classList.remove("drop-before", "drop-after"));
+  const over = document.elementFromPoint(event.clientX, event.clientY)?.closest?.("[data-pm-grid] .pm-card");
+  if (over && over !== pmDrag.card) {
+    const r = over.getBoundingClientRect();
+    over.classList.add(event.clientX > r.left + r.width / 2 ? "drop-after" : "drop-before");
+  }
+  // Near the top / bottom edge, the list scrolls along.
+  const body = $("#page-manager .pm-body");
+  if (body) {
+    const r = body.getBoundingClientRect();
+    if (event.clientY < r.top + 40) body.scrollTop -= 12;
+    else if (event.clientY > r.bottom - 40) body.scrollTop += 12;
+  }
+});
+const endPmDrag = (event) => {
+  if (!pmDrag) return;
+  clearTimeout(pmDrag.timer);
+  const drag = pmDrag;
+  pmDrag = null;
+  if (!drag.active) return;
+  drag.ghost?.remove();
+  drag.card.classList.remove("dragging");
+  pmDragEnded = Date.now();
+  if (event.type !== "pointerup" || !pm) return pmRender();
+  const over = document.elementFromPoint(event.clientX, event.clientY)?.closest?.("[data-pm-grid] .pm-card");
+  if (!over || over === drag.card) return pmRender();
+  const cover = pm.scope === "day" ? pm.keys.find((k) => k.endsWith("|")) : null;
+  const sortable = pm.keys.filter((k) => k !== cover);
+  const from = sortable.indexOf(drag.card.dataset.key);
+  const r = over.getBoundingClientRect();
+  let to = sortable.indexOf(over.dataset.key) + (event.clientX > r.left + r.width / 2 ? 1 : 0);
+  if (to > from) to -= 1;
+  pmMove(drag.card.dataset.key, to);
+  logEvent("pages_drag", {});
+  pmRender();
+};
+document.addEventListener("pointerup", endPmDrag);
+document.addEventListener("pointercancel", endPmDrag);
+document.addEventListener("touchmove", (event) => pmDrag?.active && event.preventDefault(), { passive: false });
 function readCopies(date) {
   // The saved day and its draft (if any) both change, so they stay in step.
   return (next) => [next.entries.find((e) => e.date === date), next.drafts[date]].filter(Boolean);
@@ -6977,7 +7273,7 @@ function openShelfMenu(bookId) {
   const del = pages
     ? `<div class="shelf-menu-danger"><p>${esc(t("shelf.deleteHasPages", { count: pages }))}</p></div>`
     : `<button class="contribute-option danger-option" data-action="shelf-delete" data-book="${esc(bookId)}"><b>${t("shelf.deleteBook")}</b><small>${t("shelf.deleteEmptyHint")}</small></button>`;
-  dialog.innerHTML = `<div class="choose-sheet page-menu-sheet shelf-menu"><div class="choose-grabber" aria-hidden="true"></div><h2>${esc(book.title)}</h2><button class="contribute-option" data-action="edit-book" data-book="${esc(bookId)}"><b>✎ ${t("shelf.editBook")}</b><small>${t("shelf.editBookHint")}</small></button><p class="shelf-menu-note">${t("shelf.moveHint")}</p>${del}<button class="choose-cancel" data-action="choose-close">${t("cancel")}</button></div>`;
+  dialog.innerHTML = `<div class="choose-sheet page-menu-sheet shelf-menu"><div class="choose-grabber" aria-hidden="true"></div><h2>${esc(book.title)}</h2><button class="contribute-option" data-action="edit-book" data-book="${esc(bookId)}"><b>✎ ${t("shelf.editBook")}</b><small>${t("shelf.editBookHint")}</small></button>${pages ? `<button class="contribute-option" data-action="pm-open" data-book="${esc(bookId)}"><b>☰ ${t("pm.manageShelf")}</b><small>${t("pm.manageShelfHint")}</small></button>` : ""}<p class="shelf-menu-note">${t("shelf.moveHint")}</p>${del}<button class="choose-cancel" data-action="choose-close">${t("cancel")}</button></div>`;
   if (!dialog.open) dialog.showModal();
 }
 async function deleteEmptyBook(bookId) {
@@ -7799,6 +8095,8 @@ async function action(target) {
     render();
     if (calendarMode === "wall") logEvent("wall_open", { count: wallItems.length });
   }
+  if (actionName === "pm-open") return openPageManager({ bookId: target.dataset.book || null, date: target.dataset.date || null });
+  if (actionName?.startsWith("pm-") && pmAction(actionName, target)) return;
   if (actionName === "wall-photo") openWallViewer(target.dataset.ref);
   if (actionName === "wall-step") stepWallViewer(Number(target.dataset.dir) || 1);
   if (actionName === "wall-close") $("#wall-viewer")?.close();

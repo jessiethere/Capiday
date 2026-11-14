@@ -167,6 +167,12 @@ final class CoreTests: XCTestCase {
         // V10.19: a photo's own words and the line bound to them, and a page's quick type.
         let captioned = try JSONDecoder().decode(StickerLayer.self, from: Data(#"{"id":"p1","kind":"photo","text":"a.jpg","x":50,"y":40,"scale":1,"rotation":0,"mediaRef":"media:p1","caption":"第一杯：拉花是一只小熊"}"#.utf8))
         XCTAssertEqual(captioned.caption, "第一杯：拉花是一只小熊")
+        // V10.60: a book's page order (optional; older books have none).
+        let ordered = try JSONDecoder().decode(JournalBook.self, from: Data(#"{"id":"b","title":"T","category":"c","color":"blush","cover":"🌷","pageOrder":"custom","customOrder":["2026-11-13|m1","2026-11-10|"]}"#.utf8))
+        XCTAssertEqual(ordered.pageOrder, "custom")
+        XCTAssertEqual(ordered.customOrder?.last, "2026-11-10|")
+        let plain = try JSONDecoder().decode(JournalBook.self, from: Data(#"{"id":"b","title":"T","category":"c","color":"blush","cover":"🌷"}"#.utf8))
+        XCTAssertNil(plain.pageOrder)
         // V10.58: when a photo was taken, where that time came from, and its place in the picked order.
         let timed = try JSONDecoder().decode(StickerLayer.self, from: Data(#"{"id":"p2","kind":"photo","text":"b.jpg","x":50,"y":40,"scale":1,"rotation":0,"mediaRef":"media:p2","capturedAt":"2026-11-09T08:10:00.000Z","captureTimeSource":"exif-original","photoOrder":2}"#.utf8))
         XCTAssertEqual(timed.capturedAt, "2026-11-09T08:10:00.000Z")

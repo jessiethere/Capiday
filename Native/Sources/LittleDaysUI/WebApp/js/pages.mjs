@@ -45,8 +45,41 @@ export function dayOf(state, date, options) {
   return daysOf(state, options).get(date);
 }
 
+// V10.60 · A book's page order (display only — dates, photos and the pages
+// themselves never change): book.pageOrder "date" (default, older books) |
+// "date-desc" | "custom" with book.customOrder = ["date|momentId", …]. In a
+// custom order, pages not in the list yet (new pages) follow in date order
+// at the end, and keys that no longer exist are ignored. Within one day the
+// order is the day's own Moment order. The Calendar (no bookId) keeps dates.
+export const pageKey = (item) => `${item.date}|${item.moment?.id || ""}`;
+export function orderPages(pages, book) {
+  const order = book?.pageOrder || "date";
+  if (order === "date-desc") {
+    const days = [];
+    for (const item of pages) {
+      if (days.at(-1)?.date !== item.date) days.push({ date: item.date, items: [] });
+      days.at(-1).items.push(item);
+    }
+    return days.reverse().flatMap((day) => day.items);
+  }
+  if (order !== "custom" || !Array.isArray(book.customOrder)) return pages;
+  const at = new Map(book.customOrder.map((key, i) => [String(key), i]));
+  const placed = pages.filter((item) => at.has(pageKey(item))).sort((a, b) => at.get(pageKey(a)) - at.get(pageKey(b)));
+  const rest = pages.filter((item) => !at.has(pageKey(item)));
+  return [...placed, ...rest];
+}
+// Move one key in an ordered list of keys (drag and drop, ↑ ↓).
+export function moveKey(keys, from, to) {
+  const next = [...keys];
+  if (from < 0 || from >= next.length) return next;
+  const [key] = next.splice(from, 1);
+  next.splice(Math.max(0, Math.min(to, next.length)), 0, key);
+  return next;
+}
+
 // The pages that can be read, oldest first: [{ date, entry, moment }]
-// (moment null = the day's own page). bookId: only that book's pages.
+// (moment null = the day's own page). bookId: only that book's pages, in
+// that book's order (V10.60).
 export function visiblePages(state, { bookId = null, samples = "exclude", date = null } = {}) {
   const days = daysOf(state, { samples });
   const pages = [];
@@ -56,7 +89,7 @@ export function visiblePages(state, { bookId = null, samples = "exclude", date =
     if ((!bookId || entry.bookId === bookId) && dayPageShown(entry)) pages.push({ date: day, entry, moment: null });
     for (const moment of entry.moments || []) if (!bookId || (moment.bookId || entry.bookId) === bookId) pages.push({ date: day, entry, moment });
   }
-  return pages;
+  return bookId ? orderPages(pages, (state.books || []).find((book) => book.id === bookId)) : pages;
 }
 
 // What one date holds, for the Calendar and the day view.

@@ -61,6 +61,10 @@ public struct JournalBook: Codable, Identifiable, Equatable {
     public var music: String?
     /// V7.6: my own tags for this book ("阅读", "健身", …), for the shelf filter and search.
     public var tags: [String]?
+    /// V10.60: the book's page order ("date" = default, "date-desc", "custom")
+    /// and, for "custom", the pages' keys ("yyyy-MM-dd|momentId") in order.
+    public var pageOrder: String?
+    public var customOrder: [String]?
 }
 
 public struct BookField: Codable, Identifiable, Equatable {

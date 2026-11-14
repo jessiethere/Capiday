@@ -4,6 +4,28 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.60",
+    date: "2026-11-14",
+    zh: {
+      title: "页面管理：自己决定页面顺序",
+      items: [
+        "阅读器右上角「···」第一项就是「管理页面」；书架上书的「···」里是「管理页面与顺序」。",
+        "整本书的页面排成三列：可以按日期正序、日期倒序，或长按拖动、用 ↑ ↓ 自定义顺序；点「完成」才保存，「取消」什么都不改。",
+        "自定义顺序之后新加的页面会排在最后，不会打乱已经排好的顺序；切回日期顺序后，自定义顺序也会保留。",
+        "「选择」可以一次删除几页，删除前会先问你；照片、视频和声音文件不会被删除。",
+      ],
+    },
+    en: {
+      title: "Manage pages: put them in your order",
+      items: [
+        "Manage pages is the first item in the reader's ···; a book's ··· on the shelf has Pages and order.",
+        "See every page in three columns: oldest first, newest first, or your own order by long-press dragging or ↑ ↓. Done saves; Cancel changes nothing.",
+        "New pages join the end of your own order without moving the rest, and switching back to dates keeps your order for later.",
+        "Select deletes several pages at once after asking; photo, video and sound files are kept.",
+      ],
+    },
+  },
+  {
     version: "10.59",
     date: "2026-11-14",
     zh: { title: "首页字标换了字体", items: ["左上角的「开铺手帐」改用和「照片手帐」一样的字体，更清爽统一。"] },
