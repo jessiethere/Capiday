@@ -13,7 +13,7 @@ export const UPDATES = [
         "「只写几句话」页上的标题和正文也能拖了：一拖就变成可以自由摆放的文字框，字都在；撤销可以回到原来的样子。",
         "新文字框默认用黑体，并且加粗一档。",
         "给 Captain 起名字等单行输入框，按键盘上的「完成」就会收起键盘。",
-        "在固定链接里打字时，字体工具条停在键盘上方，不再被键盘挡住。",
+        "打字时，字体工具条停在键盘上方：iPhone App 里不再被键盘上方系统自带的那条输入栏挡住，固定链接里也不再被键盘挡住。",
       ],
     },
     en: {
@@ -23,7 +23,7 @@ export const UPDATES = [
         "On a Just write page the title and words can be dragged too: they become free text boxes with all their words; Undo brings the page back.",
         "New text boxes start in Sans, one step bolder.",
         "One-line fields such as Captain's name close the keyboard on Done.",
-        "In the pinned link the type bar stays above the keyboard while you type.",
+        "While you type, the type bar stays above the keyboard: in the iPhone app no longer under iOS's own bar over the keyboard, and in the pinned link no longer under the keyboard.",
       ],
     },
   },
