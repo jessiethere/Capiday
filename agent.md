@@ -48,6 +48,85 @@
 
 ## 更新日志
 
+### 2026-11-14 — 规划轮：数据安全与分享导出决策、Sprint 1 方案、存储架构、iCloud、设置 IA、发布就绪审查、iPhone Duo（只规划，未改业务代码）
+
+- **范围**：只写文档。这一轮**没有改动任何业务代码**，没有改数据库结构，没有迁移或删除数据，没有引入任何服务。新增 4 份文档，所有结论都写明了代码位置（以 commit `134dac0` 为准）：
+  - `docs/SPRINT1_BACKUP_RESTORE_PLAN.md`
+  - `docs/STORAGE_ARCHITECTURE.md`
+  - `docs/SETTINGS_IA_V2_PLAN.md`
+  - `docs/RELEASE_READINESS_AUDIT.md`
+- **用户已确认的产品决策**（原样记录）
+  - 数据安全：
+    1. 保留 local-first，暂时不加云端服务器；
+    2. 优先修复 100 MB 备份上限，备份必须包含全部元数据和媒体；
+    3. 备份必须可以验证、可以恢复，不允许悄悄跳过媒体还显示「成功」；
+    4. 恢复要防止误覆盖，有确认和失败处理；
+    5. 设置里说明数据主要在这台 iPhone，卸载前要备份；
+    6. 适度的备份提醒；
+    7. 继续验证 TestFlight 更新、iCloud 整机备份和恢复。
+  - 照片原图：先做评估；在完整备份可靠之前**不默认启用**。
+  - 分享与导出：
+    1. 默认无水印，可选「made with Capiday」；
+    2. 单页默认 PNG；
+    3. 存相册：Phase 1 用系统分享面板；
+    4. Studio 的三个导出按钮合并为「分享与导出」；
+    5. 支持原比例、9:16、4:5、1:1；
+    6. 默认完整适配，可选铺满；
+    7. 导出前必须预览，不修改原手帐；
+    8. 复用 `export.mjs`、`book-share.mjs` 和 iOS 分享能力。
+  - 开发顺序：Sprint 1 备份和恢复 → Sprint 2 原图和媒体存储 → Sprint 3 统一分享入口和多比例导出 → Sprint 4 批量保存照片和视频。
+- **证据收集**：三个只读的代码调查（备份恢复和隐私；设置、实验室和删除流程；自适应布局），关键结论都由我自己复核过。复核出的问题：
+  - **恢复会拒绝含逗号的 codecs**（`media.mjs:350`）；App 自己录音用的 `audio/webm;codecs=opus` 不受影响。
+  - 外壳**没有实现** `webViewWebContentProcessDidTerminate`。
+  - 现在没有任何阅读相关的事件（`reader_open` 等不存在）。
+  - Swift 用了 `UserDefaults`，所以需要隐私清单（理由 `CA92.1`）；仓库里没有 `PrivacyInfo.xcprivacy`，也没有隐私政策。
+  - 不跟随 Dynamic Type，也不跟随系统深色模式。
+- **iPhone Duo 实测**（Mac，Xcode 27.2）
+  - 模拟器配置：`iPhone19,4`，属于 iPhone 家族（产品家族 ID 1）；外屏 466 × 678 pt、内屏 669 × 951 pt（都是 3 倍）；支持 `resizableScene`；生物识别是 Touch ID。
+  - 为 iPhone Duo 做的 Debug 构建：BUILD SUCCEEDED。安装后启动，截了外屏：页面正常，但**右上角的状态栏和传感器区域盖住了首页的设置齿轮**（CSS 没有使用左右安全区）。
+  - 内屏在折叠状态下是关闭的，命令行没有找到展开的方法，**内屏没有验证**。
+  - 模拟器已经关闭。
+- **Sprint 1 方案要点**（`SPRINT1_BACKUP_RESTORE_PLAN.md`）
+  - 在 iPhone App 里改为由 Swift 写入 `.capiday` 备份包（Apple Archive，原始字节）。
+  - 媒体每次只处理一个，按 4 MB 分块，从 JS 交给 Swift；CryptoKit 计算 sha256。
+  - **回读校验是「成功」的唯一标准**。
+  - 用系统的「存储到…」面板保存，用户选好位置以后才记录「上次备份」。
+  - 浏览器路径保留 v1 JSON 和 100 MB 上限，旧的 v1 备份照样可以恢复。
+  - 恢复：先解包并校验 → 预览（和当前手帐对比）→ 二次确认 → 写入前快照 `little-days.v1.before-restore` → 媒体先写、state 后写 → 可以撤销 → 按 id 和 sha256 去重 → 放宽 mime。
+  - Documents 不再堆积备份和导出文件。
+  - 分步：S1-0 实验 → S1-1（只改 JS 的恢复安全）→ S1-2 → S1-3 → S1-4。
+  - 真机清单 15 项。
+  - Sprint 2 原图评估：每张多占约 5–15 倍；用可选字段 `originalRef`，不能和 `sourceRef` 混用；真正的原图需要原生 PHPicker；原图的 GPS 在分享时默认去掉；默认不开启。
+- **存储架构要点**（`STORAGE_ARCHITECTURE.md`）
+  - Phase 0–3 的设计、Mermaid 数据流图、模块和接口、容量估算、兼容策略、每个阶段的验收标准、中美两个市场。
+  - iCloud Drive 只作为备份的保存位置。
+    - 需要的配置：entitlements（iCloud Documents，`iCloud.com.capiday.app`）和 `NSUbiquitousContainers`。
+    - 写入方式：`NSFileCoordinator`、`*.partial` 文件、改名。
+    - 保留 3 份完整备份和最多 6 个月的月初备份。
+    - 只有 `ubiquitousItemIsUploaded` 为 true 才算「已备份到 iCloud」。
+    - 处理了未登录、Apple ID 变化、空间不足、断网等情况。
+    - 后台执行不保证按时。
+    - 不把 iCloud 当成唯一的备份。
+  - CloudKit：用 `CKSyncEngine`、私有数据库，按页面为单位处理冲突，被覆盖的版本保存为冲突副本，删除用 tombstone。
+  - 云端媒体：本地缓存只有在三个条件同时满足时才释放。
+- **设置 IA V2 要点**（`SETTINGS_IA_V2_PLAN.md`）
+  - 新分区「数据与存储」和「隐私与安全」。
+  - 存储总量由 Swift 统计容器里的目录，分类统计在用户点开时才进行，可以取消并缓存；拿不到就写「无法获取」。
+  - 修复：现在每次渲染设置页都会读取全部媒体的字节（`showMediaUsage` 加 `media.usage`）。
+  - 实验室：逐项审查了每个功能。新增 `isInternal()`（Debug 构建自动打开，网页版在版本号上连点 7 次），`labsOn()` 只在内部模式生效；测试工具同步设置内部模式。
+  - 隐私设置的行为都不改。
+- **发布审查要点**（`RELEASE_READINESS_AUDIT.md`）
+  - 发布阻碍 B1–B8：备份、只存在本机、隐私清单、实验室、撤销承诺、隐私说明、Documents 明文、隐私政策。
+  - 也覆盖了：数据损坏保护和迁移框架、删除和撤销、回收站设计、隐私十项、首次创作（可以再少两步）、长期使用指标（不接入 SDK）、无障碍、Duo 适配（P0 安全区和尺寸变化，P1 宽屏的最大宽度）、帮助与反馈、功能精简、P0–P3 路线图、测试计划。
+  - 最优先的五件事和需要决定的事项（第 O 节）。
+- **运行与测试**：这一轮只改了文档，没有运行测试；只做了 Duo 模拟器的构建和截图（见上）。
+- **等待用户批准**：
+  1. Sprint 1 方案，以及备份包格式（`.capiday` 还是分卷 JSON）；
+  2. 设置 IA V2（包括习惯 / 成长的去留、是否显示「iCloud 即将推出」、内部模式的打开方式）；
+  3. iCloud 和存储架构的阶段安排；
+  4. 发布审查第 O 节的 5 项决定。
+- **下一步**：批准后先做 S1-0 实验和 S1-1（恢复安全，只改 JS）。
+
 ### 2026-11-14 — V10.61–V10.64 收尾：全量回归、一个外观 bug、发布
 
 - **全量浏览器回归**（97 个套件，Chromium，逐个顺序运行）：第一轮 90 个通过，失败的 7 个处理如下。

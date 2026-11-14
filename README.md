@@ -183,6 +183,16 @@ npm run test:browser:v65
 
 ## 更新日志
 
+### 2026-11-14 — 规划：备份与恢复、iCloud、设置、发布就绪、iPhone Duo（只规划，没有改代码）
+
+- 记录了你确认的数据安全、分享导出决策和开发顺序（Sprint 1 → 4）。
+- 新增 4 份方案，都等你批准后再开发：
+  - `docs/SPRINT1_BACKUP_RESTORE_PLAN.md`：完整备份（取消 100 MB 上限、逐个校验）和安全恢复（预览、确认、可撤销），附真机验收清单；
+  - `docs/STORAGE_ARCHITECTURE.md`：本地优先，可选 iCloud 备份，未来同步和云端媒体的分阶段设计；
+  - `docs/SETTINGS_IA_V2_PLAN.md`：「数据与存储」「隐私与安全」，正式版不显示实验室；
+  - `docs/RELEASE_READINESS_AUDIT.md`：发布阻碍、体验、隐私、无障碍、iPhone Duo 适配、路线图和测试计划。
+- iPhone Duo：Mac 上的模拟器构建成功；外屏上设置齿轮被状态栏挡住，内屏还没有验证。
+
 ### 2026-11-14 — V10.61–V10.64 发布与回归
 
 - 97 个自动化浏览器测试中 96 个通过。剩下的 1 个在这一轮改动之前的代码上同样失败，是测试环境的问题，已经记录在 agent.md。
