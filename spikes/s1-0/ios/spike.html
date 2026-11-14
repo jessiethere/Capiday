@@ -59,6 +59,27 @@ try {
   log("putArrayBuffer16MB", { err: String(e) });
 }
 
+// T2b · the candidate channel: 50 MB as 4 MB ArrayBuffer PUTs, one at a time (what a backup would do)
+try {
+  const all = new Uint8Array(await blobOf(50).arrayBuffer());
+  const expect = hex(await crypto.subtle.digest("SHA-256", all));
+  const t = performance.now();
+  let bytes = 0;
+  let peak = 0;
+  const parts = [];
+  for (let o = 0; o < all.length; o += 4 << 20) {
+    const part = all.slice(o, o + (4 << 20)).buffer; // a copy, like one chunk read from IndexedDB
+    const r = await (await fetch(`littledays://app/spike/put?seq=${o}`, { method: "PUT", body: part })).json();
+    bytes += r.bytes;
+    peak = Math.max(peak, r.nativePeakMB);
+    parts.push(r.sha256);
+  }
+  const ms = Math.round(performance.now() - t);
+  log("arrayBufferChunks50MB", { bytes, ms, MBps: +(50 / (ms / 1000)).toFixed(1), nativePeakMB: peak, chunks: parts.length, allDelivered: bytes === all.length, expectSha: expect.slice(0, 16) });
+} catch (e) {
+  log("arrayBufferChunks50MB", { err: String(e) });
+}
+
 // T3 · base64 chunks through a reply handler: 50 MB in 4 MB chunks (backpressure: await each reply)
 if (native) {
   try {
