@@ -13877,14 +13877,72 @@ function keepFieldInView() {
   if (!field?.matches?.(TYPING_FIELD)) return;
   updateVisibleArea();
   requestAnimationFrame(() => {
-    // Words on the paper: the paper is already pinned in view.
-    if (field.closest(".studio-stage")) return;
+    // Words on the paper: the paper itself slides up if the line is low (V10.68).
+    if (field.closest(".studio-stage")) return liftPaper(field);
     // Inside a panel only the panel scrolls; the page behind stays put.
     const sheet = field.closest(".tool-sheet");
-    if (!sheet) return field.scrollIntoView({ block: "center" });
+    if (!sheet) return revealField(field);
     const box = field.getBoundingClientRect(),
       area = sheet.getBoundingClientRect();
     if (box.top < area.top + 48 || box.bottom > area.bottom) sheet.scrollTop += box.top - area.top - 56;
+  });
+}
+// V10.68 · How much of the screen bottom the keyboard covers (0 when down).
+function keyboardHeight() {
+  const vv = window.visualViewport;
+  return vv ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop) : 0;
+}
+// V10.68 · A field in a page or a dialog: the line being typed goes to the
+// upper part of what is still visible (scrollIntoView "center" centred it in
+// the whole screen, so with the keyboard up a low field stayed under it —
+// e.g. 今天的计划 on a 375 × 667 phone).
+function revealField(field) {
+  // A bottom sheet rises above the keyboard by itself (CSS, V10.66); inside
+  // it the field only needs to be in view once it has slid up.
+  if (field.closest(".choose-dialog")) return setTimeout(() => field.scrollIntoView({ block: "nearest" }), 260);
+  const keyboard = keyboardHeight();
+  if (keyboard < 80) return field.scrollIntoView({ block: "nearest" });
+  const visibleTop = window.visualViewport?.offsetTop || 0;
+  const visibleBottom = window.innerHeight - keyboard;
+  const r = field.getBoundingClientRect();
+  const line = Math.min(r.bottom, r.top + 48);
+  if (r.top >= visibleTop + 56 && line <= visibleBottom - 12) return;
+  let scroller = field.parentElement;
+  while (scroller && scroller !== document.body) {
+    const style = getComputedStyle(scroller);
+    if (/(auto|scroll)/.test(style.overflowY) && scroller.scrollHeight > scroller.clientHeight + 2) break;
+    scroller = scroller.parentElement;
+  }
+  const target = visibleTop + (visibleBottom - visibleTop) * 0.38;
+  if (scroller && scroller !== document.body) scroller.scrollBy({ top: r.top - target });
+  else field.scrollIntoView({ block: "center" });
+}
+// V10.68 · Words typed on the paper (a new text box often sits low on it):
+// the paper slides up just enough that the line being typed is above the
+// keyboard and the text bar on it — never past the top — and back when the
+// keyboard goes. The selection frame is inside the paper and moves with it.
+function liftPaper(field) {
+  const wrap = field.closest(".canvas-wrap");
+  if (!wrap) return;
+  const keyboard = keyboardHeight();
+  if (keyboard < 80) return dropPaper();
+  const current = Number(wrap.dataset.lift || 0);
+  let limit = window.innerHeight - keyboard - 8;
+  const barTop = document.querySelector("#type-bar:not([hidden])")?.getBoundingClientRect().top;
+  if (barTop > 0 && barTop < limit + 8) limit = barTop - 8;
+  const r = field.getBoundingClientRect();
+  const top = r.top + current;
+  const line = Math.min(r.bottom, r.top + 48) + current;
+  const lift = Math.round(Math.min(Math.max(0, line - limit), Math.max(0, top - 64)));
+  if (lift) {
+    wrap.dataset.lift = String(lift);
+    wrap.style.transform = `translateY(${-lift}px)`;
+  } else dropPaper();
+}
+function dropPaper() {
+  document.querySelectorAll(".canvas-wrap[data-lift]").forEach((wrap) => {
+    wrap.style.transform = "";
+    delete wrap.dataset.lift;
   });
 }
 document.addEventListener("focusin", (event) => {
@@ -13904,6 +13962,7 @@ document.addEventListener("focusout", () => {
   typingTimer = setTimeout(() => {
     if (document.activeElement?.matches?.(TYPING_FIELD)) return;
     document.body.classList.remove("typing", "typing-sheet", "typing-dialog");
+    dropPaper();
   }, 120);
 });
 // iPhone: closing the keyboard (or tapping elsewhere) can leave the caret in
@@ -13918,6 +13977,7 @@ function leaveTyping() {
   if (field?.matches?.(TYPING_FIELD)) field.blur();
   clearTimeout(typingTimer);
   document.body.classList.remove("typing", "typing-sheet", "typing-dialog");
+  dropPaper();
 }
 window.visualViewport?.addEventListener("resize", () => {
   const vv = window.visualViewport;

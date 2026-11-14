@@ -25035,3 +25035,27 @@ body:has(#choose-dialog[open] .choose-sheet.sw) #app-scroll {
 .backup-when .bk2-by {
   opacity: 0.75;
 }
+
+/* V10.68 · Keyboard, everywhere you type:
+   - the paper slides up while a low line on it is typed (liftPaper);
+   - a page gets room at its bottom while typing, so a field near the end can
+     still come up above the keyboard (revealField);
+   - a centred dialog (新建手帐本, 习惯…) moves to the top of what is visible
+     and scrolls inside itself while one of its fields has the caret. */
+.studio-stage .canvas-wrap {
+  transition: width 0.2s ease, transform 0.18s ease-out;
+}
+@media (pointer: coarse) {
+  html[style*="--kb"] body.typing:not(.typing-dialog) #app-scroll {
+    padding-bottom: calc(var(--kb, 0px) + 24px);
+  }
+  html[style*="--kb"] dialog[open]:not(.choose-dialog):has(:is(input, textarea, [contenteditable]):focus) {
+    margin-top: calc(var(--vv-top, 0px) + 10px);
+    margin-bottom: auto;
+    max-height: calc(var(--vv-h, 100dvh) - 20px);
+    overflow-y: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .studio-stage .canvas-wrap { transition: none; }
+}

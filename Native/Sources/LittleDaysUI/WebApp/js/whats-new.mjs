@@ -4,6 +4,28 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.68",
+    date: "2026-11-14",
+    zh: {
+      title: "打字时键盘不再挡住输入框",
+      items: [
+        "在纸上打字（尤其是新加的、位置靠下的文字框）时，纸会往上挪一点，正在写的那一行停在键盘和文字工具条上方；收起键盘后回到原位。",
+        "首页「今天的计划」等页面里的输入框，会滚到键盘上方能看到的位置，小屏手机也一样。",
+        "「新建手帐本」这类居中的对话框，打字时移到屏幕上方，可以在里面上下滚动。",
+        "检查了 17 个能打字的地方（两种手机尺寸），现在都在键盘上方。",
+      ],
+    },
+    en: {
+      title: "The keyboard no longer covers what you type",
+      items: [
+        "Typing on the paper (especially a new, low text box): the paper slides up a little so the line stays above the keyboard and the text bar, and slides back when the keyboard closes.",
+        "Fields in pages such as Home's plans scroll to where you can see them above the keyboard, on small phones too.",
+        "Centred dialogs such as New journal move to the top while you type and scroll inside.",
+        "17 places where you can type were checked on two phone sizes; all now stay above the keyboard.",
+      ],
+    },
+  },
+  {
     version: "10.67",
     date: "2026-11-14",
     zh: {
