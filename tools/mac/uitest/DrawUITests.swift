@@ -434,12 +434,14 @@ final class DrawUITests: XCTestCase {
         tap("addText", wait: 1.5)
         let s2 = state()
         let before = s2["textTops"] as? String ?? ""
-        print("LDTEXT added editing=\(s2["editing"] ?? "-") tops=\(before) typeBar=\(s2["typeBar"] ?? "-") kb=\(s2["kbVar"] ?? "-") vv=\(s2["vv"] ?? "-")")
+        print("LDTEXT added editing=\(s2["editing"] ?? "-") tops=\(before) typeBar=\((s2["typeBar"] as? [Double])?.map { String(Int($0)) }.joined(separator: ",") ?? "-") kb=\(s2["kbVar"] ?? "-") vv=\(s2["vv"] ?? "-")")
         // The text bar must be above iOS's own bar over the keyboard (⌃ ⌄ ✓).
         let accessory = app.toolbars.firstMatch
         if accessory.exists, let bar = s2["typeBar"] as? [Double], bar.count == 4 {
             let web = app.webViews.firstMatch.frame
             print("LDTEXT accessoryTop=\(accessory.frame.minY) typeBarBottom=\(web.minY + bar[1] + bar[3])")
+            XCTAssertLessThanOrEqual(web.minY + bar[1] + bar[3], accessory.frame.minY + 1, "the text bar is above iOS's bar")
+            XCTAssertGreaterThan(web.minY + bar[1], 40, "the text bar is on screen")
         }
         log("t3-added")
         guard let box = waitFor("editText", 5) else { XCTFail("new box is not being typed in"); return }

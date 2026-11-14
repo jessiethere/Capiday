@@ -13958,7 +13958,7 @@ function updateVisibleArea() {
   if (!vv) return;
   const keyboard = keyboardHeight();
   root.style.setProperty("--vv-top", `${Math.round(vv.offsetTop)}px`);
-  if (keyboard > 80) root.style.setProperty("--vv-h", `${Math.round(window.innerHeight - keyboard - vv.offsetTop)}px`);
+  if (keyboard > 80) root.style.setProperty("--vv-h", `${Math.round(visibleHeight())}px`);
   else root.style.removeProperty("--vv-h");
   // How much of the bottom the keyboard covers (a bottom sheet lifts by this much).
   if (keyboard > 80) root.style.setProperty("--kb", `${Math.round(keyboard)}px`);
@@ -13980,13 +13980,20 @@ function keepFieldInView() {
   });
 }
 // V10.68 · How much of the screen bottom the keyboard covers (0 when down).
+// The height of what can be seen: the visual viewport, made shorter by the
+// shell's keyboard line when that is higher (the shell's number is on screen;
+// the view may be scrolled by iOS, which the visual viewport's top carries).
+// The shell's number counts only while a field is focused, so a late
+// "hidden" can never leave a gap behind.
+function visibleHeight() {
+  const vv = window.visualViewport;
+  if (!vv) return window.innerHeight;
+  const native = nativeKeyboard && document.activeElement?.matches?.(TYPING_FIELD) ? nativeKeyboard : 0;
+  return native ? Math.min(vv.height, window.innerHeight - native) : vv.height;
+}
 function keyboardHeight() {
   const vv = window.visualViewport;
-  const measured = vv ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop) : 0;
-  // The shell's number only while the page itself also sees a keyboard (or a
-  // field is focused), so a late "hidden" can never leave a gap behind.
-  const native = nativeKeyboard && document.activeElement?.matches?.(TYPING_FIELD) ? nativeKeyboard : 0;
-  return Math.max(measured, native);
+  return vv ? Math.max(0, window.innerHeight - visibleHeight() - vv.offsetTop) : 0;
 }
 // V10.68 · A field in a page or a dialog: the line being typed goes to the
 // upper part of what is still visible (scrollIntoView "center" centred it in
