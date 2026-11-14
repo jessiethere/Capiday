@@ -13949,6 +13949,7 @@ let typingTimer;
 let nativeKeyboard = 0;
 window.capidayKeyboard = (px) => {
   nativeKeyboard = Math.max(0, Math.min(window.innerHeight * 0.8, Number(px) || 0));
+  document.documentElement.dataset.kbNative = String(Math.round(nativeKeyboard));
   updateVisibleArea();
   if (nativeKeyboard) keepFieldInView();
 };

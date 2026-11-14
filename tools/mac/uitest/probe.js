@@ -47,7 +47,7 @@ const tick = () => {
     editText: r('#journal-canvas .layer-text[contenteditable="plaintext-only"], #journal-canvas .layer-text[contenteditable="true"]'),
     editing: document.activeElement?.matches?.(".layer-text") ? "layer" : document.activeElement?.dataset?.inline || "",
     textTops: [...document.querySelectorAll("#journal-canvas .text-layer")].map((e) => e.style.top).join(","),
-    typeBar: r("#type-bar:not([hidden])"), kbVar: document.documentElement.style.getPropertyValue("--kb"), vv: [innerHeight, Math.round(visualViewport?.height || 0), Math.round(visualViewport?.offsetTop || 0)].join(","),
+    typeBar: r("#type-bar:not([hidden])"), kbVar: document.documentElement.style.getPropertyValue("--kb"), vv: [innerHeight, Math.round(visualViewport?.height || 0), Math.round(visualViewport?.offsetTop || 0), screen.height, document.documentElement.dataset.kbNative || "-", scrollY, document.querySelector("#app-scroll")?.scrollTop || 0, document.querySelector(".canvas-wrap")?.style.transform || ""].join(","),
     dayInk: [...document.querySelectorAll(".chapter-canvas .drawing-layer img")].filter((i) => i.complete && i.naturalWidth > 0).length,
     saved, draftDrawings, down: ev.down, up: ev.up, cancel: ev.cancel, appUp: ev.appUp, log: ev.log.slice(-8).join(" ") };
   box.setAttribute("aria-label", "LDSTATE:" + JSON.stringify(st));

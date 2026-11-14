@@ -439,7 +439,7 @@ final class DrawUITests: XCTestCase {
         let accessory = app.toolbars.firstMatch
         if accessory.exists, let bar = s2["typeBar"] as? [Double], bar.count == 4 {
             let web = app.webViews.firstMatch.frame
-            print("LDTEXT accessoryTop=\(accessory.frame.minY) typeBarBottom=\(web.minY + bar[1] + bar[3])")
+            print("LDTEXT accessoryTop=\(accessory.frame.minY) accessoryH=\(accessory.frame.height) web=\(web) keyboard=\(app.keyboards.firstMatch.frame) typeBarBottom=\(web.minY + bar[1] + bar[3])")
             XCTAssertLessThanOrEqual(web.minY + bar[1] + bar[3], accessory.frame.minY + 1, "the text bar is above iOS's bar")
             XCTAssertGreaterThan(web.minY + bar[1], 40, "the text bar is on screen")
         }
