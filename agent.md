@@ -48,6 +48,49 @@
 
 ## 更新日志
 
+### 2026-11-14 — V10.66 真机反馈三项：录音播放延迟、标题被键盘遮挡、字体面板遮挡页面
+
+- **需求**：用户在真机上发现三个问题，要求先查根因，不只改表面 UI；不用固定延迟或假播放状态；保留已有录音和日记数据；在真实 iPhone 尺寸下测试；跑相关自动化测试和 Release 构建检查；**三个问题确认解决前不上传新的 TestFlight**。最后提供 iPhone 手动验收清单。（消息里提到「截图」，但这次会话没有收到截图，按文字描述排查。）
+- **根因和修复**：详见 `docs/BUGFIX_LOG.md` V10.66。
+  - **P1 录音**：
+    - 模拟器测量排除了「文件开头是静音」（0–7 ms），模拟器上也没有 7 秒的起步延迟（0.1–0.3 s）。
+    - 代码里找到四个真机原因：录成 WebM/Opus（iPhone 上走 WebKit 自己的 WebM 播放器，保存后时长丢失）；默认开回声消除（Apple 语音处理单元会压低声音或改走听筒，结束后还持续一段时间）；保存要等最长 6 秒的波形解码；卡片播放器在「请求播放」时就显示「正在播放」。
+    - 修复：Apple WebKit 上录 AAC/MP4；不开回声消除；录音保存后立刻上页面，波形之后就地补上（不重绘、不加撤销步骤）；`preload="auto"`；播放器显示「准备中 → 正在播放」，以时间真正前进为准；本机日志记录 `media_play` 的 playing / moving 毫秒数（设置 → 媒体检查可看可复制）。
+  - **P2 标题**：
+    - 根因：WKWebView 里键盘不缩小页面，底部弹层没有使用 App 已测好的键盘高度；任何输入框获焦都会进入全局打字模式，弹层后面的编辑器跳 46 px。
+    - 修复：所有带焦点输入框的底部弹层抬到键盘和中文候选栏上方；弹层里打字加 `typing-dialog`，不改 Studio 布局；标题输入框 16 px。
+  - **P2 字体面板**：
+    - 根因：一个 62% 高的面板里，写字用的部分在调字体时仍然占着位置，盖住真实页面。
+    - 修复：「写字 / Aa 字体」两种高度，可点按或拖把手切换。字体模式约 222 px，只留字体工具，真实页面里正在改的文字滚到面板上方（页面后面加了滚动空间）。重新打开时一定是写字模式，光标在输入框里。
+- **文件**：
+  - `Public/app.js`：startRecording 约束；attachClip / fillPeaks；markTap / 播放日志 / updatePlayer；media-check 显示 ms；`typing-dialog`；swCompact / setStoryTextSize / swHeadHTML / 拖动；revealStoryTarget 用文字框的真实范围。
+  - `Public/js/voice-skin.mjs`：`recordingMime`。
+  - `Public/js/canvas.mjs`：语音 `preload="auto"`。
+  - `Public/js/media-check.mjs`：报告带 ms 和 way。
+  - `Public/styles.css`：`.ld-player.starting`；弹层避让键盘；`typing-dialog`；`.sw[data-size]`。
+  - i18n：`sw.compact`、`sw.expand` 等 4 条。whats-new 10.66。
+  - 测试：新增 `tests/v162-browser.cjs`、`tests/v162-voice-format.test.mjs`；迁移 v148（`playing` 之后还有 `moving`）、v149（看真实页面而不是面板里的小预览）、v159（波形之后补上）。
+  - 工具：`tools/mac/uitest/voice-latency.js`、`voice-app-check.js`。
+  - 文档：`docs/BUGFIX_LOG.md`。
+- **过程中发现并修好的两个回归**（都由新测试或旧测试抓到）：
+  - 波形补上时，旧写法重绘整页，会替换 `<audio>`，打断正在播放的声音。改为只重画波形条。
+  - 「更多样式」记着「展开」，面板重新打开时触发 toggle 事件，被当成「切到字体模式」，抢走输入框的光标，打的字丢了（v129 抓到）。改为只响应真实点按。
+- **测试**：
+  - Linux 容器 + Chromium（模拟键盘高度，用 App 自己的测量变量；不是真的 iPhone 键盘）：
+    - v162 共 10 项通过：P1 停止后约 100 ms 上页面，波形解码人为延迟 5 秒也不影响；先播放再出波形，声音元素不被替换；「准备中」到「正在播放」；第一次和第二次播放的计时。P2 标题在 iPhone 13 和 375×667 两种尺寸下，364 px 键盘加候选栏时在键盘上方，纸张不跳。P2 字体面板在两种尺寸下：收起后 222 px（完整时约 545 px）；改字体、字号、颜色、对齐时，文字始终在面板上方；拖把手或点「写字」可以回到写字；文字、照片、字体都保存。
+    - v148、v149、v159、v129、v124、v128、v150 通过。
+    - v119 在这个容器里点按卡住，旧代码同样如此，是已记录的环境问题。
+    - Node 单元测试 310/310 通过；`test_native_shell` OK。
+  - Mac（Xcode 27.2）：
+    - Release（generic iOS，不签名）BUILD SUCCEEDED；Debug 模拟器构建成功。
+    - 新的专用 iPhone 17 / iOS 27.2 模拟器（测完删除）里跑 App 自己的录音流程：AAC/MP4；停止后 400 ms 上页面；开头 0 ms 静音；第一次播放 1.0 s 开始出声，第二次 0.25 s；波形之后补上。
+  - <<REG66>>
+- **没有验证**：
+  - 真机：7 秒是否消失；扬声器、听筒、蓝牙线路；中文输入法候选栏的真实高度；字体面板拖动手感。
+  - 没有上传 TestFlight（按要求）。
+- **真机验收清单**：`docs/BUGFIX_LOG.md` V10.66 →「真机验收清单」（A 录音 8 步，B 标题 5 步，C 字体 6 步，D 回归）。
+- **下一步**：用户确认后，再出 0.2.0 (4) 的 TestFlight，按清单在 iPhone 上逐项确认，并把媒体检查里的 moving 毫秒数告诉我。
+
 ### 2026-11-14 — TestFlight 0.2.0 (3)：发布检查、升级测试、上传
 
 - **需求**：完成快照写入失败测试；发布前检查（名称 Capiday、Bundle ID 与现有 TestFlight 一致、版本号和构建号递增、Release 能编译、升级不丢日记/照片/My Books/本地数据、不重置存储、不改数据结构）；更新文档；准备并上传新的 TestFlight 构建；如实报告，不把上传成功等同于 Apple 处理完成。
