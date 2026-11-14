@@ -73,7 +73,9 @@
   - **修复**：iOS 外壳新增 `LittleDaysKeyboard`（`LittleDaysWebShellView.swift`），监听 `keyboardWillChangeFrame` / `keyboardWillHide`，把键盘（含系统输入栏）在网页里的顶端位置交给网页 `window.capidayKeyboard(top)`，收起时给 0。网页（`app.js`）在有输入框获得焦点时以它为准：可见高度取「可见区域高度」和「键盘顶端」的较小值；工具条、纸的上移（`liftPaper`）和输入框滚动（`revealField`）都改用同一个可见范围（`visibleBand`）。浏览器和固定链接的逻辑不变。
   - 第一版把 iOS 的页面滚动又算了一遍，工具条被推到屏幕外；第二版不以键盘为准，工具条停在纸的上部。第三版（上面）在模拟器里：工具条底边 471 pt，系统输入栏顶边 487 pt，完整可见。
 - **模拟器真实触摸测试**（XCUITest `testTextDrag`，`tools/mac/uitest`，临时副本、临时模拟器，测完删除）：只写几句话 → 拖正文（变成文字框，移到 82%）→ 加文字框（空的、在输入）→ 直接拖（60% → 30%），拖完仍在输入；工具条在系统输入栏上方、在屏幕内。**TEST SUCCEEDED**。
-- **全量回归、TestFlight**：见下一条记录。
+- **全量回归**（Linux 容器 + Chromium）：103 套里 102 套通过（含 v164、v165）；失败的只有已知偶发的 v119（容器里点按卡住）。单元测试 310/310，Python 外壳/图标/预览测试通过。
+- **在线链接**：V10.69 已发布（version 121）。
+- **TestFlight 0.2.0 (4)**：构建号 3 → 4（版本 0.2.0、Bundle ID `com.capiday.app`、显示名 Capiday 不变）。从 aaa7d2a 的干净副本（git archive）Release 归档 **ARCHIVE SUCCEEDED**，归档在 `~/Library/Developer/Xcode/Archives/2026-11-14/Capiday 0.2.0 (4).xcarchive`，已核对 Info.plist 和里面的网页代码。**没有上传**：上传这一步被本机的权限规则拦下（属于对外发布），需要用户确认后再传，或在 Xcode Organizer 里点 Distribute App → TestFlight & App Store。
 - **没有验证**：真机上的触摸拖动；固定链接里估算的键盘线与实际键盘的差距；iOS 26 及更早系统上外壳键盘位置是否与可见区域一致（逻辑取较小值，不会更低）。
 
 ### 2026-11-14 — V10.68 全面检查「打字时键盘挡住输入框」
