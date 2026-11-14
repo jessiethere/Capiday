@@ -48,14 +48,27 @@
 
 ## 更新日志
 
-### 2026-11-14 — Sprint 1 · S1-1 恢复安全（V10.65，实施中，未发布）
+### 2026-11-14 — TestFlight 0.2.0 (3)：发布检查、升级测试、上传
+
+- **需求**：完成快照写入失败测试；发布前检查（名称 Capiday、Bundle ID 与现有 TestFlight 一致、版本号和构建号递增、Release 能编译、升级不丢日记/照片/My Books/本地数据、不重置存储、不改数据结构）；更新文档；准备并上传新的 TestFlight 构建；如实报告，不把上传成功等同于 Apple 处理完成。
+- **版本**：`MARKETING_VERSION` 0.1.0 → **0.2.0**；`CURRENT_PROJECT_VERSION` 2 → **3**。依据：Mac 的 Xcode Archives 里只有 0.1.0 (1)（`com.capiday.app`，Distributions 记录 2026-11-13 已上传到 App Store Connect，adamId 6834636756）；构建 2 只在项目里改过，从未归档或上传；用 3 可以避免任何「构建号已使用」冲突。
+- **Bundle ID / 名称**：`com.capiday.app`（与 TestFlight 的 App 相同，未改）；显示名 Capiday（en）/ 开铺手帐（zh-Hans）；归档内 Info.plist 核对：`CFBundleDisplayName = Capiday`、`CFBundleShortVersionString = 0.2.0`、`CFBundleVersion = 3`、`MinimumOSVersion = 17.0`、`ITSAppUsesNonExemptEncryption = false`。界面里 Little Days 只出现在更新记录里「Little Days 改名为 Capiday」这一条（历史说明）。内部名称（`LittleDays.app`、`littledays://`、`little-days.*` 存储键、Swift 模块名）按约定不改。
+- **数据不丢的依据**：外壳用 `WKWebsiteDataStore.default()`，来源固定 `littledays://app`；Bundle ID 不变，所以 iOS 覆盖安装保留同一个数据容器。没有任何代码在升级时清空存储；本次没有改数据结构（schemaVersion 仍为 1，新增的只是 kv 里的 `little-days.v1.snap.*` / `before-restore.*` 键和 localStorage 里的几个记录键）。外壳唯一的 `removeItem` 是导出时替换 Documents 里同名的导出文件。
+- **升级测试（Mac，新建的专用 iPhone 17 模拟器 iOS 27.2，测完删除；合成数据）**：`tools/mac/upgrade-check/run-upgrade.sh 330fcee a633c40`。用 TestFlight 构建 1 的代码（330fcee，Debug）写入合成手帐（2 本书含封面照片、3 天 5 页、1 段声音、草稿、计划、习惯 + 打卡、Captain），再覆盖安装 0.2.0 (3)（Debug）：首次启动和第二次启动读回的书名、封面引用、日期、5 页正文、草稿、计划、打卡、Captain 全部相同，5 个媒体引用 5 个可读，schemaVersion 1，没有出现救援页，新版启动时写了 1 份每日快照。旧版写入合成声音超过 45 秒才完成（旧版本自身的行为，不影响结果）。
+- **Release 编译与归档（Mac，Xcode 27.2）**：从 a633c40 的干净副本（git archive，不碰用户工作区）`xcodebuild … -configuration Release -destination generic/platform=iOS archive` → **ARCHIVE SUCCEEDED**，归档在 `~/Library/Developer/Xcode/Archives/2026-11-14/Capiday 0.2.0 (3).xcarchive`（Organizer 可见）。
+- **上传**：`xcodebuild -exportArchive`（method app-store-connect，destination upload，自动签名，团队 7VFYCTCXRS）→ `Upload succeeded`、`Uploaded package is processing`、**EXPORT SUCCEEDED**（2026-11-14 14:31 EST）。**这只表示文件已交给 App Store Connect；Apple 的处理（Processing）尚未确认完成**，构建还没有在 TestFlight 里确认可安装。
+- **全量浏览器回归**：<<REGRESSION>>
+- **在线链接**：发布 V10.65（见下）。
+- **没有验证**：真机安装和真机升级（需要从 TestFlight 安装）；iOS 17 / 18 真机；App Store Connect 里的处理结果和出口合规状态（应自动为「无」）。
+- **下一步**：等 App Store Connect 处理完成（通常几分钟到一小时，会发邮件）→ TestFlight 里确认 0.2.0 (3) 可测试 → 在 iPhone 上从 TestFlight 更新（不要删除旧 App），打开后确认原有手帐、照片、My Books 都在，再试一次「从备份恢复」的预览和撤销。
+
+### 2026-11-14 — Sprint 1 · S1-1 恢复安全（V10.65）
 
 - **需求**：用户确认 S1-1 的 10 项要求（预览来自真实解析 + 二次确认；恢复前保存编辑或阻止；快照写入并读回；失败不改手帐和媒体引用，分阶段写入 + 校验 + 安全切换，测试中断和重启；7 天撤销；每日快照 3 份 / 60 MB / 14 天且标明不含媒体；重复恢复不重复媒体；修复 `journal-blocked` 事件；恢复后核对书、页、Calendar、Captain、媒体引用；只用合成数据）。只做 S1-1。
 - **文件**：新增 `Public/js/restore-safety.mjs`（analyzeBackup / summarize / sameJournal / planSnapshots / planBeforeRestore / undoDaysLeft）；`meta-store.mjs`（putVerified / remove / keys）；`media.mjs`（putRestored：先按 id、再按内容哈希候选逐字节比对复用）；`app.js`（预览 → 继续 → 二次确认 → runRestore；recoverInterruptedRestore；undoRestore；dailySnapshot；设置撤销行和快照说明；`journal_blocked`；救援副本改用 putVerified）；i18n `rs.*`；styles；whats-new 10.65；测试 `tests/v161-restore-safety.test.mjs`、`tests/v161-browser.cjs`，`signed-in.cjs` 新增 `restoreGo`，迁移 v3 / v31 / v121 / v140；`docs/SPRINT1_BACKUP_RESTORE_PLAN.md` 增加「S1-1 实施记录」。
 - **决策**：媒体先写、手帐一次切换；切换前失败手帐不动，切换后失败换回快照；失败写入的媒体只记录在 `little-days.restore-orphans`，不删除。去重不看文件名。每日快照在启动时写（=当天编辑前的状态）。
-- **运行 / 测试（Linux 容器 + Chromium）**：Node 单元测试 307/307 通过（新增 8 项）。v161 浏览器套件在中间轮次已逐项通过：预览、取消、拒绝坏文件、快照写入失败停止、中途失败、完整恢复 + 日历、撤销、恢复两次不重复、撤销时缺文件被拒绝、四个中断点重启、切换后缺文件回滚；**草稿保存 / 阻止和每日快照两段尚未在一次完整运行中通过**（有一次运行挂起，已加逐项输出排查）。迁移后的旧恢复测试和全量回归**尚未运行**。Python：`test_app_icon` 1 项失败为既有问题（pbxproj 未改动，Resources 阶段多了 InfoPlist.strings），与本次无关。
-- **未完成**：完整跑通 v161 + 旧测试 + 全量回归；发布在线链接 V10.65；README/agent 最终结果；Mac 快进。Swift / Xcode / 模拟器 / 真机本轮未运行。
-- **TestFlight 准备（进行中）**：版本 0.1.0 → **0.2.0**，构建号 2 → **3**（Mac 上只有 0.1.0 (1) 的归档并已上传，构建 2 从未归档；用 3 避免任何冲突）；Bundle ID 保持 `com.capiday.app`；`tests/test_app_icon.py` 改为校验当前事实（Resources 阶段的写法、Bundle ID = TestFlight 的 `com.capiday.app`、显示名 Capiday），原断言还是旧的 `com.jessiethere.littledays`。新增 `tools/mac/upgrade-check/`（专用新模拟器：旧版写合成数据 → 覆盖安装新版 → 读回核对）。
+- **运行 / 测试（Linux 容器 + Chromium，合成数据）**：Node 单元测试 307/307 通过（新增 8 项，含扫描全部事件名的 `journal_blocked` 回归）。`tests/v161-browser.cjs` **16/16 通过**：预览数字来自解析（谎报的 99 被忽略）、两处取消都不写入；坏 JSON / 非媒体 data URL / 缺文件 / 新格式被拒绝；恢复前快照写入失败 → 停止且媒体和手帐都没写；中途坏文件 → 手帐逐字节不变、已写的 1 个文件保留并列入 orphans；完整恢复读回核对（4 本 · 3 天 · 4 页 · 计划 · 习惯 · Captain · 5 个媒体引用全部可读，0 个文件重复写入）+ 日历标记；撤销回到原手帐；同一备份恢复两次 0 新文件、id 冲突时第一次 +1 第二次 0；撤销时缺文件被拒绝；四个中断点（快照后 / 媒体中 / 切换前 / 切换后）重启的结果，以及切换后缺文件 → 回滚；Studio 刚打的字先保存进快照；保存失败时不开始且字还在；每日快照写入读回、保留 3 份、设置文案；**快照写入失败**：记 `snapshot_failed`、旧的 2 份原样保留（内容逐字节相同）、正常编辑照常写入手帐数据库、设置提示一句。迁移后的 v3 / v31 / v121 / v140 在全量回归中运行（结果见下一条 TestFlight 记录）。Python 3/3 文件通过。
+- **调试记录**：v161 两次「挂起」的原因都在测试脚本本身：模拟磁盘满之后，测试自己用 `put` 写快照键也被拦截并抛错，Promise 永不结束。改为先准备数据、再打开模拟失败。
 
 ### 2026-11-14 — Sprint 1 · S1-0 技术实验完成（Mac 恢复后补齐）
 
