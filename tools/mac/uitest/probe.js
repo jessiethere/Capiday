@@ -41,6 +41,12 @@ const tick = () => {
     sheetText: (document.querySelector("#choose-dialog[open]")?.innerText || "").slice(0, 240),
     backupHow: localStorage.getItem("little-days.last-backup-how") || "", lastBackup: localStorage.getItem("little-days.last-backup") || "",
     toast: document.querySelector("#toast")?.textContent || "",
+    // V10.69 · dragging words while typing
+    quickWrite: r('#choose-dialog[open] [data-action="quick-way"][data-way="write"]'), noteMode: !!document.querySelector("#journal-canvas.text-only"),
+    inlineBody: r('#journal-canvas [data-inline="body"]'), inlineTitle: r('#journal-canvas [data-inline="title"]'),
+    editText: r('#journal-canvas .layer-text[contenteditable="plaintext-only"], #journal-canvas .layer-text[contenteditable="true"]'),
+    editing: document.activeElement?.matches?.(".layer-text") ? "layer" : document.activeElement?.dataset?.inline || "",
+    textTops: [...document.querySelectorAll("#journal-canvas .text-layer")].map((e) => e.style.top).join(","),
     dayInk: [...document.querySelectorAll(".chapter-canvas .drawing-layer img")].filter((i) => i.complete && i.naturalWidth > 0).length,
     saved, draftDrawings, down: ev.down, up: ev.up, cancel: ev.cancel, appUp: ev.appUp, log: ev.log.slice(-8).join(" ") };
   box.setAttribute("aria-label", "LDSTATE:" + JSON.stringify(st));

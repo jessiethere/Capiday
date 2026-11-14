@@ -404,4 +404,45 @@ final class DrawUITests: XCTestCase {
         print("LDSTEP preview=\((state()["sheetText"] as? String) ?? "")")
         XCTAssertEqual(state()["bk2"] as? String, "preview", "the file read back and checked: the preview shows")
     }
+
+    // V10.69 · words being typed can be dragged with a real finger:
+    // 只写几句话 → drag its words (the note becomes a free layout) → add a text
+    // box (it starts typing) → drag it at once, before typing anything.
+    func testTextDrag() throws {
+        try? FileManager.default.createDirectory(atPath: "/tmp/ld-uitest/shots", withIntermediateDirectories: true)
+        launch()
+        Thread.sleep(forTimeInterval: 2)
+        for l in ["我自己探索", "跳过"] where app.buttons[l].exists { app.buttons[l].tap(); Thread.sleep(forTimeInterval: 1) }
+        if rect("skip") != nil { tap("skip") }
+        tap("quickOpen", wait: 1.2)
+        tap("quickWrite", wait: 0.8)
+        tap("quickStart", wait: 2.5)
+        if rect("skip") != nil { tap("skip") }
+        let s0 = state()
+        print("LDTEXT note=\(s0["noteMode"] ?? "-") editing=\(s0["editing"] ?? "-")")
+        log("t1-note")
+        XCTAssertEqual(s0["noteMode"] as? Bool, true, "只写几句话 opens a note page")
+        guard let body = waitFor("inlineBody") else { XCTFail("body"); return }
+        point(body, 0.3, 0.5).press(forDuration: 0.05, thenDragTo: point(body, 0.3, 0.5).withOffset(CGVector(dx: 30, dy: 160)))
+        Thread.sleep(forTimeInterval: 1.5)
+        let s1 = state()
+        print("LDTEXT afterBodyDrag note=\(s1["noteMode"] ?? "-") tops=\(s1["textTops"] ?? "-") log=\(s1["log"] ?? "-")")
+        log("t2-body-dragged")
+        XCTAssertEqual(s1["noteMode"] as? Bool, false, "dragging the words makes them a text box")
+        XCTAssertFalse((s1["textTops"] as? String ?? "").isEmpty, "a text box is on the paper")
+        if rect("back") != nil { tap("back") }
+        tap("addText", wait: 1.5)
+        let s2 = state()
+        let before = s2["textTops"] as? String ?? ""
+        print("LDTEXT added editing=\(s2["editing"] ?? "-") tops=\(before)")
+        log("t3-added")
+        guard let box = waitFor("editText", 5) else { XCTFail("new box is not being typed in"); return }
+        point(box, 0.5, 0.5).press(forDuration: 0.05, thenDragTo: point(box, 0.5, 0.5).withOffset(CGVector(dx: 0, dy: -140)))
+        Thread.sleep(forTimeInterval: 1.5)
+        let s3 = state()
+        print("LDTEXT afterBoxDrag editing=\(s3["editing"] ?? "-") tops=\(s3["textTops"] ?? "-") log=\(s3["log"] ?? "-")")
+        log("t4-box-dragged")
+        XCTAssertNotEqual(s3["textTops"] as? String ?? "", before, "the new, empty box moved")
+        XCTAssertEqual(s3["editing"] as? String, "layer", "still typing in it after the drag")
+    }
 }
