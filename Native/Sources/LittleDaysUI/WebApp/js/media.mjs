@@ -506,6 +506,10 @@ export function visitMediaReferences(state, visit, { memo = true } = {}) {
       list(book.coverSample.photos);
     }
   }
+  // V10.78 · Memory Wall: a hidden photo is remembered by its file too (so a
+  // replaced photo shows again); renamed on restore, never required.
+  if (memo && state.wall?.hidden && typeof state.wall.hidden === "object")
+    for (const value of Object.values(state.wall.hidden)) if (value && typeof value === "object") reference(value, "ref");
   for (const check of state.checks || []) reference(check, "photo");
   for (const entry of [
     ...(state.entries || []),

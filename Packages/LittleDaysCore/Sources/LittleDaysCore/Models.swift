@@ -78,6 +78,25 @@ public struct JournalBook: Codable, Identifiable, Equatable {
 /// photo of its own (or around it, e.g. a collage). Valid only for the
 /// template (`template`) and own photo (`own`, "" for none) they were kept
 /// for; "photo:<id>" library references.
+/// V10.78 · Memory Wall v1.0. Keys name where a card comes from
+/// ("photo:<page id>:<layer id>", "page:<page id>" or "page:day:<date>").
+public struct MemoryWallSetting: Codable, Equatable {
+    public struct Hidden: Codable, Equatable {
+        public var at: String?
+        public var ref: String?
+    }
+    public struct Page: Codable, Equatable {
+        public var key: String
+        public var addedAt: String?
+    }
+    public var version: Int?
+    public var order: String?
+    public var hidden: [String: Hidden]?
+    public var pages: [Page]?
+    public var custom: [String]?
+    public var updatedAt: String?
+}
+
 public struct CoverSample: Codable, Equatable {
     public var template: String
     public var own: String?
@@ -446,6 +465,9 @@ public struct DayState: Codable {
     public var plans: [String: [DayPlan]]?
     /// V7.7: the optional Little Keeper companion (absent until chosen).
     public var keeper: KeeperProfile?
+    /// V10.78: the Memory Wall's own setting (hidden photos, whole pages on
+    /// the wall, the person's order). Optional; absent = the wall as before.
+    public var wall: MemoryWallSetting?
 
     public init(seed: Seed, today: String = DayKey.string()) {
         habits = seed.habits

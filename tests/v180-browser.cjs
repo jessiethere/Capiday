@@ -57,7 +57,7 @@ const pngSize = (buf) => ({ sig: buf.slice(1, 4).toString(), w: buf.readUInt32BE
       await page.waitForSelector("#choose-dialog[open] .reader-export");
     };
     await more();
-    const rows = await page.$$eval("#choose-dialog .reader-export button", (b) => b.map((x) => x.textContent.trim()));
+    const rows = (await page.$$eval("#choose-dialog .reader-export button", (b) => b.map((x) => x.textContent.trim()))).filter((x) => !/照片墙/.test(x));
     check("··· 里有四项：图片 / 分享 / 这一页 PDF / 整本书 PDF", rows.length === 4 && /图片/.test(rows[0]) && /分享/.test(rows[1]) && /PDF/.test(rows[2]) && /整本书/.test(rows[3]), rows.join(" | "));
 
     // PNG

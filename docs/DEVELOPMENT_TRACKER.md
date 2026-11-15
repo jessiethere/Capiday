@@ -147,15 +147,15 @@ P0 的 9 项：CAP-016（Testing）、DS-01（In Progress）、DS-02、DS-05、D
 
 ### 4.4 Beta Features
 
-Memory Wall v1.0 全部 **Planned — Post-Alpha Stability**。方案见 [MEMORY_WALL_V1_PLAN.md](MEMORY_WALL_V1_PLAN.md)。
+Memory Wall v1.0：**V10.78 已实施，等真机验收**（Founder 2026-11-15 批准开发，待决问题按推荐选项，见计划第 8 节）。方案见 [MEMORY_WALL_V1_PLAN.md](MEMORY_WALL_V1_PLAN.md)。
 
 | ID | 标题 | 优先级 | 状态 | 目标版本 | 相关模块 | 验收标准 | 测试结果 | 完成日期 |
 |---|---|---|---|---|---|---|---|---|
-| MW-01 | 自动生成照片墙（保留现有：只收手帐里的照片、双列瀑布流、按月分组、新到旧、看大图、关联原记录；不重复、不读相册） | P0 | Planned | Beta Features | `photo-wall.mjs` wallPhotos；`app.js` photoWallHTML | 现有 v152 + 新单元测试；5000 张性能基线 | 现有功能已在 V10.55 上线；v1.0 部分未开始 | — |
-| MW-02 | 管理模式：选择、隐藏、查看已隐藏、恢复；不影响原始数据；重开后仍生效 | P0 | Planned | Beta Features | `photo-wall.mjs` applyWall（新）；`app.js`；可选 `state.wall` | 计划第 7 节 Stage 3 | — | — |
-| MW-03 | 整页贴到照片墙（复用 `sharedCanvasHTML`，不复制页面，原页面改了卡片跟着变，点开回到原记录） | P0 | Planned | Beta Features | `app.js` 阅读器菜单；`canvas.mjs` | 整页卡片与阅读器缩略图一致 | — | — |
-| MW-04 | 自定义排序 +「恢复时间排序」 | P1 | Blocked | Beta Features | `photo-wall.mjs`；`app.js` 拖动 | Founder 回答计划第 6 节问题 1～4 | **等 Founder 决定 4 个排序问题** | — |
-| MW-05 | 数据安全与恢复（来源 ID 不含日期和 media id；坏配置只被忽略；备份恢复包含设置；旧备份兼容；Swift 可选字段） | P0 | Planned | Beta Features | `model.mjs`；`restore-safety.mjs`；`Models.swift` | 计划第 4 节 13 个边界情况的测试 | — | — |
+| MW-01 | 自动生成照片墙（保留现有：只收手帐里的照片、双列瀑布流、按月分组、新到旧、看大图、关联原记录；不重复、不读相册） | P0 | Testing | V10.78 | `photo-wall.mjs` wallPhotos；`app.js` photoWallHTML | 现有 v152 + 新单元测试；5000 张性能基线 | v181 单元 + 浏览器 ✅；v152 ✅；真机 ⏳ | — |
+| MW-02 | 管理模式：选择、隐藏、查看已隐藏、恢复；不影响原始数据；重开后仍生效 | P0 | Testing | V10.78 | `photo-wall.mjs` applyWall（新）；`app.js`；可选 `state.wall` | 计划第 7 节 Stage 3 | v181 浏览器 8 项 ✅；真机 ⏳ | — |
+| MW-03 | 整页贴到照片墙（复用 `sharedCanvasHTML`，不复制页面，原页面改了卡片跟着变，点开回到原记录） | P0 | Testing | V10.78 | `app.js` 阅读器菜单；`canvas.mjs` | 整页卡片与阅读器缩略图一致 | v181 浏览器 5 项 ✅；真机 ⏳ | — |
+| MW-04 | 自定义排序 +「恢复时间排序」 | P1 | Testing | V10.78 | `photo-wall.mjs`；`app.js` 拖动 | Founder 回答计划第 6 节问题 1～4 | v181 浏览器 6 项 ✅（按钮排序，长按拖动留到 v1.1）；真机 ⏳ | — |
+| MW-05 | 数据安全与恢复（来源 ID 不含日期和 media id；坏配置只被忽略；备份恢复包含设置；旧备份兼容；Swift 可选字段） | P0 | Testing | V10.78 | `model.mjs`；`restore-safety.mjs`；`Models.swift` | 计划第 4 节 13 个边界情况的测试 | v181 单元 9 项 + 浏览器「手帐不变」4 项 ✅；Swift 模型待 Mac 编译 | — |
 
 ### 4.5 其他已有规划（不在近期版本里）
 

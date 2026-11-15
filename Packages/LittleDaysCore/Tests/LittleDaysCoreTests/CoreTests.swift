@@ -191,6 +191,12 @@ final class CoreTests: XCTestCase {
         XCTAssertNil(plain.coverFontChosen)
         let chosen = try JSONDecoder().decode(JournalBook.self, from: Data(#"{"id":"b","title":"T","category":"c","color":"blush","cover":"🌷","coverFont":"song","coverFontChosen":true}"#.utf8))
         XCTAssertEqual(chosen.coverFontChosen, true)
+        // V10.78: the Memory Wall setting (optional).
+        let wall = try JSONDecoder().decode(MemoryWallSetting.self, from: Data(#"{"version":1,"order":"custom","hidden":{"photo:m1:l1":{"at":"2026-11-15T00:00:00Z","ref":"media:p1"}},"pages":[{"key":"page:m2","addedAt":"2026-11-15T00:00:00Z"}],"custom":["page:m2","photo:m1:l1"]}"#.utf8))
+        XCTAssertEqual(wall.order, "custom")
+        XCTAssertEqual(wall.hidden?["photo:m1:l1"]?.ref, "media:p1")
+        XCTAssertEqual(wall.pages?.first?.key, "page:m2")
+        XCTAssertEqual(try JSONDecoder().decode(MemoryWallSetting.self, from: JSONEncoder().encode(wall)), wall)
         // V10.58: when a photo was taken, where that time came from, and its place in the picked order.
         let timed = try JSONDecoder().decode(StickerLayer.self, from: Data(#"{"id":"p2","kind":"photo","text":"b.jpg","x":50,"y":40,"scale":1,"rotation":0,"mediaRef":"media:p2","capturedAt":"2026-11-09T08:10:00.000Z","captureTimeSource":"exif-original","photoOrder":2}"#.utf8))
         XCTAssertEqual(timed.capturedAt, "2026-11-09T08:10:00.000Z")

@@ -1105,36 +1105,109 @@ const wallRatios = new Map(); // ref → height / width (memory)
 const wallThumbs = new Map(); // ref → small object URL (memory)
 let wallItems = [];
 let wallReturn = null;
+// V10.78 · Memory Wall: the cards shown (photos and whole pages), the hidden
+// ones, and the manage mode (not kept: each visit starts as a clean wall).
+let wallCards = [];
+let wallHiddenCards = [];
+let wallManage = false;
+const wallPicked = new Set();
+function saveWall(change, note = "") {
+  try {
+    store.update((s) => {
+      s.wall = change(s);
+    });
+  } catch (error) {
+    if (error?.code === "wall-full") return toast(t("wall.full", { count: Wall.WALL_PAGE_LIMIT }));
+    return toast(t("error.generic"));
+  }
+  render();
+  if (note) toast(note);
+}
+function openWallHidden() {
+  const dialog = $("#choose-dialog");
+  const list = wallHiddenCards;
+  if (!list.length) {
+    if (dialog.open) dialog.close();
+    return;
+  }
+  dialog.innerHTML = `<div class="choose-sheet wall-hidden-sheet"><div class="choose-grabber" aria-hidden="true"></div><h2>${t("wall.hiddenTitle")}</h2><p class="save-help">${t("wall.hiddenHint")}</p><div class="wh-grid">${list.map((c) => `<div class="wh-item"><img src="${esc(wallThumbs.get(c.ref) || media.resolve(c.ref))}" alt="${esc(t("wall.photoOf", { date: shortDate(c.date) }))}"><button class="secondary" data-action="wall-unhide" data-key="${esc(c.key)}">${t("wall.unhide")}</button></div>`).join("")}</div><button class="primary full-width" data-action="wall-unhide" data-key="*">${t("wall.unhideAll", { count: list.length })}</button><button class="choose-cancel" data-action="choose-close">${t("close")}</button></div>`;
+  if (!dialog.open) dialog.showModal();
+}
+// A whole-page card opens that page where it is read (the book's reader).
+function openWallPageCard(key) {
+  const at = Wall.pageForKey(state(), key);
+  if (!at) return;
+  const pages = at.bookId ? flipPages(at.bookId) : [];
+  const hit = pages.find((p) => p.date === at.date && (at.moment ? p.moment?.id === at.moment.id : !p.moment));
+  logEvent("wall_open_page", { stage: hit ? "reader" : "day", kind: "page" });
+  if (hit) {
+    wallReturn = { scroll: $("#app-scroll").scrollTop };
+    openReader(at.bookId, Reader.keyOf(hit));
+  } else openDay(at.date, at.moment?.id || undefined);
+}
 function wallBookId() {
   return calendarBook && state().books.some((b) => b.id === calendarBook) ? calendarBook : null;
 }
 function photoWallHTML() {
   const bookId = wallBookId();
-  const items = Wall.wallPhotos(state(), { bookId }).filter((item) => media.resolve(item.ref));
+  // V10.78 · Memory Wall v1.0: the journal's photos (as before) plus the
+  // person's own setting on top — hidden photos, whole pages, their order
+  // (photo-wall.mjs applyWall). Nothing here changes a page.
+  const result = Wall.applyWall(state(), { bookId });
+  const cards = result.shown.filter((c) => c.type === "page" || media.resolve(c.ref));
+  wallCards = cards;
+  wallHiddenCards = result.hidden.filter((c) => media.resolve(c.ref));
+  const items = cards.filter((c) => c.type === "photo");
   wallItems = items;
+  for (const key of [...wallPicked]) if (!cards.some((c) => c.key === key)) wallPicked.delete(key);
   // Small copies of photos no longer on any page are let go.
   const live = new Set(Wall.wallPhotos(state()).map((item) => item.ref));
   for (const [ref, url] of wallThumbs) if (!live.has(ref)) {
     if (url.startsWith("blob:") && url !== media.resolve(ref)) URL.revokeObjectURL(url);
     wallThumbs.delete(ref);
   }
-  if (!items.length)
+  if (!cards.length && !wallHiddenCards.length)
     return `<section class="photo-wall pw-empty-wall"><div class="pw-empty"><div class="pw-empty-art" aria-hidden="true"><i></i><i></i><i></i></div><b>${t(bookId ? "wall.emptyBook" : "wall.emptyTitle")}</b><p>${t("wall.emptyText")}</p><button class="primary" data-action="quick-open" data-way="photo">${t("wall.emptyGo")}</button></div></section>`;
   const cols = innerWidth >= 700 ? 3 : 2;
-  const tile = (item) => {
-    const ratio = wallRatios.get(item.ref);
-    const thumb = wallThumbs.get(item.ref);
-    const label = t("wall.photoOf", { date: shortDate(item.date) });
-    return `<button class="pw-tile ${thumb ? "ready" : ""}" data-action="wall-photo" data-ref="${esc(item.ref)}" style="aspect-ratio:${ratio ? (1 / ratio).toFixed(4) : "1"}" aria-label="${esc(label)}"><img ${thumb ? `src="${esc(thumb)}"` : ""} alt="" decoding="async"></button>`;
+  const pick = (card) => (wallManage ? `<i class="pw-check" aria-hidden="true">${wallPicked.has(card.key) ? "✓" : ""}</i>` : "");
+  const tile = (card) => {
+    const picked = wallManage && wallPicked.has(card.key);
+    if (card.type === "page") {
+      const at = Wall.pageForKey(state(), card.key);
+      if (!at) return "";
+      const label = t("wall.pageOf", { date: shortDate(card.date) });
+      return `<button class="pw-tile pw-page ready ${picked ? "picked" : ""}" data-action="${wallManage ? "wall-pick" : "wall-page"}" data-key="${esc(card.key)}" aria-pressed="${picked}" style="aspect-ratio:0.8" aria-label="${esc(label)}"><span class="pw-paper" inert>${sharedCanvasHTML(at.moment || at.entry, ctx(), { readOnly: true, dayPage: !at.moment })}</span><i class="pw-badge">${t("wall.pageBadge")}</i>${pick(card)}</button>`;
+    }
+    const ratio = wallRatios.get(card.ref);
+    const thumb = wallThumbs.get(card.ref);
+    const label = t("wall.photoOf", { date: shortDate(card.date) });
+    return `<button class="pw-tile ${thumb ? "ready" : ""} ${picked ? "picked" : ""}" data-action="${wallManage ? "wall-pick" : "wall-photo"}" data-ref="${esc(card.ref)}" data-key="${esc(card.key)}" aria-pressed="${picked}" style="aspect-ratio:${ratio ? (1 / ratio).toFixed(4) : "1"}" aria-label="${esc(label)}"><img ${thumb ? `src="${esc(thumb)}"` : ""} alt="" decoding="async">${pick(card)}</button>`;
   };
-  const months = Wall.wallMonths(items)
-    .map(({ month, items: list }) => {
-      const label = new Date(`${month}-01T12:00:00`).toLocaleDateString(locale(), { year: "numeric", month: "long" });
-      const columns = Wall.wallColumns(list, cols, (item) => wallRatios.get(item.ref) || 1);
-      return `<section class="pw-month" data-month="${month}"><h3 class="pw-month-label">${esc(label)}<small>${t("wall.monthCount", { count: list.length })}</small></h3><div class="pw-cols" style="--cols:${cols}">${columns.map((col) => `<div class="pw-col">${col.map(tile).join("")}</div>`).join("")}</div></section>`;
-    })
-    .join("");
-  return `<section class="photo-wall" aria-label="${esc(t("calendar.wall"))}"><p class="pw-count">${t("wall.count", { count: items.length })}</p>${months}</section>`;
+  const ratioOf = (c) => (c.type === "page" ? 1.25 : wallRatios.get(c.ref) || 1);
+  const block = (list) => `<div class="pw-cols" style="--cols:${cols}">${Wall.wallColumns(list, cols, ratioOf).map((col) => `<div class="pw-col">${col.map(tile).join("")}</div>`).join("")}</div>`;
+  // Time order: by month. The person's own order: one wall, no month headings.
+  const body =
+    result.order === "custom"
+      ? `<section class="pw-month pw-custom">${block(cards)}</section>`
+      : Wall.wallMonths(cards)
+          .map(({ month, items: list }) => {
+            const label = new Date(`${month}-01T12:00:00`).toLocaleDateString(locale(), { year: "numeric", month: "long" });
+            return `<section class="pw-month" data-month="${month}"><h3 class="pw-month-label">${esc(label)}<small>${t("wall.monthCount", { count: list.length })}</small></h3>${block(list)}</section>`;
+          })
+          .join("");
+  const pages = cards.length - items.length;
+  const head = `<div class="pw-head"><p class="pw-count">${t("wall.count", { count: items.length })}${pages ? ` · ${t("wall.pagesCount", { count: pages })}` : ""}</p><button class="pw-manage-btn ${wallManage ? "on" : ""}" data-action="wall-manage" aria-pressed="${wallManage}">${t(wallManage ? "wall.done" : "wall.manage")}</button></div>`;
+  const bar = wallManage
+    ? `<div class="pw-manage-bar"><div class="segmented pw-order" role="group" aria-label="${t("wall.orderLabel")}"><button data-action="wall-order" data-order="time" class="${result.order === "time" ? "selected" : ""}">${t("wall.orderTime")}</button><button data-action="wall-order" data-order="custom" class="${result.order === "custom" ? "selected" : ""}">${t("wall.orderCustom")}</button></div><button class="text-button pw-hidden-btn" data-action="wall-hidden-list" ${wallHiddenCards.length ? "" : "disabled"}>${t("wall.hiddenCount", { count: wallHiddenCards.length })}</button><p class="pw-hint">${t("wall.manageHint")}</p></div>`
+    : "";
+  const picked = cards.filter((c) => wallPicked.has(c.key));
+  const one = picked.length === 1 ? picked[0] : null;
+  const at = one ? cards.indexOf(one) : -1;
+  const actions =
+    wallManage && picked.length
+      ? `<div class="pw-actions" role="toolbar">${picked.some((c) => c.type === "photo") ? `<button class="primary" data-action="wall-hide">${t("wall.hide", { count: picked.filter((c) => c.type === "photo").length })}</button>` : ""}${picked.some((c) => c.type === "page") ? `<button class="secondary" data-action="wall-unpin-picked">${t("wall.unpin")}</button>` : ""}${one ? `<button class="secondary" data-action="wall-move" data-dir="first" ${at <= 0 ? "disabled" : ""}>${t("wall.moveFirst")}</button><button class="secondary" data-action="wall-move" data-dir="-1" ${at <= 0 ? "disabled" : ""} aria-label="${t("wall.moveEarlier")}">‹</button><button class="secondary" data-action="wall-move" data-dir="1" ${at >= cards.length - 1 ? "disabled" : ""} aria-label="${t("wall.moveLater")}">›</button>` : ""}</div>`
+      : "";
+  return `<section class="photo-wall ${wallManage ? "managing" : ""}" aria-label="${esc(t("calendar.wall"))}">${head}${bar}${cards.length ? body : `<p class="pw-all-hidden">${t("wall.allHidden")}</p>`}${actions}</section>`;
 }
 // Small copies: made from the original only when a tile comes near.
 let wallObserver = null;
@@ -3185,7 +3258,11 @@ function openReaderMore() {
   // D3 (V10.44): a day cover can be hidden from reading, and shown again
   // (a display choice only: nothing is deleted).
   // V10.78 · CAP-E004: this page on its own, and the whole book as a PDF.
-  const exportGroup = `<div class="reader-menu-group reader-export">${item ? row('data-action="page-export" data-kind="png"', t("pageExport.png")) + row('data-action="page-export" data-kind="share"', t("pageExport.share")) + row('data-action="page-export" data-kind="pdf"', t("pageExport.pdf")) : ""}${row(`data-action="book-share" data-book="${esc(readerBook)}"`, t("pageExport.book"))}</div>`;
+  // V10.78 · Memory Wall: put this whole page on the wall (or take it off).
+  const wallKey = item ? Wall.pageKeyOf(item.moment?.id || "", item.date) : "";
+  const onWall = item && Wall.wallSettings(state()).pages.some((p) => p.key === wallKey);
+  const wallRow = item && !demo ? row(`data-action="wall-pin" data-key="${esc(wallKey)}"`, t(onWall ? "wall.unpin" : "wall.pin")) : "";
+  const exportGroup = `<div class="reader-menu-group reader-export">${wallRow}${item ? row('data-action="page-export" data-kind="png"', t("pageExport.png")) + row('data-action="page-export" data-kind="share"', t("pageExport.share")) + row('data-action="page-export" data-kind="pdf"', t("pageExport.pdf")) : ""}${row(`data-action="book-share" data-book="${esc(readerBook)}"`, t("pageExport.book"))}</div>`;
   const coverRow = item && isDayCover(item.entry) ? row(`data-action="day-cover-toggle" data-date="${esc(item.date)}" data-hide="${item.entry.dayCoverHidden ? "" : "1"}"`, t(item.entry.dayCoverHidden ? "cover.show" : "cover.hide")) : "";
   const dialog = $("#choose-dialog");
   dialog.innerHTML = `<div class="choose-sheet kp reader-sheet"><div class="choose-grabber" aria-hidden="true"></div><div class="kp-title"><span></span><b>${item ? esc(Reader.positionLabel(flipIndex, pages.length, t)) : t("reader.more")}</b><button class="kp-x" data-action="choose-close" aria-label="${t("close")}">×</button></div>${checklist}<div class="reader-menu-group">${row(`data-action="pm-open" data-book="${esc(readerBook)}"`, t("pm.manage"))}${item ? row(`data-action="open-day" data-date="${esc(item.date)}"`, t("flip.openDay")) : ""}</div><div class="reader-menu-group">${row('data-action="music-sheet" data-target="book"', t("music.bookTitle"), track ? esc(trackName(track, languageCode())) : "")}${flipIndex > 0 ? row('data-action="reader-go" data-at="0"', t("reader.toCover")) : ""}${coverRow}</div>${exportGroup}${item && !demo ? `<div class="reader-menu-group reader-keeper">${keeperAskHTML(item.date, item.moment?.id || "")}</div>` : ""}</div>`;
@@ -9028,6 +9105,48 @@ async function action(target) {
   if (actionName === "page-export") return exportReaderPage(target.dataset.kind || "png");
   if (actionName === "pm-open") return openPageManager({ bookId: target.dataset.book || null, date: target.dataset.date || null });
   if (actionName?.startsWith("pm-") && pmAction(actionName, target)) return;
+  if (actionName === "wall-manage") {
+    wallManage = !wallManage;
+    wallPicked.clear();
+    return render();
+  }
+  if (actionName === "wall-pick") {
+    const key = target.dataset.key;
+    if (wallPicked.has(key)) wallPicked.delete(key);
+    else wallPicked.add(key);
+    return render();
+  }
+  if (actionName === "wall-hide") {
+    const cards = wallCards.filter((c) => wallPicked.has(c.key) && c.type === "photo");
+    wallPicked.clear();
+    logEvent("wall_hide", { count: cards.length });
+    return saveWall((s) => Wall.hideCards(s, cards), t("wall.hidden", { count: cards.length }));
+  }
+  if (actionName === "wall-unpin-picked") {
+    const keys = wallCards.filter((c) => wallPicked.has(c.key) && c.type === "page").map((c) => c.key);
+    wallPicked.clear();
+    return saveWall((s) => keys.reduce((w, key) => Wall.removePage({ ...s, wall: w }, key), Wall.wallSettings(s)), t("wall.unpinned"));
+  }
+  if (actionName === "wall-move") {
+    const key = [...wallPicked][0];
+    const dir = target.dataset.dir === "first" ? "first" : Number(target.dataset.dir) || 0;
+    return saveWall((s) => Wall.moveCard(s, wallCards.map((c) => c.key), key, dir));
+  }
+  if (actionName === "wall-order") return saveWall((s) => Wall.setOrder(s, target.dataset.order));
+  if (actionName === "wall-hidden-list") return openWallHidden();
+  if (actionName === "wall-unhide") {
+    const cards = target.dataset.key === "*" ? wallHiddenCards : wallHiddenCards.filter((c) => c.key === target.dataset.key);
+    saveWall((s) => Wall.unhideCards(s, cards), t("wall.unhidden", { count: cards.length }));
+    return openWallHidden();
+  }
+  if (actionName === "wall-page") return openWallPageCard(target.dataset.key);
+  if (actionName === "wall-pin") {
+    const key = target.dataset.key;
+    if ($("#choose-dialog").open) $("#choose-dialog").close();
+    const on = Wall.wallSettings(state()).pages.some((p) => p.key === key);
+    logEvent("wall_pin", { stage: on ? "off" : "on" });
+    return saveWall((s) => (on ? Wall.removePage(s, key) : Wall.addPage(s, key)), t(on ? "wall.unpinned" : "wall.pinned"));
+  }
   if (actionName === "wall-photo") openWallViewer(target.dataset.ref);
   if (actionName === "wall-step") stepWallViewer(Number(target.dataset.dir) || 1);
   if (actionName === "wall-close") $("#wall-viewer")?.close();
@@ -10864,6 +10983,10 @@ function openRestorePreview() {
   if (!a.complete) notes.push(t("rs.note.incomplete", { count: a.missing.length }));
   if (b.days < now.days || b.pages < now.pages) notes.push(t("rs.note.fewer"));
   if (now.drafts) notes.push(t("rs.note.drafts", { count: now.drafts }));
+  // V10.78 · Memory Wall: the wall's own setting is replaced with the rest.
+  const wallNow = Wall.wallSettings(state());
+  const hasWallNow = Object.keys(wallNow.hidden).length || wallNow.pages.length || wallNow.order === "custom";
+  if (hasWallNow && !c.backup?.state?.wall) notes.push(t("rs.note.noWall"));
   const dialog = $("#choose-dialog");
   dialog.innerHTML = `<div class="choose-sheet restore-sheet restore-preview"><div class="choose-grabber" aria-hidden="true"></div><h2>${t("rs.previewTitle")}</h2><p class="save-help">${t("rs.previewHelp")}</p><table class="rs-compare"><thead><tr><th></th><th>${t("rs.inBackup")}</th><th>${t("rs.now")}</th></tr></thead><tbody>${row(t("rs.made"), esc(date), "")}${row(t("rs.books"), b.books, now.books)}${row(t("rs.days"), b.days, now.days)}${row(t("rs.pages"), b.pages, now.pages)}${row(t("rs.media"), t("rs.mediaKinds", { photo: a.kinds.photo || 0, video: a.kinds.video || 0, audio: a.kinds.audio || 0 }) + ` · ${mb(a.mediaBytes)} MB`, "")}${row(t("rs.drafts"), b.drafts, now.drafts)}${row(t("rs.plansHabits"), `${b.plans} / ${b.habits}`, `${now.plans} / ${now.habits}`)}${row("Captain", t(b.keeper ? "rs.yes" : "rs.no"), t(now.keeper ? "rs.yes" : "rs.no"))}</tbody></table>${notes.map((n) => `<p class="rs-note">${n}</p>`).join("")}<p class="rs-safe">${t("rs.safeHint")}</p><button class="primary full-width" data-action="restore-continue">${t("rs.continue")}</button><button class="choose-cancel" data-action="restore-cancel">${t("cancel")}</button></div>`;
   if (!dialog.open) dialog.showModal();

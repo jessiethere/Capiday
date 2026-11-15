@@ -25323,3 +25323,27 @@ dialog .primary {
 .book-cover.mag-font-follow .cover-title {
   font-family: var(--mag-font);
 }
+
+/* V10.78 · Memory Wall v1.0: manage mode (only then are the controls
+   shown), whole-page cards, the hidden list. */
+.photo-wall .pw-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.photo-wall .pw-head .pw-count { margin: 0; }
+.pw-manage-btn { border: 1px solid var(--line, rgba(0, 0, 0, 0.12)); background: transparent; color: var(--ink, inherit); border-radius: 999px; padding: 6px 14px; font-family: inherit; font-size: 13px; font-weight: 600; line-height: 1.2; min-height: 34px; }
+.pw-manage-btn.on { background: var(--sage, #8fa58a); border-color: transparent; color: #fff; }
+.pw-manage-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 10px 0 14px; }
+.pw-manage-bar .pw-hint { flex-basis: 100%; margin: 0; font-size: 12px; line-height: 1.5; opacity: 0.72; }
+.pw-tile { position: relative; }
+.pw-tile .pw-check { position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff; background: rgba(0, 0, 0, 0.25); color: #fff; font-family: inherit; font-size: 14px; font-weight: 700; line-height: 20px; text-align: center; font-style: normal; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); }
+.pw-tile.picked { outline: 3px solid var(--sage, #8fa58a); outline-offset: -3px; }
+.pw-tile.picked .pw-check { background: var(--sage, #8fa58a); }
+.photo-wall.managing .pw-tile:not(.picked) { opacity: 0.92; }
+.pw-tile.pw-page { background: var(--paper, #fffdfa); border-radius: 6px; overflow: hidden; box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06), 0 4px 14px rgba(60, 50, 30, 0.12); padding: 0; }
+.pw-tile.pw-page .pw-paper { display: block; width: 100%; height: 100%; pointer-events: none; }
+.pw-tile.pw-page .pw-badge { position: absolute; left: 8px; bottom: 8px; padding: 2px 8px; border-radius: 999px; background: rgba(255, 253, 248, 0.92); color: var(--ink, #4a453c); font-family: inherit; font-size: 11px; font-weight: 600; line-height: 1.5; font-style: normal; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
+.pw-actions { position: sticky; bottom: calc(var(--nav-h, 64px) + 10px); z-index: 5; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 14px auto 0; padding: 10px; border-radius: 16px; background: var(--card, rgba(255, 253, 248, 0.96)); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14); width: fit-content; max-width: 100%; }
+.pw-actions button { min-height: 40px; }
+.pw-all-hidden { text-align: center; opacity: 0.7; padding: 32px 12px; }
+.wall-hidden-sheet .wh-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0 16px; max-height: 50vh; overflow: auto; }
+.wall-hidden-sheet .wh-item { display: flex; flex-direction: column; gap: 6px; }
+.wall-hidden-sheet .wh-item img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+.wall-hidden-sheet .wh-item button { min-height: 34px; padding: 4px 8px; font-size: 13px; }
