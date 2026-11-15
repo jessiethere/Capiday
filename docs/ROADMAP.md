@@ -195,3 +195,17 @@ P3 Growth 感想
 - 独立 Growth 模块已退役（V6.6 起无 Growth tab）；之后不再规划独立的成长 / 习惯 / 健身 / 学习追踪或仪表盘。上面的历史条目保留作记录。
 - [ ] Little Keeper MVP（**等待用户批准**）：开关、4 个收藏品（明信片、小书、小相框、书签）、4 个成长阶段、小房间页面；规则见 docs/PRODUCT_VISION_2.md。
 - [ ] 待决定：「我的习惯」的去留、实验室旧等级 / 经验值并入或移除、默认开关、美术方向。
+
+## 2026-11-15 · 开发总表与后续阶段（Development HQ）
+
+所有 Bug、需求、技术债和规划的 ID 与状态从这一天起以 [DEVELOPMENT_TRACKER.md](DEVELOPMENT_TRACKER.md) 为唯一来源；本文件保留历史规划，不再单独维护状态。
+
+顺序（Founder 确认）：
+
+1. **Alpha Stability**（当前）：CAP-001～020 修复并在真机确认；DS-01 现有备份的完整性审查和恢复演练。
+2. **Data Safety Upgrade** · 自动 iCloud 备份 —— **Planned — Post-Alpha Data Safety Upgrade**。推荐 iCloud Drive 自动备份（先做流式 `.capiday` 备份包），整机备份只验证，CloudKit 暂缓。方案：[ICLOUD_AUTO_BACKUP_PLAN.md](ICLOUD_AUTO_BACKUP_PLAN.md)（DS-01～DS-14）。
+3. **Memory Wall 照片墙 v1.0** —— **Planned — Post-Alpha Stability**。自动生成 + 自由管理：管理模式（隐藏 / 恢复）、整页贴到照片墙、自定义排序、数据安全。方案：[MEMORY_WALL_V1_PLAN.md](MEMORY_WALL_V1_PLAN.md)（MW-01～MW-05）。自由拼贴（Collage）不在 v1.0。
+4. 后续 Beta 功能（FT-01～FT-05）。
+
+本节只是规划，以上 2、3 项都还没有开始开发。
+

@@ -50,15 +50,26 @@ P0 数据丢失 / 无法使用 · P1 核心流程错误 · P2 明显影响体验
 
 ## 2. 总览
 
-（统计见第 4 节末尾，随每次更新改写。）
+统计（2026-11-15，V10.76 之后；随每次更新改写）：
+
+| | 数量 |
+|---|---|
+| 任务总数 | **55**（Bug 20 · 功能改进 4 · DS 14 · MW 5 · TD 5 · REL 2 · FT 5） |
+| 未完成（不是 Done） | **55**（还没有任何一项经过 Founder 真机确认） |
+| 按优先级 | P0 9 · P1 9 · P2 21 · P3 14 · 未定级 2（TD-04、TD-05 建议关闭） |
+| 按状态 | Testing 21 · Planned 17 · Blocked 14 · In Progress 1（DS-01）· Ready 1（TD-01）· Inbox 1（FT-05）· Done 0 |
+| Testing（代码已改、等真机） | CAP-002～020（除 CAP-001）、CAP-E001、CAP-E002 |
+| Blocked（等 Founder） | 决定：CAP-E003、DS-13、DS-14、MW-04、FT-03、FT-04、TD-04、TD-05；批准修复：DS-09、DS-10、DS-12；真机数据：CAP-001；构建：REL-01、REL-02 |
+
+P0 的 9 项：CAP-016（Testing）、DS-01（In Progress）、DS-02、DS-05、DS-07、MW-01、MW-02、MW-03、MW-05（Planned）。
 
 ## 3. 版本计划
 
 | 版本 | 目标 | 进入条件 | 包含 |
 |---|---|---|---|
-| **Alpha Stability**（当前） | 已记录的 Bug 全部修好并在真机确认；数据不丢 | — | CAP-001～020、CAP-E001/E002、DS-01、TD-01、REL-01/02 |
+| **Alpha Stability**（当前） | 已记录的 Bug 全部修好并在真机确认；数据不丢 | — | CAP-001～020、CAP-E001/E002、DS-01、DS-03、DS-09/10/12（等批准）、TD-01、REL-01/02 |
 | **Alpha UX Polish** | 小的体验改进，不碰数据结构 | Alpha Stability 的 P1 全部 Done | CAP-E003、CAP-E004、TD-02 |
-| **Data Safety Upgrade** | 备份恢复验证完成、自动 iCloud 备份 | Alpha Stability 完成；DS-01 Done | DS-02～DS-08 |
+| **Data Safety Upgrade** | 备份恢复验证完成、自动 iCloud 备份 | Alpha Stability 完成；DS-01 Done | DS-02、DS-04～DS-08、DS-11、DS-13 |
 | **Beta Features** | 新功能 | Data Safety Upgrade 的 P0 完成 | MW-01～MW-05、FT-01～FT-05 |
 
 顺序（Founder 2026-11-15 确认）：Alpha 关键 Bug → 数据完整性和备份恢复验证 → 自动 iCloud 备份 → Memory Wall v1.0 → 后续 Beta 功能。
@@ -69,7 +80,7 @@ P0 数据丢失 / 无法使用 · P1 核心流程错误 · P2 明显影响体验
 
 | ID | 标题 | 优先级 | 状态 | 目标版本 | 相关模块 | 验收标准 | 测试结果 | 完成日期 |
 |---|---|---|---|---|---|---|---|---|
-| CAP-016 | My Books「写一页」写进目标手帐，不打开 / 不改已有日记 | P1 | Testing | 下一构建（V10.72） | `app.js` writeInBook / startPage | BETA_RELEASE_PLAN「CAP-016 真机验收」9 步 | v169 20 项 ✅；全量回归 106/106 ✅；真机 ⏳ | — |
+| CAP-016 | My Books「写一页」写进目标手帐；从某本手帐打开的编辑器只显示这本手帐的页（第二部分，IMG_9476 / 9477） | **P0**（11-15 由 P1 升级） | Testing | 下一构建（V10.72 + V10.76） | `app.js` writeInBook / startPage / studioScope / studioReturnBook | BETA_RELEASE_PLAN「CAP-016 真机验收」9 步 +「第二部分」9 步 | v169 20 项、v173 20 项 ✅；相关回归 v170 / v171 / v35 / v158 / v112 / v160 / v137 / v141 ✅；全量回归见变更记录；真机 ⏳ | — |
 | CAP-018 | 封面一致：缩略图 = 大预览 = 创建后 = 书架 = 重开（统一封面配置） | P1 | Testing | 下一构建（V10.73 + V10.74） | `personal-ui.mjs` coverPhotos / coverSampleToKeep；`app.js` openBookDialog / saveBookForm；`Models.swift` CoverSample | 封面系统真机验收第 1b、2、7、8、9 步 | v170 30 项、v171 21 项 ✅；Swift Core 7 项（Mac）✅；真机 ⏳ | — |
 | CAP-017 | 长书名：封面模板自适应；书架卡片两行；书本页完整 | P2 | Testing | 下一构建（V10.73 + V10.75） | `cover-fit.mjs`；`styles.css` | 封面系统验收第 3～5 步；书架排版验收第 5、6 步 | 封面审查 528 组合 0 问题；v170、v172 ✅；真机 ⏳ | — |
 | CAP-019 | 新建手帐默认黑体 | P2 | Testing | 下一构建（V10.73） | `app.js` openBookDialog | 封面系统验收第 1、6 步 | v170 ✅；真机 ⏳ | — |
@@ -91,10 +102,14 @@ P0 数据丢失 / 无法使用 · P1 核心流程错误 · P2 明显影响体验
 | CAP-004 | 备份流程不够直观 | P2 | Testing | 0.2.0 (4) | `app.js` openBackupSheet；外壳 UIDocumentPicker | 备份恢复真机演练（DS-01） | v163 ✅；真机 ⏳ | — |
 | CAP-005 | 恢复备份缺少引导 | P2 | Testing | 0.2.0 (4) | `restore-safety.mjs` | 同上 | v161、v163 ✅；真机 ⏳ | — |
 | CAP-001 | 录音首次播放延迟（约 7 秒） | P2 | Blocked | TBD | `voice-skin.mjs`、`canvas.mjs` | 真机「点按到出声」< 1.5 s | 模拟器：首次 1.18 s、第二次 0.25 s；7 s 复现不出。**等 Founder 真机秒数**（设置 → 媒体检查 first / again） | — |
-| DS-01 | 现有手动备份的数据完整性审查与恢复演练 | P0 | （见第 5 节） | Alpha Stability | 备份 / 恢复 | 见第 5 节 | — | — |
+| DS-01 | 现有手动备份的数据完整性审查与恢复演练 | P0 | In Progress | Alpha Stability | `media.mjs` backup / visitMediaReferences；`app.js` runBackup / restore；`restore-safety.mjs`；外壳 WKDownload / UIDocumentPicker | 代码审查列出包含 / 不包含的内容和风险；真机演练：备份 → 删除 App → 重装 → 恢复，数据一致 | 代码审查 ✅（2026-11-15，ICLOUD_AUTO_BACKUP_PLAN 第 1、2 节，风险 R1～R10）；真机演练 ⏳ | — |
+| DS-03 | 真机验证：整机 iCloud 备份 / Quick Start 换机是否带上 Capiday 的 WebKit 数据；`persist()` 是否被批准 | P1 | Planned | Alpha Stability | WebKit 存储；`media-check.mjs` | ICLOUD_AUTO_BACKUP_PLAN 第 6 节第 10 项；结果写进设置说明 | 需要真机，未做 | — |
+| DS-09 | R3：生成的 JSON 备份可能超过恢复上限（能备份、恢复不了） | P1 | Blocked | Alpha Stability | `app.js` runBackup；`restore-safety.mjs` MAX_RESTORE_FILE_BYTES | 生成后检查文件大小 ≤ 恢复上限；超过时提示，不记为成功；测试覆盖 | **等 Founder 批准修复**（本次只规划） | — |
+| DS-10 | R4：`coverPhotos` 里的 `media:` 引用恢复时没有改写 | P2 | Blocked | Alpha Stability | `media.mjs` visitMediaReferences | 恢复时媒体重新编号后封面重新排版不出现坏图；测试覆盖 | **等 Founder 批准修复** | — |
+| DS-12 | R6：备份存到「我的 iPhone › Capiday」会随 App 删除，却记为已验证 | P1 | Blocked | Alpha Stability | `LittleDaysWebShellView.swift` didPickDocumentsAt | 识别 App 自己的 Documents 并提醒选 iCloud Drive；真机确认位置判断 | **等 Founder 批准修复**；位置判断需要真机确认 | — |
 | TD-01 | Mac 模拟器脚本仍用旧 Bundle ID（dev.sh、sim-shots.sh、ios-layout-check.sh） | P3 | Ready | Alpha Stability | `tools/mac/*` | 三个脚本都能在模拟器里启动 App | ios-shelf-check.sh 已修（79ee727）；已建议另开任务 | — |
 | REL-01 | Founder 真机验收 Sprint 01（CAP-002～020、E001/E002） | P1 | Blocked | Alpha Stability | — | BETA_RELEASE_PLAN 各验收清单逐项通过 | 等新的内部构建 | — |
-| REL-02 | 下一个内部 TestFlight 构建（含 V10.70～V10.75） | P1 | Blocked | Alpha Stability | Xcode Archive | Release Gate 通过 | **需要 Founder 批准上传**；本阶段不上传 | — |
+| REL-02 | 下一个内部 TestFlight 构建（含 V10.70～V10.76） | P1 | Blocked | Alpha Stability | Xcode Archive | Release Gate 通过 | **需要 Founder 批准上传**；本阶段不上传 | — |
 
 ### 4.2 Alpha UX Polish
 
@@ -107,11 +122,31 @@ P0 数据丢失 / 无法使用 · P1 核心流程错误 · P2 明显影响体验
 
 ### 4.3 Data Safety Upgrade
 
-（见第 5 节，调查完成后填写。）
+全部 **Planned — Post-Alpha Data Safety Upgrade**。方案见 [ICLOUD_AUTO_BACKUP_PLAN.md](ICLOUD_AUTO_BACKUP_PLAN.md)。
+
+| ID | 标题 | 优先级 | 状态 | 目标版本 | 相关模块 | 验收标准 | 测试结果 | 完成日期 |
+|---|---|---|---|---|---|---|---|---|
+| DS-02 | 流式 `.capiday` 备份包（取消 100 MiB 上限、manifest + sha256 回读校验；JSON v1 仍可恢复） | P0 | Planned | Data Safety Upgrade | 新 Swift `CapidayArchive`；JS 分块；`spikes/s1-0/` | 计划第 6 节第 1～4 项 | 只有 spike | — |
+| DS-04 | iCloud 容器 `iCloud.com.capiday.app`（entitlements、`NSUbiquitousContainers`、登录 / 空间 / 换账号） | P1 | Planned | Data Safety Upgrade | Xcode 工程；外壳 Swift | 计划第 6 节第 13、14 项 | — | — |
+| DS-05 | 自动备份（有改动 + 后台任务 + BGProcessingTask；生成 → 写入 → 已上传状态机；失败不影响写日记） | P0 | Planned | Data Safety Upgrade | 外壳 Swift；`app.js` 备份入口 | 计划第 6 节第 4、8、16 项 | — | — |
+| DS-06 | 设置「数据与备份」状态（iCloud 可用、开关、最近一次经验证的成功备份、等待 / 失败、立即备份、恢复、手动导出） | P1 | Planned | Data Safety Upgrade | `app.js` 设置；i18n | 未上传时不显示成功 | — | — |
+| DS-07 | 从 iCloud 恢复（列表、下载进度、无网络、沿用恢复安全机制、不静默覆盖） | P0 | Planned | Data Safety Upgrade | `restore-safety.mjs`；外壳 Swift | 计划第 6 节第 7、9、11、12 项 | — | — |
+| DS-08 | 保留与清理（最近 3 份 + 每月 1 份；新的一份上传后才删旧的） | P2 | Planned | Data Safety Upgrade | 外壳 Swift | 永远至少有一份已上传的备份 | — | — |
+| DS-11 | R5：恢复回滚失败后找不到恢复前的数据 | P2 | Planned | Data Safety Upgrade | `app.js` restore / undoRestore | 回滚失败时设置里仍有「恢复前的数据」入口 | — | — |
+| DS-13 | R7：账户名、头像等 localStorage 设置是否加入备份 | P3 | Blocked | Data Safety Upgrade | `account.mjs`；备份格式 | Founder 决定 | **等 Founder 决定** | — |
+| DS-14 | CloudKit 增量同步（路线 C）是否进入路线图 | P3 | Blocked | 以后 | — | Founder 决定 | **等 Founder 决定**（推荐等真实的多设备需求） | — |
 
 ### 4.4 Beta Features
 
-（Memory Wall v1.0 见第 6 节；其他已有规划见 4.5。）
+Memory Wall v1.0 全部 **Planned — Post-Alpha Stability**。方案见 [MEMORY_WALL_V1_PLAN.md](MEMORY_WALL_V1_PLAN.md)。
+
+| ID | 标题 | 优先级 | 状态 | 目标版本 | 相关模块 | 验收标准 | 测试结果 | 完成日期 |
+|---|---|---|---|---|---|---|---|---|
+| MW-01 | 自动生成照片墙（保留现有：只收手帐里的照片、双列瀑布流、按月分组、新到旧、看大图、关联原记录；不重复、不读相册） | P0 | Planned | Beta Features | `photo-wall.mjs` wallPhotos；`app.js` photoWallHTML | 现有 v152 + 新单元测试；5000 张性能基线 | 现有功能已在 V10.55 上线；v1.0 部分未开始 | — |
+| MW-02 | 管理模式：选择、隐藏、查看已隐藏、恢复；不影响原始数据；重开后仍生效 | P0 | Planned | Beta Features | `photo-wall.mjs` applyWall（新）；`app.js`；可选 `state.wall` | 计划第 7 节 Stage 3 | — | — |
+| MW-03 | 整页贴到照片墙（复用 `sharedCanvasHTML`，不复制页面，原页面改了卡片跟着变，点开回到原记录） | P0 | Planned | Beta Features | `app.js` 阅读器菜单；`canvas.mjs` | 整页卡片与阅读器缩略图一致 | — | — |
+| MW-04 | 自定义排序 +「恢复时间排序」 | P1 | Blocked | Beta Features | `photo-wall.mjs`；`app.js` 拖动 | Founder 回答计划第 6 节问题 1～4 | **等 Founder 决定 4 个排序问题** | — |
+| MW-05 | 数据安全与恢复（来源 ID 不含日期和 media id；坏配置只被忽略；备份恢复包含设置；旧备份兼容；Swift 可选字段） | P0 | Planned | Beta Features | `model.mjs`；`restore-safety.mjs`；`Models.swift` | 计划第 4 节 13 个边界情况的测试 | — | — |
 
 ### 4.5 其他已有规划（不在近期版本里）
 
@@ -125,12 +160,24 @@ P0 数据丢失 / 无法使用 · P1 核心流程错误 · P2 明显影响体验
 | TD-04 | ROADMAP 旧项：原生 SwiftUI 逐项追平 Web | — | Blocked | 2026-11-07 已改为 WKWebView 外壳只维护 `Public/` 一份界面，**建议关闭**，等 Founder 确认 |
 | TD-05 | ROADMAP 旧项：Windows 实机验证 | — | Blocked | 2026-11-09 起不再用 Windows localhost 查看，**建议关闭**，等 Founder 确认 |
 
-## 5. Data Safety（调查中）
+## 5. Data Safety
 
-## 6. Memory Wall v1.0（调查中）
+- 调查完成（2026-11-15）：[ICLOUD_AUTO_BACKUP_PLAN.md](ICLOUD_AUTO_BACKUP_PLAN.md)。手动 JSON 备份**包含全部手帐内容和被引用的媒体**；真正的缺口是 R1（媒体 > 100 MiB 没有备份途径）和 R2（没有离开手机的自动副本），以及 R3～R7 几个边缘问题。
+- 推荐路线：**B · iCloud Drive 自动备份**（前置：DS-02 流式 `.capiday`），A（整机备份）只验证和说明，C（CloudKit）暂缓。
+- Alpha Stability 里：DS-01（真机演练）、DS-03（整机备份验证）；R3 / R4 / R6 的小修（DS-09 / 10 / 12）**等 Founder 批准**。
+- 其余 DS-02、04～08、11 在 Data Safety Upgrade；DS-13、DS-14 等 Founder 决定。
+
+## 6. Memory Wall v1.0
+
+- 规划完成（2026-11-15）：[MEMORY_WALL_V1_PLAN.md](MEMORY_WALL_V1_PLAN.md)，状态 **Planned — Post-Alpha Stability**。本次没有改照片墙、Journal Studio 或数据结构。
+- 方案：照片墙仍每次从手帐计算；新增一个可选的小配置 `state.wall`（隐藏、整页、顺序），只存来源 ID（`photo:<页 id>:<图层 id>`、`page:<页 id>`），不存图片、页面副本或 media id；整页卡片复用 `sharedCanvasHTML`。
+- 13 个边界情况的分析见计划第 4 节；需要 Founder 决定的 10 个问题见第 6 节（MW-04 的 4 个排序问题按要求没有自行决定）。
+- 开发顺序（Alpha 之后）：Stage 1 设计确认 → Stage 2 隐藏 / 管理模式 / 整页 / 排序 / 备份 → Stage 3 回归。
 
 ## 7. 变更记录
 
 | 日期 | 变更 |
 |---|---|
 | 2026-11-15 | 建立本表：Backlog 的 CAP-001～020、CAP-E001～E004 全部收进来，并逐条核对代码中的修复标记和测试文件；新增 TD、REL、FT 条目；旧 ROADMAP 中已过时的两项标为建议关闭 |
+| 2026-11-15 | CAP-016 升为 **P0**（Founder，IMG_9476 / 9477 合并进来，不新建 ID）；V10.76 编辑器只显示这本手帐的页、返回这本手帐，状态 Testing |
+| 2026-11-15 | 新增 DS-01 实际内容和 DS-02～DS-14（自动 iCloud 备份规划 + 风险 R1～R10）；新增 MW-01～MW-05（照片墙 v1.0 规划）；补齐第 2、5、6 节 |

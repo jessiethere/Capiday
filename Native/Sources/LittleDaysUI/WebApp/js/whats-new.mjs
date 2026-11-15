@@ -4,6 +4,30 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.76",
+    date: "2026-11-15",
+    zh: {
+      title: "从哪本手帐写，就只看到这本手帐",
+      items: [
+        "新手帐里点「记录新的一页」，编辑器只显示这本手帐的页（第 1 页 · 共 1 页），不会再看到同一天其他手帐的页。",
+        "页码、下面的页面条、「整理」、合并、删除、移到另一页、上下移动，都只算这本手帐的页；其他手帐的页不动。",
+        "删掉这本手帐在这一天的最后一页，不会清空这一天，其他手帐的页都还在。",
+        "写完或什么都不写就返回，都回到这本手帐的页面，不是整个书架。",
+        "从首页、日历按天打开时照旧显示这一天的全部页。已有的页和归属一点没改。",
+      ],
+    },
+    en: {
+      title: "Write from a journal, see only that journal",
+      items: [
+        "“Write a new page” in a new journal shows only that journal's pages (page 1 of 1), not the other journals' pages from the same day.",
+        "Page numbers, the page strip, Arrange, merge, delete, move to another page and move up/down count only that journal's pages; other journals' pages stay put.",
+        "Deleting this journal's last page of the day doesn't clear the day: the other journals' pages are still there.",
+        "Done, or back without writing, returns to that journal's page, not the whole shelf.",
+        "Opening a day from Home or the calendar still shows all of that day's pages. No existing page or journal assignment was changed.",
+      ],
+    },
+  },
+  {
     version: "10.75",
     date: "2026-11-15",
     zh: {

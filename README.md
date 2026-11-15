@@ -93,6 +93,9 @@ py -3 tools\preview.py --open
 | [PRODUCT_SPEC](docs/PRODUCT_SPEC.md) | 完整 V3 需求、实际范围与限制 |
 | [DESIGN_SYSTEM](docs/DESIGN_SYSTEM.md) | 配色、精致封面、字体、素材和双语规范 |
 | [ARCHITECTURE](docs/ARCHITECTURE.md) | 当前架构/兼容策略，以及未部署的社交后端和权限设计 |
+| [DEVELOPMENT_TRACKER](docs/DEVELOPMENT_TRACKER.md) | **唯一任务总表**：所有 Bug、需求、技术债、规划的 ID、优先级、状态和验收 |
+| [MEMORY_WALL_V1_PLAN](docs/MEMORY_WALL_V1_PLAN.md) | 照片墙 v1.0（Planned — Post-Alpha Stability） |
+| [ICLOUD_AUTO_BACKUP_PLAN](docs/ICLOUD_AUTO_BACKUP_PLAN.md) | 自动 iCloud 备份（Planned — Post-Alpha Data Safety Upgrade） |
 | [ROADMAP](docs/ROADMAP.md) | Phase 1–5 的详细任务与验收清单 |
 | [STRATEGY](docs/STRATEGY.md) | 产品战略、竞品、优先级与待确认提案（任务 G） |
 | [QUICK_EDIT_PLAN](docs/QUICK_EDIT_PLAN.md) | Quick Create / Quick Edit：标题选填（已实施）、换照片 · 写文字 · 换个排版、双照片排版（方案）；预览 https://claude.ai/artifact/Bj5uD5vtZAmtq9pwgv5f3B |
@@ -182,6 +185,20 @@ npm run test:browser:v65
 - 详见 [docs/PRODUCT_VISION_2.md](docs/PRODUCT_VISION_2.md)。
 
 ## 更新日志
+
+### 2026-11-15 — 规划：照片墙 v1.0 和自动 iCloud 备份（只规划，没有开始开发）
+
+- **照片墙 v1.0 · Planned — Post-Alpha Stability**：自动收集照片 + 自己整理——管理模式里隐藏 / 恢复、把排好版的整页贴到照片墙、自定义顺序；不改原始手帐。方案和需要你决定的 10 个问题在 [docs/MEMORY_WALL_V1_PLAN.md](docs/MEMORY_WALL_V1_PLAN.md)。
+- **自动 iCloud 备份 · Planned — Post-Alpha Data Safety Upgrade**：推荐每天自动把完整备份放进 App 自己的 iCloud 文件夹（先做不限大小、可校验的备份包）。现在的手动备份包含全部手帐和照片 / 视频 / 语音；主要缺口是媒体超过 100 MB 时无法备份、没有自动的离机副本。另外发现 3 个小问题建议先修（等你批准）。详见 [docs/ICLOUD_AUTO_BACKUP_PLAN.md](docs/ICLOUD_AUTO_BACKUP_PLAN.md)。
+- 所有任务的状态在 [docs/DEVELOPMENT_TRACKER.md](docs/DEVELOPMENT_TRACKER.md)（55 项）。
+
+### 2026-11-15 — 从哪本手帐写，就只看到这本手帐（V10.76 · CAP-016 第二部分 · P0）
+
+- 新手帐里点「记录新的一页」，编辑器只显示这本手帐的页（第 1 页 · 共 1 页），不会再看到同一天别的手帐的页。
+- 页码、页面条、整理、合并、删除、移动都只算这本手帐；删掉它这一天的最后一页不会清空这一天。
+- 写完或不写就返回，都回到这本手帐的页面。首页、日历按天打开时照旧显示整天。
+- 已有的页和归属一点没改，没有迁移数据。
+- 自动测试通过（新 v173，20 项）；还要你在 iPhone 上验证（BETA_RELEASE_PLAN.md「CAP-016 第二部分」）；没有上传 TestFlight。
 
 ### 2026-11-15 — 登记：阅读器单页导出（CAP-E004，P2，计划中）
 

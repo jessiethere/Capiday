@@ -48,6 +48,51 @@
 
 ## 更新日志
 
+### 2026-11-15 — 规划：Memory Wall 照片墙 v1.0、自动 iCloud 备份；Development HQ 总表补齐（只规划和写文档，没有改照片墙、备份逻辑或数据结构）
+
+- **需求**（Founder，同一条消息里的三份）：
+  - 照片墙 v1.0（方案 A · Auto + Curate，MW-01～MW-05）：只检查代码、整理需求、设计方案、写 Roadmap；状态 **Planned — Post-Alpha Stability**；禁止改照片墙、数据库、Journal Studio，禁止提前做拼贴；MW-04 的排序问题交给 Founder，不自行决定；13 个边界情况逐一分析。
+  - 自动 iCloud 备份：基于真实代码比较 A 系统整机备份 / B iCloud Drive / C CloudKit；状态 **Planned — Post-Alpha Data Safety Upgrade**；不改备份逻辑、不启用 CloudKit、不改数据结构、不删 JSON 备份、不迁移数据；发现数据丢失风险时先提出修复建议。
+  - Development HQ：`docs/DEVELOPMENT_TRACKER.md` 作为唯一任务总表（上一条已建立，本次补齐第 2、5、6 节和 DS / MW 条目）。
+- **调查方法**：
+  - 照片墙：一个只读子代理按 9 个检查点读代码（Calendar / 照片墙组件、收集逻辑、Studio 数据结构、页面 ID、渲染导出、存储、备份恢复、外壳、测试）；关键结论我在代码里抽查（`crypto.randomUUID()` 页 id；没有修改日期的入口；`validateStateSnapshot` 只检查必需字段）。
+  - 存储和备份：另一个只读子代理在 commit `a3cea07` 上核对全部存储位置、备份包含 / 不包含的内容、上限、恢复流程和原生层；只读，没有改任何文件。
+- **结论**：
+  - 照片墙现在每次由 `wallPhotos(state)` 从手帐计算，没有任何管理状态。推荐 v1.0 只加一个可选的小配置 `state.wall`（隐藏、整页、顺序），只存来源 ID（`photo:<页 id>:<图层 id>`、`page:<页 id>`），不存图片、页面副本或 `media:` 引用；整页卡片复用 `sharedCanvasHTML`。数千张照片没有虚拟列表，是最大的性能风险。
+  - 手动 JSON 备份**包含全部手帐内容和被引用的媒体**（含草稿、Captain、排版、贴纸、语音、视频）；只在 localStorage 的设置不包含。真正的风险：R1 媒体 > 100 MiB 没有任何备份途径（高）；R2 唯一副本在本机 WebKit 存储、没有自动的离机副本（高）；R3 能生成恢复不了的备份（base64 后可能超过 150 MiB 恢复上限）；R4 `coverPhotos` 的 `media:` 引用恢复时不改写；R5 回滚失败被吞掉；R6 存到「我的 iPhone › Capiday」的备份会随 App 删除却记为已验证；R7～R10 较小。
+  - 推荐 **B · iCloud Drive 自动备份**（前置 DS-02 流式 `.capiday`），A 只验证和说明，C 暂缓。
+  - **先提出的修复建议**：R3 / R4 / R6 是小改动、不改数据结构，建议放进 Alpha Stability（DS-09 / DS-10 / DS-12），**等 Founder 批准**，本次没有修改。
+- **文件**：
+  - 新增 `docs/MEMORY_WALL_V1_PLAN.md`（现状、MW-01～05、数据模型建议、13 个边界情况、风险、10 个待确认问题、Stage 0～3）；
+  - 新增 `docs/ICLOUD_AUTO_BACKUP_PLAN.md`（存储架构、备份机制、R1～R10、A/B/C 对比、推荐、6 个阶段、16 项恢复测试、9 个决策）；
+  - `docs/DEVELOPMENT_TRACKER.md`：第 2 节统计（55 项）、DS-01 实际内容、DS-02～14、MW-01～05、第 5、6 节、版本计划、变更记录；
+  - `docs/ROADMAP.md`：新增「开发总表与后续阶段」一节；README.md。
+- **没有做**：没有改任何照片墙、备份、恢复、存储或 Swift 代码；没有启用 iCloud / CloudKit；没有新的 entitlements。
+- **下一步**：Founder 回答两份计划的待确认事项（照片墙第 6 节 10 个；iCloud 第 7 节 9 个，其中「是否批准先修 R3 / R4 / R6」最紧急）。
+
+### 2026-11-15 — CAP-016 第二部分（P0）：新手帐「记录新的一页」显示别的手帐的页（网页 V10.76）
+
+- **需求**：Founder 报告 P0（IMG_9476、IMG_9477）：新建手帐（0 天 · 0 页）点「记录新的一页」，编辑器里出现另一本手帐的 6 页。按要求合并进 CAP-016（不新建 ID），级别升为 P0；先查根因和数据模型，不隐藏问题，不自动重新分配已有记录的归属，不改数据库结构。
+- **根因（代码确认）**：
+  - 一天一条记录，页各有 `bookId`；`openStudio(date)` 按日期加载整天的全部页，编辑器没有「当前手帐」的概念。
+  - V10.72 修好了「写到哪里」（新页属于目标手帐、不再整天搬走），但「显示哪些页」没修：页码、页面条、整理、合并、删除、移到另一页、上下移动都按整天计算。bookId 的传递和保存都是对的。
+  - 另外发现：写完返回时 `navigate("books")` 会清掉 `selectedBook`，所以回到的是整个书架，不是这本手帐。
+- **修复（`Public/app.js`，只改显示和导航，不改数据）**：
+  - `studioScope`：从某本手帐打开编辑器（书本页「记录新的一页」、书架「写一页」、从这本手帐的阅读器 / 书本页编辑某一页）时，只显示和操作这本手帐的页；`scopedMoments` / `inStudioScope` / `coverInScope` 用在页面条、页码、整理、合并 / 删除、移到另一页、目录、页码标签。
+  - `moveShownPage`：范围内上下移动只和同一本手帐的相邻页交换，其他手帐的页位置不动。
+  - `pageAfterRemoval` / `leaveEmptyScope`：删掉这本手帐这一天的最后一页时离开编辑器，**不清空这一天**。
+  - 范围内新加的页属于这本手帐（`addMomentNow`）。
+  - `studioReturnBook`：从书本页打开时记住这本手帐，返回 / 完成后回到它的书本页。
+  - 首页、日历按天打开：`studioScope = null`，照旧显示整天。
+- **测试**：
+  - 新 `tests/v173-browser.cjs` 20 项通过（合成数据），覆盖 Founder 要求的 7 项：空白手帐 A 第一页不影响 B；同一天 A、B 各自记录不串联；从书本页进入、写完回到这本手帐；取消不留空白页；改 A 不影响 B（含从阅读器编辑、删除 A 唯一一页时 B 的页都在且顺序不变）；重开 App 后归属和页数正确；原有数据不丢不移。
+  - 相关回归：v169 20、v170 30、v171 21、v35、v158、v112、v160、v137 8、v141 10 通过；单元测试 315/315。
+  - 全量浏览器回归 run-all13（111 个文件）：提交时还在运行，前 20 个全部通过；结果补记在后面的条目里。
+  - 真机：**没有验证**（步骤：BETA_RELEASE_PLAN「CAP-016 第二部分真机验收」9 步）。
+- **文件**：`Public/app.js`、`Public/js/whats-new.mjs`（10.76）、`Native/Sources/LittleDaysUI/WebApp/`（同步）、`tests/v173-browser.cjs`、BUG_BACKLOG.md（CAP-016 → P0、第二部分）、BETA_RELEASE_PLAN.md、docs/DEVELOPMENT_TRACKER.md、README.md。
+- **已知限制**：按范围打开时，一天的封面只在这一天本身属于这本手帐时出现（和以前一样，封面属于这一天的手帐）；从「今天的故事」按照片拍摄日期跳到另一天时不带范围（那里是按天的流程）。
+- **没有做**：没有改任何已有页的 `bookId`，没有迁移，没有改数据库结构；没有上传 TestFlight。
+
 ### 2026-11-15 — 登记产品需求 CAP-E004 阅读器单页导出（P2，排在 Alpha 稳定性之后；本条只登记和审查，没有改 App）
 
 - **需求**（Founder，截图 IMG_9469 / IMG_9470）：

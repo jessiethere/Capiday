@@ -616,10 +616,16 @@ function returnToReading() {
 }
 function openStudio(date = dateKey()) {
   readReturn = null;
+  studioScope = null;
   studioPreview = false;
   studioTouched = false;
   draftState = "saved";
-  if (page !== "studio" && page !== "settings") studioReturn = page;
+  // V10.76 · CAP-016: opened from a book's page (记录新的一页), ‹ / 完成
+  // comes back to that same book, not the whole shelf.
+  if (page !== "studio" && page !== "settings") {
+    studioReturn = page;
+    studioReturnBook = page === "books" ? selectedBook : null;
+  }
   flushDraft();
   selectedDate = date;
   let existing =
@@ -3661,7 +3667,7 @@ function pageCounts(page) {
   return { photos, videos, audios };
 }
 function chapterChipsHTML() {
-  const moments = editor.moments || [];
+  const moments = scopedMoments();
   const badges = (page) => {
     const c = pageCounts(page);
     return [c.photos ? `📷${c.photos}` : "", c.videos ? `◈${c.videos}` : "", c.audios ? `♫${c.audios}` : ""]
@@ -3676,7 +3682,7 @@ function chapterChipsHTML() {
   // V10.23: while a file is being saved the strip is shown paused (not only a toast after a tap).
   // (only while a video / sound is imported: that flow redraws when it starts and ends)
   const locked = busyMedia && mediaImport && !["done", "failed"].includes(mediaImport.stage);
-  return `<nav class="chapter-chips page-strip${locked ? " locked" : ""}" aria-label="${t("moment.title")}"${locked ? ` aria-disabled="true" title="${esc(t("import.busy"))}"` : ""}>${cover}<span class="strip-divider" aria-hidden="true"></span>${moments
+  return `<nav class="chapter-chips page-strip${locked ? " locked" : ""}" aria-label="${t("moment.title")}"${locked ? ` aria-disabled="true" title="${esc(t("import.busy"))}"` : ""}>${coverInScope() ? `${cover}<span class="strip-divider" aria-hidden="true"></span>` : ""}${moments
     .map(
       (moment, index) =>
         `<span class="chapter-chip-wrap"><button class="chapter-chip ${moment.id === activeMomentId ? "active" : ""}" data-action="select-moment" data-moment="${esc(moment.id)}" aria-pressed="${moment.id === activeMomentId}"><i class="chip-num" aria-hidden="true">${index + 1}</i>${pageThumbHTML(moment)}<span class="chip-text"><small>${t("moment.chapter", { number: String(index + 1).padStart(2, "0") })}${moment.time ? " · " + esc(moment.time) : ""}</small><b data-chapter-label="${esc(moment.id)}">${esc(PL.pageLabel(moment, { t, index }).label)}</b></span>${badges(moment)}</button>${moment.id === activeMomentId ? `<button class="chip-delete" data-action="moment-delete" aria-label="${t("write.deleteStory")}">×</button>` : ""}</span>`,
@@ -3701,9 +3707,9 @@ function openPagesManage() {
   if (!dialog.open) dialog.showModal();
 }
 function renderPagesManage() {
-  const moments = editor.moments || [];
+  const moments = scopedMoments();
   const book = (id) => state().books.find((b) => b.id === id)?.title || "";
-  const hasCover = hasDayPageContent(editor);
+  const hasCover = coverInScope() && hasDayPageContent(editor);
   // V10.47: the cover row only when the day has a cover (it can be cleared);
   // no cover and no pages → an empty state, never a placeholder cover.
   const coverRow = hasCover
@@ -3732,7 +3738,7 @@ function undoToast(key, values) {
   toast(t(key, values), { action: "undo", label: t("studio.undo") });
 }
 function mergePickedPages() {
-  const ids = (editor.moments || []).filter((m) => pagesPick?.has(m.id)).map((m) => m.id);
+  const ids = scopedMoments().filter((m) => pagesPick?.has(m.id)).map((m) => m.id);
   if (ids.length < 2) return;
   let merged = null;
   changeEditor((entry) => (merged = PageOps.mergeMoments(entry, ids, { makeId: id })), false);
@@ -3744,15 +3750,21 @@ function mergePickedPages() {
   undoToast("pg.merged", { count: ids.length });
 }
 async function deletePickedPages() {
-  const ids = (editor.moments || []).filter((m) => pagesPick?.has(m.id)).map((m) => m.id);
+  const ids = scopedMoments().filter((m) => pagesPick?.has(m.id)).map((m) => m.id);
   if (!ids.length) return;
   // Every page and no cover: the day itself is cleared (V10.47 rule, asked first).
   if (ids.length === editor.moments.length && !hasDayPageContent(editor)) return removeLastPage();
   if (!(await askConfirm(t("pg.deleteConfirm", { count: ids.length }), { ok: t("delete") }))) return;
   changeEditor((entry) => ids.forEach((m) => removeMoment(entry, m)), false);
   pagesPick = null;
-  if (!findMoment(editor, activeMomentId)) selectMoment(editor.moments[0]?.id || null);
-  else render();
+  if (!findMoment(editor, activeMomentId)) {
+    const next = pageAfterRemoval();
+    if (!next) {
+      $("#choose-dialog").close();
+      return leaveEmptyScope();
+    }
+    selectMoment(next.id);
+  } else render();
   renderPagesManage();
   logEvent("pages_delete_many", { count: ids.length });
   undoToast("pg.deleted", { count: ids.length });
@@ -3762,7 +3774,7 @@ function openPhotoMove() {
   const page = findMoment(editor, activeMomentId);
   if (!page || !PageOps.isPhoto(layer)) return;
   const seq = PageOps.photoSequence(page);
-  const others = editor.moments
+  const others = scopedMoments()
     .map((m, i) => ({ m, i }))
     .filter(({ m }) => m.id !== page.id)
     .map(({ m, i }) => `<button class="pages-pick" data-action="photo-move-to" data-to="${esc(m.id)}">${pageThumbHTML(m)}<span class="pages-pick-copy"><small>${t("moment.chapter", { number: String(i + 1).padStart(2, "0") })}${m.time ? " · " + esc(m.time) : ""}</small><b>${esc(PL.pageLabel(m, { t, index: i }).label)}</b></span></button>`)
@@ -3897,14 +3909,21 @@ async function removePage(momentId) {
   if (isLastPage(momentId)) return removeLastPage();
   if (hasMomentContent(moment) && !(await askConfirm(t("moment.deleteConfirm")))) return;
   changeEditor((entry) => removeMoment(entry, momentId), false);
-  if (activeMomentId === momentId || !findMoment(editor, activeMomentId))
-    activeMomentId = !hasDayPageContent(editor) && editor.moments.length ? editor.moments.at(-1).id : null;
+  if (activeMomentId === momentId || !findMoment(editor, activeMomentId)) {
+    const next = pageAfterRemoval();
+    if (!next) {
+      if ($("#choose-dialog").open) $("#choose-dialog").close();
+      toast(t("moment.deleted"));
+      return leaveEmptyScope();
+    }
+    activeMomentId = next.id;
+  }
   selectedLayer = null;
   render();
   toast(t("moment.deleted"));
 }
 function chaptersOutlineHTML() {
-  const moments = editor.moments || [];
+  const moments = scopedMoments();
   const thumbs = (page) =>
     page.layers
       .filter((layer) => layer.kind === "photo" && safePhoto(layer.mediaRef))
@@ -4525,7 +4544,7 @@ function inlineInput(target, event) {
   } else {
     const moment = activePage();
     const label = document.querySelector(`[data-chapter-label="${CSS.escape(moment.id)}"]`);
-    if (label) label.textContent = PL.pageLabel(moment, { t, index: (editor.moments || []).indexOf(moment) }).label;
+    if (label) label.textContent = PL.pageLabel(moment, { t, index: scopedMoments().indexOf(moment) }).label;
     refreshStudioTitle();
   }
   syncTypeBar();
@@ -4753,7 +4772,7 @@ function studioTools() {
     id: "chapters",
     icon: "☰",
     label: "tool.chapters",
-    value: pagesLabel(editor.moments.length + (hasDayPageContent(editor) ? 1 : 0)),
+    value: pagesLabel(scopedMoments().length + (coverInScope() && hasDayPageContent(editor) ? 1 : 0)),
     body: () => chaptersOutlineHTML(),
   });
   return tools;
@@ -5100,6 +5119,7 @@ function startPage(book, date = dateKey(), remember = true) {
   } catch {}
   if ($("#choose-dialog")?.open) $("#choose-dialog").close();
   openStudio(date);
+  studioScope = book;
   pageBase = dayShape(editor);
   addMomentNow();
   changeTarget((m) => {
@@ -5118,6 +5138,57 @@ function startPage(book, date = dateKey(), remember = true) {
 // Leaving it blank puts the day back exactly as it was: no empty page, and
 // nothing saved or changed in the other pages.
 let freshPage = null; // { id, date, base, hadDraft, draft }
+// V10.76 (CAP-016, part 2 · P0) · The editor opened from a book shows that
+// book's pages only. A day holds pages of several books (each page has its
+// own bookId); the editor opens a whole day, so 「记录新的一页」 in a new
+// book still showed today's pages of the other books (strip 封 1 2 3, 「第 3
+// 页 · 共 3 页」), and they could be opened and changed from there. With a
+// scope, the page strip, the page count, 整理 / 页面目录, moving pages and
+// photos, and where the editor goes after a page is deleted only see this
+// book's pages; new pages are this book's. The other books' pages are not
+// shown and not touched (nothing is moved or rewritten). Opened from a day
+// (Home, Calendar) there is no scope: the whole day, as before.
+let studioScope = null;
+let studioReturnBook = null;
+const pageBookOf = (page) => (page && page.bookId) || editor?.bookId || "";
+function inStudioScope(page) {
+  return !studioScope || pageBookOf(page) === studioScope;
+}
+function scopedMoments() {
+  return (editor?.moments || []).filter(inStudioScope);
+}
+function coverInScope() {
+  return !studioScope || (editor?.bookId || "") === studioScope;
+}
+// Where the editor goes after a page is removed: { id } (null = the day's
+// cover), or null when nothing of the book is left on this day.
+function pageAfterRemoval() {
+  const list = scopedMoments();
+  if (list.length && !(coverInScope() && hasDayPageContent(editor))) return { id: list.at(-1).id };
+  if (coverInScope()) return { id: null };
+  return null;
+}
+// Nothing of this book is left here: back to where the editor was opened
+// from, the same way as ‹ (it saves the day as ‹ does).
+function leaveEmptyScope() {
+  const back = document.querySelector('[data-action="studio-back"]');
+  if (back) return back.click();
+  flushDraft();
+  leaveStudio();
+}
+// Move a page up / down among the pages shown (in a scope: past the other
+// books' pages, which keep their places).
+function moveShownPage(entry, momentId, dir) {
+  if (!studioScope) return moveMoment(entry, momentId, dir);
+  const shown = entry.moments.filter((m) => ((m.bookId || entry.bookId) === studioScope));
+  const at = shown.findIndex((m) => m.id === momentId);
+  const other = shown[at + dir];
+  if (at < 0 || !other) return false;
+  const i = entry.moments.indexOf(shown[at]);
+  const j = entry.moments.indexOf(other);
+  [entry.moments[i], entry.moments[j]] = [entry.moments[j], entry.moments[i]];
+  return true;
+}
 let pageBase = ""; // the day as it was before startPage added the new page
 function dayShape(day) {
   if (!day) return "";
@@ -5137,6 +5208,7 @@ function writeInBook(bookId) {
   // (Home's 随手写 keeps its own book: writing from a book here does not change it.)
   if (blankDay(state().drafts[date] || state().entries.find((entry) => entry.date === date))) {
     openStudio(date);
+    studioScope = bookId;
     changeEditor((entry) => {
       entry.bookId = bookId;
     });
@@ -6879,13 +6951,13 @@ const SV_ICONS = {
 };
 const svIcon = (name) => `<svg class="sv-icon" viewBox="0 0 24 24" aria-hidden="true">${SV_ICONS[name] || SV_ICONS.more}</svg>`;
 function studioTitleHTML() {
-  const moments = editor.moments || [];
+  const moments = scopedMoments();
   const day = isDayPage();
   const current = activePage();
   const name = day ? t("day.cover") : current.title || studioDateLabel();
   // V10.47 (counts): the same rule as the Reader, Calendar and books
   // (js/pages.mjs) — a day cover counts as page 1 while it is shown.
-  const cover = hasDayPageContent(editor) && editor.dayCoverHidden !== true ? 1 : 0;
+  const cover = coverInScope() && hasDayPageContent(editor) && editor.dayCoverHidden !== true ? 1 : 0;
   const total = moments.length + cover;
   const count = day ? t("studio.coverOf", { count: total }) : t("studio.pageOf", { n: moments.indexOf(current) + 1 + cover, count: total });
   return `<button class="sv-title" data-action="pages-manage" aria-label="${t("pages.title")}"><b data-studio-title>${esc(name)}</b><small>${esc(count)}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></small></button>`;
@@ -8507,8 +8579,15 @@ async function saveAndLeave() {
 }
 function leaveStudio() {
   studioPreview = false;
-  if (readReturn) returnToReading();
-  else navigate(studioReturn && !["studio", "settings"].includes(studioReturn) ? studioReturn : "home");
+  studioScope = null;
+  const book = studioReturnBook;
+  studioReturnBook = null;
+  if (readReturn) return returnToReading();
+  navigate(studioReturn && !["studio", "settings"].includes(studioReturn) ? studioReturn : "home");
+  if (page === "books" && book && state().books.some((item) => item.id === book)) {
+    selectedBook = book;
+    render();
+  }
 }
 // V10.22 · 检查照片和视频: a read-only check (nothing is written, converted,
 // deleted or sent). The report has no names or words, so it can be copied.
@@ -9069,6 +9148,9 @@ async function action(target) {
     const from = { page, book: page === "reader" ? readerBook : selectedBook, date: selectedDate, moment: momentId, key: page === "reader" ? readerKey() : "" };
     if (from.page === "reader") Reader.savePosition(readerBook, from.key);
     openStudio(target.dataset.date);
+    // From a book (Reader, the book's page): that book's pages only (CAP-016).
+    const editing = momentId ? findMoment(editor, momentId) : editor;
+    if ((from.page === "reader" || from.page === "books") && from.book && editing && pageBookOf(editing) === from.book) studioScope = from.book;
     selectMoment(momentId || null);
     if (from.page === "day" || from.page === "books" || from.page === "reader") readReturn = { ...from, date: from.page === "day" ? target.dataset.date : from.date };
   }
@@ -9752,7 +9834,7 @@ document.addEventListener("input", (event) => {
       `[data-chapter-label="${CSS.escape(moment.id)}"]`,
     );
     if (label)
-      label.textContent = PL.pageLabel(moment, { t, index: (editor.moments || []).indexOf(moment) }).label;
+      label.textContent = PL.pageLabel(moment, { t, index: scopedMoments().indexOf(moment) }).label;
     refreshStudioTitle();
   }
 });
@@ -11356,6 +11438,7 @@ function addMomentNow() {
           ? `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`
           : "",
     });
+    if (studioScope) created.bookId = studioScope;
     entry.moments.push(created);
   }, false);
   studioTool = null;
@@ -12117,7 +12200,7 @@ async function v31Action(target) {
       await savePhotoOrder();
       return true;
     case "page-move":
-      changeEditor((entry) => moveMoment(entry, target.dataset.moment, Number(target.dataset.dir) || 0));
+      changeEditor((entry) => moveShownPage(entry, target.dataset.moment, Number(target.dataset.dir) || 0));
       renderPagesManage();
       return true;
     case "page-remove":
@@ -12205,8 +12288,13 @@ async function v31Action(target) {
       )
         return true;
       changeEditor((entry) => removeMoment(entry, moment.id), false);
-      selectMoment(!hasDayPageContent(editor) && editor.moments.length ? editor.moments.at(-1).id : null, true);
+      const next = pageAfterRemoval();
       toast(t("moment.deleted"));
+      if (!next) {
+        leaveEmptyScope();
+        return true;
+      }
+      selectMoment(next.id, true);
       return true;
     }
     case "save-moment": {
