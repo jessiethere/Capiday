@@ -4,6 +4,30 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.73",
+    date: "2026-11-15",
+    zh: {
+      title: "封面：选什么就是什么，长名字也放得下",
+      items: [
+        "在「选择封面」里看到的照片，就是创建后封面上的照片；以前点「创建」后，示例照片会换成另一张（例如「毛孩子名牌」里的狗狗）。",
+        "封面上的示例照片会注明是示例；想用自己的照片，在「封面照片」里换。",
+        "手帐本名字很长时，每种封面都会自动换行、必要时把字缩小，整个名字都能看到，不会被裁掉、压到装饰，也不会只剩一个字掉到下一行。名字特别长时才会用「…」。",
+        "日系杂志封面：长的中文名字竖排成两三列；英文或中英混合的名字横排在照片下方。",
+        "新建手帐本的封面字体默认是黑体；已有手帐本的字体不变，也可以随时换别的字体。",
+      ],
+    },
+    en: {
+      title: "Covers: what you pick is what you get, and long names fit",
+      items: [
+        "The photo you see in Choose a cover is the one the journal keeps; after Create, the example photo used to change (for example the dog on Pet tag).",
+        "An example photo on a cover is marked as an example; to use your own, change it under Cover photo.",
+        "A long journal name wraps and, if needed, gets smaller on every cover, so the whole name shows — never cut off, over a decoration, or with one character alone on a line. Only a very long name ends with “…”.",
+        "Japanese magazine cover: a long Chinese name takes two or three columns; an English or mixed name runs across under the photo.",
+        "New journals start with the Sans (黑体) cover font; existing journals keep theirs, and you can change it any time.",
+      ],
+    },
+  },
+  {
     version: "10.72",
     date: "2026-11-15",
     zh: {
