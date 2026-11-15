@@ -25158,3 +25158,12 @@ html.kb-open .choose-sheet.sw .sw-now :is(img, .sw-glyph) {
 body:has(#choose-dialog[open] .choose-sheet.sw) .qe-bar {
   visibility: hidden;
 }
+
+/* V10.71 (CAP-015) · In a sheet or dialog the main button (保存, 创建, 开始写,
+   选择备份文件 …) was the app-wide 11 px .primary while 取消 under it is 16 px
+   600 — the main choice looked smaller than the way out. Inside dialogs it
+   now matches. Weaker than any rule a dialog already sets for its own button
+   (e.g. .export-choice .primary), so those keep their size. */
+dialog .primary {
+  font: 600 16px var(--ui-sans);
+}
