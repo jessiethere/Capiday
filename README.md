@@ -183,6 +183,16 @@ npm run test:browser:v65
 
 ## 更新日志
 
+### 2026-11-15 — 登记真机反馈（只登记，没有改 App）
+
+- 新 Bug：
+  - **CAP-010**：新建手帐本弹窗顶部离状态栏太近（P2）；
+  - **CAP-011**：「查看更多封面」关闭键盘后布局或滚动异常，要手动滚一下才恢复（P2）。
+- 新的功能改进：
+  - **CAP-E001**：手帐本字体增加宋体、黑体（P3）；
+  - **CAP-E002**：字体列表用每种字体本身显示，并实时预览（P2）。
+- 都暂定放进 Beta 2，状态是 Triaged，等你确认后再修。初步分析和建议顺序见 [BUG_BACKLOG.md](BUG_BACKLOG.md) 和 [BETA_RELEASE_PLAN.md](BETA_RELEASE_PLAN.md)。
+
 ### 2026-11-15 — Beta 测试与 Bug 管理
 
 - 新建 [BUG_BACKLOG.md](BUG_BACKLOG.md)：
