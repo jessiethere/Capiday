@@ -119,19 +119,23 @@ function magazineCoverHTML(book, ctx, template) {
   const line = esc((book.description || "").trim());
   const img = photo ? `<img class="mag-photo" src="${esc(photo)}" alt="">` : `<span class="mag-photo mag-photo-empty"></span>`;
   const date = `'${String(now.getFullYear()).slice(2)} ${String(now.getMonth() + 1).padStart(2, "0")} ${String(now.getDate()).padStart(2, "0")}`;
+  // V10.78 · CAP-E003: the title follows the chosen font when one was chosen
+  // (coverFontChosen); otherwise each magazine keeps its own title type.
+  const follow = book.coverFontChosen === true ? ` mag-font-follow" data-mag-font="${esc(book.coverFont || "hei")}` : "";
+  const root = (kind) => `<div class="book-cover cover-${kind}${follow}" style="--cover-color:${coverColor(book, tokens)}${book.coverFontChosen === true ? `;--mag-font:${esc(fontFamily(book.coverFont || "hei", ctx.catalog))}` : ""}">`;
   if (template === "magazine-mono")
-    return `<div class="book-cover cover-magazine-mono" style="--cover-color:${coverColor(book, tokens)}"><span class="mag-top"><span>CAPIDAY</span><span>NO.${String(now.getMonth() + 1).padStart(2, "0")}</span></span><b class="cover-title">${title}</b><span class="mag-frame">${img}</span><span class="mag-foot"><span>${esc(topic)}</span><span>${esc(issue)}</span></span></div>`;
+    return `${root("magazine-mono")}<span class="mag-top"><span>CAPIDAY</span><span>NO.${String(now.getMonth() + 1).padStart(2, "0")}</span></span><b class="cover-title">${title}</b><span class="mag-frame">${img}</span><span class="mag-foot"><span>${esc(topic)}</span><span>${esc(issue)}</span></span></div>`;
   if (template === "magazine-film")
-    return `<div class="book-cover cover-magazine-film" style="--cover-color:${coverColor(book, tokens)}"><span class="film-holes" aria-hidden="true"></span><span class="mag-frame">${img}<i class="film-date">${esc(date)}</i></span><span class="film-holes bottom" aria-hidden="true"></span><span class="mag-foot"><b class="cover-title">${title}</b><span>${esc(topic)} · CAPIDAY</span></span></div>`;
+    return `${root("magazine-film")}<span class="film-holes" aria-hidden="true"></span><span class="mag-frame">${img}<i class="film-date">${esc(date)}</i></span><span class="film-holes bottom" aria-hidden="true"></span><span class="mag-foot"><b class="cover-title">${title}</b><span>${esc(topic)} · CAPIDAY</span></span></div>`;
   if (template === "magazine-minimal")
-    return `<div class="book-cover cover-magazine-minimal" style="--cover-color:${coverColor(book, tokens)}"><span class="mag-brand">capiday</span><span class="mag-frame">${img}</span><b class="cover-title">${title}</b><span class="mag-foot">${line || esc(issue)}</span></div>`;
+    return `${root("magazine-minimal")}<span class="mag-brand">capiday</span><span class="mag-frame">${img}</span><b class="cover-title">${title}</b><span class="mag-foot">${line || esc(issue)}</span></div>`;
   if (template === "magazine-collage") {
     const [, second, third] = photos;
     const extra = (ref) => (media.resolve(ref) ? `<img class="mag-photo" src="${esc(media.resolve(ref))}" alt="">` : `<span class="mag-photo mag-photo-empty"></span>`);
-    return `<div class="book-cover cover-magazine-collage" style="--cover-color:${coverColor(book, tokens)}"><span class="collage-grid"><span class="c-main">${img}</span><span class="c-a">${extra(second)}</span><span class="c-b">${extra(third)}</span></span><span class="collage-band"><b class="cover-title">${title}</b><span>${esc(topic)} · ${esc(issue)}</span></span></div>`;
+    return `${root("magazine-collage")}<span class="collage-grid"><span class="c-main">${img}</span><span class="c-a">${extra(second)}</span><span class="c-b">${extra(third)}</span></span><span class="collage-band"><b class="cover-title">${title}</b><span>${esc(topic)} · ${esc(issue)}</span></span></div>`;
   }
   if (template === "magazine-west")
-    return `<div class="book-cover cover-magazine-west" style="--cover-color:${coverColor(book, tokens)}">${img}<span class="mag-shade" aria-hidden="true"></span><span class="mag-top"><span>${esc(issue)}</span><span>${esc(topic)}</span></span><span class="mag-masthead">CAPIDAY</span><span class="mag-lines"><b class="cover-title">${title}</b>${line ? `<i>${line}</i>` : ""}</span><span class="mag-barcode" aria-hidden="true"></span></div>`;
+    return `${root("magazine-west")}${img}<span class="mag-shade" aria-hidden="true"></span><span class="mag-top"><span>${esc(issue)}</span><span>${esc(topic)}</span></span><span class="mag-masthead">CAPIDAY</span><span class="mag-lines"><b class="cover-title">${title}</b>${line ? `<i>${line}</i>` : ""}</span><span class="mag-barcode" aria-hidden="true"></span></div>`;
   // V10.73 (CAP-017): the vertical title is for Chinese / Japanese titles; a
   // long one takes 2–3 columns, a Latin or mixed title becomes a band.
   const chars = [...String(book.title || "Capiday")].filter((c) => c.trim());
@@ -141,7 +145,7 @@ function magazineCoverHTML(book, ctx, template) {
   const jpTitle = upright
     ? `<b class="mag-vertical cover-title" style="--cols:${cols};--n:${Math.max(4, Math.ceil(chars.length / cols))}">${title}</b>`
     : `<b class="mag-wide cover-title">${title}</b>`;
-  return `<div class="book-cover cover-magazine-jp" style="--cover-color:${coverColor(book, tokens)}"><span class="mag-top"><span class="mag-brand">capiday</span><span>${esc(issue)}</span></span><span class="mag-frame">${img}</span>${jpTitle}<span class="mag-foot"><span>${esc(topic)}</span><i></i><span>${line || "LIFESTYLE JOURNAL"}</span></span></div>`;
+  return `${root("magazine-jp")}<span class="mag-top"><span class="mag-brand">capiday</span><span>${esc(issue)}</span></span><span class="mag-frame">${img}</span>${jpTitle}<span class="mag-foot"><span>${esc(topic)}</span><i></i><span>${line || "LIFESTYLE JOURNAL"}</span></span></div>`;
 }
 // V10.54 · Ten themed covers. Each one is its own composition (a herbarium
 // sheet, a café receipt, a recipe card, a postcard, a pet tag, polaroids, a
@@ -337,7 +341,7 @@ function coverFontPickerHTML(book, ctx) {
     .join("");
   // The six magazine covers set their own title type (they always did); say so
   // rather than let a choice look like it does nothing there.
-  const fixed = MAGAZINE_COVERS.includes(book.coverTemplate || "");
+  const fixed = MAGAZINE_COVERS.includes(book.coverTemplate || "") && book.coverFontChosen !== true;
   return `<div class="field cover-font-field"><span class="field-label">${t("books.font")}</span><input type="hidden" name="coverFont" value="${esc(now)}"><p class="save-help cover-font-note" data-cover-font-note${fixed ? "" : " hidden"}>${t("books.fontFixed")}</p><div class="cover-font-list" role="radiogroup" aria-label="${esc(t("books.font"))}">${items}</div></div>`;
 }
 export function bookSectionHints(book, ctx) {

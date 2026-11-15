@@ -25317,3 +25317,9 @@ dialog .primary {
 .choose-sheet [contenteditable="true"] {
   scroll-margin-bottom: 14px;
 }
+
+/* V10.78 · CAP-E003: a magazine cover's title in the chosen font (only when
+   one was chosen — older books keep each magazine's own title type). */
+.book-cover.mag-font-follow .cover-title {
+  font-family: var(--mag-font);
+}

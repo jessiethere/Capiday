@@ -187,6 +187,10 @@ final class CoreTests: XCTestCase {
         XCTAssertEqual(kept.coverSample?.template, "pet-tag")
         XCTAssertEqual(kept.coverSample?.photos, ["photo:beach-dog"])
         XCTAssertEqual(try JSONDecoder().decode(JournalBook.self, from: JSONEncoder().encode(kept)).coverSample, kept.coverSample)
+        // V10.78: a chosen cover font (optional; older books have none).
+        XCTAssertNil(plain.coverFontChosen)
+        let chosen = try JSONDecoder().decode(JournalBook.self, from: Data(#"{"id":"b","title":"T","category":"c","color":"blush","cover":"🌷","coverFont":"song","coverFontChosen":true}"#.utf8))
+        XCTAssertEqual(chosen.coverFontChosen, true)
         // V10.58: when a photo was taken, where that time came from, and its place in the picked order.
         let timed = try JSONDecoder().decode(StickerLayer.self, from: Data(#"{"id":"p2","kind":"photo","text":"b.jpg","x":50,"y":40,"scale":1,"rotation":0,"mediaRef":"media:p2","capturedAt":"2026-11-09T08:10:00.000Z","captureTimeSource":"exif-original","photoOrder":2}"#.utf8))
         XCTAssertEqual(timed.capturedAt, "2026-11-09T08:10:00.000Z")

@@ -42,10 +42,13 @@ const openLook = (page) => page.evaluate(() => { const d = document.querySelecto
     // Loading state: never stuck.
     await page.waitForFunction(() => !document.querySelector("#dialog-form .cover-font[data-loading]"), null, { timeout: 15000 });
     check("打包字体加载完后不再显示「加载中」", true);
-    // A magazine cover sets its own title type: the list says so (it always did).
+    // V10.78 · CAP-E003 (Founder): a new book's magazine cover follows the chosen font too,
+    // so the old 「用固定的标题字体」 note is not shown for it (older books never picked keep it — tests/v179).
     const tpl0 = await page.evaluate(() => document.querySelector('#dialog-form [name="coverTemplate"]').value);
     const note0 = await page.evaluate(() => !document.querySelector("[data-cover-font-note]").hidden);
-    check("杂志封面：提示「用固定的标题字体」", /^magazine-/.test(tpl0) ? note0 : !note0, `${tpl0} note=${note0}`);
+    check("新手帐的杂志封面跟随字体：不再提示「用固定的标题字体」", !note0, `${tpl0} note=${note0}`);
+    const magFont = await page.evaluate(() => getComputedStyle(document.querySelector("#book-cover-preview .cover-title")).fontFamily);
+    check("新手帐的杂志封面标题就是所选的黑体", /PingFang|Hiragino|YaHei|Noto Sans SC/.test(magFont), magFont.slice(0, 40));
     // A style that uses the font (极简亚麻): the note goes away.
     await page.evaluate(() => document.querySelector('#dialog-form .cover-option[data-template="minimal-linen"]')?.click() || document.querySelector('#dialog-form .cover-option:not([data-template^="magazine-"])')?.click());
     await page.waitForTimeout(200);

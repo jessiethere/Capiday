@@ -81,7 +81,7 @@
 |---|---|---|---|---|---|
 | [CAP-E001](#cap-e001) | 封面等字体列表增加基础中文宋体、黑体 | P3 | Fixed — Pending Device Verification | 2026-11-15 | 下一个构建（未上传，V10.71） |
 | [CAP-E002](#cap-e002) | 字体列表用每种字体本身显示，并实时预览 | P2 | Fixed — Pending Device Verification | 2026-11-15 | 下一个构建（未上传，V10.71） |
-| [CAP-E003](#cap-e003) | 杂志类封面的标题也跟随所选字体 | P3 | Triaged（需要 Founder 决定） | 2026-11-15 | TBD |
+| [CAP-E003](#cap-e003) | 杂志类封面的标题也跟随所选字体 | P3 | Fixed — Pending Device Verification | 2026-11-15 | 下一个构建（V10.78） |
 | [CAP-E004](#cap-e004) | 阅读器单页导出：PNG / 分享 / PDF（保留整本书 PDF） | P2 | Planned（Alpha 稳定性修复之后实施） | 2026-11-15 | 下一个构建之后（V10.76 起） |
 
 统计（2026-11-15 第八次更新，Books Alpha Stability Review 之后）：
@@ -1183,8 +1183,8 @@
 - **Reported Date**：2026-11-15（Sprint 01 实施 CAP-E002 时发现）
 - **Source**：开发中发现（不是 Founder 报告）
 - **Severity**：P3
-- **Status**：Triaged（需要 Founder 决定）
-- **Target Build**：TBD
+- **Status**：Fixed — Pending Device Verification（V10.78；Founder 2026-11-15 决定：跟随所选字体）
+- **Target Build**：下一个构建（V10.78）
 - **现状**：
   - 杂志封面由 `magazineCoverHTML` 生成，不读 `coverFont`；
   - 「主题」封面和经典封面会跟随。
@@ -1193,8 +1193,8 @@
 - **方案**（待决定）：
   1. 保持现状（只提示）；
   2. 增加一个可选字段（例如 `coverFontChosen`），只有用户在新列表里主动选过字体时，杂志封面才跟随。需要同时更新 `Packages/LittleDaysCore` 的 `Models.swift` 和 Core 测试；老数据没有这个字段，样子不变。
-- **Fix Summary**：TBD
-- **Verification**：TBD
+- **Fix Summary（V10.78，方案 2）**：可选字段 `book.coverFontChosen`。新建的手帐默认带上它（新书默认黑体，杂志封面标题也用黑体）；旧手帐在编辑时点选过任何字体并保存后带上它。带上后 6 种杂志封面的标题用所选字体（`mag-font-follow` + `--mag-font`）；没带的旧手帐保持每种杂志自己的标题字体，书架上不会自己变样；「用固定的标题字体」的提示只在这种情况下显示。Swift `Models.swift` 加可选字段 + Core 测试。
+- **Verification**：`tests/v179-browser.cjs` 9 项（6 种模板选过字体都跟随；没选过的 6 种都不变；编辑旧书时提示、选字体后预览跟随、取消不改、保存后记下、重开仍在、其他书不变）；`tests/v168` 按新规则更新 16 项通过。真机 ⏳。
 
 <a id="cap-e004"></a>
 ### CAP-E004 · 阅读器单页导出：PNG / 分享 / PDF（保留整本书 PDF）

@@ -68,6 +68,10 @@ public struct JournalBook: Codable, Identifiable, Equatable {
     /// V10.74: the example photos kept with the book, so its cover stays as
     /// chosen (optional; older books work them out from their id as before).
     public var coverSample: CoverSample?
+    /// V10.78 (CAP-E003): a font was chosen for this book (new books, or an
+    /// older book once a font is picked), so magazine covers use it for the
+    /// title too. Optional; older books without it keep each magazine's type.
+    public var coverFontChosen: Bool?
 }
 
 /// V10.74: the example photos a cover template shows when the book has no

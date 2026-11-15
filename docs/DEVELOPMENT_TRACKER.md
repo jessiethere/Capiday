@@ -125,7 +125,7 @@ P0 的 9 项：CAP-016（Testing）、DS-01（In Progress）、DS-02、DS-05、D
 | ID | 标题 | 优先级 | 状态 | 目标版本 | 相关模块 | 验收标准 | 测试结果 | 完成日期 |
 |---|---|---|---|---|---|---|---|---|
 | CAP-E004 | 阅读器单页导出：PNG / 分享 / PDF（保留整本书 PDF） | P2 | Planned | Alpha UX Polish（V10.76 起） | `export.mjs` renderJournalCanvas；`book-share.mjs` buildPdf；`app.js` openReaderMore；外壳 WKDownload → UIActivityViewController | BUG_BACKLOG CAP-E004「测试计划」 | — | — |
-| CAP-E003 | 杂志封面标题是否跟随所选字体 | P3 | Blocked | TBD | `personal-ui.mjs` magazineCoverHTML | Founder 决定方案 1 或 2 | **等 Founder 决定** | — |
+| CAP-E003 | 杂志封面标题跟随所选字体（Founder 2026-11-15 决定） | P3 | Testing | V10.78 | `personal-ui.mjs` magazineCoverHTML；`app.js` openBookDialog / cover-font；`Models.swift` coverFontChosen | 选过字体的杂志封面跟随；旧书不自己变 | v179 9 项、v168 16 项 ✅；真机 ⏳ | — |
 | TD-02 | 测试环境：容器 Chromium 竖排中文需要 Noto Sans CJK | P3 | Planned | Alpha UX Polish | 云端环境 setup | 新会话里 v172 自动做尺寸检查 | 本会话手动装了 `fonts-noto-cjk`；环境的 setup 脚本还没加 | — |
 | TD-03 | `text-wrap: balance` 在 iOS 17.5 以下不生效（单字孤行） | P3 | Planned | Alpha UX Polish | `styles.css` | iOS 17.0～17.4 上没有单字孤行，或确认接受 | 已知限制，未处理 | — |
 

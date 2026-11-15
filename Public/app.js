@@ -11075,6 +11075,10 @@ function openBookDialog(book = null) {
         // V10.73 (CAP-019, Founder's decision): new books start with 黑体. Books
         // that already exist keep the font they have (or the old default).
         coverFont: "hei",
+        // V10.78 · CAP-E003 (Founder): a magazine cover's title uses the
+        // chosen font too — new books from now on, and older books once a
+        // font is picked for them. Older books never picked keep their look.
+        coverFontChosen: true,
         coverDecoration: "tulip",
         coverImage: "",
         fields: [],
@@ -11232,7 +11236,7 @@ function readBookForm() {
 }
 function refreshBookPreview({ covers = false } = {}) {
   const fontNote = $("[data-cover-font-note]");
-  if (fontNote) fontNote.hidden = !MAGAZINE_COVERS.includes(bookDraft?.coverTemplate || "");
+  if (fontNote) fontNote.hidden = !MAGAZINE_COVERS.includes(bookDraft?.coverTemplate || "") || bookDraft?.coverFontChosen === true;
   if (!$("#book-cover-preview")) return;
   bookDraft = readBookForm();
   document.querySelectorAll("[data-cover-sample-note]").forEach((el) => {
@@ -12616,6 +12620,7 @@ async function v3Action(target) {
       b.setAttribute("aria-checked", String(on));
     });
     bookDraft = readBookForm();
+    bookDraft.coverFontChosen = true;
     refreshBookPreview();
     return true;
   }
