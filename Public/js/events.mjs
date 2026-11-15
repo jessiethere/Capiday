@@ -42,7 +42,12 @@ export function logEvent(name, data = {}, storage = globalThis.localStorage, now
 export function summarize(events) {
   const done = events.filter((e) => e.e === "page_done");
   const times = done.map((e) => e.ms).filter((n) => typeof n === "number").sort((a, b) => a - b);
-  const days = new Set(events.map((e) => new Date(e.t).toISOString().slice(0, 10)));
+  // Days on this phone's calendar (V10.77: not the UTC date of toISOString).
+  const day = (ms) => {
+    const d = new Date(ms);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
+  const days = new Set(events.map((e) => day(e.t)));
   return {
     events: events.length,
     activeDays: days.size,

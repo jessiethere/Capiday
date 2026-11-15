@@ -132,6 +132,7 @@ import {
   MIRROR_OFF_KEY,
   dateKey,
   addDays,
+  localDayOf,
   weekStart,
   weeklyCount,
   toggleCheck,
@@ -642,7 +643,7 @@ function openStudio(date = dateKey()) {
         title: "",
         body: "",
         mood: "",
-        bookId: "daily",
+        bookId: defaultBookId(),
         photo: "",
         template: "cute",
         font: "serif",
@@ -877,12 +878,16 @@ function todayStoryHTML() {
 // ---------- Home · My Library (V10.2) ----------
 // The user's own journals on one shelf: the one most recently written in is
 // larger (with the only "write a page" link); the others stand beside it.
+// The last day (local) something in this journal was written or changed.
 function bookLastWritten(bookId) {
   let last = "";
   for (const e of state().entries) {
     if (e.isDemo) continue;
     const stamps = [...(e.bookId === bookId && hasDayPageContent(e) ? [e.updatedAt || e.date] : []), ...(e.moments || []).filter((m) => (m.bookId || e.bookId) === bookId).map((m) => m.updatedAt || e.date)];
-    for (const stamp of stamps) if (String(stamp) > last) last = String(stamp);
+    for (const stamp of stamps) {
+      const day = localDayOf(stamp);
+      if (day > last) last = day;
+    }
   }
   return last;
 }
@@ -892,12 +897,14 @@ function homeLibraryHTML() {
   if (!mine.length)
     return `<section class="home-section home-books hs-collect">${head(0)}<div class="lib-empty"><div class="lib-shelf empty" aria-hidden="true"></div><b>${t("lib.emptyTitle")}</b><button class="ts-start home-book-new" data-action="new-book">${t("lib.emptyGo")} →</button></div></section>`;
   const stamped = mine.map((bk, i) => ({ bk, i, last: bookLastWritten(bk.id) }));
-  // The one written in most recently leads; the others keep the shelf's order.
-  const first = [...stamped].sort((x, y) => (x.last === y.last ? x.i - y.i : x.last < y.last ? 1 : -1))[0];
-  const rest = stamped.filter((x) => x !== first);
+  // V10.77 · CAP-021: the shelf's first journal leads, the others follow in
+  // the shelf's order (state.books — the order 书架 shows and drag-reorders).
+  // Writing a page or changing a cover never moves a journal here.
+  const first = stamped[0];
+  const rest = stamped.slice(1);
   const f = first.bk;
   const count = bookCounts(state(), f.id).pages, countDays = bookCounts(state(), f.id).days;
-  const day = first.last.slice(0, 10);
+  const day = first.last;
   const updated = !day ? "" : day === dateKey() ? t("lib.today") : day === addDays(dateKey(), -1) ? t("lib.yesterday") : t("lib.on", { date: new Date(`${day}T12:00:00`).toLocaleDateString(locale(), { month: "short", day: "numeric" }) });
   const small = rest.slice(0, 2);
   // V10.56: one compact row — the journal in use (small cover, name, pages,
@@ -3321,6 +3328,11 @@ function spineTitle(title) {
 }
 function shelfHTML(books = state().books, canAdd = true) {
   const pulled = books.find((book) => book.id === pulledBook);
+  // V10.77: ‹ 往前 / 往后 › move past the neighbour you SEE (with a tag filter
+  // on, the shelf shows only some books; stepping in the full list could
+  // swap with a hidden book and look like nothing happened).
+  const at = pulled ? books.indexOf(pulled) : -1;
+  const stepTo = (dir) => books[at + dir]?.id || "";
   const spine = (book, index) => {
     const count = bookCounts(state(), book.id).pages, countDays = bookCounts(state(), book.id).days;
     // Magazine covers stand on the shelf as magazine spines: the cover photo
@@ -3342,7 +3354,7 @@ function shelfHTML(books = state().books, canAdd = true) {
         // V10.51: a quiet ··· for managing the book (only when tapped), and its tags (2 + N).
         const tags = pulled.tags || [];
         const tagLine = tags.length ? `<p class="pulled-tags">${tags.slice(0, 2).map((tag) => `<span>#${esc(tag)}</span>`).join("")}${tags.length > 2 ? `<span class="more">+${tags.length - 2}</span>` : ""}</p>` : "";
-        return `<section class="pulled-book" aria-live="polite"><button class="pulled-more" data-action="shelf-menu" data-book="${esc(pulled.id)}" aria-label="${esc(t("shelf.manage"))} · ${esc(pulled.title)}" aria-haspopup="dialog"><span aria-hidden="true">···</span></button>${coverHTML(pulled, ctx())}<div class="pulled-copy"><small>${esc(presetLabel("category", pulled.category || ""))}</small><h2>${esc(pulled.title)}</h2>${tagLine}${pulled.description ? `<p>${esc(pulled.description)}</p>` : ""}<span class="badge">${shown ? `🖼 ${t("who.coverShown")}` : `🔒 ${t("private")}`} · ${daysPagesLabel(countDays, count)}</span><div class="pulled-actions"><button class="primary" data-action="book" data-book="${esc(pulled.id)}">${t("shelf.open")} ›</button><button class="secondary" data-action="shelf-write" data-book="${esc(pulled.id)}">✎ ${t("shelf.write")}</button></div><div class="shelf-move" role="group" aria-label="${t("shelf.moveLabel")}"><button class="text-button" data-action="book-step" data-book="${esc(pulled.id)}" data-dir="-1" ${state().books[0]?.id === pulled.id ? "disabled" : ""}>‹ ${t("shelf.moveEarlier")}</button><button class="text-button" data-action="put-back">${t("shelf.putBack")}</button><button class="text-button" data-action="book-step" data-book="${esc(pulled.id)}" data-dir="1" ${state().books.at(-1)?.id === pulled.id ? "disabled" : ""}>${t("shelf.moveLater")} ›</button></div></div></section>`;
+        return `<section class="pulled-book" aria-live="polite"><button class="pulled-more" data-action="shelf-menu" data-book="${esc(pulled.id)}" aria-label="${esc(t("shelf.manage"))} · ${esc(pulled.title)}" aria-haspopup="dialog"><span aria-hidden="true">···</span></button>${coverHTML(pulled, ctx())}<div class="pulled-copy"><small>${esc(presetLabel("category", pulled.category || ""))}</small><h2>${esc(pulled.title)}</h2>${tagLine}${pulled.description ? `<p>${esc(pulled.description)}</p>` : ""}<span class="badge">${shown ? `🖼 ${t("who.coverShown")}` : `🔒 ${t("private")}`} · ${daysPagesLabel(countDays, count)}</span><div class="pulled-actions"><button class="primary" data-action="book" data-book="${esc(pulled.id)}">${t("shelf.open")} ›</button><button class="secondary" data-action="shelf-write" data-book="${esc(pulled.id)}">✎ ${t("shelf.write")}</button></div><div class="shelf-move" role="group" aria-label="${t("shelf.moveLabel")}"><button class="text-button" data-action="book-step" data-book="${esc(pulled.id)}" data-dir="-1" data-to="${esc(stepTo(-1))}" ${stepTo(-1) ? "" : "disabled"}>‹ ${t("shelf.moveEarlier")}</button><button class="text-button" data-action="put-back">${t("shelf.putBack")}</button><button class="text-button" data-action="book-step" data-book="${esc(pulled.id)}" data-dir="1" data-to="${esc(stepTo(1))}" ${stepTo(1) ? "" : "disabled"}>${t("shelf.moveLater")} ›</button></div></div></section>`;
       })()
     : `<p class="shelf-hint">${t("shelf.hint")}</p>`;
   return `${stage}<div class="bookshelf">${rows.map((row) => `<div class="shelf-row"><div class="shelf-books">${row.join("")}</div><div class="shelf-plank"></div></div>`).join("")}</div>`;
@@ -5037,6 +5049,16 @@ function sceneLibraryHTML() {
 // 记一页: one quick way to start a page — pick the journal, with or without a
 // photo (today's photo, or one from the album / library), then write.
 const QUICK_BOOK_KEY = "little-days.quick-book";
+// V10.77 · The journal a new day goes into when nothing chose one: 我的手帐
+// ("daily") while it is on the shelf; if it was deleted, the journal last
+// written in from Home, else the shelf's first. Only for NEW days — saved
+// days keep the journal they have. (Before, a new day always said "daily",
+// so after deleting 我的手帐 its pages belonged to no journal on the shelf.)
+function defaultBookId() {
+  const books = state().books || [];
+  if (books.some((b) => b.id === "daily")) return "daily";
+  return lastQuickBook() || books.find((b) => !isOurBook(b))?.id || books[0]?.id || "daily";
+}
 function lastQuickBook() {
   try {
     const id = localStorage.getItem(QUICK_BOOK_KEY);
@@ -7867,30 +7889,44 @@ document.addEventListener(
 // V10.51 · ··· on the shelf card: the same editor as the book page (no
 // second editing system). A book is deleted only when it is empty, so no
 // page is ever left without a book.
+// V10.77: the one rule for "can this book be deleted" (the ··· sheet and the
+// delete itself use it, so the sheet never offers 删除 and then refuses): any
+// saved or draft day still pointing at the book — also a day whose own page
+// is empty while its pages are in other books. Nothing is moved to make a
+// book deletable.
+function bookLinkedDays(bookId) {
+  const linked = (d) => d.bookId === bookId || (d.moments || []).some((m) => m.bookId === bookId);
+  return new Set([...state().entries.filter(linked).map((e) => e.date), ...Object.values(state().drafts || {}).filter(linked).map((d) => d.date)]).size;
+}
 function openShelfMenu(bookId) {
   const book = state().books.find((b) => b.id === bookId);
   if (!book) return;
   const pages = bookCounts(state(), bookId).pages;
+  const linked = bookLinkedDays(bookId);
   const dialog = $("#choose-dialog");
   const del = pages
     ? `<div class="shelf-menu-danger"><p>${esc(t("shelf.deleteHasPages", { count: pages }))}</p></div>`
-    : `<button class="contribute-option danger-option" data-action="shelf-delete" data-book="${esc(bookId)}"><b>${t("shelf.deleteBook")}</b><small>${t("shelf.deleteEmptyHint")}</small></button>`;
+    : linked
+      ? `<div class="shelf-menu-danger"><p>${esc(t("shelf.deleteLinked", { count: linked }))}</p></div>`
+      : `<button class="contribute-option danger-option" data-action="shelf-delete" data-book="${esc(bookId)}"><b>${t("shelf.deleteBook")}</b><small>${t("shelf.deleteEmptyHint")}</small></button>`;
   dialog.innerHTML = `<div class="choose-sheet page-menu-sheet shelf-menu"><div class="choose-grabber" aria-hidden="true"></div><h2>${esc(book.title)}</h2><button class="contribute-option" data-action="edit-book" data-book="${esc(bookId)}"><b>✎ ${t("shelf.editBook")}</b><small>${t("shelf.editBookHint")}</small></button>${pages ? `<button class="contribute-option" data-action="pm-open" data-book="${esc(bookId)}"><b>☰ ${t("pm.manageShelf")}</b><small>${t("pm.manageShelfHint")}</small></button>` : ""}<p class="shelf-menu-note">${t("shelf.moveHint")}</p>${del}<button class="choose-cancel" data-action="choose-close">${t("cancel")}</button></div>`;
   if (!dialog.open) dialog.showModal();
 }
 async function deleteEmptyBook(bookId) {
   const book = state().books.find((b) => b.id === bookId);
-  if (!book || bookCounts(state(), bookId).pages) return;
+  if (!book || bookCounts(state(), bookId).pages || bookLinkedDays(bookId)) return;
   if ($("#choose-dialog").open) $("#choose-dialog").close();
   if (!(await askConfirm(t("shelf.deleteAsk", { name: book.title }), { ok: t("delete") }))) return;
   // Only an empty book: nothing in the journal points at it any more.
-  if (state().entries.some((e) => e.bookId === bookId || (e.moments || []).some((m) => m.bookId === bookId)) || Object.values(state().drafts || {}).some((d) => d.bookId === bookId || (d.moments || []).some((m) => m.bookId === bookId))) return toast(t("shelf.deleteHasPages", { count: 1 }));
+  if (bookLinkedDays(bookId)) return toast(t("shelf.deleteLinked", { count: bookLinkedDays(bookId) }));
   store.update((s) => {
     s.books = s.books.filter((b) => b.id !== bookId);
   });
   if (pulledBook === bookId) pulledBook = null;
   logEvent("book_deleted", { pages: 0 });
   render();
+  // V10.77: say 「已删除」 only once the change is stored.
+  if (!(await store.stored())) return toast(t("error.generic"));
   toast(t("shelf.deleted", { name: book.title }));
 }
 // Tag chips: return / a comma / leaving the field turns the words into chips.
@@ -9196,7 +9232,8 @@ async function action(target) {
     toast(t("samples.removed", { count: removed }));
   }
   if (actionName === "book-step") {
-    store.update((next) => stepBook(next, target.dataset.book, Number(target.dataset.dir) || 0));
+    const dir = Number(target.dataset.dir) || 0;
+    store.update((next) => (target.dataset.to ? moveBookTo(next, target.dataset.book, target.dataset.to, dir > 0) : stepBook(next, target.dataset.book, dir)));
     logEvent("book_reorder", { kind: "step" });
     render();
   }
@@ -11121,9 +11158,15 @@ async function saveBookForm() {
     const [stored, missing] = await Promise.all([store.stored(), refs.length ? media.missing(refs).catch(() => refs) : []]);
     if (!stored || missing.length) throw Object.assign(new Error("save"), { code: missing.length ? "media" : "store" });
     if (isNew) logEvent("book_create", { stage: "saved" });
-    if (!fromShelf) selectedBook = book.id;
-    page = "books";
+    // V10.77: edited from the reader's cover → stay in the reader (its cover
+    // shows the change); from the shelf's ··· sheet → that sheet closes too
+    // (it still showed the old name).
+    if (page !== "reader") {
+      if (!fromShelf) selectedBook = book.id;
+      page = "books";
+    }
     $("#form-dialog").close();
+    if ($("#choose-dialog").open && $("#choose-dialog").querySelector(".shelf-menu")) $("#choose-dialog").close();
     render();
     toast(t("entry.saved"));
   } catch (error) {

@@ -48,6 +48,27 @@
 
 ## 更新日志
 
+### 2026-11-15 — Nightly Sprint · Books Alpha Stability Review（网页 V10.77，构建 0.2.0 (5)）
+
+- **需求**（Founder，四条消息合并）：书架与手帐创建系统完整审查和修复（P0 → P1 → P2）；首页「我的手帐」按书架顺序（P1）；日期与时区一致性（P1）；Nightly Sprint：自主连续开发、统一 Alpha Backlog、测试、构建并上传 TestFlight Internal Testing（Founder 本次明确授权上传）。
+- **Pending Inventory**：Founder 列的 14 条线索逐条对到已有条目（见 DEVELOPMENT_TRACKER 变更记录），开始时 Testing 21 项、未修的已知 Bug 0 个（CAP-001 等真机数据）；本轮新增并修复 8 个：CAP-021、022（Founder）、CAP-023～027（代码审查）、CAP-028（回归发现）。按要求沿用 `docs/DEVELOPMENT_TRACKER.md` 作为 Alpha Backlog，没有另建 `ALPHA_BACKLOG.md`（在表里写明了状态名对应）。
+- **书架模块关键文件**：`Public/app.js`（shelfHTML、openBookDialog / saveBookForm、openShelfMenu / deleteEmptyBook、writeInBook / startPage / openStudio / studioScope、homeLibraryHTML）、`js/day.mjs`（bookDays）、`js/pages.mjs`（daysOf / visiblePages / bookCounts，一套计数规则）、`js/model.mjs`（moveBookTo / stepBook、dateKey / localDayOf）、`js/personal-ui.mjs`（coverPhotos 等封面配置）、`js/cover-fit.mjs`（标题 / 书脊排版）。
+- **数据结构（代码确认）**：`state.books[]`（数组顺序 = 书架顺序）；`state.entries[]` 一天一条（`date` 为本地 `YYYY-MM-DD`，`bookId` 是这一天自己那页的书）；`moments[]` 是页，`page.bookId || day.bookId` 决定属于哪本；`state.drafts[date]` 是编辑中的副本；`updatedAt` 为 UTC ISO 时间。Book → Page 的关系只有 `bookId`，没有反向列表。
+- **创建 → 添加页面的数据流**：新建手帐（`pendingId` 稳定的 UUID、`bookSaving` 防重复、`store.stored()` 和 `media.missing` 确认后才提示）→ 打开书本页 →「记录新的一页」→ `writeInBook` → `startPage(book)`（在今天加一页，只设这一页的 `bookId`）→ `openStudio` + `studioScope = book`（只显示这本的页）→ 自动保存到草稿 → 返回 / 完成时 `saveEntry` 写入 `entries` → 回到这本书（`studioReturnBook`）。
+- **已确认问题与根因、修复**（详见 BUG_BACKLOG）：
+  - CAP-021 首页按最近写过排序 → 改按 `state.books`；
+  - CAP-022 首页「更新」日期取了 UTC 的前 10 个字符 → `localDayOf`；记录日期一直是本地日期，**历史数据没有偏移**，没有改任何数据；
+  - CAP-023 新的一天写死 `bookId: "daily"` → `defaultBookId()`（只用于新建）；
+  - CAP-024 书本页列表只读已保存的天 → 和页数同一规则；
+  - CAP-025 删除判断两套 → `bookLinkedDays` 一套，不移动数据；
+  - CAP-026 编辑后弹层 / 阅读器 → `saveBookForm` 处理；
+  - CAP-027 标签筛选下往前放 → 按看得见的邻居移动；
+  - CAP-028 弹层输入框贴键盘 → `scroll-margin-bottom`；
+  - 另：删除手帐的「已删除」提示改为写入确认后再显示；本机测试日志的活跃天数改用本地日期。
+- **审查后确认正确、没有改的**：重复点「创建」只建一本；取消编辑不改书；编辑不重新挑示例照片；备份恢复保留 bookId、封面配置、页的归属；书架点击和拖动按 id 不按位置；同一天多本书的页数分别正确。
+- **测试**：新 `tests/v174-browser.cjs` 17 项、`tests/v174-dates.test.mjs` 8 项、`tests/v175-browser.cjs` 21 项；`tests/v102` 按新的首页规则更新；v164 34/34；单元测试 323/323；外壳同步测试 OK。全量回归 run-all14 和 TestFlight 结果见下一条。
+- **没有做**：没有迁移或修改任何已有数据；已有 `bookId: "daily"` 但「我的手帐」已删除的旧页不自动处理（概率很低，见 CAP-023）；单页导出（CAP-E004）、照片墙、iCloud 备份按规划不在本轮。
+
 ### 2026-11-15 — 规划：Memory Wall 照片墙 v1.0、自动 iCloud 备份；Development HQ 总表补齐（只规划和写文档，没有改照片墙、备份逻辑或数据结构）
 
 - **需求**（Founder，同一条消息里的三份）：

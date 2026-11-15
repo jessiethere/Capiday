@@ -25308,3 +25308,12 @@ dialog .primary {
   overflow-wrap: anywhere;
   white-space: normal;
 }
+
+/* V10.77 · A field in a bottom sheet is scrolled into view with a little air
+   below it, so it never sits flush on the keyboard (seen with a 375×667
+   phone and the Captain's first-name sheet). Only the scroll position. */
+.choose-sheet input,
+.choose-sheet textarea,
+.choose-sheet [contenteditable="true"] {
+  scroll-margin-bottom: 14px;
+}

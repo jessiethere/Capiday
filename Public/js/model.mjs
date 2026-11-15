@@ -3,6 +3,17 @@ import { storeMarks } from "./rich-text.mjs";
 export function dateKey(value = new Date()) {
   return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
 }
+// V10.77 · CAP-022: the day (on this phone's calendar) of a saved time.
+// `updatedAt` is an ISO time in UTC (toISOString); its first 10 characters
+// are the UTC date, a day ahead in the evening in America (23:37 on 14 Nov
+// in New York is 04:37 on 15 Nov in UTC). A record's own date ("YYYY-MM-DD",
+// the day the person chose) is kept exactly as it is.
+export function localDayOf(stamp) {
+  const text = String(stamp || "");
+  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+  const time = new Date(text);
+  return Number.isNaN(time.getTime()) ? text.slice(0, 10) : dateKey(time);
+}
 export function addDays(key, amount) {
   const date = new Date(`${key}T12:00:00`);
   date.setDate(date.getDate() + amount);

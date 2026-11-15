@@ -20,6 +20,7 @@
 | **Blocked** | 卡住了：写明卡在哪里、等谁 |
 
 - 不删除未完成的任务；不再做的，写明原因，状态保持 Blocked（等 Founder 确认关闭）。
+- **本表就是 Alpha Backlog**（2026-11-15 Nightly Sprint 要求的 `docs/ALPHA_BACKLOG.md` 用本表，不另建重复文件）。Sprint 里用的状态名对应：Pending = Inbox / Planned / Ready · In Progress = In Progress · Fixed / Awaiting Verification = **Testing** · Verified = **Done** · Blocked = Blocked · Deferred = Planned（排在以后的版本）。
 - 从 BUG_BACKLOG 映射：`Fixed — Pending Device Verification` → **Testing**；`Verified` → **Done**；`Triaged（需要 Founder 决定）` → **Blocked**。
 
 ### 1.2 优先级
@@ -50,16 +51,16 @@ P0 数据丢失 / 无法使用 · P1 核心流程错误 · P2 明显影响体验
 
 ## 2. 总览
 
-统计（2026-11-15，V10.76 之后；随每次更新改写）：
+统计（2026-11-15，V10.77 · Nightly Sprint 之后；随每次更新改写）：
 
 | | 数量 |
 |---|---|
-| 任务总数 | **55**（Bug 20 · 功能改进 4 · DS 14 · MW 5 · TD 5 · REL 2 · FT 5） |
-| 未完成（不是 Done） | **55**（还没有任何一项经过 Founder 真机确认） |
-| 按优先级 | P0 9 · P1 9 · P2 21 · P3 14 · 未定级 2（TD-04、TD-05 建议关闭） |
-| 按状态 | Testing 21 · Planned 17 · Blocked 14 · In Progress 1（DS-01）· Ready 1（TD-01）· Inbox 1（FT-05）· Done 0 |
-| Testing（代码已改、等真机） | CAP-002～020（除 CAP-001）、CAP-E001、CAP-E002 |
-| Blocked（等 Founder） | 决定：CAP-E003、DS-13、DS-14、MW-04、FT-03、FT-04、TD-04、TD-05；批准修复：DS-09、DS-10、DS-12；真机数据：CAP-001；构建：REL-01、REL-02 |
+| 任务总数 | **63**（Bug 28 · 功能改进 4 · DS 14 · MW 5 · TD 5 · REL 2 · FT 5） |
+| 未完成（不是 Done） | **63**（还没有任何一项经过 Founder 真机确认） |
+| 按优先级 | P0 9 · P1 13 · P2 24 · P3 15 · 未定级 2（TD-04、TD-05 建议关闭） |
+| 按状态 | Testing 29 · Planned 17 · Blocked 13 · In Progress 2（DS-01、REL-02）· Ready 1（TD-01）· Inbox 1（FT-05）· Done 0 |
+| Testing（代码已改、等真机） | CAP-002～028（除 CAP-001）、CAP-E001、CAP-E002 |
+| Blocked（等 Founder） | 决定：CAP-E003、DS-13、DS-14、MW-04、FT-03、FT-04、TD-04、TD-05；批准修复：DS-09、DS-10、DS-12；真机数据：CAP-001；构建：REL-01 |
 
 P0 的 9 项：CAP-016（Testing）、DS-01（In Progress）、DS-02、DS-05、DS-07、MW-01、MW-02、MW-03、MW-05（Planned）。
 
@@ -80,11 +81,19 @@ P0 的 9 项：CAP-016（Testing）、DS-01（In Progress）、DS-02、DS-05、D
 
 | ID | 标题 | 优先级 | 状态 | 目标版本 | 相关模块 | 验收标准 | 测试结果 | 完成日期 |
 |---|---|---|---|---|---|---|---|---|
-| CAP-016 | My Books「写一页」写进目标手帐；从某本手帐打开的编辑器只显示这本手帐的页（第二部分，IMG_9476 / 9477） | **P0**（11-15 由 P1 升级） | Testing | 下一构建（V10.72 + V10.76） | `app.js` writeInBook / startPage / studioScope / studioReturnBook | BETA_RELEASE_PLAN「CAP-016 真机验收」9 步 +「第二部分」9 步 | v169 20 项、v173 20 项 ✅；相关回归 v170 / v171 / v35 / v158 / v112 / v160 / v137 / v141 ✅；全量回归见变更记录；真机 ⏳ | — |
+| CAP-016 | My Books「写一页」写进目标手帐；从某本手帐打开的编辑器只显示这本手帐的页（第二部分，IMG_9476 / 9477） | **P0**（11-15 由 P1 升级） | Testing | 0.2.0 (5)（V10.72 + V10.76） | `app.js` writeInBook / startPage / studioScope / studioReturnBook | BETA_RELEASE_PLAN「CAP-016 真机验收」9 步 +「第二部分」9 步 | v169 20 项、v173 20 项 ✅；相关回归 v170 / v171 / v35 / v158 / v112 / v160 / v137 / v141 ✅；全量回归见变更记录；真机 ⏳ | — |
 | CAP-018 | 封面一致：缩略图 = 大预览 = 创建后 = 书架 = 重开（统一封面配置） | P1 | Testing | 下一构建（V10.73 + V10.74） | `personal-ui.mjs` coverPhotos / coverSampleToKeep；`app.js` openBookDialog / saveBookForm；`Models.swift` CoverSample | 封面系统真机验收第 1b、2、7、8、9 步 | v170 30 项、v171 21 项 ✅；Swift Core 7 项（Mac）✅；真机 ⏳ | — |
 | CAP-017 | 长书名：封面模板自适应；书架卡片两行；书本页完整 | P2 | Testing | 下一构建（V10.73 + V10.75） | `cover-fit.mjs`；`styles.css` | 封面系统验收第 3～5 步；书架排版验收第 5、6 步 | 封面审查 528 组合 0 问题；v170、v172 ✅；真机 ⏳ | — |
 | CAP-019 | 新建手帐默认黑体 | P2 | Testing | 下一构建（V10.73） | `app.js` openBookDialog | 封面系统验收第 1、6 步 | v170 ✅；真机 ⏳ | — |
 | CAP-020 | 书脊竖排：标点竖排字形、按完整字符截断、5 本一层不跑出书架 | P2 | Testing | 下一构建（V10.75） | `cover-fit.mjs` spineTitleHTML / fitSpineTitle；`app.js` spineTitle；`styles.css` | 书架排版验收 8 步 | spine-title 单元 5 项、v172 21 项 ✅；iOS 模拟器 4 轮（SE / 17 / 17 Pro Max / 最大字号）0 问题 ✅；真机 ⏳ | — |
+| CAP-021 | 首页「我的手帐」按书架顺序（不是最近写过的一本） | P1 | Testing | 0.2.0 (5)（V10.77） | `app.js` homeLibraryHTML | 写页 / 改封面不换首页的书；往前放后首页跟着变；重开不变；删除第一本自动换；空书架空状态 | v174 17 项 ✅；v102 按新规则更新 ✅；真机 ⏳ | — |
+| CAP-022 | 首页「X 月 X 日更新」用手机本地日期（以前用 UTC，晚上提前一天） | P1 | Testing | 0.2.0 (5)（V10.77） | `model.mjs` localDayOf；`app.js` bookLastWritten；`events.mjs` | 美东 23:00–01:00、夏令时、跨时区；记录日期不变 | v174-dates 8 项、v174 浏览器（纽约时区）✅；历史数据无偏移；真机 ⏳ | — |
+| CAP-023 | 删除「我的手帐」后新的一天写进不存在的书 | P1 | Testing | 0.2.0 (5)（V10.77） | `app.js` defaultBookId / openStudio | 新的一天属于书架上存在的书 | v175 ✅；真机 ⏳ | — |
+| CAP-024 | 书本页「1 天 · 1 页」但列表为空（草稿日） | P1 | Testing | 0.2.0 (5)（V10.77） | `day.mjs` bookDays | 列表与页数同一规则 | v175 ✅；真机 ⏳ | — |
+| CAP-025 | 书架「···」先给删除又拒绝 | P2 | Testing | 0.2.0 (5)（V10.77） | `app.js` bookLinkedDays / openShelfMenu / deleteEmptyBook | 同一判断，直接说明原因；不移动数据 | v175 ✅ | — |
+| CAP-026 | 「···」编辑后旧弹层不关；阅读器封面编辑后离开阅读器 | P2 | Testing | 0.2.0 (5)（V10.77） | `app.js` saveBookForm | 弹层关闭；留在阅读器 | v175 ✅ | — |
+| CAP-027 | 标签筛选时往前放 / 往后放按看得见的书 | P2 | Testing | 0.2.0 (5)（V10.77） | `app.js` shelfHTML stepTo / book-step | 看得见的顺序立刻变化 | v175 ✅ | — |
+| CAP-028 | 小屏弹层输入框贴着键盘 | P3 | Testing | 0.2.0 (5)（V10.77） | `styles.css` scroll-margin-bottom | 弹层输入框下留 14 px | v164 34/34 ✅ | — |
 | CAP-014 | 双击文字进入编辑 | P2 | Testing | 下一构建（V10.71） | `app.js` beginGesture / DOUBLE_TAP_MS | Sprint 01 验收清单第 2 项 | v167 10 项 ✅；模拟器 testTextDoubleTap ✅；真机 ⏳ | — |
 | CAP-002 | 标题编辑时键盘遮挡 | P2 | Testing | 下一构建（V10.70） | Editor Layout Coordinator `updateVisibleArea` | Sprint 01 验收第 1 项 | v162、v166 ✅；模拟器布局测量 ✅；真机 ⏳ | — |
 | CAP-003 | 字体面板遮挡正在编辑的页面 | P2 | Testing | 同上 | 同上 | 同上 | 同上 | — |
@@ -109,7 +118,7 @@ P0 的 9 项：CAP-016（Testing）、DS-01（In Progress）、DS-02、DS-05、D
 | DS-12 | R6：备份存到「我的 iPhone › Capiday」会随 App 删除，却记为已验证 | P1 | Blocked | Alpha Stability | `LittleDaysWebShellView.swift` didPickDocumentsAt | 识别 App 自己的 Documents 并提醒选 iCloud Drive；真机确认位置判断 | **等 Founder 批准修复**；位置判断需要真机确认 | — |
 | TD-01 | Mac 模拟器脚本仍用旧 Bundle ID（dev.sh、sim-shots.sh、ios-layout-check.sh） | P3 | Ready | Alpha Stability | `tools/mac/*` | 三个脚本都能在模拟器里启动 App | ios-shelf-check.sh 已修（79ee727）；已建议另开任务 | — |
 | REL-01 | Founder 真机验收 Sprint 01（CAP-002～020、E001/E002） | P1 | Blocked | Alpha Stability | — | BETA_RELEASE_PLAN 各验收清单逐项通过 | 等新的内部构建 | — |
-| REL-02 | 下一个内部 TestFlight 构建（含 V10.70～V10.76） | P1 | Blocked | Alpha Stability | Xcode Archive | Release Gate 通过 | **需要 Founder 批准上传**；本阶段不上传 | — |
+| REL-02 | 内部 TestFlight 构建 0.2.0 (5)（含 V10.70～V10.77） | P1 | In Progress | Alpha Stability | Xcode Archive | Release Gate 通过 | 2026-11-15 Founder 在 Nightly Sprint 中授权上传到 Internal Testing；结果见第 7 节变更记录 | — |
 
 ### 4.2 Alpha UX Polish
 
@@ -180,4 +189,5 @@ Memory Wall v1.0 全部 **Planned — Post-Alpha Stability**。方案见 [MEMORY
 |---|---|
 | 2026-11-15 | 建立本表：Backlog 的 CAP-001～020、CAP-E001～E004 全部收进来，并逐条核对代码中的修复标记和测试文件；新增 TD、REL、FT 条目；旧 ROADMAP 中已过时的两项标为建议关闭 |
 | 2026-11-15 | CAP-016 升为 **P0**（Founder，IMG_9476 / 9477 合并进来，不新建 ID）；V10.76 编辑器只显示这本手帐的页、返回这本手帐，状态 Testing |
+| 2026-11-15 | **Nightly Sprint**：Pending Inventory 核对——Founder 列出的 14 条线索都已有条目（1–2 → CAP-016；3–4 → CAP-018；5 → CAP-017；6 → CAP-020；7 → CAP-019；8 → **CAP-021（新）**；9 → **CAP-022（新）**；10 → CAP-014；11 → CAP-002 / 003 / 012 / 013 / 009；12 → CAP-010 / 011；13 → CAP-E004；14 → 其余 CAP-001～015）。Books 代码审查新增 CAP-023～027，回归发现 CAP-028。V10.77 修复 CAP-021～028，状态 Testing；构建号 4 → 5 |
 | 2026-11-15 | 新增 DS-01 实际内容和 DS-02～DS-14（自动 iCloud 备份规划 + 风险 R1～R10）；新增 MW-01～MW-05（照片墙 v1.0 规划）；补齐第 2、5、6 节 |

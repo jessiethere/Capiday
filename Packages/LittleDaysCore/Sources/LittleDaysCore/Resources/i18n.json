@@ -9275,6 +9275,10 @@
     "zh": "这本书还没有页面，可以删除",
     "en": "This book has no pages yet and can be deleted"
   },
+  "shelf.deleteLinked": {
+    "zh": "这本书还连着 {count} 天的记录（那几天的封面或记录项属于这本书），为了不丢失记录，暂时不能删除。",
+    "en": "{count} days are still linked to this book (their day page or fields belong to it). So nothing is lost, it can't be deleted yet."
+  },
   "shelf.deleteHasPages": {
     "zh": "这本书里有 {count} 页。为了不丢失记录，请先把这些页面删除或换到别的书，再删除这本书。",
     "en": "This book has {count} pages. So nothing is lost, delete them or move them to another book first."

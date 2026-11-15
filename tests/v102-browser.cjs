@@ -161,16 +161,18 @@ const shots = process.env.SHOTS || "";
     await page.locator(".qu-more").tap();
     passed.push("plans: in sight with three at most and 还有 N 项, show-all remembered, ticking the last folds to one done line, data intact");
 
-    // 5. My Library: the journal written in most recently leads; one write link; covers open the real journal; no My / Shared switch on Home.
+    // 5. My Library: the shelf's first journal leads (V10.77 · CAP-021, the Founder: not the one written in most recently); one write link; covers open the real journal; no My / Shared switch on Home.
     await setDays((s, today, earlier, photo) => {
       s.entries.push({ id: "e-" + today, date: today, title: "", body: "", photo: "", bookId: "food", mood: "", layers: [], media: [], isDemo: false, moments: [{ id: "m-food", time: "12:30", title: "午饭", body: "", tags: [], bookId: "food", updatedAt: new Date().toISOString(), layers: [photo("f1", "photo:brunch")], media: [], layoutTemplate: "scrapbook" }] });
     });
     await page.waitForSelector(".hs-collect .lib-feature");
     assert.match(await page.locator(".hs-collect .hs-title").innerText(), /我的手帐/);
     const shelf = await page.$$eval(".hs-collect .home-book-cover", (els) => els.map((el) => el.dataset.book));
-    assert.deepEqual(shelf, ["food", "daily", "travel"], "most recently written first, then the shelf's order");
+    const shelfOrder = (await stored()).books.map((b) => b.id).filter((id) => ["daily", "travel", "food"].includes(id));
+    assert.deepEqual(shelf, shelfOrder, "the shelf's order (writing in 好好吃饭 today does not move it first)");
     assert.equal(await page.locator(".hs-collect .lib-feature .book-cover").count(), 1, "the user's own cover");
-    assert.match(await page.locator(".lib-now").innerText(), /正在记录[\s\S]*好好吃饭，好好生活[\s\S]*今天更新[\s\S]*接着记一页/);
+    const leadTitle = (await stored()).books.find((b) => b.id === shelfOrder[0]).title;
+    assert.ok((await page.locator(".lib-now").innerText()).includes(leadTitle), "the card names the shelf's first journal");
     assert.equal(await page.locator(".hs-collect .home-book-write").count(), 1, "one write link, not one per book");
     assert.equal(await page.locator(".hs-collect .home-book-tabs, .hs-collect [data-action='home-books']").count(), 0, "no My / Shared switch on Home");
     const sizes = await page.evaluate(() => { const w = (sel) => document.querySelector(sel).getBoundingClientRect().width; return { feature: w(".lib-feature"), small: w(".lib-others .lib-mini"), row: document.querySelector(".lib-compact").getBoundingClientRect().height }; });
@@ -182,12 +184,13 @@ const shots = process.env.SHOTS || "";
     await page.waitForFunction(() => /去看更大的世界/.test(document.querySelector("#app")?.innerText || "") && !document.querySelector(".hs-collect"));
     await page.locator('#navigation [data-page="home"]').tap();
     // V10.56: the journal in use opens in the reader.
-    await page.locator('.hs-collect .lib-feature[data-book="food"]').tap();
-    await page.waitForSelector(".flip-page");
-    await page.locator('[data-action="reader-back"]').tap();
+    await page.locator(`.hs-collect .lib-feature[data-book="${shelfOrder[0]}"]`).tap();
+    // (an empty journal opens its own page instead of the reader)
+    await page.waitForSelector(`.flip-page, [data-action="edit-book"][data-book="${shelfOrder[0]}"]`);
+    if (await page.locator(".flip-page").count()) await page.locator('[data-action="reader-back"]').tap();
     await page.locator('#navigation [data-page="home"]').tap();
     await page.locator(".hs-collect .home-book-write").tap();
-    await page.waitForSelector('#choose-dialog[open] [data-action="quick-book"][data-book="food"][aria-pressed="true"]');
+    await page.waitForSelector(`#choose-dialog[open] [data-action="quick-book"][data-book="${shelfOrder[0]}"][aria-pressed="true"]`);
     await page.keyboard.press("Escape");
     await page.locator('.hs-collect .hs-aside[data-page="books"]').tap();
     await page.waitForSelector(".shelf-switch");

@@ -66,6 +66,14 @@
 | [CAP-018](#cap-018) | 封面不一致：选择页 / 大预览 / 创建后的示例照片不同（Cover Consistency） | **P1** | Fixed — Pending Device Verification | 0.2.0 (4)（推断） | 下一个构建（未上传，V10.73 + V10.74） |
 | [CAP-019](#cap-019) | 新建手帐的中文封面标题默认用黑体（Founder 决定） | P2 | Fixed — Pending Device Verification | 2026-11-15 | 下一个构建（未上传，V10.73） |
 | [CAP-020](#cap-020) | 书架书脊：中文标点竖排异常、长书名截断不完整（与 CAP-017 关联） | P2 | Fixed — Pending Device Verification | 0.2.0 (4)（推断） | 下一个构建（未上传，V10.75） |
+| [CAP-021](#cap-021) | 首页「我的手帐」不按书架顺序，而是显示最近写过的一本 | P1 | Fixed — Pending Device Verification | 0.2.0 (4)（推断） | 0.2.0 (5)（V10.77） |
+| [CAP-022](#cap-022) | 首页「X 月 X 日更新」晚上提前一天（用了 UTC 日期） | P1 | Fixed — Pending Device Verification | 0.2.0 (4)（推断） | 0.2.0 (5)（V10.77） |
+| [CAP-023](#cap-023) | 删除「我的手帐」后，新的一天写进一本不存在的书 | P1 | Fixed — Pending Device Verification | 代码审查发现 | 0.2.0 (5)（V10.77） |
+| [CAP-024](#cap-024) | 书本页写着「1 天 · 1 页」，列表却是空的（草稿里的一天没列出） | P1 | Fixed — Pending Device Verification | 代码审查发现 | 0.2.0 (5)（V10.77） |
+| [CAP-025](#cap-025) | 书架「···」先给「删除」，确认后又拒绝 | P2 | Fixed — Pending Device Verification | 代码审查发现 | 0.2.0 (5)（V10.77） |
+| [CAP-026](#cap-026) | 从书架「···」编辑后旧弹层不关；从阅读器封面编辑后离开阅读器 | P2 | Fixed — Pending Device Verification | 代码审查发现 | 0.2.0 (5)（V10.77） |
+| [CAP-027](#cap-027) | 按标签筛选时「往前放 / 往后放」看起来没反应 | P2 | Fixed — Pending Device Verification | 代码审查发现 | 0.2.0 (5)（V10.77） |
+| [CAP-028](#cap-028) | 小屏底部弹层里的输入框贴着键盘（Captain 起名字，375×667） | P3 | Fixed — Pending Device Verification | 回归测试发现 | 0.2.0 (5)（V10.77） |
 
 **功能改进（Enhancement）**
 
@@ -76,8 +84,8 @@
 | [CAP-E003](#cap-e003) | 杂志类封面的标题也跟随所选字体 | P3 | Triaged（需要 Founder 决定） | 2026-11-15 | TBD |
 | [CAP-E004](#cap-e004) | 阅读器单页导出：PNG / 分享 / PDF（保留整本书 PDF） | P2 | Planned（Alpha 稳定性修复之后实施） | 2026-11-15 | 下一个构建之后（V10.76 起） |
 
-统计（2026-11-15 第七次更新，CAP-016 升为 P0 并合并新证据 IMG_9476 / IMG_9477 之后）：
-- Bug 20 条：P0 1（CAP-016）· P1 1（CAP-018）· P2 16 · P3 2；Fixed 20（CAP-001、004～009 已随 0.2.0 (4) 上传，其余未上传；都还没有真机确认）、Verified 0。
+统计（2026-11-15 第八次更新，Books Alpha Stability Review 之后）：
+- Bug 28 条：P0 1（CAP-016）· P1 5（CAP-018、021、022、023、024）· P2 19 · P3 3；Fixed 28（CAP-001、004～009 已随 0.2.0 (4) 上传，其余未上传；都还没有真机确认）、Verified 0。
 - 功能改进 3 条：CAP-E001、CAP-E002 Fixed — Pending Device Verification；CAP-E003 Triaged（需要 Founder 决定）。
 
 ### Alpha Stabilization Sprint 01 · 分类（2026-11-15）
@@ -1002,6 +1010,80 @@
 - **Related**：CAP-017（长书名，同一套共享排版）。
 
 ---
+
+<a id="cap-021"></a>
+### CAP-021 · 首页「我的手帐」不按书架顺序，而是显示最近写过的一本
+
+- **Reported**：2026-11-15 · Founder · **P1** · **Status**：Fixed — Pending Device Verification（V10.77，0.2.0 (5)）
+- **Steps**：书架上的第一本是 A；在 B 里写一页 → 回到首页。
+- **Expected**：首页「我的手帐」显示书架第一本 A；写页、改内容、改封面都不改变首页显示哪一本；书架顺序重开后不变；第一本删除后换成新的第一本；书架为空显示空状态；不改任何页的归属和日期。
+- **Actual（修复前）**：首页显示 B（最近写过的那本）。
+- **Root Cause**：`homeLibraryHTML` 按 `bookLastWritten`（页的 `updatedAt`）排序选第一本；书架用的是 `state.books` 的数组顺序（拖动 / 往前放会直接改它）。两处用了两套规则。
+- **Fix**：首页改用 `state.books` 的顺序（书架唯一的顺序来源），第一本在前，其余两本按书架顺序。Captain 的「最近在写哪本」仍按最近写过（那是它本来的意思）。不改数据。
+- **Verification**：`tests/v174-browser.cjs` 17 项（书架第一本 = 首页；写别的手帐不换；往前放后首页跟着变；重开不变；改别的书名不换；第一本删除后自动换；书架为空显示空状态；页的日期和归属不变）。`tests/v102` 按新规则更新。真机 ⏳。
+
+<a id="cap-022"></a>
+### CAP-022 · 首页「X 月 X 日更新」晚上提前一天（用了 UTC 日期）
+
+- **Reported**：2026-11-15 · Founder（iPhone 截图：手机 11 月 14 日 11:37，卡片「11 月 15 日更新」）· **P1** · **Status**：Fixed — Pending Device Verification（V10.77）
+- **Root Cause（代码确认）**：页的 `updatedAt` 用 `toISOString()` 存（UTC），首页取了它的前 10 个字符，即 **UTC 日期**。美东晚上 7 点（夏令时 8 点）以后，UTC 已经是第二天。截图时间按 12 小时制应是晚上 11:37（= UTC 04:37，第二天），和这个原因一致。
+- **检查范围**（逐项看过代码）：记录日期（`entry.date`）由 `dateKey()` 按本地日历生成，**一直正确**，从不经过 UTC；日期字符串都用 `T12:00:00` 本地正午解析，没有 `new Date("YYYY-MM-DD")` 的 UTC 午夜问题；EXIF 拍摄时间按本地时间解析；备份 / 提醒用的是本地 `dateKey()`；Swift `DayKey` 用设备时区。另一处同类问题：本机测试日志的「活跃天数」用了 UTC 日期，一并改了。
+- **Fix**：`model.mjs` 新增 `localDayOf(stamp)`：时间戳 → 手机所在时区的日期；`YYYY-MM-DD` 原样返回。首页「更新」日期和 Captain 的「最近在写」都用它。存储格式不变（`updatedAt` 仍是 UTC ISO 时间）。
+- **历史数据**：**没有日期偏移**。记录日期从来是本地日期，`updatedAt` 是正确的 UTC 时间；问题只在显示。不需要也没有做任何数据修改。
+- **跨时区**：同一个修改时间按手机**当前**所在时区显示（例如纽约 11 月 14 日 23:37 写的，在上海看是 11 月 15 日更新）；页的记录日期在任何时区都不变。
+- **Verification**：`tests/v174-dates.test.mjs` 8 项（在子进程里设 `TZ`：纽约 23:00–01:00、夏令时开始 / 结束两天、洛杉矶、上海、奥克兰、UTC、记录日期不变、旅行）；`tests/v174-browser.cjs`（浏览器时区 America/New_York，时钟拨到 11 月 14 日 23:37：记录日期 11-14，修改时间 04:37Z，首页写「今天更新」）。真机 ⏳。
+
+<a id="cap-023"></a>
+### CAP-023 · 删除「我的手帐」后，新的一天写进一本不存在的书
+
+- **Found**：2026-11-15 · Books 代码审查（运行复现）· **P1** · **Status**：Fixed — Pending Device Verification（V10.77）
+- **Steps**：只有「我的手帐」（空）→ 新建 X → 书架「···」删除「我的手帐」→ 日历 → 添加 → 写字。
+- **Actual（修复前）**：这一天存成 `bookId: "daily"`，书架上没有这本书：页在日历里能看到，在 My Books、阅读器、PDF 里都看不到。
+- **Root Cause**：`openStudio` 新建一天时写死 `bookId: "daily"`，没检查书架上还有没有这本。
+- **Fix**：`defaultBookId()`：「我的手帐」在就用它；否则用首页上次写的那本，再否则书架第一本。**只用于新建的一天**，已有的天不改。
+- **已受影响的数据**：如果有人以前删过「我的手帐」再写过，那些天的 `bookId` 仍是 `daily`。没有自动修复（不自动改归属）；在 Alpha 里发生的概率很低（需要先删掉「我的手帐」）。如需修复，单独设计「把无主的页移到某本书」并经 Founder 确认。
+- **Verification**：`tests/v175-browser.cjs`（CAP-023 4 项）。
+
+<a id="cap-024"></a>
+### CAP-024 · 书本页写着「1 天 · 1 页」，列表却是空的
+
+- **Found**：2026-11-15 · Books 代码审查（运行复现）· **P1** · **Status**：Fixed — Pending Device Verification（V10.77）
+- **Steps**：新建手帐 →「记录新的一页」→ 写几个字 → 等自动保存 → 关掉 App（或刷新）→ 打开这本手帐。
+- **Actual（修复前）**：页数「1 天 · 1 页」，下面的列表却显示「手帐本的第一页，等你来写」；书架「···」也因为「有 1 页」不能删除。
+- **Root Cause**：书本页列表 `bookDays`（`day.mjs`）只读已保存的天；页数 `bookCounts` 用 `daysOf`（已保存 + 还在草稿里的天）。两套规则。
+- **Fix**：`bookDays` 改用和页数相同的 `daysOf` + `dayPageShown`（隐藏的日封面也不列出），页的归属用 `page.bookId || day.bookId`。不改数据。
+- **Verification**：`tests/v175-browser.cjs`（CAP-024 3 项）。
+
+<a id="cap-025"></a>
+### CAP-025 · 书架「···」先给「删除」，确认后又拒绝
+
+- **Found**：代码审查 · **P2** · **Status**：Fixed — Pending Device Verification（V10.77）
+- **Root Cause**：「···」按页数判断（0 页 → 给删除），删除时按「有没有一天还指向这本书」判断（一天的封面 / 记录项属于它、页在别的书里）。
+- **Fix**：两处用同一个判断 `bookLinkedDays`；还连着记录时不给删除按钮，直接说明「这本书还连着 N 天的记录……暂时不能删除」。**不为了能删除而移动任何数据**。
+- **Verification**：`tests/v175-browser.cjs`（4 项）。
+
+<a id="cap-026"></a>
+### CAP-026 · 从书架「···」编辑后旧弹层不关；从阅读器封面编辑后离开阅读器
+
+- **Found**：代码审查（运行复现）· **P2** · **Status**：Fixed — Pending Device Verification（V10.77）
+- **Fix**：`saveBookForm` 保存后关掉书架的「···」弹层；在阅读器里编辑时留在阅读器（封面显示新名字）。
+- **Verification**：`tests/v175-browser.cjs`（5 项）。
+
+<a id="cap-027"></a>
+### CAP-027 · 按标签筛选时「往前放 / 往后放」看起来没反应
+
+- **Found**：代码审查（运行复现）· **P2** · **Status**：Fixed — Pending Device Verification（V10.77）
+- **Root Cause**：`stepBook` 在完整书架里和相邻的书交换，邻居可能是被筛掉看不见的书；按钮是否可点也按完整书架算。
+- **Fix**：按钮带上**看得见的**邻居（`data-to`），用 `moveBookTo` 移到它前 / 后；可点与否按看得见的书架。
+- **Verification**：`tests/v175-browser.cjs`（4 项）。
+
+<a id="cap-028"></a>
+### CAP-028 · 小屏底部弹层里的输入框贴着键盘
+
+- **Found**：全量回归 `tests/v164`（375×667，Captain 第一次起名字：输入框底边 = 键盘顶）· **P3** · **Status**：Fixed — Pending Device Verification（V10.77）
+- **说明**：V10.69 的代码在这个容器里同样失败；原因是本会话为书脊测试装了 Noto CJK 字体，中文行高变了约 1 px，所以不是代码回归。但「贴着键盘」本身不好看。
+- **Fix**：`styles.css` 给底部弹层里的输入框加 `scroll-margin-bottom: 14px`，滚到可见时下面留 14 px。只影响滚动位置。
+- **Verification**：`tests/v164` 34/34。
 
 ## 5b. 功能改进（Enhancement）
 

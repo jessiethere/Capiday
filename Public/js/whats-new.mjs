@@ -4,6 +4,32 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.77",
+    date: "2026-11-15",
+    zh: {
+      title: "书架更可靠：首页顺序、日期和几处小问题",
+      items: [
+        "首页「我的手帐」显示书架上的第一本；写一页、改封面都不会让它换位置。在书架上把一本往前放，首页也跟着变。",
+        "「X 月 X 日更新」按手机上的日期算：晚上写的一页不会再显示成第二天（以前用的是世界标准时间）。记录的日期本身一直没有变。",
+        "删掉「我的手帐」后再新建的一天，会记进书架上还在的手帐，不会落到一本不存在的书里。",
+        "还没保存完的页（写到一半关掉 App）也会出现在书本页的列表里，和「1 天 · 1 页」一致。",
+        "不能删除的书不再先给「删除」按钮，而是直接说明原因；在书架「···」里改完名字，弹层会关掉；在阅读器封面上改完，仍留在阅读器里。",
+        "按标签筛选时，「往前放 / 往后放」按你看得见的书移动。",
+      ],
+    },
+    en: {
+      title: "A steadier shelf: Home's order, dates and a few small fixes",
+      items: [
+        "Home's My Journals shows the shelf's first journal; writing a page or changing a cover never moves it. Move a journal earlier on the shelf and Home follows.",
+        "\u201cUpdated on …\u201d uses your phone's calendar: a page written in the evening no longer shows as the next day (it used UTC). The record's own date never changed.",
+        "After deleting My Journal, a new day goes into a journal still on the shelf, not into one that no longer exists.",
+        "A page not yet saved (the app closed mid-page) is listed on its journal's page too, matching \u201c1 day · 1 page\u201d.",
+        "A journal that can't be deleted says why instead of offering Delete first; after renaming from the shelf's ···, that sheet closes; editing from the reader's cover keeps you in the reader.",
+        "With a tag filter on, Move earlier / later moves past the journals you can see.",
+      ],
+    },
+  },
+  {
     version: "10.76",
     date: "2026-11-15",
     zh: {

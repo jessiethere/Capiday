@@ -1,6 +1,7 @@
 // V3.1 pure helpers: a Day (Entry) contains ordered Moments; Growth checks
 // stay unique per (habitId, date) and can carry private reflections.
 import { normalizeMoment } from "./model.mjs";
+import { daysOf, dayPageShown } from "./pages.mjs";
 import { smartLayout, SMART_VARIANTS } from "./smart-layout.mjs";
 
 const newId = () => globalThis.crypto.randomUUID();
@@ -576,10 +577,13 @@ export function habitJourney(state, habitId, today) {
 // page (if it belongs to the book) and the Moments filed in that book.
 export function bookDays(state, bookId, filter = {}) {
   const days = [];
-  for (const entry of state.entries) {
-    if (entry.isDemo === true) continue; // V10.41 (S1): sample days are not the person's
-    const dayPage = entry.bookId === bookId && hasDayPageContent(entry);
-    const moments = (entry.moments || []).filter((moment) => moment.bookId === bookId);
+  // V10.77: the same days and pages the book's counts use (pages.mjs) — saved
+  // days, and a draft day not saved yet (e.g. the app closed while writing);
+  // no sample days; a hidden day cover is not listed. Before, only saved days
+  // were listed, so 「1 天 · 1 页」 could stand over an empty list.
+  for (const entry of daysOf(state).values()) {
+    const dayPage = entry.bookId === bookId && dayPageShown(entry);
+    const moments = (entry.moments || []).filter((moment) => (moment.bookId || entry.bookId) === bookId);
     if (!dayPage && !moments.length) continue;
     if (filter.date && entry.date !== filter.date) continue;
     if (!filter.date && filter.month && !entry.date.startsWith(filter.month)) continue;
