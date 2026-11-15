@@ -186,6 +186,12 @@ npm run test:browser:v65
 
 ## 更新日志
 
+### 2026-11-15 — Mac 工具脚本改用新 Bundle ID（只改脚本，App 不变）
+
+- `tools/mac/dev.sh`、`sim-shots.sh`、`ios-layout-check.sh` 改用 `com.capiday.app` 启动 / 结束 App，修复改名后模拟器里「failed to launch」（`ios-shelf-check.sh` 之前已修）。工程名、模块名、存储键等内部名称不变。
+- 已在 Mac 上用 `bash tools/mac/sim-shots.sh "iPhone 17"` 确认：App 正常启动，4 张截图都保存了，没有清除模拟器数据。`dev.sh sim` 和 `ios-layout-check.sh` 没有实际运行。
+- 还没改：`docs/MAC_LOCAL_DEV.md` 里的示例命令仍是旧 ID。
+
 ### 2026-11-15 — 照片墙可以整理了，备份更放心（V10.78 · 构建 0.2.0 (6)）
 
 - **照片墙 v1.0**：「管理」里隐藏 / 恢复照片、按时间或自己的顺序排；阅读器「···」把整页手帐贴到照片墙。手帐本身不变。

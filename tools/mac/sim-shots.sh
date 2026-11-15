@@ -10,7 +10,7 @@
 set -e
 cd "$(dirname "$0")/../.."
 NAME="${1:-iPhone 18 Pro}"
-APP_ID="com.jessiethere.littledays"
+APP_ID="com.capiday.app"
 OUT="build/sim-shots"
 mkdir -p "$OUT"
 

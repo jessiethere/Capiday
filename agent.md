@@ -48,6 +48,16 @@
 
 ## 更新日志
 
+### 2026-11-15 — 工具：三个 Mac 脚本改用新 Bundle ID `com.capiday.app`（只改脚本，没有改 App）
+
+- **需求**（Founder）：`tools/mac/dev.sh`、`sim-shots.sh`、`ios-layout-check.sh` 仍用改名前的 `com.jessiethere.littledays` 启动 / 结束 App，`xcrun simctl launch` 会报 `FBSOpenApplicationServiceErrorDomain code=4`（failed to launch）。`ios-shelf-check.sh` 已在 79ee727 修过，这次修其余三个。
+- **文件**：`tools/mac/dev.sh`（`sim` 子命令的 launch）、`tools/mac/sim-shots.sh`（`APP_ID`）、`tools/mac/ios-layout-check.sh`（两处 terminate、一处 launch）；共 5 行。
+- **决策**：只改启动 / 结束用的 App ID。内部名称照旧（`LittleDays.xcodeproj`、scheme `LittleDays`、`LittleDays.app`、`-LittleDaysTap` / `-LittleDaysCheck`、`LittleDaysCore`、存储键、`littledays://`），按 AGENTS.md「内部名称一律不改」。工程里 `PRODUCT_BUNDLE_IDENTIFIER` 两处都是 `com.capiday.app`，已核对。
+- **验证**：`grep -rn com.jessiethere.littledays tools/mac/` 没有结果；`bash -n` 语法检查 dev.sh、sim-shots.sh 通过（ios-layout-check.sh 是 zsh 脚本，没有单独检查）。Mac（MacBook-Air，工作副本与本仓库同在 80a1a5e，sim-shots.sh 内容相同）上临时套用同一改动后运行 `bash tools/mac/sim-shots.sh "iPhone 17"`：Debug 构建成功（只有已有的警告）→ 安装 → App 以 `com.capiday.app` 启动（`launchctl` 里有 `UIKitApplication:com.capiday.app`），首页、日历、书架、Journal Studio 4 张截图都存到 `build/sim-shots/`，首屏约 14 秒；书架截图确认 `-LittleDaysTap` 导航正常。用模拟器已有数据，没有清除任何东西。运行后已用 `git checkout` 还原 Mac 副本里的这个文件，Mac 副本没有留下改动。
+- **没有验证**：`dev.sh sim` 和 `ios-layout-check.sh` 没有在 Mac 上实际运行（同样的一行替换，只验证了 sim-shots.sh）。
+- **已知情况**：这台「iPhone 17」模拟器上旧 App（`com.jessiethere.littledays`）和新 App（`com.capiday.app`）都装着；两者的数据各自独立，脚本现在启动的是新 App，所以看到的是新 App 那份数据（这次首页出现 Captain 欢迎弹层）。
+- **未做 / 下一步**：`docs/MAC_LOCAL_DEV.md` 里可复制的命令（第 140、196、210–213 行）仍写旧 ID，本次按要求没有改，建议下一次一起改成 `com.capiday.app`。
+
 ### 2026-11-15 — V10.78：备份三项小修、杂志封面跟随字体、单页导出、照片墙 v1.0、自动 iCloud 备份（构建 0.2.0 (6)）
 
 - **需求**（Founder）：「可以做：单页导出（CAP-E004）、照片墙 v1.0、自动 iCloud 备份。杂志封面标题是跟随所选字体（CAP-E003）；批准先修 3 个备份小问题（DS-09、DS-10、DS-12）。」照片墙和 iCloud 规划里的待决问题没有逐条回答，**按规划里的推荐选项实施**，分别记在两份计划的实施记录里。顺序：先数据安全（DS-09/10/12），再小功能，最后大功能。

@@ -46,7 +46,7 @@ case "$cmd" in
     xcrun simctl boot "$NAME" 2>/dev/null || true
     open -a Simulator
     xcrun simctl install "$NAME" "$APP"
-    xcrun simctl launch "$NAME" com.jessiethere.littledays ;;
+    xcrun simctl launch "$NAME" com.capiday.app ;;
   test)
     npm test
     python3 -m unittest discover -s tests ;;

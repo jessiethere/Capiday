@@ -10,14 +10,14 @@ JS=/tmp/ld-check-$LANG_.js
 LOG=/tmp/ld-check-$LANG_.log
 { print -r -- "const CHECK_LANG = \"$LANG_\";"; cat "${0:A:h}/ios-layout-check.js"; } > $JS
 xcrun simctl install $DEV $APP
-xcrun simctl terminate $DEV com.jessiethere.littledays 2>/dev/null
+xcrun simctl terminate $DEV com.capiday.app 2>/dev/null
 : > $LOG
-xcrun simctl launch --console-pty $DEV com.jessiethere.littledays -LittleDaysCheck $JS > $LOG 2>&1 &
+xcrun simctl launch --console-pty $DEV com.capiday.app -LittleDaysCheck $JS > $LOG 2>&1 &
 [[ -n $SHOTS ]] && mkdir -p $SHOTS
 for i in {1..200}; do
   sleep 1.5
   [[ -n $SHOTS ]] && xcrun simctl io $DEV screenshot --type=png $SHOTS/$LANG_-$(python3 -c 'import time;print(int(time.time()*1000))').png >/dev/null 2>&1
   grep -q '^LittleDaysCheck: {\|LittleDaysCheck failed' $LOG && break
 done
-xcrun simctl terminate $DEV com.jessiethere.littledays 2>/dev/null
+xcrun simctl terminate $DEV com.capiday.app 2>/dev/null
 grep 'LittleDaysCheck' $LOG
