@@ -2560,7 +2560,7 @@ function recordBackup(backup, how) {
 }
 // "iCloud 云盘 › 手帐备份", "我的 iPhone", or the other provider's folder.
 function backupPlaceName(r) {
-  const top = r.place === "icloud" ? t("bk2.placeICloud") : r.place === "phone" ? t("bk2.placePhone") : "";
+  const top = r.place === "icloud" ? t("bk2.placeICloud") : r.place === "phone" ? t("bk2.placePhone") : r.place === "app" ? t("bk2.placeApp") : "";
   const sub = String(r.folder || "");
   return top ? (sub ? `${top} › ${sub}` : top) : sub || t("bk2.placeChosen");
 }
@@ -2596,6 +2596,13 @@ async function runBackup() {
     logEvent("backup_failed", { err: errName(error) });
     return backupStep(`<h2>${t("bk2.failedTitle")}</h2><p class="save-help">${t("bk2.memory")}</p><p class="rs-safe">${t("bk2.nothingChanged")}</p><button class="primary full-width" data-action="choose-close">${t("rs.ok")}</button>`, "failed");
   }
+  // V10.78 · DS-09 (R3): the media cap is counted in raw bytes, the file is
+  // base64 — with a large journal it could pass here and then be too large
+  // to restore (150 MB). Such a file is not handed out or counted as a backup.
+  if (blob.size > RS.MAX_RESTORE_FILE_BYTES) {
+    logEvent("backup_failed", { err: "too-large-restore", size: Math.round(blob.size / 1024 / 1024) });
+    return backupStep(`<h2>${t("bk2.failedTitle")}</h2><p class="save-help">${t("bk2.tooLargeRestore", { size: mbText(blob.size), max: mbText(RS.MAX_RESTORE_FILE_BYTES) })}</p><p class="rs-safe">${t("bk2.nothingChanged")}</p><button class="primary full-width" data-action="choose-close">${t("rs.ok")}</button>`, "failed");
+  }
   const name = `Capiday-Backup-${dateKey()}${backup.complete ? "" : "-incomplete"}.json`;
   logEvent("backup", { complete: backup.complete, missing: backup.missing?.length || 0, size: Math.round(blob.size / 1024) });
   const native = shellSavesBackup();
@@ -2614,7 +2621,7 @@ async function runBackup() {
     if (r.status === "saved") {
       const folder = backupPlaceName(r);
       recordBackup(backup, { how: r.verified ? "verified" : "system", folder, cloud: Boolean(r.cloud), size: r.size });
-      backupStep(`<h2>${t("bk2.savedTitle")}</h2><p class="save-help">${t(r.verified ? "bk2.savedVerified" : "bk2.savedUnchecked", { folder: esc(folder), size })}</p>${r.cloud ? `<p class="rs-safe">${t("bk2.cloudNote")}</p>` : ""}${r.place === "phone" ? `<p class="rs-note">${t("bk2.phoneNote")}</p>` : ""}${backup.complete ? "" : `<p class="rs-note">${t("backup.partialKept", { count: backup.missing.length })}</p>`}<button class="primary full-width" data-action="choose-close">${t("rs.ok")}</button>`, "saved");
+      backupStep(`<h2>${t("bk2.savedTitle")}</h2><p class="save-help">${t(r.verified ? "bk2.savedVerified" : "bk2.savedUnchecked", { folder: esc(folder), size })}</p>${r.cloud ? `<p class="rs-safe">${t("bk2.cloudNote")}</p>` : ""}${r.place === "phone" ? `<p class="rs-note">${t("bk2.phoneNote")}</p>` : ""}${r.place === "app" ? `<p class="rs-note bk2-app-warn">${t("bk2.appNote")}</p>` : ""}${backup.complete ? "" : `<p class="rs-note">${t("backup.partialKept", { count: backup.missing.length })}</p>`}<button class="primary full-width" data-action="choose-close">${t("rs.ok")}</button>`, "saved");
     } else if (r.status === "cancelled") {
       $("#choose-dialog").close();
       toast(t("bk2.cancelled"));

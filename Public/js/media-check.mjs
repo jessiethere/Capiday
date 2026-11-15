@@ -52,11 +52,15 @@ export function mediaUses(state) {
     for (const m of entry.moments || []) look(entry, m, m, true);
   }
   // Anything else the backup counts (book covers, check-in photos…).
-  visitMediaReferences(structuredClone(state), (ref, type) => {
-    const id = ref.slice(6);
-    if (!uses.has(id)) uses.set(id, { date: "", page: 0, draft: false, type });
-    return ref;
-  });
+  visitMediaReferences(
+    structuredClone(state),
+    (ref, type) => {
+      const id = ref.slice(6);
+      if (!uses.has(id)) uses.set(id, { date: "", page: 0, draft: false, type });
+      return ref;
+    },
+    { memo: false },
+  );
   return { uses, badRefs };
 }
 

@@ -10223,6 +10223,18 @@
     "zh": "回到写字",
     "en": "Back to writing"
   },
+  "bk2.tooLargeRestore": {
+    "zh": "这份备份有 {size}，超过了恢复时能读的 {max}，存下来以后也恢复不了，所以没有生成。你的手帐一点没变。请先导出一部分大视频，或等更大的备份方式上线。",
+    "en": "This backup would be {size}, more than the {max} a restore can read, so it could never be restored and was not made. Your journal is unchanged. Save some large videos elsewhere first, or wait for the larger backup format."
+  },
+  "bk2.placeApp": {
+    "zh": "我的 iPhone › 开铺手帐",
+    "en": "On My iPhone › Capiday"
+  },
+  "bk2.appNote": {
+    "zh": "注意：「开铺手帐」这个文件夹属于 App 自己，删除开铺手帐时会一起被删除。请再备份一份，存到 iCloud 云盘或「我的 iPhone」里别的文件夹。",
+    "en": "Note: the Capiday folder belongs to the app and is deleted together with it. Please back up once more to iCloud Drive or another folder On My iPhone."
+  },
   "bk2.title": {
     "zh": "备份我的手帐",
     "en": "Back up my journal"

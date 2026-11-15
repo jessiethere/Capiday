@@ -302,7 +302,11 @@ export class MediaStore {
     const media = [];
     const missing = [];
     let totalSize = 0;
-    for (const id of mediaReferences(state)) {
+    const required = mediaReferences(state);
+    // Remembered-only photos (DS-10) go in when they are here; never "missing".
+    const remembered = [...mediaReferences(state, null, { memo: true })].filter((id) => !required.has(id));
+    for (const id of [...required, ...remembered]) {
+      const optional = !required.has(id);
       // Size first (from the record), so an oversize backup stops before
       // any bytes are read or encoded.
       let stored = null;
@@ -310,7 +314,7 @@ export class MediaStore {
         stored = await this.get(id);
       } catch {}
       if (!stored) {
-        missing.push({ id, kind: "", name: "", reason: "missing" });
+        if (!optional) missing.push({ id, kind: "", name: "", reason: "missing" });
         continue;
       }
       totalSize += stored.bytes?.byteLength ?? stored.blob?.size ?? stored.size ?? 0;
@@ -333,6 +337,7 @@ export class MediaStore {
           });
       } catch {}
       if (!data) {
+        if (optional) continue;
         missing.push({ id, kind: kindOf(stored.kind, stored.mime), name: stored.name || "", reason: "unreadable" });
         continue;
       }
@@ -467,7 +472,12 @@ const fallbackId = () => "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,
 export const MAX_BACKUP_MEDIA_BYTES = 100 * 1024 * 1024;
 export const MAX_BACKUP_FILES = 2000;
 // visit(reference, type): type is "image" or "clip" (audio/video bytes).
-export function visitMediaReferences(state, visit) {
+// `memo` (V10.78 · DS-10): also the references a cover only REMEMBERS
+// (which photo a day cover shows for each page, the photos kept with a book's
+// cover). They are renamed on restore with everything else, but a missing one
+// never makes a backup incomplete or blocks a restore — the photo itself is
+// on the page or the cover, and is counted there.
+export function visitMediaReferences(state, visit, { memo = true } = {}) {
   const reference = (object, key, type = "image") => {
     if (typeof object?.[key] === "string" && object[key].startsWith("media:"))
       object[key] = visit(object[key], type);
@@ -484,7 +494,18 @@ export function visitMediaReferences(state, visit) {
       reference(layer, "sourceRef");
     }
   };
-  for (const book of state.books || []) reference(book, "coverImage");
+  const list = (array) => {
+    if (Array.isArray(array)) for (let i = 0; i < array.length; i++) reference(array, i);
+  };
+  for (const book of state.books || []) {
+    reference(book, "coverImage");
+    // V10.78 · DS-10: the cover kept with the book (CAP-018) names the own
+    // photo too; renamed with it on restore, so the cover stays the same.
+    if (memo && book.coverSample) {
+      reference(book.coverSample, "own");
+      list(book.coverSample.photos);
+    }
+  }
   for (const check of state.checks || []) reference(check, "photo");
   for (const entry of [
     ...(state.entries || []),
@@ -492,6 +513,9 @@ export function visitMediaReferences(state, visit) {
   ]) {
     reference(entry, "photo");
     page(entry);
+    // V10.78 · DS-10 (R4): a day cover remembers which photo it shows for
+    // each page; restored with new ids, so a re-laid cover still finds it.
+    if (memo) for (const item of Object.values(entry.coverPhotos || {})) reference(item, "reference");
     for (const moment of entry.moments || []) page(moment);
     const book = state.books.find((book) => book.id === entry.bookId);
     for (const [key, value] of Object.entries(entry.fieldValues || {})) {
@@ -504,11 +528,15 @@ export function visitMediaReferences(state, visit) {
     }
   }
 }
-export function mediaReferences(state, type = null) {
+export function mediaReferences(state, type = null, { memo = false } = {}) {
   const ids = new Set();
-  visitMediaReferences(structuredClone(state), (reference, kind) => {
-    if (!type || kind === type) ids.add(reference.slice(6));
-    return reference;
-  });
+  visitMediaReferences(
+    structuredClone(state),
+    (reference, kind) => {
+      if (!type || kind === type) ids.add(reference.slice(6));
+      return reference;
+    },
+    { memo },
+  );
   return ids;
 }

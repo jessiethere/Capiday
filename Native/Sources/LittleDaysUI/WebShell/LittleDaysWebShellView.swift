@@ -429,8 +429,15 @@ final class LittleDaysWebCoordinator: NSObject, WKUIDelegate, WKNavigationDelega
         // ("On My iPhone" is a folder iOS calls "File Provider Storage"), or
         // another provider; plus the folder inside it ("" at the top level).
         var folder = saved.deletingLastPathComponent().lastPathComponent
+        // V10.78 · DS-12: "On My iPhone › Capiday" is this app's own Documents
+        // (file sharing is on). A file there is deleted together with the app,
+        // so the page says so instead of "safe if Capiday is deleted".
+        let home = URL(fileURLWithPath: NSHomeDirectory()).resolvingSymlinksInPath().path
+        let insideApp = saved.resolvingSymlinksInPath().path.hasPrefix(home + "/")
         let place: String
-        if cloud {
+        if insideApp && !cloud {
+            place = "app"
+        } else if cloud {
             place = "icloud"
             if folder == "com~apple~CloudDocs" || folder == "Documents" { folder = "" }
         } else if saved.path.contains("/File Provider Storage") {
