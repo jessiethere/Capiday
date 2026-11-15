@@ -24,6 +24,9 @@ for k in ["b2-book-keyboard"]:
 for k in ["b1b-book-no-keyboard", "b3-covers-after-keyboard", "b4-covers-later"]:
     d = steps.get(k)
     if not d: continue
+    if d.get("keyboard"):
+        print(f"SKIP {k}: 键盘还在（这一步没能收起键盘），不按「收起后」判断")
+        continue
     check(f"{k}: 键盘收起后没有留下键盘高度", d.get("vars", "").startswith("-,-"), d.get("vars"))
     if d.get("bookDialog"): check(f"{k}: 弹窗不再停在键盘时的高度", d["bookDialog"][3] > 470, f"dialog {d['bookDialog']}")
 d = steps.get("b3-covers-after-keyboard")

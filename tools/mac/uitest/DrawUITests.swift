@@ -486,8 +486,11 @@ final class DrawUITests: XCTestCase {
         tap("newBook", wait: 2.0)
         dumpLayout("b1-book-open")
         // iOS's own ✓ above the keyboard closes it.
-        let done = app.toolbars.buttons.allElementsBoundByIndex.last
-        if let done, done.exists { done.tap(); Thread.sleep(forTimeInterval: 1.5) }
+        let barButtons = app.toolbars.buttons.allElementsBoundByIndex
+        print("LDTEXT accessory buttons: " + barButtons.map { "\($0.label)|\($0.identifier)" }.joined(separator: ", "))
+        let done = barButtons.first { ["Done", "完成", "done"].contains($0.label) || $0.identifier.lowercased().contains("done") } ?? barButtons.last
+        if let done, done.exists, done.isHittable { done.tap() } else if let done { done.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap() }
+        Thread.sleep(forTimeInterval: 1.5)
         dumpLayout("b1b-book-no-keyboard")
         tap("bookName", wait: 2.0)
         dumpLayout("b2-book-keyboard")
