@@ -233,6 +233,25 @@
 
 **结论**：可以给 Founder 自己在真机上测试（Beta 1 第一步）。第 3、4、5 项真机通过、第 8 项说明定稿之前，不建议扩大到外部测试者。
 
+### Gate 检查：0.2.0 (5)（2026-11-15，Nightly Sprint）
+
+| # | 结果 |
+|---|---|
+| 1 | ✅ 唯一的 P0（CAP-016）已修复，v169 / v173 自动化通过；真机 TBD |
+| 2 | ✅ P1（CAP-018、021～024）已修复并有自动化测试；真机 TBD |
+| 3 | ⚠️ 网页全量回归通过；模拟器升级测试读写正常；**真机 TBD** |
+| 4 | ✅ 模拟器升级测试 0.2.0 (4)（aaa7d2a）→ 0.2.0 (5)（7e3f6b4）：2 本书、3 天 5 页、正文、草稿、计划、打卡、Captain 全部相同，媒体 5/5 可读，schemaVersion 1，没有救援页（合成数据，专用模拟器测完删除）；**真机 TBD** |
+| 5 | ⚠️ v161、v163 在全量回归里通过；真机 TBD |
+| 6 | ✅ 全量回归 run-all14：113 个文件 112 通过，失败的 v51 已修复（7e3f6b4）并和 26 个相关测试一起通过；单元测试 323/323；外壳同步测试 OK |
+| 7 | ✅ ARCHIVE SUCCEEDED（7e3f6b4，Release）；`com.capiday.app`、Capiday、0.2.0 (5)、iOS 17.0；包内网页 10.77 |
+| 8 | ⚠️ 已知问题见 BUG_BACKLOG；测试者说明仍是草稿 |
+| 9 | ✅ 构建号 5 > 4；Bundle ID、存储键、数据结构不变 |
+
+**上传**：Founder 授权上传 Internal Testing，但 Mac 上的 `xcodebuild -exportArchive` 被本机的权限规则拦下（对外发布需要本人确认），**什么都没有传到 App Store Connect**。Founder 在 Mac 上任选一种：
+- Xcode → Window → Organizer → Archives → 选「Capiday 0.2.0 (5)」（2026-11-15）→ Distribute App → TestFlight Internal Only → Upload；
+- 或在终端运行（导出配置已在 `/tmp/capiday-rel5/ExportOptions.plist`，只给内部测试）：`xcodebuild -exportArchive -archivePath "$HOME/Library/Developer/Xcode/Archives/2026-11-15/Capiday 0.2.0 (5).xcarchive" -exportOptionsPlist /tmp/capiday-rel5/ExportOptions.plist -exportPath /tmp/capiday-rel5/export -allowProvisioningUpdates`。
+- 上传后 App Store Connect 显示 Processing，处理完成才是 Ready to Test。
+
 ## 4. 给测试者的说明（草稿，待 Founder 确认）
 
 - 这是测试版。请先导出一份备份（设置 → 备份我的手帐 → 选择保存位置，推荐 iCloud 云盘），再开始测试。

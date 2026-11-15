@@ -58,9 +58,9 @@ P0 数据丢失 / 无法使用 · P1 核心流程错误 · P2 明显影响体验
 | 任务总数 | **63**（Bug 28 · 功能改进 4 · DS 14 · MW 5 · TD 5 · REL 2 · FT 5） |
 | 未完成（不是 Done） | **63**（还没有任何一项经过 Founder 真机确认） |
 | 按优先级 | P0 9 · P1 13 · P2 24 · P3 15 · 未定级 2（TD-04、TD-05 建议关闭） |
-| 按状态 | Testing 29 · Planned 17 · Blocked 13 · In Progress 2（DS-01、REL-02）· Ready 1（TD-01）· Inbox 1（FT-05）· Done 0 |
+| 按状态 | Testing 29 · Planned 17 · Blocked 14 · In Progress 1（DS-01）· Ready 1（TD-01）· Inbox 1（FT-05）· Done 0 |
 | Testing（代码已改、等真机） | CAP-002～028（除 CAP-001）、CAP-E001、CAP-E002 |
-| Blocked（等 Founder） | 决定：CAP-E003、DS-13、DS-14、MW-04、FT-03、FT-04、TD-04、TD-05；批准修复：DS-09、DS-10、DS-12；真机数据：CAP-001；构建：REL-01 |
+| Blocked（等 Founder） | 决定：CAP-E003、DS-13、DS-14、MW-04、FT-03、FT-04、TD-04、TD-05；批准修复：DS-09、DS-10、DS-12；真机数据：CAP-001；构建：REL-01、REL-02（上传等 Founder 在 Mac 上确认）|
 
 P0 的 9 项：CAP-016（Testing）、DS-01（In Progress）、DS-02、DS-05、DS-07、MW-01、MW-02、MW-03、MW-05（Planned）。
 
@@ -118,7 +118,7 @@ P0 的 9 项：CAP-016（Testing）、DS-01（In Progress）、DS-02、DS-05、D
 | DS-12 | R6：备份存到「我的 iPhone › Capiday」会随 App 删除，却记为已验证 | P1 | Blocked | Alpha Stability | `LittleDaysWebShellView.swift` didPickDocumentsAt | 识别 App 自己的 Documents 并提醒选 iCloud Drive；真机确认位置判断 | **等 Founder 批准修复**；位置判断需要真机确认 | — |
 | TD-01 | Mac 模拟器脚本仍用旧 Bundle ID（dev.sh、sim-shots.sh、ios-layout-check.sh） | P3 | Ready | Alpha Stability | `tools/mac/*` | 三个脚本都能在模拟器里启动 App | ios-shelf-check.sh 已修（79ee727）；已建议另开任务 | — |
 | REL-01 | Founder 真机验收 Sprint 01（CAP-002～020、E001/E002） | P1 | Blocked | Alpha Stability | — | BETA_RELEASE_PLAN 各验收清单逐项通过 | 等新的内部构建 | — |
-| REL-02 | 内部 TestFlight 构建 0.2.0 (5)（含 V10.70～V10.77） | P1 | In Progress | Alpha Stability | Xcode Archive | Release Gate 通过 | 2026-11-15 Founder 在 Nightly Sprint 中授权上传到 Internal Testing；结果见第 7 节变更记录 | — |
+| REL-02 | 内部 TestFlight 构建 0.2.0 (5)（含 V10.70～V10.77） | P1 | Blocked | Alpha Stability | Xcode Archive | Release Gate 通过 | ARCHIVE SUCCEEDED（7e3f6b4）；**上传被 Mac 本机权限规则拦下，没有传到 App Store Connect**，需要 Founder 在 Mac 上确认（见 BETA_RELEASE_PLAN「0.2.0 (5)」） | — |
 
 ### 4.2 Alpha UX Polish
 
@@ -189,5 +189,5 @@ Memory Wall v1.0 全部 **Planned — Post-Alpha Stability**。方案见 [MEMORY
 |---|---|
 | 2026-11-15 | 建立本表：Backlog 的 CAP-001～020、CAP-E001～E004 全部收进来，并逐条核对代码中的修复标记和测试文件；新增 TD、REL、FT 条目；旧 ROADMAP 中已过时的两项标为建议关闭 |
 | 2026-11-15 | CAP-016 升为 **P0**（Founder，IMG_9476 / 9477 合并进来，不新建 ID）；V10.76 编辑器只显示这本手帐的页、返回这本手帐，状态 Testing |
-| 2026-11-15 | **Nightly Sprint**：Pending Inventory 核对——Founder 列出的 14 条线索都已有条目（1–2 → CAP-016；3–4 → CAP-018；5 → CAP-017；6 → CAP-020；7 → CAP-019；8 → **CAP-021（新）**；9 → **CAP-022（新）**；10 → CAP-014；11 → CAP-002 / 003 / 012 / 013 / 009；12 → CAP-010 / 011；13 → CAP-E004；14 → 其余 CAP-001～015）。Books 代码审查新增 CAP-023～027，回归发现 CAP-028。V10.77 修复 CAP-021～028，状态 Testing；构建号 4 → 5 |
+| 2026-11-15 | **Nightly Sprint**：Pending Inventory 核对——Founder 列出的 14 条线索都已有条目（1–2 → CAP-016；3–4 → CAP-018；5 → CAP-017；6 → CAP-020；7 → CAP-019；8 → **CAP-021（新）**；9 → **CAP-022（新）**；10 → CAP-014；11 → CAP-002 / 003 / 012 / 013 / 009；12 → CAP-010 / 011；13 → CAP-E004；14 → 其余 CAP-001～015）。Books 代码审查新增 CAP-023～027，回归发现 CAP-028。V10.77 修复 CAP-021～028，状态 Testing；构建号 4 → 5；全量回归 112/113 + v51 修复后通过；升级测试 4 → 5 通过；Release 归档 0.2.0 (5) 成功（7e3f6b4）；**上传被 Mac 权限规则拦下，未上传** |
 | 2026-11-15 | 新增 DS-01 实际内容和 DS-02～DS-14（自动 iCloud 备份规划 + 风险 R1～R10）；新增 MW-01～MW-05（照片墙 v1.0 规划）；补齐第 2、5、6 节 |

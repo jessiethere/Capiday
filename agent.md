@@ -69,6 +69,8 @@
 - **测试**：新 `tests/v174-browser.cjs` 17 项、`tests/v174-dates.test.mjs` 8 项、`tests/v175-browser.cjs` 21 项；`tests/v102` 按新的首页规则更新；v164 34/34；单元测试 323/323；外壳同步测试 OK。全量回归 run-all14 和 TestFlight 结果见下一条。
 - **全量回归 run-all14（113 个文件）**：112 通过，1 失败（v51）。根因是 V10.76 的编辑器范围也作用到了首页 ＋ 快速记录（`startPage` 共用），首页记一页后只看到一本手帐的页、没有这一天的封面。改为只有从手帐进入（`writeInBook`）才限定范围（`startPage(…, scoped)`）；v51 通过，P0 的 v169 / v173 仍通过，另外 26 个用到快速记录的测试全部通过。中途还试过「空白的一天跟着快速记录的手帐走」，因为会改变首页的既有行为，撤回了。
 - **v164（键盘）**：375×667 的 Captain 起名字输入框贴着键盘。V10.69 的代码在这个容器里也一样失败（为书脊测试装的 Noto CJK 字体让行高变了约 1 px），所以不是代码回归；仍加了 `scroll-margin-bottom` 让它离开键盘 14 px（CAP-028）。
+- **构建与上传**：构建号 4 → 5（版本 0.2.0、Bundle ID、显示名不变）。Mac 模拟器升级测试 0.2.0 (4) → (5) 通过（数据和媒体 5/5 完整）。Release 归档从 7e3f6b4 的干净副本 **ARCHIVE SUCCEEDED**（`~/Library/Developer/Xcode/Archives/2026-11-15/Capiday 0.2.0 (5).xcarchive`，Info.plist 核对过，包内网页 10.77）。**上传被 Mac 本机的权限规则拦下，没有上传**（Build Succeeded；Upload 未执行；不是 Processing / Ready to Test）。上传方法写在 BETA_RELEASE_PLAN「Gate 检查：0.2.0 (5)」。
+- **在线链接**：V10.73～V10.77 已发布到固定链接（Version 123，只发送 9 个改动文件）；之后的 7e3f6b4 只改了首页 ＋ 的范围，已再发布（Version 124，只发送 app.js）。
 - **没有做**：没有迁移或修改任何已有数据；已有 `bookId: "daily"` 但「我的手帐」已删除的旧页不自动处理（概率很低，见 CAP-023）；单页导出（CAP-E004）、照片墙、iCloud 备份按规划不在本轮。
 
 ### 2026-11-15 — 规划：Memory Wall 照片墙 v1.0、自动 iCloud 备份；Development HQ 总表补齐（只规划和写文档，没有改照片墙、备份逻辑或数据结构）
