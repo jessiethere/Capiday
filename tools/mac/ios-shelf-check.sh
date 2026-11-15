@@ -28,7 +28,7 @@ run() { # run <device type> <name> [content size]
   # A just-booted simulator sometimes refuses the first launch: try again.
   for try in 1 2 3; do
     : > $LOG
-    xcrun simctl launch --console-pty $DEV com.jessiethere.littledays -LittleDaysCheck $JS > $LOG 2>&1 &
+    xcrun simctl launch --console-pty $DEV com.capiday.app -LittleDaysCheck $JS > $LOG 2>&1 &
     sleep 6
     grep -q 'failed to launch' $LOG || break
     sleep 5
@@ -38,7 +38,7 @@ run() { # run <device type> <name> [content size]
     xcrun simctl io $DEV screenshot --type=png $W/shots/$2-$(python3 -c 'import time;print(int(time.time()*1000))').png >/dev/null 2>&1
     grep -q '^LittleDaysCheck: {\|LittleDaysCheck failed' $LOG && break
   done
-  xcrun simctl terminate $DEV com.jessiethere.littledays 2>/dev/null
+  xcrun simctl terminate $DEV com.capiday.app 2>/dev/null
   xcrun simctl shutdown $DEV 2>/dev/null; xcrun simctl delete $DEV 2>/dev/null
   echo "== $2"; grep -o 'LittleDaysCheck.*' $LOG | cut -c1-200
 }
