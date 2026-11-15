@@ -65,6 +65,19 @@ public struct JournalBook: Codable, Identifiable, Equatable {
     /// and, for "custom", the pages' keys ("yyyy-MM-dd|momentId") in order.
     public var pageOrder: String?
     public var customOrder: [String]?
+    /// V10.74: the example photos kept with the book, so its cover stays as
+    /// chosen (optional; older books work them out from their id as before).
+    public var coverSample: CoverSample?
+}
+
+/// V10.74: the example photos a cover template shows when the book has no
+/// photo of its own (or around it, e.g. a collage). Valid only for the
+/// template (`template`) and own photo (`own`, "" for none) they were kept
+/// for; "photo:<id>" library references.
+public struct CoverSample: Codable, Equatable {
+    public var template: String
+    public var own: String?
+    public var photos: [String]
 }
 
 public struct BookField: Codable, Identifiable, Equatable {

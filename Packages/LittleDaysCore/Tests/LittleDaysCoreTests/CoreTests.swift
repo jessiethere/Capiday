@@ -181,6 +181,12 @@ final class CoreTests: XCTestCase {
         XCTAssertEqual(ordered.customOrder?.last, "2026-11-10|")
         let plain = try JSONDecoder().decode(JournalBook.self, from: Data(#"{"id":"b","title":"T","category":"c","color":"blush","cover":"🌷"}"#.utf8))
         XCTAssertNil(plain.pageOrder)
+        // V10.74: the example photos kept with a book (optional; older books have none).
+        XCTAssertNil(plain.coverSample)
+        let kept = try JSONDecoder().decode(JournalBook.self, from: Data(#"{"id":"b","title":"T","category":"c","color":"blush","cover":"🌷","coverTemplate":"pet-tag","coverSample":{"template":"pet-tag","own":"","photos":["photo:beach-dog"]}}"#.utf8))
+        XCTAssertEqual(kept.coverSample?.template, "pet-tag")
+        XCTAssertEqual(kept.coverSample?.photos, ["photo:beach-dog"])
+        XCTAssertEqual(try JSONDecoder().decode(JournalBook.self, from: JSONEncoder().encode(kept)).coverSample, kept.coverSample)
         // V10.58: when a photo was taken, where that time came from, and its place in the picked order.
         let timed = try JSONDecoder().decode(StickerLayer.self, from: Data(#"{"id":"p2","kind":"photo","text":"b.jpg","x":50,"y":40,"scale":1,"rotation":0,"mediaRef":"media:p2","capturedAt":"2026-11-09T08:10:00.000Z","captureTimeSource":"exif-original","photoOrder":2}"#.utf8))
         XCTAssertEqual(timed.capturedAt, "2026-11-09T08:10:00.000Z")

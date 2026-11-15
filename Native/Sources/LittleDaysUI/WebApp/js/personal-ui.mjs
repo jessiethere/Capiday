@@ -39,15 +39,59 @@ export function coverCollection(book) {
 function photoKey(book) {
   return String(book.id || book.pendingId || book.title || "");
 }
+// V10.74 (CAP-018, second part) · One cover configuration.
+// Every view of a book's cover — the style thumbnails, the large preview,
+// 选择封面, the book page, the shelf (cover and spine), Home, the reader and
+// the shared PDF — gets its photos from coverPhotos() below, so they cannot
+// disagree. In order:
+//   1. the person's own photo (coverImage) always comes first and is never
+//      replaced by an example photo;
+//   2. the example photos fixed for this book (coverSample: the template
+//      and own photo they were chosen for, and the photos) — saved when the
+//      book is created or saved, so a later new name, a new photo library or
+//      a new rule never changes them;
+//   3. otherwise they are worked out from the book's id (pendingId while it
+//      is being created) and the template's theme.
+// While a book is being created or edited (coverDraft), the example photos
+// do not follow the name: typing a name never changes the cover's photo.
+// Older books without coverSample keep exactly the photos they had (the
+// rule for them is unchanged). 四季流转 changes with the season by design.
+function topicOf(book) {
+  return book.coverDraft ? { category: book.category } : book;
+}
 // The cover shows an example photo (not one the person chose).
 export function coverShowsSample(book) {
   const tpl = book.coverTemplate || "";
   return !book.coverImage && (MAGAZINE_COVERS.includes(tpl) || Object.hasOwn(THEME_COVERS, tpl));
 }
+const FIXED_BY_SEASON = "seasonal-almanac";
+function computedCoverPhotos(book, catalog, template) {
+  if (MAGAZINE_COVERS.includes(template)) return template === "magazine-collage" ? extraPhotoRefs(book, catalog, 2) : [rawCoverPhotoRef(book, catalog)];
+  if (Object.hasOwn(THEME_COVERS, template)) return themePhotoRefs(book, catalog, template, template === "everyday-polaroid" ? 2 : 1);
+  return book.coverImage ? [book.coverImage] : [];
+}
+export function coverPhotos(book, catalog, template = book.coverTemplate || "") {
+  const fixed = book.coverSample;
+  if (fixed && template !== FIXED_BY_SEASON && fixed.template === template && (fixed.own || "") === (book.coverImage || "") && Array.isArray(fixed.photos) && fixed.photos.length) return fixed.photos.slice();
+  return computedCoverPhotos(book, catalog, template).filter(Boolean);
+}
+// The example photos to keep with the book (undefined: nothing to keep —
+// a classic cover, the season cover, or only the person's own photo).
+export function coverSampleToKeep(book, catalog) {
+  const template = book.coverTemplate || "";
+  if (template === FIXED_BY_SEASON || !(MAGAZINE_COVERS.includes(template) || Object.hasOwn(THEME_COVERS, template))) return undefined;
+  const photos = coverPhotos(book, catalog, template);
+  if (!photos.length || (photos.length === 1 && photos[0] === book.coverImage)) return undefined;
+  return { template, own: book.coverImage || "", photos };
+}
+// The cover's main photo (the shelf spine and the shared book use it).
 export function coverPhotoRef(book, catalog) {
+  return coverPhotos(book, catalog)[0] || rawCoverPhotoRef(book, catalog);
+}
+function rawCoverPhotoRef(book, catalog) {
   if (book.coverImage) return book.coverImage;
   const photos = catalog.photos || [];
-  const pool = photos.filter((photo) => photo.collection === coverCollection(book));
+  const pool = photos.filter((photo) => photo.collection === coverCollection(topicOf(book)));
   const list = pool.length ? pool : photos;
   if (!list.length) return "";
   const seed = [...photoKey(book)].reduce((sum, c) => (sum * 31 + c.charCodeAt(0)) >>> 0, 7);
@@ -57,16 +101,17 @@ export const MAGAZINE_COVERS = ["magazine-jp", "magazine-west", "magazine-mono",
 // A few more photos for collage covers: the cover photo, then others from the
 // same theme (always the same ones for the same book).
 function extraPhotoRefs(book, catalog, count) {
-  const main = coverPhotoRef(book, catalog);
+  const main = rawCoverPhotoRef(book, catalog);
   const photos = catalog.photos || [];
-  const pool = photos.filter((photo) => photo.collection === coverCollection(book) && `photo:${photo.id}` !== main);
+  const pool = photos.filter((photo) => photo.collection === coverCollection(topicOf(book)) && `photo:${photo.id}` !== main);
   const list = pool.length ? pool : photos;
   const seed = [...photoKey(book)].reduce((sum, c) => (sum * 17 + c.charCodeAt(0)) >>> 0, 3);
   return [main, ...Array.from({ length: count }, (_, k) => list.length ? `photo:${list[(seed + k * 2) % list.length].id}` : "")];
 }
 function magazineCoverHTML(book, ctx, template) {
   const { tokens, media } = ctx;
-  const photo = media.resolve(coverPhotoRef(book, ctx.catalog));
+  const photos = coverPhotos(book, ctx.catalog, template);
+  const photo = media.resolve(photos[0] || "");
   const now = new Date();
   const issue = now.toLocaleDateString("en", { month: "short", year: "numeric" }).toUpperCase();
   const topic = String(book.category || "Journal").toUpperCase();
@@ -81,7 +126,7 @@ function magazineCoverHTML(book, ctx, template) {
   if (template === "magazine-minimal")
     return `<div class="book-cover cover-magazine-minimal" style="--cover-color:${coverColor(book, tokens)}"><span class="mag-brand">capiday</span><span class="mag-frame">${img}</span><b class="cover-title">${title}</b><span class="mag-foot">${line || esc(issue)}</span></div>`;
   if (template === "magazine-collage") {
-    const [, second, third] = extraPhotoRefs(book, ctx.catalog, 2);
+    const [, second, third] = photos;
     const extra = (ref) => (media.resolve(ref) ? `<img class="mag-photo" src="${esc(media.resolve(ref))}" alt="">` : `<span class="mag-photo mag-photo-empty"></span>`);
     return `<div class="book-cover cover-magazine-collage" style="--cover-color:${coverColor(book, tokens)}"><span class="collage-grid"><span class="c-main">${img}</span><span class="c-a">${extra(second)}</span><span class="c-b">${extra(third)}</span></span><span class="collage-band"><b class="cover-title">${title}</b><span>${esc(topic)} · ${esc(issue)}</span></span></div>`;
   }
@@ -138,7 +183,7 @@ function themePhotoRefs(book, catalog, template, count = 1) {
     const ids = SEASON_PHOTOS[coverSeason()];
     pool = photos.filter((photo) => ids.includes(photo.id));
   } else {
-    const collection = THEME_COVERS[template] || coverCollection(book);
+    const collection = THEME_COVERS[template] || coverCollection(topicOf(book));
     pool = photos.filter((photo) => photo.collection === collection);
   }
   const list = pool.length ? pool : photos;
@@ -149,7 +194,7 @@ function themePhotoRefs(book, catalog, template, count = 1) {
 }
 function themeCoverHTML(book, ctx, template) {
   const { tokens, media, catalog } = ctx;
-  const refs = themePhotoRefs(book, catalog, template, template === "everyday-polaroid" ? 2 : 1);
+  const refs = coverPhotos(book, catalog, template);
   const img = (ref, cls = "cv-photo") => {
     const src = ref ? media.resolve(ref) : "";
     return src ? `<img class="${cls}" src="${esc(src)}" alt="" loading="lazy">` : `<span class="${cls} cv-photo-empty"></span>`;
@@ -239,10 +284,10 @@ export function tagChipsHTML(tags, t) {
 const COVER_GROUPS = ["all", "life", "magazine", "paper", "cute"];
 export const DEFAULT_COVER_TEMPLATE = "magazine-jp";
 function templatePreviewBook(book, id) {
-  // Classic paper covers are shown without the photo (as before V10.54);
-  // magazine and themed covers show the book's photo or a library one.
-  const photoCover = MAGAZINE_COVERS.includes(id) || Object.hasOwn(THEME_COVERS, id);
-  return { ...book, coverTemplate: id, coverImage: photoCover ? book.coverImage : "" };
+  // V10.74 (CAP-018): a style thumbnail is the book's own cover in that
+  // style — the same photo, colour, font and decoration the large preview
+  // shows once it is chosen (classic covers used to drop the photo here).
+  return { ...book, coverTemplate: id };
 }
 export function coverOptionHTML(book, ctx, template) {
   const tpl = book.coverTemplate || "minimal-linen";

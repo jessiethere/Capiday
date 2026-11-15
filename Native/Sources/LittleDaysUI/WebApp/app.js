@@ -19,6 +19,7 @@ import {
   coverPhotoRef,
   MAGAZINE_COVERS,
   coverShowsSample,
+  coverSampleToKeep,
   bookDialogHTML,
   coverBrowserGridHTML,
   coverBrowserPhotosHTML,
@@ -10944,6 +10945,17 @@ function openBookDialog(book = null) {
         fields: [],
         visibility: "private",
       };
+  // V10.74 (CAP-018): one cover configuration for every view (see
+  // coverPhotos in personal-ui.mjs). A book opened to edit first keeps the
+  // example photos it shows right now, so nothing in the dialog changes them
+  // by itself; while the dialog is open the example photos do not follow
+  // the name (coverDraft — not saved).
+  if (book && !book.coverSample) {
+    const keep = coverSampleToKeep(book, catalog);
+    if (keep) bookDraft.coverSample = keep;
+  }
+  bookDraft.coverDraft = true;
+  coverThumbsKey = "";
   dialogKind = book ? "edit-book" : "book";
   bookSaving = false;
   $("#dialog-form").classList.remove("browsing");
@@ -10996,7 +11008,14 @@ async function saveBookForm() {
   }
   // The same id on a retry, so a second try never makes a second book.
   book.id ||= bookDraft.pendingId || id();
+  // V10.74 (CAP-018): keep the example photos shown in the dialog with the
+  // book, so its cover stays exactly as chosen (worked out before the id
+  // and the draft mark are settled, as the dialog showed them).
+  const keep = coverSampleToKeep({ ...book, pendingId: bookDraft.pendingId }, catalog);
+  if (keep) book.coverSample = keep;
+  else delete book.coverSample;
   delete book.pendingId;
+  delete book.coverDraft;
   if (isNew) bookDraft.pendingId = book.id;
   bookSaving = true;
   if (button) {
@@ -11089,14 +11108,24 @@ function refreshBookPreview({ covers = false } = {}) {
     const el = document.querySelector(`[data-section-hint="${key}"]`);
     if (el) el.textContent = text;
   }
-  // The style thumbnails carry the name too; a new photo redraws them.
-  if (covers) refreshCoverThumbs();
+  // The style thumbnails are the book's own cover in each style: anything
+  // that changes how the cover looks (photo, category, colour, font,
+  // decoration …) redraws them, so they never show an older state
+  // (CAP-018: a thumbnail kept the photo picked before the name was typed).
+  // Only the name is changed in place, so typing stays smooth.
+  if (covers || coverLookKey(bookDraft) !== coverThumbsKey) refreshCoverThumbs();
   else
     document.querySelectorAll("#dialog-form .cover-option .cv-title, #dialog-form .cover-option .cover-title").forEach((el) => {
       el.textContent = bookDraft.title || "Capiday";
     });
 }
+let coverThumbsKey = "";
+function coverLookKey(book) {
+  const { title, description, tags, fields, ...look } = book || {};
+  return JSON.stringify(look);
+}
 function refreshCoverThumbs() {
+  coverThumbsKey = coverLookKey(bookDraft);
   const row = $("#dialog-form .cover-featured");
   if (row) {
     const left = row.scrollLeft;
