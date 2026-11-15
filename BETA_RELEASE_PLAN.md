@@ -267,6 +267,25 @@
 - 或在终端运行（导出配置已在 `/tmp/capiday-rel5/ExportOptions.plist`，只给内部测试）：`xcodebuild -exportArchive -archivePath "$HOME/Library/Developer/Xcode/Archives/2026-11-15/Capiday 0.2.0 (5).xcarchive" -exportOptionsPlist /tmp/capiday-rel5/ExportOptions.plist -exportPath /tmp/capiday-rel5/export -allowProvisioningUpdates`。
 - 上传后 App Store Connect 显示 Processing，处理完成才是 Ready to Test。
 
+### Gate 检查：0.2.0 (6)（2026-11-15，V10.78）
+
+| # | 结果 |
+|---|---|
+| 1 | ✅ 没有未修复的 P0（CAP-016 Fixed，等真机） |
+| 2 | ✅ P1 都已修复并有自动化测试；真机 TBD |
+| 3 | ⚠️ 网页全量回归通过；模拟器升级测试读写正常；**真机 TBD** |
+| 4 | ✅ 模拟器升级测试 0.2.0 (4)（aaa7d2a，最后一次上传的构建）→ 0.2.0 (6)（0539d00）：2 本书、6 天 10 页、正文、草稿、计划、打卡、Captain 全部相同，媒体 9/9 可读，schemaVersion 1，没有救援页（合成数据，专用模拟器测完删除）；**真机 TBD** |
+| 5 | ⚠️ v161、v163、v178、v182（含 .capiday 往返和损坏文件）在全量回归里通过；**iCloud 自动备份和从 iCloud 恢复只在网页里用模拟的外壳测过，真机是第一次**；真机 TBD |
+| 6 | ✅ 全量回归 run-all15：118/118 通过；单元测试 344/344；Python 外壳测试 18 项 OK |
+| 7 | ✅ ARCHIVE SUCCEEDED（0539d00，Release，干净副本）；`com.capiday.app`、Capiday、0.2.0 (6)、iOS 17.0；包内网页 10.78；权限含 `iCloud.com.capiday.app`（CloudDocuments）。⚠️ 归档是开发签名，**发布签名（上传时生成）能否带上 iCloud 没有验证**——如果上传时 Xcode 报 iCloud 描述文件错误，到 developer.apple.com 确认 App ID `com.capiday.app` 打开了 iCloud 并勾选容器 `iCloud.com.capiday.app` |
+| 8 | ⚠️ 已知问题见 BUG_BACKLOG / DEVELOPMENT_TRACKER；测试者说明仍是草稿 |
+| 9 | ✅ 构建号 6 > 4（最后上传）且 > 5（归档未上传）；Bundle ID、存储键不变；新增字段都是可选的（`coverFontChosen`、`wall`） |
+
+**上传**：同 0.2.0 (5)，需要 Founder 在 Mac 上确认，**还没有上传**。0.2.0 (5) 不用再传（被 (6) 取代）。任选一种：
+- Xcode → Window → Organizer → Archives → 选「Capiday 0.2.0 (6)」（2026-11-15，不是「icloud-test」那份）→ Distribute App → TestFlight Internal Only → Upload；
+- 或在项目目录运行：`xcodebuild -exportArchive -archivePath "$HOME/Library/Developer/Xcode/Archives/2026-11-15/Capiday 0.2.0 (6).xcarchive" -exportOptionsPlist tools/mac/testflight/ExportOptions-internal.plist -exportPath /tmp/capiday-rel6f/export -allowProvisioningUpdates`。
+- 上传后 App Store Connect 先显示 Processing，处理完才是 Ready to Test；之后按上面「0.2.0 (6) 真机重点验收」测试。
+
 ## 4. 给测试者的说明（草稿，待 Founder 确认）
 
 - 这是测试版。请先导出一份备份（设置 → 备份我的手帐 → 选择保存位置，推荐 iCloud 云盘），再开始测试。

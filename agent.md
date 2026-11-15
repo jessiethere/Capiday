@@ -58,7 +58,8 @@
 - **CAP-E004**：阅读器「···」：存成图片 / 分享 / 这一页 PDF / 整本书 PDF。`renderJournalCanvas({ scale: 2 })` 出 2160 × 2700；先加载页面字体；照片读不到不出文件；一片底色不交出；不改数据。
 - **照片墙 v1.0（MW-01～05）**：可选的 `state.wall`（隐藏、整页、顺序），只存来源 key；管理模式（选择、隐藏、已隐藏 / 恢复、时间 / 自定义排序、放到最前 / ‹ ›、拿下整页）；整页卡片用 `sharedCanvasHTML`；阅读器「贴到照片墙」（最多 50）；恢复预览提示旧备份没有照片墙设置；Swift `MemoryWallSetting`。**长按拖动没做**（按钮代替，留到 v1.1）。
 - **自动 iCloud 备份（DS-02、04～08）**：`capiday-format.mjs`（.capiday 读写，三层检查）；手动备份超过 100 MB 改出 .capiday；恢复支持 .capiday；`LittleDaysICloudBackup.swift`（容器写入 + 大小核对 + 保留规则 + 列表 + 下载后经 `__icloud` 路由给网页）；设置里的开关与状态；`Capiday.entitlements`。详见 `docs/ICLOUD_AUTO_BACKUP_PLAN.md` 第 9 节。
-- **测试**：新 v178（单元 4、浏览器 9）、v179（9）、v180（14）、v181（单元 9、浏览器 21）、v182（单元 8、浏览器 18）；更新 v102、v163、v168；单元测试 344/344；Mac 模拟器构建 BUILD SUCCEEDED；Release 归档（开发签名）ARCHIVE SUCCEEDED 且带 iCloud 权限。全量回归 run-all15 结果见下一行。
+- **测试**：新 v178（单元 4、浏览器 9）、v179（9）、v180（14）、v181（单元 9、浏览器 21）、v182（单元 8、浏览器 18）；更新 v102、v163、v168；单元测试 344/344；Mac 模拟器构建 BUILD SUCCEEDED；Release 归档（开发签名）ARCHIVE SUCCEEDED 且带 iCloud 权限。全量回归 run-all15：**118 个浏览器测试文件全部通过（118/118）**；Python 外壳测试 18 项 OK。
+- **最终构建（0539d00）**：Mac 从干净副本 Release 归档 ARCHIVE SUCCEEDED（`Capiday 0.2.0 (6).xcarchive`）；`com.capiday.app`、Capiday、0.2.0 (6)、iOS 17.0、包内网页 10.78、权限里有 `iCloud.com.capiday.app`（CloudDocuments；开发签名）。模拟器升级测试 0.2.0 (4)（aaa7d2a）→ 0.2.0 (6)（0539d00）：2 本书、6 天 10 页、正文、草稿、计划、打卡、Captain 全部相同，媒体 9/9 可读，schemaVersion 1，没有救援页（合成数据，专用模拟器测完删除）。在线链接已发布 V10.78（Version 125）。导出配置放进仓库 `tools/mac/testflight/ExportOptions-internal.plist`（只限内部测试）。
 - **构建**：构建号 5 → 6（5 归档过但从未上传）。上传仍需要 Founder 在 Mac 上确认；本地导出（验证发布签名）也被 Mac 权限规则拦下，**发布签名能否带上 iCloud 没有验证**。
 - **没有验证**：所有新功能的真机行为；iCloud 的真实写入、上传、清理、换机恢复；模拟器里外壳的单页导出分享面板；大量媒体时 `.capiday` 的内存占用。
 - **未做 / 留待**：照片墙长按拖动；Swift 原生流式 `.capiday`；ZIP64；`NSUbiquitousContainers`（让「文件」App 看得到 iCloud 里的备份）；DS-11（回滚失败入口）、DS-13（账户名进备份）。
