@@ -12,6 +12,7 @@
 - `.claude/launch.json` 为 Claude 桌面 App 本地会话提供可点击的 Dev servers（Windows 用 `py -3`，macOS/Linux 用 `python3`，端口 8080）；改启动方式时同步更新它。云端/网页会话侧栏没有服务器列表，不要承诺。
 - **不要让用户下载 ZIP。** 用户本机：只需第一次 `git clone`，之后每次双击 `Start-Windows.cmd`（会自动 `git pull --ff-only` 再打开 localhost:8080）；手动方式是在项目目录运行 `git pull` 和 `py -3 tools\preview.py --open`。
 - **每次修改 `Public/` 后运行 `python3 tools/sync_native_web.py`**，把同样的文件同步进 iOS 外壳（`Native/Sources/LittleDaysUI/WebApp/`）；`tests/test_native_shell.py` 会检查两者一致。数据模型新增字段同时更新 `Packages/LittleDaysCore` 的 `Models.swift`（可选字段）与 Core 测试，保持 Swift 与 HTML 数据一致。
+- **Bug 管理与内测发布（2026-11-15 用户确认）**：Bug 记在根目录 [BUG_BACKLOG.md](BUG_BACKLOG.md)（CAP-001 起编号），发布计划和发布前检查（Release Gate）在 [BETA_RELEASE_PLAN.md](BETA_RELEASE_PLAN.md)。Founder 说「记录一个 Bug」时按 BUG_BACKLOG.md 第 3 节处理：先查重 → 新建 ID → 分析影响和级别 → 复现步骤与可能原因 → 修复建议和目标版本 → 更新 Backlog 与日志并提交。**默认不改代码**，Founder 明确说「开始修复」「修复 CAP-XXX」或批准一批修复后才开发；发现 P0 或重大数据安全风险时立即报告并建议暂停相关测试。代码修改不等于问题解决，只有真机按复现步骤确认后才能标 Verified；自动化测试通过不能说成真机通过。每个 TestFlight Build 发布前逐项过 Release Gate。
 - 开始或接续任何任务前，先阅读 [agent.md](agent.md) 和 [README.md](README.md)，了解最新进度、约定和待办。
 - 随后检查仓库最新代码、分支与提交记录；同时阅读相关的 docs/PRODUCT_SPEC.md、DESIGN_SYSTEM.md、ARCHITECTURE.md，基于已完成工作继续，不从零重复创建。
 - **每次更新都必须同步更新 agent.md 和 README.md 中的更新日志**，包括代码、配置和文档修改；日志应随对应改动一起提交。
