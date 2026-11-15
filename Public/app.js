@@ -9910,8 +9910,20 @@ function twoPointerMetrics() {
 // it a touch is a tap: it selects, or (twice, quickly) starts typing — a
 // finger always wobbles a few pixels, and 2 px made every tap a tiny move.
 const DRAG_SLOP = { touch: 8, pen: 6, mouse: 4 };
-const DOUBLE_TAP_MS = 400;
+// From one press to the next (V10.71: was measured after each tap's redraw,
+// which a full page on a phone could push past the window).
+const DOUBLE_TAP_MS = 450;
 let lastTap = null; // { id, at, x, y } — the last tap on a text box
+// V10.71 (CAP-014) · On iPhone a tap the canvas has already handled (select,
+// move, a double tap that starts typing) still became a click afterwards.
+// The page had been redrawn by then, so that click landed outside the
+// canvas, and iOS put the caret in the editable field under the finger —
+// on a 只写几句话 page that is the page's words, not the text box (measured
+// in the Simulator: focus went to [data-inline="body"]). The touch is ended
+// without that click; every button outside the canvas works as before.
+function endCanvasTouch(event) {
+  if (event.cancelable) event.preventDefault();
+}
 function beginGesture(layer, mode, event) {
   const rect = canvasRect();
   drag = {
@@ -9923,9 +9935,17 @@ function beginGesture(layer, mode, event) {
     start: gestureSnapshot(layer),
     before: structuredClone(editor),
     moved: false,
+    // V10.71 (CAP-014): when the finger went down — a double tap is timed
+    // from press to press, not after the page has been redrawn.
+    downAt: Number.isFinite(event.timeStamp) && event.timeStamp > 0 ? event.timeStamp : performance.now(),
     // Handles are deliberate: they follow at once. A move waits for the slop.
     slop: mode === "move" || mode === "crop" ? DRAG_SLOP[event.pointerType] ?? DRAG_SLOP.touch : 0,
   };
+  // V10.71 (CAP-014): this touch is the canvas's own gesture — iOS must not
+  // turn it into a click afterwards. The touch's end goes to the element the
+  // finger first touched even after a redraw has taken it out of the page,
+  // so the listener sits on that element (a document listener never hears it).
+  if (event.pointerType === "touch" && event.target?.addEventListener) event.target.addEventListener("touchend", endCanvasTouch, { once: true, passive: false });
   if (mode === "rotate" || mode === "resize") {
     // The item's real centre on screen (its angle does not move it).
     const element = layerElement(layer.id)?.getBoundingClientRect();
@@ -10290,7 +10310,7 @@ function swapPhotos(a, b, from) {
 }
 function commitGesture() {
   if (!drag) return;
-  const { moved, before, layer, swapWith, start, mode, startX, startY } = drag;
+  const { moved, before, layer, swapWith, start, mode, startX, startY, downAt } = drag;
   drag = null;
   document.body.classList.remove("text-dragging");
   document.querySelectorAll("#journal-canvas .swap-target").forEach((el) => el.classList.remove("swap-target"));
@@ -10317,7 +10337,7 @@ function commitGesture() {
     lastTap = null;
     return;
   }
-  const now = performance.now();
+  const now = downAt;
   const twice = lastTap && lastTap.id === layer.id && now - lastTap.at < DOUBLE_TAP_MS && Math.hypot(startX - lastTap.x, startY - lastTap.y) < 32;
   lastTap = twice ? null : { id: layer.id, at: now, x: startX, y: startY };
   if (twice) {
