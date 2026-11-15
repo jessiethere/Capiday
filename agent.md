@@ -48,6 +48,24 @@
 
 ## 更新日志
 
+### 2026-11-15 — 登记产品需求 CAP-E004 阅读器单页导出（P2，排在 Alpha 稳定性之后；本条只登记和审查，没有改 App）
+
+- **需求**（Founder，截图 IMG_9469 / IMG_9470）：
+  - 阅读器「···」增加：保存当前页为 PNG、分享当前页、导出当前页 PDF、导出整本书 PDF（已有）；
+  - 只导出当前页，不带阅读器界面，原始比例，高清，等字体和图片加载完，不改数据，失败不生成空白文件；
+  - 先完成高优先级 Bug 修复，再开发；不上传 TestFlight。
+- **可复用能力审查（代码确认）**：
+  - `export.mjs` 的 `renderJournalCanvas`：把一页画成 1080 × 1350 的 canvas，整本书 PDF 和 Studio PNG 都用它；
+  - 阅读器显示的就是这一页的数据。「— 20:38 · EVENING」「CAPIDAY · NO. 14」是页面上的文字层，会一起导出。
+  - `book-share.mjs` 的 `buildPdf`：可以生成一页的 PDF。
+  - 分享走 `navigator.share`，退回下载时由 iOS 外壳的 `WKDownload` 弹出 `UIActivityViewController`；现有通道，不需要新的原生桥接。
+  - 要补：高清倍率、字体等待、空白检查、菜单与文案。
+- **排期**：
+  - 等全量回归 run-all12 跑完，把 V10.73～V10.75 发布到固定链接（Alpha 稳定性交付）；
+  - 然后开发 V10.76；
+  - 测试计划写在 BUG_BACKLOG CAP-E004。
+- **文件**：BUG_BACKLOG.md（CAP-E004）、docs/PRODUCT_SPEC.md（新增一节）、BETA_RELEASE_PLAN.md（排期一行）、README.md。
+
 ### 2026-11-15 — 书架排版：CAP-020（书脊竖排标点 / 截断）+ CAP-017 扩大（卡片、书本页）（网页 V10.75）
 
 - **需求**（Founder「Bookshelf Typography Bugs」，IMG_9468 / 9466 / 9467）：
