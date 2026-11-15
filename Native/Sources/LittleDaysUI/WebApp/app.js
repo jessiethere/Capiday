@@ -79,7 +79,7 @@ import { communityHTML, profileHTML, inboxHTML, bellHTML } from "./js/community-
 import { experience } from "./js/levels.mjs";
 import { openDrawBoard } from "./js/draw.mjs";
 import { logEvent, readEvents, summarize } from "./js/events.mjs";
-import { watchCoverTitles } from "./js/cover-fit.mjs";
+import { watchCoverTitles, spineTitleHTML, spineIsLatin } from "./js/cover-fit.mjs";
 import { UPDATES, LATEST, noteFor, hasUnseen, markSeen } from "./js/whats-new.mjs";
 import { recordedDays, streakInfo, bestStreak, CELEBRATED_KEY } from "./js/streak.mjs";
 import * as Community from "./js/community.mjs";
@@ -3308,6 +3308,11 @@ function isOurBook(book) {
   return (social().collab?.[book.id]?.members || []).some((member) => member.status === "active");
 }
 // A bookshelf: spines stand on wooden planks; tap one to pull it out.
+// V10.75 (CAP-020): a spine's title is one vertical line set by
+// js/cover-fit.mjs (vertical marks, cut after a whole character with "…").
+function spineTitle(title) {
+  return `<span class="spine-title${spineIsLatin(title) ? " latin" : ""}" data-title="${esc(title || "")}">${spineTitleHTML(title || "")}</span>`;
+}
 function shelfHTML(books = state().books, canAdd = true) {
   const pulled = books.find((book) => book.id === pulledBook);
   const spine = (book, index) => {
@@ -3316,10 +3321,10 @@ function shelfHTML(books = state().books, canAdd = true) {
     // under a dark veil, the title in bold white, the issue number below.
     if (MAGAZINE_COVERS.includes(book.coverTemplate)) {
       const photo = safePhoto(coverPhotoRef(book, catalog));
-      return `<button class="spine mag-spine h${index % 4} ${pulled?.id === book.id ? "pulled" : ""}" data-action="pull-book" data-book="${esc(book.id)}" aria-pressed="${pulled?.id === book.id}" aria-label="${esc(book.title)} · ${pagesLabel(count)}" style="--spine:${coverColor(book, tokens)}">${photo ? `<img class="spine-photo" src="${esc(photo)}" alt="" loading="lazy">` : ""}<span class="spine-brand">LD</span><span class="spine-title ${/[\u3000-\u9fff\uac00-\ud7af\uff00-\uffef]/.test(book.title || "") ? "" : "latin"}" style="--n:${Math.max(5, [...String(book.title || "")].length)}">${esc(book.title)}</span><small>NO.${String(count).padStart(2, "0")}</small></button>`;
+      return `<button class="spine mag-spine h${index % 4} ${pulled?.id === book.id ? "pulled" : ""}" data-action="pull-book" data-book="${esc(book.id)}" aria-pressed="${pulled?.id === book.id}" aria-label="${esc(book.title)} · ${pagesLabel(count)}" style="--spine:${coverColor(book, tokens)}">${photo ? `<img class="spine-photo" src="${esc(photo)}" alt="" loading="lazy">` : ""}<span class="spine-brand">LD</span>${spineTitle(book.title)}<small>NO.${String(count).padStart(2, "0")}</small></button>`;
     }
     const sticker = book.coverDecoration && book.coverDecoration !== "none" ? stickerURL(book.coverDecoration, catalog) : "";
-    return `<button class="spine h${index % 4} ${pulled?.id === book.id ? "pulled" : ""}" data-action="pull-book" data-book="${esc(book.id)}" aria-pressed="${pulled?.id === book.id}" aria-label="${esc(book.title)} · ${pagesLabel(count)}" style="--spine:${coverColor(book, tokens)};font-family:${esc(fontFamily(book.coverFont || "elegant", catalog))}">${sticker ? `<img src="${esc(sticker)}" alt="">` : "<i></i>"}<span class="spine-title">${esc(book.title)}</span><small>${count}</small></button>`;
+    return `<button class="spine h${index % 4} ${pulled?.id === book.id ? "pulled" : ""}" data-action="pull-book" data-book="${esc(book.id)}" aria-pressed="${pulled?.id === book.id}" aria-label="${esc(book.title)} · ${pagesLabel(count)}" style="--spine:${coverColor(book, tokens)};font-family:${esc(fontFamily(book.coverFont || "elegant", catalog))}">${sticker ? `<img src="${esc(sticker)}" alt="">` : "<i></i>"}${spineTitle(book.title)}<small>${count}</small></button>`;
   };
   const items = [...books.map(spine), ...(canAdd ? [`<button class="spine add" data-action="new-book" aria-label="${t("books.create")}"><span>＋</span></button>`] : [])];
   const rows = [];

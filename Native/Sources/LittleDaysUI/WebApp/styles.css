@@ -5683,13 +5683,17 @@ details.check-history[open] > summary > span:first-child::after {
   margin: 6px 0;
 }
 .spine-title {
-  flex: 1;
+  flex: 1 1 0;
+  min-height: 0;
   writing-mode: vertical-rl;
+  /* V10.75 (CAP-020): Chinese upright, Latin sideways; one line, cut after
+     a whole character by js/cover-fit.mjs (no CSS ellipsis: WebKit does not
+     draw one in vertical text). */
+  text-orientation: mixed;
   font-size: 14px;
   letter-spacing: 2px;
   line-height: 1.2;
   overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
   max-height: 100%;
 }
@@ -9603,19 +9607,21 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
   margin-bottom: 4px;
 }
 .spine.mag-spine .spine-title {
-  /* One character wide: each character sits under the last (no vertical
-     writing mode, so every font stacks evenly). */
-  writing-mode: horizontal-tb;
-  width: 1.2em;
+  /* V10.75 (CAP-020): real vertical text (it used to stack characters in a
+     one-character-wide horizontal box, so Chinese punctuation kept its
+     horizontal shape and place, and long titles shrank). One line, cut
+     after a whole character with "…" when the spine is too short. */
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
   flex: 0 1 auto;
   min-height: 0;
+  max-height: 100%;
   margin: auto 0;
-  white-space: normal;
-  word-break: break-all;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow: hidden;
   text-align: center;
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
-  font-size: min(13px, calc(124px / var(--n, 6) / 1.18));
+  font-size: 13px;
   font-weight: 700;
   line-height: 1.18;
   letter-spacing: 0;
@@ -25261,5 +25267,44 @@ dialog .primary {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: var(--fit-lines, 3);
   overflow: hidden;
+  white-space: normal;
+}
+
+/* V10.75 (CAP-020) · Spine typography (js/cover-fit.mjs spineTitleHTML).
+   Marks are set in a system font that has vertical forms; "!?" stand
+   upright next to Chinese; one or two digits sit across the line. */
+.spine-title .sp-mark {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", sans-serif;
+  letter-spacing: 0;
+}
+.spine-title .sp-up {
+  text-orientation: upright;
+}
+.spine-title .sp-tcy {
+  text-combine-upright: all;
+  -webkit-text-combine: horizontal;
+}
+/* Five books and the + on a narrow phone: spines may get a little narrower
+   instead of running off the shelf. */
+.shelf-books .spine {
+  flex: 0 1 auto;
+  min-width: 38px;
+}
+.shelf-books .spine.add {
+  min-width: 34px;
+}
+
+/* V10.75 (CAP-017) · Book names on cards: at most two lines with "…";
+   on the book's own page the whole name, wrapping naturally. */
+.pulled-copy h2,
+.lib-now b {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.book-detail-copy h2 {
+  overflow-wrap: anywhere;
   white-space: normal;
 }

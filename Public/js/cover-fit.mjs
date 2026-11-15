@@ -160,6 +160,94 @@ export function fitCoverTitle(title) {
   }
   title.classList.add("fit-cut");
 }
+// V10.75 (CAP-020) · Book spines on the shelf: one vertical line.
+// A spine is narrow (about 40–58 px), so its title is set as real vertical
+// text (writing-mode: vertical-rl, one column, no line breaks):
+//  · Chinese characters upright; Latin words lie sideways, as on a printed
+//    spine (text-orientation: mixed);
+//  · Chinese punctuation takes its vertical form (「，。！？：」 → the
+//    vertical glyphs), set in a system font that has those forms
+//    (the bundled handwriting fonts may not);
+//  · "!" "?" next to Chinese stand upright; one or two digits sit side by
+//    side across the line (纵中横, text-combine-upright);
+//  · when the title is longer than the spine, it is cut after a whole
+//    character (never half a character or half a mark) and ends with "…".
+// The full title stays in the button's label (and on the cover).
+const SPINE = ".spine .spine-title[data-title]";
+const CJK = /[\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff\uac00-\ud7af]/;
+const WIDE_MARK = /[\u3000-\u303f\uff01-\uff0f\uff1a-\uff20\uff3b-\uff40\uff5b-\uff65\u2010-\u2027\u00b7\ufe10-\ufe19\ufe30-\ufe4f]/;
+const NARROW_MARK = /^[!?]+$/;
+const esc = (value) => String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+function graphemes(text) {
+  if (typeof Intl !== "undefined" && Intl.Segmenter) return [...new Intl.Segmenter("zh", { granularity: "grapheme" }).segment(text)].map((s) => s.segment);
+  return [...text];
+}
+export function spineIsLatin(title) {
+  return !CJK.test(title || "") && !WIDE_MARK.test(title || "");
+}
+// The spine's words as HTML: marks in a font with vertical forms, short
+// digit runs and "!?" upright in a Chinese title.
+export function spineTitleHTML(title, cut = false) {
+  const parts = graphemes(String(title || ""));
+  const latin = spineIsLatin(title);
+  let html = "";
+  for (let i = 0; i < parts.length; ) {
+    const ch = parts[i];
+    if (!latin && /\d/.test(ch)) {
+      let j = i;
+      while (j < parts.length && /\d/.test(parts[j])) j++;
+      const run = parts.slice(i, j).join("");
+      html += run.length <= 2 ? `<span class="sp-tcy">${run}</span>` : esc(run);
+      i = j;
+      continue;
+    }
+    if (!latin && NARROW_MARK.test(ch)) html += `<span class="sp-mark sp-up">${esc(ch)}</span>`;
+    else if (WIDE_MARK.test(ch)) html += `<span class="sp-mark">${esc(ch)}</span>`;
+    else html += esc(ch);
+    i++;
+  }
+  if (cut) html += `<span class="sp-mark sp-more">…</span>`;
+  return html;
+}
+// Fits: nothing overflows, and the last glyph (a vertical "…" or mark can
+// reach past the line box) ends inside the spine's words area.
+function spineFits(el) {
+  if (el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1) return false;
+  const box = el.getBoundingClientRect();
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  let last = null;
+  let n;
+  while ((n = walker.nextNode())) if (n.data.trim()) last = n;
+  if (!last) return true;
+  const range = document.createRange();
+  range.setStart(last, last.data.length - 1);
+  range.setEnd(last, last.data.length);
+  const q = range.getBoundingClientRect();
+  return q.bottom <= box.bottom + 1 && q.top >= box.top - 1;
+}
+export function fitSpineTitle(el) {
+  const title = el.dataset.title || "";
+  el.innerHTML = spineTitleHTML(title);
+  el.classList.remove("sp-cut");
+  if (!el.isConnected || !el.clientHeight) {
+    if (el.isConnected) pending.add(el);
+    return;
+  }
+  pending.delete(el);
+  if (spineFits(el)) return;
+  // Longest start (in whole characters) that fits with "…" after it.
+  const parts = graphemes(title);
+  let lo = 0;
+  let hi = parts.length - 1;
+  while (lo < hi) {
+    const mid = Math.ceil((lo + hi) / 2);
+    el.innerHTML = spineTitleHTML(parts.slice(0, mid).join("").replace(/[\s\u3000、，。,.·:：;；]+$/, ""), true);
+    if (spineFits(el)) lo = mid;
+    else hi = mid - 1;
+  }
+  el.innerHTML = spineTitleHTML(parts.slice(0, lo).join("").replace(/[\s\u3000、，。,.·:：;；]+$/, ""), true);
+  el.classList.add("sp-cut");
+}
 export function fitCoverTitles(root = document) {
   const titles = root.matches?.(TITLE) ? [root] : [...root.querySelectorAll(TITLE)];
   titles.forEach(fitCoverTitle);
@@ -190,6 +278,12 @@ function flush() {
       seen.add(title);
       fitCoverTitle(title);
     }
+    const spines = el.matches?.(SPINE) ? [el] : [...(el.querySelectorAll?.(SPINE) || [])];
+    for (const spine of spines) {
+      if (seen.has(spine)) continue;
+      seen.add(spine);
+      fitSpineTitle(spine);
+    }
   }
 }
 export function watchCoverTitles() {
@@ -205,11 +299,13 @@ export function watchCoverTitles() {
       // titles that could not be measured another try. (Not the titles'
       // own class changes: fitting itself sets those.)
       if (record.type === "attributes") {
-        if (pending.size && !record.target.closest?.(TITLE)) queue(record.target);
+        if (pending.size && !record.target.closest?.(TITLE) && !record.target.closest?.(SPINE)) queue(record.target);
         continue;
       }
+      // (A spine's own words are rewritten by fitSpineTitle: not watched.)
+      if (record.target.closest?.(SPINE)) continue;
       if (record.target.closest?.(TITLE)) queue(record.target);
-      for (const node of record.addedNodes) if (node.nodeType === 1 && (node.matches(TITLE) || node.querySelector(TITLE) || node.closest?.(TITLE))) queue(node);
+      for (const node of record.addedNodes) if (node.nodeType === 1 && (node.matches(TITLE) || node.querySelector(TITLE) || node.closest?.(TITLE) || node.matches(SPINE) || node.querySelector(SPINE))) queue(node);
     }
   }).observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["hidden", "open", "class"] });
   addEventListener("resize", () => queue(document.documentElement));
