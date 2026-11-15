@@ -48,6 +48,13 @@
 
 ## 更新日志
 
+### 2026-11-15 — 试传 TestFlight 0.2.0 (6)：失败，Xcode 没有登录 Apple 账号（没有改 App）
+
+- **需求**（Founder）：TestFlight 还是 0.2.0 (4)。原因：(5)、(6) 只归档了，上传一直没执行（见 BETA_RELEASE_PLAN「Gate 检查」）。Founder 选择「现在上传 (6)」。
+- **运行**：Mac 上确认归档 `Capiday 0.2.0 (6).xcarchive`（`com.capiday.app`，0.2.0，构建 6，Team 7VFYCTCXRS）存在；运行 `xcodebuild -exportArchive … -exportOptionsPlist tools/mac/testflight/ExportOptions-internal.plist -exportPath /tmp/capiday-rel6f/export -allowProvisioningUpdates` → `EXPORT FAILED`：「App Store Connect access for “7VFYCTCXRS” is required」。`DVTDeveloperAccountManagerAppleIDLists` 为空，即 Xcode 没有登录 Apple 账号。
+- **结果**：没有上传任何东西；TestFlight 仍是 0.2.0 (4)。BETA_RELEASE_PLAN 的 (6) 上传说明已补充这次失败和原因。
+- **下一步**：Founder 在 Mac 上 Xcode → Settings → Accounts 登录开发者账号（团队 7VFYCTCXRS）后重新运行同一条命令，或用 Organizer → Distribute App → TestFlight Internal Only。上传后仍要等 Processing → Ready to Test；发布签名能否带上 iCloud 仍未验证。
+
 ### 2026-11-15 — 工具：三个 Mac 脚本改用新 Bundle ID `com.capiday.app`（只改脚本，没有改 App）
 
 - **需求**（Founder）：`tools/mac/dev.sh`、`sim-shots.sh`、`ios-layout-check.sh` 仍用改名前的 `com.jessiethere.littledays` 启动 / 结束 App，`xcrun simctl launch` 会报 `FBSOpenApplicationServiceErrorDomain code=4`（failed to launch）。`ios-shelf-check.sh` 已在 79ee727 修过，这次修其余三个。

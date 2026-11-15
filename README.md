@@ -186,6 +186,10 @@ npm run test:browser:v65
 
 ## 更新日志
 
+### 2026-11-15 — TestFlight 0.2.0 (6) 还没传上去
+
+- TestFlight 仍是 0.2.0 (4)：(5)、(6) 只在 Mac 上归档好了。这次试传 (6) 失败，因为 Mac 上的 Xcode 没有登录 Apple 账号，什么都没传上去。在 Xcode → Settings → Accounts 登录后再传（步骤见 BETA_RELEASE_PLAN.md「Gate 检查：0.2.0 (6)」）。
+
 ### 2026-11-15 — Mac 工具脚本改用新 Bundle ID（只改脚本，App 不变）
 
 - `tools/mac/dev.sh`、`sim-shots.sh`、`ios-layout-check.sh` 改用 `com.capiday.app` 启动 / 结束 App，修复改名后模拟器里「failed to launch」（`ios-shelf-check.sh` 之前已修）。工程名、模块名、存储键等内部名称不变。

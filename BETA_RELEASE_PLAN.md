@@ -281,7 +281,7 @@
 | 8 | ⚠️ 已知问题见 BUG_BACKLOG / DEVELOPMENT_TRACKER；测试者说明仍是草稿 |
 | 9 | ✅ 构建号 6 > 4（最后上传）且 > 5（归档未上传）；Bundle ID、存储键不变；新增字段都是可选的（`coverFontChosen`、`wall`） |
 
-**上传**：同 0.2.0 (5)，需要 Founder 在 Mac 上确认，**还没有上传**。0.2.0 (5) 不用再传（被 (6) 取代）。任选一种：
+**上传**：同 0.2.0 (5)，需要 Founder 在 Mac 上确认，**还没有上传**。2026-11-15 14:02（Mac 本地时间）Founder 同意后用下面的命令试传：`EXPORT FAILED`，「App Store Connect access for “7VFYCTCXRS” is required」——Mac 上的 Xcode 当时**没有登录任何 Apple 账号**（Xcode → Settings → Accounts 为空），**什么都没有传上去**。先在 Xcode 里登录开发者账号，再用下面任一方式上传。0.2.0 (5) 不用再传（被 (6) 取代）。任选一种：
 - Xcode → Window → Organizer → Archives → 选「Capiday 0.2.0 (6)」（2026-11-15，不是「icloud-test」那份）→ Distribute App → TestFlight Internal Only → Upload；
 - 或在项目目录运行：`xcodebuild -exportArchive -archivePath "$HOME/Library/Developer/Xcode/Archives/2026-11-15/Capiday 0.2.0 (6).xcarchive" -exportOptionsPlist tools/mac/testflight/ExportOptions-internal.plist -exportPath /tmp/capiday-rel6f/export -allowProvisioningUpdates`。
 - 上传后 App Store Connect 先显示 Processing，处理完才是 Ready to Test；之后按上面「0.2.0 (6) 真机重点验收」测试。
