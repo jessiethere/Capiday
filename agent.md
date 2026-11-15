@@ -48,6 +48,59 @@
 
 ## 更新日志
 
+### 2026-11-15 — CAP-018（P1）第二部分：统一的封面配置（网页 V10.74；新证据合并到 CAP-018，不新建 ID）
+
+- **需求**：
+  - Founder 真机 IMG_9467：新建手帐「看看」，选「植物标本」，缩略图是花束，大预览是樱花；
+  - 要求合并到现有的 P1 Cover Consistency Bug；
+  - 建立统一的 Cover Configuration，不要用强制刷新掩盖；
+  - 区分模板示例图和用户照片；增加 6 类自动化测试；
+  - 不改已有手帐的封面，不上传 TestFlight。
+- **复现**：
+  - 用 git worktree 跑 V10.72（与 0.2.0 (4) 同一套代码），截图的情况一模一样：缩略图 `bouquet`，大预览 `cherry-blossom`。
+  - V10.73 上，植物标本已经一致，但「日系杂志」+「我家的猫」仍是缩略图咖啡、大预览猫。
+- **根因**：
+  1. 缩略图在打开弹窗时画一次，之后改名字只换文字、不重画照片，是过期状态；改颜色、分类也一样；
+  2. 杂志封面和几个主题封面的示例照片按「分类 + 名字」的关键词选主题；
+  3. 书脊和分享 PDF 用另一个函数挑照片；缩略图对经典封面会去掉自己的照片。
+  - 已排除：随机、缓存、异步加载、React 状态、创建时重新生成配置、保存或加载时替换资源。
+- **修复**：
+  - `personal-ui.mjs` 的 `coverPhotos()` 作为唯一来源；顺序是自己的照片 → 随书保存的示例照片 `coverSample` → 按 id / pendingId 和模板主题计算。
+  - `coverSampleToKeep()` 在创建 / 保存时存下示例照片；草稿 `coverDraft` 期间照片不跟名字变；
+  - 缩略图按「封面外观键」变化重画（`coverLookKey`，名字除外）；
+  - 缩略图保留经典封面上的自己的照片；书脊、分享 PDF 也走 `coverPhotos`。
+  - 编辑已有手帐时，先把它当前的样子固定在草稿里；
+  - 「四季流转」不保存示例照片。
+  - Swift：`JournalBook.coverSample: CoverSample?`，Core 测试覆盖。
+- **已有数据**：
+  - 没有迁移；已有手帐的计算规则不变，封面不变；
+  - 只有用户编辑并保存时，才把它当时的样子存为 `coverSample`。
+- **测试**：
+  - 新 `tests/v171-browser.cjs` 21 项通过，覆盖 Founder 要求的 6 类：
+    1. 选择后大预览立即同步；
+    2. 切换样式不留上一个样式的照片；
+    3. 创建后一致；
+    4. 重新打开后一致；
+    5. 改名字不换照片（新建和编辑）；
+    6. 自己的照片不被示例照片覆盖。
+  - 另外：已有手帐封面不变，打开编辑后直接保存也不变。
+  - `v170` 30 项仍通过。
+  - 单元测试 `node --test` 310 项、Python 18 项通过。
+  - Swift Core 测试只改了源码，**本环境没有 Swift 工具链，没有运行**。
+  - 全量浏览器回归 run-all11（109 个文件，含 v169～v171）提交时仍在运行。
+  - 上一条（V10.73）的 run-all10 因为中途改了代码而停掉；停掉前 21/21 通过。
+  - 真机：**Pending Device Verification**。
+- **文件**：
+  - `Public/js/personal-ui.mjs`、`Public/app.js`、`Public/js/whats-new.mjs`（10.74），同步到 `Native/Sources/LittleDaysUI/WebApp/`；
+  - `Packages/LittleDaysCore/Sources/LittleDaysCore/Models.swift`、`Packages/LittleDaysCore/Tests/LittleDaysCoreTests/CoreTests.swift`；
+  - `tests/v171-browser.cjs`；
+  - BUG_BACKLOG.md（CAP-018 合并新证据）、BETA_RELEASE_PLAN.md（验收第 1b、9 步）、README.md。
+- **未完成**：
+  - 全量回归结果；
+  - 固定链接发布 V10.73 / V10.74；
+  - 真机验收；
+  - Mac 上运行 Swift Core 测试。
+
 ### 2026-11-15 — 封面系统：CAP-018（P1）选的封面与创建后不一致、CAP-017 长标题、CAP-019 默认黑体（网页 V10.73，加入 Sprint 01）
 
 - **需求**：Founder 真机反馈三个封面问题，加入 Alpha Stabilization Sprint 01 并修复。

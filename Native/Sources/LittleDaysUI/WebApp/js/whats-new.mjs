@@ -4,6 +4,30 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.74",
+    date: "2026-11-15",
+    zh: {
+      title: "封面在每个地方都一样",
+      items: [
+        "新建手帐本时，封面风格的小图和上面的大预览一定是同一张照片；以前输入名字后，小图还停在旧照片（例如「植物标本」小图是花束，大预览是樱花）。",
+        "输入或修改名字不会再换掉封面照片；换封面风格时，大预览马上换成那个风格，不会留着上一个风格的照片。",
+        "创建时会把封面上的示例照片和这本手帐一起保存：书本页、书架、首页、重新打开 App 后都是同一张。",
+        "自己上传或选的封面照片永远优先，不会被模板的示例照片换掉。",
+        "已有手帐本的封面不变。「四季流转」照旧跟着季节换照片。",
+      ],
+    },
+    en: {
+      title: "The same cover everywhere",
+      items: [
+        "When creating a journal, the style thumbnails and the large preview always show the same photo; a thumbnail used to keep an older photo after you typed the name (Herbarium: a bouquet in the thumbnail, cherry blossoms in the preview).",
+        "Typing or changing the name never changes the cover photo; choosing another style changes the large preview at once, with nothing left from the previous style.",
+        "The cover's example photos are kept with the journal when it is created: the book page, the shelf, Home and the App after reopening all show the same.",
+        "Your own cover photo always comes first and is never replaced by a style's example.",
+        "Existing journals keep their covers. Through the Seasons still changes with the season.",
+      ],
+    },
+  },
+  {
     version: "10.73",
     date: "2026-11-15",
     zh: {
