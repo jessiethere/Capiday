@@ -85,7 +85,15 @@
   - `tests/v172-browser.cjs` 21 项（Noto CJK 下）；
   - 相关旧测试：v170、v171、v35、v3、v130、v45、v158 通过；
   - 单元测试见下面「回归」。
-- **iOS 模拟器**：进行中（tools/mac/ios-shelf-check.sh：iPhone 17、SE 3 代、17 Pro Max、Pro Max 最大字号），结果另记一条。
+- **iOS 模拟器**（`tools/mac/ios-shelf-check.sh`，新建模拟器，iOS 27.2，用完删除）：
+  - iPhone 17（402pt）、SE 3 代（375pt）、17 Pro Max（440pt）：1 / 3 / 5 本一层、11 本书脊，**全部 0 个问题**。
+  - 截图确认标点是竖排字形、!? 和数字直立、英文横躺。
+  - Pro Max + 系统最大字号：和正常字号完全一样（界面是固定 px）。
+  - 跑通之前修了脚本的三个问题（都已提交）：
+    - 新开机的模拟器第一次启动失败要重试；
+    - Bundle ID 应是 `com.capiday.app`（旧脚本 `ios-layout-check.sh` 等还在用旧 ID，已建议另开任务修）；
+    - 新安装的 App 先要登录合成的本地账号，需要重新加载一次页面。
+  - 新模拟器第一次加载页面约 60 秒。
 - **动态字体**：App 的界面字号是固定的 px，WKWebView 不跟随系统「更大字体」。模拟器最大字号那一轮用来确认书架不会因此变样（结果见上）。
 - **文件**：
   - `Public/js/cover-fit.mjs`、`Public/app.js`、`Public/styles.css`、`Public/js/whats-new.mjs`（10.75），同步到 Native；

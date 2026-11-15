@@ -959,7 +959,10 @@
   - 测试环境说明：
     - 容器里原来只有文泉驿字体，Chromium 竖排中文时每个字的高度几乎为零（字叠在一起），无法测量；
     - 装上 Noto Sans CJK 后正常，v172 才能做尺寸检查；没有可用竖排度量时，测试会跳过尺寸检查并打印说明。
-  - **iOS 模拟器**（`tools/mac/ios-shelf-check.sh`，iPhone 自带苹方）：见 agent.md 本次记录。
+  - **iOS 模拟器**（`tools/mac/ios-shelf-check.sh`，iOS 27.2 WebKit，iPhone 自带苹方，新建的模拟器、合成书名，用完删除）：
+    - iPhone 17（402pt）、iPhone SE 3 代（375pt）、iPhone 17 Pro Max（440pt）：1、3、5 本一层，11 本书脊，**0 个问题**（每个字形完整、在书脊里、从书名开头显示、放不下才用「…」、都在书架上，字号 13 / 14px）。
+    - 截图确认：「！」「？」「：」「「」」「——」「……」都是竖排字形；「第3本!?」的 3 和 !? 直立；英文横躺；「如果我的名字非常长」在杂志书脊上完整显示。
+    - Pro Max + 系统最大字号（Dynamic Type accessibility-XXXL）：结果和正常字号**完全一样**。App 界面用固定 px 字号，不跟随系统字号，书架不会因此变样。
   - 真机：**Pending Device Verification**。
 - **Related**：CAP-017（长书名，同一套共享排版）。
 
