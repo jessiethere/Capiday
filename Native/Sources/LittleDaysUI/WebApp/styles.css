@@ -22025,10 +22025,10 @@ body.typing:not(.typing-dialog) .ctx-caption {
 }
 #choose-dialog:has(.story-text-sheet) {
   margin-bottom: var(--kb, 0px);
-  max-height: calc(var(--vv-h, 100dvh) - 8px);
+  max-height: var(--avail);
 }
 #choose-dialog .choose-sheet.sw {
-  max-height: min(calc(var(--vv-h, 100dvh) - 16px), 720px);
+  max-height: min(var(--avail), 720px);
 }
 
 /* V10.51 · Home wordmark in Chinese: 开铺手帐 in an elegant display serif
@@ -22300,8 +22300,8 @@ body.typing:not(.typing-dialog) .ctx-caption {
    touches, and 创建 always at the bottom (above the keyboard too). */
 .book-editor-dialog {
   padding: 20px 18px 0;
-  max-height: min(90dvh, calc(var(--vv-h, 100dvh) - 16px));
-  margin-bottom: var(--kb, auto);
+  /* V10.70 (CAP-010): inside the safe area; the keyboard case is the shared rule. */
+  max-height: min(90dvh, var(--avail));
   overscroll-behavior: contain;
 }
 .book-editor-dialog h2 {
@@ -24970,9 +24970,12 @@ body.typing:not(.typing-dialog) .ctx-caption {
    visualViewport (--kb / --vv-h, updateVisibleArea), so the Chinese
    candidate bar is included. The WKWebView keyboard covers the page
    without shrinking it, so a sheet at the bottom was under the keyboard. */
-.choose-dialog[open]:has(:is(input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="file"]), textarea, [contenteditable="true"], [contenteditable="plaintext-only"]):focus) {
+/* V10.70: follows the coordinator (html.kb-open), not ":has(:focus)" — focus
+   leaves the field when a finger presses a button, and the sheet moved
+   before the finger lifted (the tap landed elsewhere). */
+html.kb-open .choose-dialog[open] {
   margin-bottom: var(--kb, 0px);
-  max-height: calc(var(--vv-h, 88dvh) - 8px);
+  max-height: min(88dvh, var(--avail));
   transition: margin-bottom 0.18s ease-out;
 }
 /* 16 px: iOS does not zoom the page in when the field gets the caret. */
@@ -24983,9 +24986,16 @@ body.typing:not(.typing-dialog) .ctx-caption {
   .choose-dialog[open] { transition: none; }
 }
 /* While the words sheet is open the page can scroll up behind it, so the
-   words being styled can always be brought above a compact sheet. */
-body:has(#choose-dialog[open] .choose-sheet.sw) #app-scroll {
-  padding-bottom: 60dvh;
+   words being styled can always be brought above a compact sheet.
+   V10.70 (CAP-013): the room is a spacer at the end of the page, not padding
+   on the scroller — a sticky bar subtracts the scroller's padding, which
+   lifted 换照片 / 写文字 / 换个排版 / 保存 by 60 % of the screen (measured:
+   bottom bar 765 → 241 pt) into the middle of the page. */
+body:has(#choose-dialog[open] .choose-sheet.sw) #app::after {
+  content: "";
+  display: block;
+  flex: none;
+  height: 60dvh;
 }
 
 /* V10.67 · 备份我的手帐 / 从备份恢复: one calm sheet per step. */
@@ -25049,10 +25059,14 @@ body:has(#choose-dialog[open] .choose-sheet.sw) #app-scroll {
   html[style*="--kb"] body.typing:not(.typing-dialog) #app-scroll {
     padding-bottom: calc(var(--kb, 0px) + 24px);
   }
-  html[style*="--kb"] dialog[open]:not(.choose-dialog):has(:is(input, textarea, [contenteditable]):focus) {
-    margin-top: calc(var(--vv-top, 0px) + 10px);
+  /* V10.70: html.kb-open (the coordinator) instead of "--kb is set" — on
+     iOS 27 the keyboard can be up with no --kb — and below the status bar. */
+  html.kb-open dialog[open]:not(.choose-dialog) {
+    top: 0;
+    bottom: 0;
+    margin-top: calc(var(--vv-top, 0px) + var(--sat) + 8px);
     margin-bottom: auto;
-    max-height: calc(var(--vv-h, 100dvh) - 20px);
+    max-height: var(--avail);
     overflow-y: auto;
   }
 }
@@ -25083,4 +25097,64 @@ body.text-dragging * {
     transform: translateY(-100%);
     z-index: 41;
   }
+}
+
+
+/* ---------- V10.70 · Editor layout (Beta 2: Editor Layout & Interaction Stability) ----------
+   One available height for every sheet and dialog, from the coordinator in
+   app.js (html.kb-open, --vv-h, --vv-top, --kb) and the safe area.
+   --sat / --sab: the status bar (and Dynamic Island) / home-indicator area. */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  /* The height a sheet or dialog may use: below the status bar, above the
+     keyboard when it is up. */
+  --avail: calc(100dvh - var(--sat) - 8px);
+}
+html.kb-open {
+  --avail: calc(var(--vv-h, 100dvh) - var(--sat) - 8px);
+}
+.choose-dialog {
+  max-height: min(88dvh, var(--avail));
+}
+/* Centred form dialogs (新建手帐本 …) are centred inside the safe area (CAP-010). */
+/* :where keeps it weaker than the keyboard rule above (no ID weight). */
+dialog:where(#form-dialog)[open] {
+  top: calc(var(--sat) + 8px);
+  bottom: calc(var(--sab) + 8px);
+  max-height: min(90dvh, var(--avail));
+}
+/* The keyboard covers the home indicator: no safe-area room under a sheet. */
+html.kb-open .choose-sheet,
+html.kb-open .choose-sheet.sw {
+  padding-bottom: 12px;
+}
+/* 写字 · 改字体 while typing (CAP-012): the field first. The hint goes and the
+   live window is shorter, so 字体与样式 › (which switches to the type tools)
+   stays in view; the rest scrolls inside the sheet. */
+html.kb-open .choose-sheet.sw .sw-optional {
+  display: none;
+}
+html.kb-open .choose-sheet.sw .sw-preview {
+  height: clamp(72px, calc(var(--vv-h, 100dvh) * 0.16), 160px);
+}
+/* What is being written for stays named, in one line (the strip shows which). */
+html.kb-open .choose-sheet.sw .sw-now small {
+  display: none;
+}
+html.kb-open .choose-sheet.sw .sw-now :is(img, .sw-glyph) {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+}
+/* Short phones (iPhone SE, mini): the live window gives its room to the field. */
+@media (max-height: 700px) {
+  html.kb-open .choose-sheet.sw .sw-preview {
+    display: none;
+  }
+}
+/* One tool row at a time (CAP-013): while the words sheet is open, the story
+   page's 换照片 / 写文字 / 换个排版 / 保存 steps aside (the sheet has 完成). */
+body:has(#choose-dialog[open] .choose-sheet.sw) .qe-bar {
+  visibility: hidden;
 }

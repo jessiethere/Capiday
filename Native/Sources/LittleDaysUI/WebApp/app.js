@@ -5875,16 +5875,25 @@ function openStoryText(target = null) {
   dialog.innerHTML = `<div class="choose-sheet story-text-sheet sw" data-size="full"><div class="choose-grabber" aria-hidden="true"></div>${swHeadHTML()}<div class="sw-preview" aria-hidden="true"></div><div class="sw-body">${storyWordsHTML()}</div></div>`;
   if (!dialog.open) dialog.showModal();
   watchStoryPreview();
-  dialog.addEventListener(
-    "close",
-    () => {
-      dialog.classList.remove("see-through");
-      swCompact = false;
-      swObserver?.disconnect();
-      swObserver = null;
-    },
-    { once: true },
-  );
+  // V10.70 · Scroll restoration: the page is scrolled to keep the words above
+  // the sheet while it is open; closing it puts the page back where it was.
+  const scroller = $("#app-scroll");
+  const pageTop = scroller?.scrollTop || 0;
+  if (!dialog.dataset.swClose) {
+    dialog.dataset.swClose = "1";
+    dialog.addEventListener(
+      "close",
+      () => {
+        delete dialog.dataset.swClose;
+        dialog.classList.remove("see-through");
+        swCompact = false;
+        swObserver?.disconnect();
+        swObserver = null;
+        if (scroller && page === "story") requestAnimationFrame(() => scroller.scrollTo({ top: pageTop }));
+      },
+      { once: true },
+    );
+  }
   // V10.29: ready to type at once (in the same tap, so iOS shows the keyboard).
   const field = dialog.querySelector("[data-sw-text]");
   if (field) {
@@ -13961,16 +13970,29 @@ window.capidayKeyboard = (top) => {
 function nativeTop() {
   return nativeKeyboardTop && document.activeElement?.matches?.(TYPING_FIELD) ? nativeKeyboardTop : 0;
 }
+// ---------- V10.70 · Editor layout coordinator (Beta 2) ----------
+// The one place that decides whether the keyboard is up and how much of the
+// screen is visible. Every sheet, dialog, the type bar and the paper read
+// the result (html.kb-open, --vv-h, --vv-top, --kb); nothing else measures.
+// The keyboard counts as up only while a field has the caret AND it is
+// measured (by the iOS shell, or by the visual viewport). Before V10.70 the
+// values were set while typing but only cleared by a visual-viewport scroll:
+// after the keyboard closed (e.g. 查看更多封面) a dialog kept its
+// keyboard-sized height — measured in the Simulator: --kb 397px, --vv-h 477px
+// left on an 874-pt screen with no keyboard (CAP-011).
 function updateVisibleArea() {
   const vv = window.visualViewport;
   const root = document.documentElement;
   if (!vv) return;
-  const keyboard = keyboardHeight();
+  const focused = Boolean(document.activeElement?.matches?.(TYPING_FIELD));
+  const keyboard = focused ? keyboardHeight() : 0;
+  const open = focused && (keyboard > 80 || nativeTop() > 0);
+  root.classList.toggle("kb-open", open);
   root.style.setProperty("--vv-top", `${Math.round(vv.offsetTop)}px`);
-  if (keyboard > 80 || nativeTop()) root.style.setProperty("--vv-h", `${Math.round(visibleHeight())}px`);
+  if (open) root.style.setProperty("--vv-h", `${Math.round(visibleHeight())}px`);
   else root.style.removeProperty("--vv-h");
   // How much of the bottom the keyboard covers (a bottom sheet lifts by this much).
-  if (keyboard > 80) root.style.setProperty("--kb", `${Math.round(keyboard)}px`);
+  if (open && keyboard > 80) root.style.setProperty("--kb", `${Math.round(keyboard)}px`);
   else root.style.removeProperty("--kb");
 }
 function keepFieldInView() {
@@ -14076,7 +14098,26 @@ document.addEventListener("focusin", (event) => {
   document.body.classList.toggle("typing-dialog", Boolean(event.target.closest("dialog[open]")));
   setTimeout(keepFieldInView, 250);
 });
+// A finger (or mouse button) that is down: the layout must not move under it.
+let pressing = false;
+document.addEventListener("pointerdown", () => (pressing = true), true);
+for (const type of ["pointerup", "pointercancel"])
+  document.addEventListener(type, () => {
+    pressing = false;
+    if (layoutAfterPress) {
+      layoutAfterPress = false;
+      // after this press's click has been handled
+      setTimeout(() => requestAnimationFrame(updateVisibleArea), 0);
+    }
+  }, true);
+let layoutAfterPress = false;
 document.addEventListener("focusout", () => {
+  // The layout follows the caret leaving — next frame (focus may be moving to
+  // another field), or, if the caret left because a finger is pressing a
+  // button, once that press is over: the dialog must not resize under the
+  // finger, or the tap lands somewhere else (查看更多封面 did not open).
+  if (pressing) layoutAfterPress = true;
+  else requestAnimationFrame(updateVisibleArea);
   // Moving from one field to the next keeps typing mode on.
   typingTimer = setTimeout(() => {
     if (document.activeElement?.matches?.(TYPING_FIELD)) return;
@@ -14119,7 +14160,10 @@ document.addEventListener(
   },
   true,
 );
-window.visualViewport?.addEventListener("resize", keepFieldInView);
+window.visualViewport?.addEventListener("resize", () => {
+  updateVisibleArea();
+  keepFieldInView();
+});
 window.visualViewport?.addEventListener("scroll", updateVisibleArea);
 // V10.69 · The pinned link runs inside another page (the Claude app shows it
 // in a frame). On iPhone the keyboard then covers the frame without making

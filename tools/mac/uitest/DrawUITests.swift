@@ -459,7 +459,7 @@ final class DrawUITests: XCTestCase {
     // JSON line per step; the shell script (editor-layout.sh) checks them.
     func dumpLayout(_ step: String) {
         let s = state()
-        let keys = ["sa", "vars", "vv", "kbNative", "active", "bodyClass", "qeBar", "sheet", "sheetScroll", "swField", "swMore", "swOptional", "swSize", "storyWords", "bookDialog", "bookH2", "bookName", "coverMore", "bookScroll", "coverTiles"]
+        let keys = ["sa", "vars", "vv", "active", "bodyClass", "qeBar", "qeBarVis", "words", "sheet", "sheetScroll", "swField", "swMore", "swOptional", "swSize", "storyWords", "bookDialog", "bookH2", "bookName", "coverMore", "bookScroll", "coverTiles"]
         var out: [String: Any] = ["step": step]
         for k in keys { out[k] = s[k] ?? NSNull() }
         let kb = app.keyboards.firstMatch
@@ -483,13 +483,15 @@ final class DrawUITests: XCTestCase {
     func testBookDialogLayout() throws {
         startFresh()
         tap("navBooks", wait: 1.5)
-        tap("newBook", wait: 1.5)
+        tap("newBook", wait: 2.0)
         dumpLayout("b1-book-open")
+        // iOS's own ✓ above the keyboard closes it.
+        let done = app.toolbars.buttons.allElementsBoundByIndex.last
+        if let done, done.exists { done.tap(); Thread.sleep(forTimeInterval: 1.5) }
+        dumpLayout("b1b-book-no-keyboard")
         tap("bookName", wait: 2.0)
         dumpLayout("b2-book-keyboard")
-        guard let more = rect("coverMore") else { XCTFail("coverMore"); return }
-        point(more, 0.5, 0.5).tap()
-        Thread.sleep(forTimeInterval: 2.0)
+        tap("coverLink", wait: 2.0)
         dumpLayout("b3-covers-after-keyboard")
         Thread.sleep(forTimeInterval: 2.0)
         dumpLayout("b4-covers-later")
@@ -506,6 +508,10 @@ final class DrawUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 1.0)
         dumpLayout("s1-story")
         tap("storyTextBtn", wait: 2.5)
+        // A few words (pinyin "ni" + space → 你).
+        for k in ["n", "i"] where app.keys[k].exists { app.keys[k].tap() }
+        if app.keys["space"].exists { app.keys["space"].tap() } else if app.keys["空格"].exists { app.keys["空格"].tap() }
+        Thread.sleep(forTimeInterval: 1.0)
         dumpLayout("s2-write-keyboard")
         tap("swCompact", wait: 2.0)
         dumpLayout("s3-font-mode")

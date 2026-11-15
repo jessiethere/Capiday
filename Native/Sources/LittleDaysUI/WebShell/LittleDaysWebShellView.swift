@@ -150,6 +150,10 @@ final class LittleDaysKeyboard: NSObject {
         let center = NotificationCenter.default
         center.addObserver(self, selector: #selector(changed(_:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
         center.addObserver(self, selector: #selector(hidden(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
+        // V10.70 · Again once the keyboard has finished moving, so the page
+        // measures the final layout (not the one at the start of the slide).
+        center.addObserver(self, selector: #selector(changed(_:)), name: UIResponder.keyboardDidChangeFrameNotification, object: nil)
+        center.addObserver(self, selector: #selector(hidden(_:)), name: UIResponder.keyboardDidHideNotification, object: nil)
     }
 
     @objc private func changed(_ note: Notification) {
