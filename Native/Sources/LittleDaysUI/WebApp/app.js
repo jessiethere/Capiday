@@ -5778,6 +5778,7 @@ function setStoryTextSize(compact) {
   const sheet = $("#choose-dialog .choose-sheet.sw");
   if (!sheet) return;
   swCompact = compact;
+  swCentre = compact;
   sheet.dataset.size = compact ? "compact" : "full";
   sheet.querySelector(".sw-head").outerHTML = swHeadHTML();
   if (compact) {
@@ -5792,7 +5793,7 @@ function setStoryTextSize(compact) {
     field?.focus({ preventScroll: true });
     queueStoryPreview();
   }
-  requestAnimationFrame(revealStoryTarget);
+  requestAnimationFrame(() => revealStoryTarget(swCentre));
 }
 // Drag the handle (or the title) down for the type tools only, up for writing; a tap switches.
 let swDrag = null;
@@ -5875,6 +5876,9 @@ function openStoryText(target = null) {
   dialog.innerHTML = `<div class="choose-sheet story-text-sheet sw" data-size="full"><div class="choose-grabber" aria-hidden="true"></div>${swHeadHTML()}<div class="sw-preview" aria-hidden="true"></div><div class="sw-body">${storyWordsHTML()}</div></div>`;
   if (!dialog.open) dialog.showModal();
   watchStoryPreview();
+  swCentre = false;
+  swResize?.disconnect();
+  swResize?.observe(dialog.querySelector(".choose-sheet.sw"));
   // V10.70 · Scroll restoration: the page is scrolled to keep the words above
   // the sheet while it is open; closing it puts the page back where it was.
   const scroller = $("#app-scroll");
@@ -5885,6 +5889,7 @@ function openStoryText(target = null) {
       "close",
       () => {
         delete dialog.dataset.swClose;
+        swResize?.disconnect();
         dialog.classList.remove("see-through");
         swCompact = false;
         swObserver?.disconnect();
@@ -5960,7 +5965,16 @@ function watchStoryPreview() {
 window.visualViewport?.addEventListener("resize", () => {
   if ($("#choose-dialog .sw-preview")) queueStoryPreview();
 });
-function revealStoryTarget() {
+// V10.70 · Once the words sheet has its new height (compact ↔ full, keyboard
+// in or out), the words are placed again — from the sheet's own resize, not a
+// timer. In the compact type tools they go to the middle of what is visible
+// above the sheet, with the page around them (not just "somewhere in view").
+let swCentre = false;
+const swResize = typeof ResizeObserver === "function" ? new ResizeObserver(() => {
+  if (!$("#choose-dialog[open] .choose-sheet.sw")) return;
+  requestAnimationFrame(() => revealStoryTarget(swCentre));
+}) : null;
+function revealStoryTarget(middle = false) {
   const scroll = $("#app-scroll"),
     canvas = $(".story-canvas");
   if (!scroll || !canvas || !storyWords) return;
@@ -5974,7 +5988,8 @@ function revealStoryTarget() {
   const el = layer && (canvas.querySelector(`[data-layer="${CSS.escape(layer.id)}"]`) || (said && [...canvas.querySelectorAll(".layer")].find((x) => x.textContent.trim() === said)));
   const box = el?.getBoundingClientRect();
   if (box && box.height) {
-    if (box.top >= 70 && box.bottom <= room) return;
+    if (!middle && box.top >= 70 && box.bottom <= room) return;
+    if (middle && Math.abs(box.top + box.height / 2 - room / 2) < 24) return;
     const centre = box.top + box.height / 2;
     return scroll.scrollBy({ top: centre - Math.max(90, Math.min(room * 0.5, room - box.height / 2 - 8)), behavior: "smooth" });
   }
@@ -6072,7 +6087,7 @@ function storyType(change) {
   const tools = $("#choose-dialog .sw-type");
   if (tools) tools.outerHTML = storyTypeHTML();
   // A bigger size can move the words: keep them in sight above the sheet.
-  if (swCompact) requestAnimationFrame(revealStoryTarget);
+  if (swCompact) requestAnimationFrame(() => revealStoryTarget(swCentre));
   logEvent("story_type", {});
 }
 async function saveStoryText() {

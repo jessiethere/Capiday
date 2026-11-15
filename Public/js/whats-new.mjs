@@ -4,6 +4,28 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.70",
+    date: "2026-11-15",
+    zh: {
+      title: "编辑时的键盘和面板更稳定",
+      items: [
+        "关掉键盘后，新建手帐本和「查看更多封面」的弹窗会马上恢复正常高度，不再只占半屏、要滚一下才显示。",
+        "新建手帐本和「写字 · 改字体」的面板顶部留出状态栏的位置，标题不再贴着时间和电量。",
+        "「写字」时，输入框和「字体与样式 ›」都在键盘上方；键盘弹出时去掉了底部多余的空白。",
+        "改字体时，「换照片 / 写文字 / 换个排版 / 保存」不会再浮在页面中间；正在改的字留在面板上方。关掉面板后，页面回到原来的位置。",
+      ],
+    },
+    en: {
+      title: "Steadier keyboard and panels while editing",
+      items: [
+        "After the keyboard closes, New journal and More covers go straight back to their full height — no more half-height dialog that needs a scroll.",
+        "New journal and Write · Fonts keep clear of the status bar.",
+        "While writing, the field and Fonts & style › stay above the keyboard; the empty room under the panel is gone while the keyboard is up.",
+        "While styling words, Change photo / Write / Layout / Save no longer floats over the page; the words stay above the panel, and the page returns to where it was when the panel closes.",
+      ],
+    },
+  },
+  {
     version: "10.69",
     date: "2026-11-14",
     zh: {

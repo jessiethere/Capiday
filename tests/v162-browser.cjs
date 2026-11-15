@@ -137,6 +137,7 @@ const photo = (n) => `${__dirname}/../Packages/LittleDaysCore/Sources/LittleDays
       await page.evaluate((kb) => {
         document.documentElement.style.setProperty("--kb", kb + "px");
         document.documentElement.style.setProperty("--vv-h", innerHeight - kb + "px");
+        document.documentElement.classList.add("kb-open"); // V10.70: the coordinator's mark
       }, kb);
       await page.waitForTimeout(400); // the sheet slides up (0.18 s)
       const where = await page.evaluate((kb) => {

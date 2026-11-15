@@ -48,6 +48,56 @@
 
 ## 更新日志
 
+### 2026-11-15 — V10.70 · Beta 2 · Editor Layout & Interaction Stability（统一编辑器布局；登记 CAP-014）
+
+- **需求**：
+  - Founder 在真机 TestFlight 上发现 6 项编辑器布局和交互问题，要求先审查架构，区分已确认的根因和假设，再统一修复。不要逐个加 CSS 补丁，不用固定高度、固定延迟或大量 `!important`；建立测试矩阵，更新 Backlog 和发布计划；不上传 TestFlight。
+  - 另外登记「双击文字无法编辑」：**只登记，不改代码**。
+- **架构审查（修改前）**：
+  - 键盘相关的监听分散在多处：可见区域 resize 有 4 个、scroll 有 1 个，焦点进入 6 个、离开 7 个。各自判断键盘：故事预览、离开打字、`keepFieldInView`、固定链接估算……
+  - CSS 里同一个弹层的高度写在 3–4 处：`.choose-dialog`、带焦点的弹层、`#choose-dialog:has(.story-text-sheet)`、`.choose-sheet.sw` 和 `#choose-dialog .choose-sheet.sw`。
+  - 键盘规则依赖 `:has(:focus)`；弹窗和弹层都没有用 `safe-area-inset-top`。
+- **测量（模拟器 iPhone 17 / iOS 27.2，真实触摸 + 软键盘）**：
+  - 新工具：`tools/mac/uitest/editor-layout.sh`（临时副本、临时模拟器，测完删除）、`fake-photos.js`（用 App 自带的示例照片进入「今天的故事」，合成数据）、`probe.js` 新增测量项、`check-layout.py`（把测量结果判成通过 / 失败）。
+  - **修复前：13 项失败**。已确认的根因：
+    - **K · 键盘高度**：键盘收起后 `--kb` 仍是 397px、`--vv-h` 仍是 477px（可见区域已经是 874），新建手帐本弹窗停在 [16, 461 高]，看到 0 个封面。
+      - 原因：`updateVisibleArea` 只绑在可见区域的 scroll 上；resize 只经过 `keepFieldInView`，而它在没有焦点时直接返回；外壳 `keyboardWillHide` 在键盘开始收起时就发。
+    - **S · 安全区**：状态栏 62 pt，弹窗和写字面板顶边在 10–16 pt。写字面板里「字体与样式 ›」在 457–497，被系统输入栏（487）截断；底部还留着约 50 pt 安全区空白。
+    - **W · V10.66 的副作用**：故事页操作栏平时在 765 pt，面板打开时在 241 pt（被 60dvh 的滚动容器内边距抬高 524 pt）。
+    - 修 K 时发现：弹窗规则依赖 `:has(:focus)`，手指按下按钮时焦点先离开，弹窗在抬起前变了大小，点击落到别处（Chromium 里「查看更多封面」因此没有打开）。
+  - **修复后：12 步全部通过**。只有「用键盘上的 ✓ 收起」一步，模拟器里点了 ✓ 键盘没有收起，未能测，列入真机清单。
+- **修改**：
+  - `Public/app.js`：
+    - Editor Layout Coordinator：`updateVisibleArea` 是唯一判断。只有「有输入框获得焦点 + 量到键盘」才设置 `html.kb-open`、`--vv-h`、`--kb`，否则清掉。
+    - 在失去焦点（下一帧）、可见区域 resize（新增）/ scroll、外壳通知时重算。
+    - 手指按着时不改布局，抬起并处理完这次点击后再算。
+    - 写字面板：打开时记下页面位置、关闭时恢复；面板换高度后（ResizeObserver）重新摆放正在改的字，改字体时放在面板上方中部。修正了 `requestAnimationFrame(revealStoryTarget)` 把时间戳当参数传进去的问题。
+  - `Native/Sources/LittleDaysUI/WebShell/LittleDaysWebShellView.swift`：`LittleDaysKeyboard` 增加 `keyboardDidChangeFrame` 和 `keyboardDidHide`，在键盘动画结束后再通知一次。
+  - `Public/styles.css`：
+    - `--sat` / `--sab` / `--avail`；
+    - 表单弹窗在安全区内居中（`dialog:where(#form-dialog)[open]`）；
+    - 居中弹窗和底部弹层的键盘规则改为 `html.kb-open`；
+    - 新建手帐本、写字面板的最大高度改用 `--avail`；
+    - 键盘弹出时，弹层底部不留安全区，写字面板收起提示、标题行变一行、预览变矮（矮屏隐藏）；
+    - 滚动空间从 `#app-scroll` 的内边距改为 `#app::after` 占位；
+    - 写字面板打开时 `.qe-bar` 隐藏。
+  - `Public/js/whats-new.mjs` 10.70。外壳同步。
+  - 测试：新 `tests/v166-browser.cjs`（24 项）；`v162`、`v124` 改为模拟 App 的 `kb-open` 标记（App 现在会设这个标记）。
+  - 工具：`tools/mac/uitest/`：`DrawUITests.swift` 加 `testBookDialogLayout`、`testStoryWordsLayout`，以及 `editor-layout.sh`、`fake-photos.js`、`check-layout.py`。
+- **没有改**：数据结构、存储键、照片 / 文字 / 录音内容、撤销 / 重做、保存逻辑、多页切换、封面编辑和 My Books 的逻辑。
+- **Bug Backlog**：
+  - CAP-002、003、010、011、012、013 → **Fixed — Pending Device Verification**，写入已确认的根因、测量数字和修改的文件；
+  - 新增 **CAP-014**（双击文字无法编辑，P2，Triaged，只登记），列了 5 条推测原因；
+  - 根因分组：K / S / W 已确认、已修；新增 T（画布手势）。
+- **BETA_RELEASE_PLAN**：新增「Beta 2 工作流 · Editor Layout & Interaction Stability」，包括范围、统一布局规则、测试矩阵和验收方式。
+- **运行 / 测试**：见下一条记录（全量回归、在线链接）。
+- **风险**：
+  - 键盘规则从 `:has(:focus)` 改为 `html.kb-open`，影响所有带输入框的弹窗和弹层；
+  - `#form-dialog` 现在在安全区内居中；
+  - 故事页操作栏在写字面板打开时隐藏。
+  - 横屏不支持（只有竖屏）。
+- **没有验证**：真机（全部）；大屏 iPhone；小屏 iPhone 上的 v166 场景；显示缩放；键盘上的 ✓。
+
 ### 2026-11-15 — 登记真机反馈：CAP-012、CAP-013，并按根因分组（只登记和分析，不改 App）
 
 - **需求**：Founder 真机反馈两张截图（IMG_9458、IMG_9459），要求登记为 Bug；检查键盘 / visualViewport、Bottom Sheet 高度和滚动、编辑模式状态、悬浮工具栏显示条件、z-index 和 fixed / sticky、键盘关闭和切换模式后的清理逻辑；与已有键盘、字体面板的 Bug 去重并做关联分析。不改代码，不上传 TestFlight，不标 Fixed / Verified。

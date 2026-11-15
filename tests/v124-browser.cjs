@@ -144,6 +144,7 @@ const lib = path.join(__dirname, "../Packages/LittleDaysCore/Sources/LittleDaysC
       // what the app sets on an iPhone when the keyboard is up (updateVisibleArea)
       document.documentElement.style.setProperty("--vv-h", innerHeight - kb + "px");
       document.documentElement.style.setProperty("--kb", kb + "px");
+      document.documentElement.classList.add("kb-open"); // V10.70: the coordinator's mark
       const bar = document.querySelector("#type-bar");
       const r = bar.getBoundingClientRect();
       return { hidden: bar.hidden, typing: document.body.classList.contains("typing"), bottom: Math.round(r.bottom), top: Math.round(r.top), keyboardTop: innerHeight - kb };
