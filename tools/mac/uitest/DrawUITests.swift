@@ -42,7 +42,7 @@ final class DrawUITests: XCTestCase {
         app = XCUIApplication()
         app.launchArguments = ["-AppleLanguages", "(zh-Hans)", "-AppleLocale", "zh_CN", "-AppleKeyboards", "(en_US@sw=QWERTY;hw=Automatic)", "-LittleDaysCheck", check]
         app.launch()
-        if check != "/tmp/ld-uitest/probe.js" { return }
+        if !check.hasSuffix("probe.js") { return }
         let probe = app.descendants(matching: .any).matching(NSPredicate(format: "label BEGINSWITH 'LDSTATE:'")).firstMatch
         XCTAssertTrue(probe.waitForExistence(timeout: 90), "probe")
     }
@@ -452,5 +452,68 @@ final class DrawUITests: XCTestCase {
         log("t4-box-dragged")
         XCTAssertNotEqual(s3["textTops"] as? String ?? "", before, "the new, empty box moved")
         XCTAssertEqual(s3["editing"] as? String, "layer", "still typing in it after the drag")
+    }
+
+    // Beta 2 · editor layout: measures (and screenshots) every step where the
+    // keyboard, a sheet or a dialog changes the layout. Prints one LDLAYOUT
+    // JSON line per step; the shell script (editor-layout.sh) checks them.
+    func dumpLayout(_ step: String) {
+        let s = state()
+        let keys = ["sa", "vars", "vv", "kbNative", "active", "bodyClass", "qeBar", "sheet", "sheetScroll", "swField", "swMore", "swOptional", "swSize", "storyWords", "bookDialog", "bookH2", "bookName", "coverMore", "bookScroll", "coverTiles"]
+        var out: [String: Any] = ["step": step]
+        for k in keys { out[k] = s[k] ?? NSNull() }
+        let kb = app.keyboards.firstMatch
+        out["keyboard"] = kb.exists ? [kb.frame.minY, kb.frame.height] : NSNull()
+        let bar = app.toolbars.firstMatch
+        out["accessoryTop"] = bar.exists ? bar.frame.minY : NSNull()
+        out["screenH"] = app.windows.firstMatch.frame.height
+        if let data = try? JSONSerialization.data(withJSONObject: out), let line = String(data: data, encoding: .utf8) { print("LDLAYOUT " + line) }
+        try? XCUIScreen.main.screenshot().pngRepresentation.write(to: URL(fileURLWithPath: "/tmp/ld-uitest/shots/\(step).png"))
+    }
+    func startFresh() {
+        try? FileManager.default.createDirectory(atPath: "/tmp/ld-uitest/shots", withIntermediateDirectories: true)
+        launch(check: "/tmp/ld-uitest/editor-probe.js")
+        let probe = app.descendants(matching: .any).matching(NSPredicate(format: "label BEGINSWITH 'LDSTATE:'")).firstMatch
+        XCTAssertTrue(probe.waitForExistence(timeout: 90), "probe")
+        Thread.sleep(forTimeInterval: 2)
+        for l in ["我自己探索", "跳过"] where app.buttons[l].exists { app.buttons[l].tap(); Thread.sleep(forTimeInterval: 1) }
+        if rect("skip") != nil { tap("skip") }
+    }
+
+    func testBookDialogLayout() throws {
+        startFresh()
+        tap("navBooks", wait: 1.5)
+        tap("newBook", wait: 1.5)
+        dumpLayout("b1-book-open")
+        tap("bookName", wait: 2.0)
+        dumpLayout("b2-book-keyboard")
+        guard let more = rect("coverMore") else { XCTFail("coverMore"); return }
+        point(more, 0.5, 0.5).tap()
+        Thread.sleep(forTimeInterval: 2.0)
+        dumpLayout("b3-covers-after-keyboard")
+        Thread.sleep(forTimeInterval: 2.0)
+        dumpLayout("b4-covers-later")
+        if let d = rect("bookDialog") { point(d, 0.5, 0.7).press(forDuration: 0.05, thenDragTo: point(d, 0.5, 0.45)) }
+        Thread.sleep(forTimeInterval: 1.5)
+        dumpLayout("b5-covers-after-scroll")
+    }
+
+    func testStoryWordsLayout() throws {
+        startFresh()
+        tap("todayPhotos", wait: 3.0)
+        if rect("storyRegroup") != nil { tap("storyRegroup", wait: 3.0) }
+        guard waitFor("qeBar", 20) != nil else { dumpLayout("s0-no-story"); XCTFail("story page"); return }
+        Thread.sleep(forTimeInterval: 1.0)
+        dumpLayout("s1-story")
+        tap("storyTextBtn", wait: 2.5)
+        dumpLayout("s2-write-keyboard")
+        tap("swCompact", wait: 2.0)
+        dumpLayout("s3-font-mode")
+        tap("swFont", wait: 1.5)
+        dumpLayout("s4-font-picked")
+        tap("swExpand", wait: 2.5)
+        dumpLayout("s5-write-again")
+        tap("swDone", wait: 2.0)
+        dumpLayout("s6-done")
     }
 }
