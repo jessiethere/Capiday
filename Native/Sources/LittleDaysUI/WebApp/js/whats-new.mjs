@@ -4,6 +4,30 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.75",
+    date: "2026-11-15",
+    zh: {
+      title: "书脊上的名字和标点都对了",
+      items: [
+        "书架上的书脊改成真正的竖排：中文标点（！？：，。「」——……）用竖排的样子和位置，不会挤在角落或被切掉。",
+        "中文书名里的半角「!?」立着写，一两位数字横着并排；英文像印刷书脊一样横躺。",
+        "名字太长时，在完整的字后面接「…」，不会出现半个字，也不会为了塞下而把字缩得很小。",
+        "一层放 5 本时，窄一点的手机上也都在书架上。",
+        "书架卡片和首页卡片上的名字最多两行；书本页上显示完整的名字。",
+      ],
+    },
+    en: {
+      title: "Names and marks on the spines, done right",
+      items: [
+        "Spines on the shelf are real vertical text now: Chinese marks (！？：，。「」——……) take their vertical form and place, never squeezed into a corner or cut.",
+        "Half-width !? stand upright in a Chinese name, one or two digits sit side by side; English lies sideways like a printed spine.",
+        "A name too long for its spine ends with … after a whole character — never half a character, and the type is not shrunk to squeeze it in.",
+        "Five books on a row stay on the shelf on narrower phones too.",
+        "Names on the shelf card and Home's card take at most two lines; the book's page shows the whole name.",
+      ],
+    },
+  },
+  {
     version: "10.74",
     date: "2026-11-15",
     zh: {

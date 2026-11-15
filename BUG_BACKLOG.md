@@ -62,9 +62,10 @@
 | [CAP-014](#cap-014) | 双击文字元素无法进入编辑 | P2 | Fixed — Pending Device Verification | 0.2.0 (4)（推断） | 下一个构建（未上传，V10.71） |
 | [CAP-015](#cap-015) | 弹层里的主按钮（保存、创建）字号比「取消」小很多 | P3 | Fixed — Pending Device Verification | 0.2.0 (4)（推断） | 下一个构建（未上传，V10.71） |
 | [CAP-016](#cap-016) | My Books「写一页」没有正确关联目标手帐 | **P1** | Fixed — Pending Device Verification | 0.2.0 (4)（推断） | 下一个构建（未上传，V10.72） |
-| [CAP-017](#cap-017) | 长标题在部分封面模板上显示不完整 | P2 | Fixed — Pending Device Verification | 0.2.0 (4)（推断） | 下一个构建（未上传，V10.73） |
+| [CAP-017](#cap-017) | 长书名显示不完整：封面模板、书架卡片、书本页（Long Title / Cover Typography） | P2 | Fixed — Pending Device Verification | 0.2.0 (4)（推断） | 下一个构建（未上传，V10.73 + V10.75） |
 | [CAP-018](#cap-018) | 封面不一致：选择页 / 大预览 / 创建后的示例照片不同（Cover Consistency） | **P1** | Fixed — Pending Device Verification | 0.2.0 (4)（推断） | 下一个构建（未上传，V10.73 + V10.74） |
 | [CAP-019](#cap-019) | 新建手帐的中文封面标题默认用黑体（Founder 决定） | P2 | Fixed — Pending Device Verification | 2026-11-15 | 下一个构建（未上传，V10.73） |
+| [CAP-020](#cap-020) | 书架书脊：中文标点竖排异常、长书名截断不完整（与 CAP-017 关联） | P2 | Fixed — Pending Device Verification | 0.2.0 (4)（推断） | 下一个构建（未上传，V10.75） |
 
 **功能改进（Enhancement）**
 
@@ -74,8 +75,8 @@
 | [CAP-E002](#cap-e002) | 字体列表用每种字体本身显示，并实时预览 | P2 | Fixed — Pending Device Verification | 2026-11-15 | 下一个构建（未上传，V10.71） |
 | [CAP-E003](#cap-e003) | 杂志类封面的标题也跟随所选字体 | P3 | Triaged（需要 Founder 决定） | 2026-11-15 | TBD |
 
-统计（2026-11-15 第五次更新，封面系统 CAP-017～019 加入 Sprint 01 之后）：
-- Bug 19 条：P0 0 · P1 2（CAP-016、CAP-018）· P2 15 · P3 2；Fixed 19（CAP-001、004～009 已随 0.2.0 (4) 上传，其余未上传；都还没有真机确认）、Verified 0。
+统计（2026-11-15 第六次更新，书架排版 CAP-020 加入、CAP-017 扩大范围之后）：
+- Bug 20 条：P0 0 · P1 2（CAP-016、CAP-018）· P2 16 · P3 2；Fixed 20（CAP-001、004～009 已随 0.2.0 (4) 上传，其余未上传；都还没有真机确认）、Verified 0。
 - 功能改进 3 条：CAP-E001、CAP-E002 Fixed — Pending Device Verification；CAP-E003 Triaged（需要 Founder 决定）。
 
 ### Alpha Stabilization Sprint 01 · 分类（2026-11-15）
@@ -83,7 +84,7 @@
 | 分类 | 条目 | 说明 |
 |---|---|---|
 | **Confirmed Open**（Sprint 开始时） | CAP-014、CAP-015、CAP-E001、CAP-E002 | 本 Sprint 已修，现为 Fixed — Pending Device Verification |
-| **Sprint 中加入**（2026-11-15，Founder 授权修复） | CAP-016（P1）；封面系统 CAP-018（P1）、CAP-017、CAP-019 | 已修，Fixed — Pending Device Verification；**两个 P1 的真机验收优先** |
+| **Sprint 中加入**（2026-11-15，Founder 授权修复） | CAP-016（P1）；封面系统 CAP-018（P1）、CAP-017、CAP-019；书架排版 CAP-020（关联 CAP-017） | 已修，Fixed — Pending Device Verification；**两个 P1 的真机验收优先** |
 | **Possibly Fixed, Needs Verification** | CAP-001～013 | 代码已修（V10.66–V10.70），自动化 / 模拟器通过，真机未确认；本 Sprint 不重复修 |
 | **Duplicate / Related** | Sprint 的 Priority A 七项 = CAP-002、012、003、011、010、013（Bottom Sheet 高度归入 011/012）；CAP-009 ↔ CAP-003；CAP-013 由 CAP-003 的修复引起 | 不新建重复条目 |
 | **Requires Founder Clarification** | CAP-001（需要真机「点按到出声」秒数和媒体检查毫秒数）、CAP-E003（杂志封面要不要跟随字体）、CAP-008（App 里键盘 ✓ 是否正常，模拟器测不了） | 见各条目 |
@@ -700,15 +701,15 @@
 - **Related**：首页「写一页」（`startPage`，行为正确，没有改）。
 
 <a id="cap-017"></a>
-### CAP-017 · 长标题在部分封面模板上显示不完整
+### CAP-017 · 长书名显示不完整：封面模板、书架卡片、书本页（Long Title / Cover Typography）
 
 - **Title**：较长的手帐本名字（例如「如果我的名字非常长」）在部分封面模板上被裁掉、挤压，或只剩一个字掉到下一行。
 - **Reported Date**：2026-11-15
 - **Source**：Founder（真实 iPhone）
 - **Severity**：P2（名字看不全，但不影响数据；完整名字在封面下方也有）
-- **Status**：Fixed — Pending Device Verification（V10.73）
+- **Status**：Fixed — Pending Device Verification（V10.73 封面；V10.75 书架卡片、书本页，书脊见 CAP-020）
 - **Affected Build**：0.2.0 (4)（推断：截图 IMG_9464 / IMG_9465 是 iPhone App）
-- **Target Build**：下一个构建（未上传，V10.73）
+- **Target Build**：下一个构建（未上传，V10.73 + V10.75）
 - **Steps to Reproduce**：
   1. 新建手帐本，名字输入「如果我的名字非常长」；
   2. 在封面风格里切换模板，也打开「查看更多封面」。
@@ -755,7 +756,27 @@
   - `tests/v170-browser.cjs`（与 CAP-018 / 019 同一个文件）：6 种名字 × 22 个模板都完整、不碰到其他元素、没有单字一行；表单小预览完整；60 字名字不会跑到封面外面。
   - 真机：**Pending Device Verification**。
   - 注意：`text-wrap: balance` 需要 iOS 17.5 以上；更早的系统照常换行，最后一行可能只有一个字，但不会被裁掉。
-- **Related**：CAP-018、CAP-019（同一个封面系统）；CAP-E003（杂志封面的标题字体）。
+- **范围扩大（2026-11-15 第二次，Founder「Bookshelf Typography Bugs」Bug B，合并到本条，不新建 ID）**：
+  - 真实案例「如果我的名字非常长」，涉及：创建弹窗、封面模板缩略图、大封面预览、书架书脊、书本页、书架卡片。
+  - 期望：
+    - **书脊**：显示尽可能多的字，必要时用省略号，不裁切汉字和标点（见 CAP-020）；
+    - **封面**：按模板文字区换行和适度缩放（V10.73 已做）；
+    - **书架卡片**：最多两行，超出用省略号；
+    - **书本页**：完整显示，自然换行。
+  - 要求：优先检查共享排版逻辑，不对每个模板单独打补丁。
+- **审查（V10.75）**：
+  - 封面（缩略图、大预览、表单小预览、书本页大封面、书架拉出的封面、首页）V10.73 已经由同一个 `cover-fit.mjs` 处理，不需要再改。
+  - 创建弹窗的名字输入框是普通单行输入框，长名字可以左右滚动，不需要改。
+  - **书架拉出的卡片**（`.pulled-copy h2`）和**首页手帐卡片**（`.lib-now b`）：没有行数限制，长名字把卡片撑高，可能压到右上角的「···」。
+  - **书本页标题**（`.book-detail-copy h2`）：没有换行规则，超长英文单词可能超出宽度。
+- **Fix Summary（V10.75，共享 CSS，不分模板）**：
+  - 卡片名字最多两行，超出用「…」（`-webkit-line-clamp: 2`），右边给「···」留出位置；
+  - 书本页完整显示，自然换行（`overflow-wrap: anywhere`）；
+  - 书脊：见 CAP-020，与封面共用 `cover-fit.mjs` 的「画好后检查」机制。
+- **Verification（V10.75）**：
+  - `tests/v172-browser.cjs`：书架卡片的长名字最多两行、不压到「···」；书本页完整显示中文长名字和长英文名、不超出宽度；首页卡片最多两行。
+  - 真机：**Pending Device Verification**。
+- **Related**：CAP-018、CAP-019（同一个封面系统）；CAP-020（书脊）；CAP-E003（杂志封面的标题字体）。
 
 <a id="cap-018"></a>
 ### CAP-018 · 封面不一致：选择页 / 大预览 / 创建后的示例照片不同（Cover Consistency）
@@ -886,6 +907,61 @@
   - `tests/v168`（字体列表）仍通过。
   - 真机：**Pending Device Verification**（iPhone 上应显示苹方）。
 - **Related**：CAP-E001 / CAP-E002（字体列表）、CAP-E003。
+
+<a id="cap-020"></a>
+### CAP-020 · 书架书脊：中文标点竖排异常、长书名截断不完整（与 CAP-017 关联）
+
+- **Title**：同一层书架放 5 本书时，书脊上的竖排书名里，中文标点位置不对、显示不完整，长书名断得不自然。
+- **Reported Date**：2026-11-15
+- **Source**：Founder（真实 iPhone，IMG_9468）
+- **Severity**：P2（书名看不清，但不影响数据；完整书名在书架卡片和书本页上）
+- **Status**：Fixed — Pending Device Verification（V10.75）
+- **Affected Build**：0.2.0 (4)（推断：截图是 iPhone App）
+- **Target Build**：下一个构建（未上传，V10.75）
+- **Steps to Reproduce**：
+  1. My Books 里建几本书，让同一层放满 5 本；
+  2. 书名用带中文标点的，例如「一个书架放五本！」「？」「测试！？」「我的手帐：第一本」；
+  3. 看书脊上的竖排文字。
+- **Expected Behavior**：
+  - 中文标点正确显示，不被裁切；竖排阅读顺序正确；标点不与相邻的字重叠；
+  - 空间不够时有明确的截断方式；
+  - 不出现半个汉字或不完整的符号；
+  - 不能靠全局缩小字号解决。
+- **Actual Behavior**（IMG_9468）：杂志类书脊上「一个书架放五本！」的「！」变成角落里的小记号，「？，3」的标点位置奇怪；经典书脊上长书名被截断。
+- **Root Cause（代码确认）**：两种书脊用了两套不同的写法。
+  1. **杂志类书脊**（深色照片）：
+     - 没有用竖排，而是把文字放进「横排、宽 1.2 个字」的盒子里，让每个字自动换行叠下来；
+     - 所以中文标点保持**横排**的字形和位置（「！」「，」「。」落在格子的左下角或靠边），半角符号和数字挤在一格里；
+     - 字号按字数整体缩小（`124px / 字数`），长书名的字越来越小。
+  2. **经典书脊**（纸质颜色）：
+     - 用了 `writing-mode: vertical-rl`，但字体是封面字体（打包的楷体风格字体），不一定有竖排标点字形；
+     - 超出时靠 CSS `text-overflow: ellipsis`，WebKit 在竖排下不画省略号，所以只是直接裁掉，可能裁到半个字。
+  3. **书脊宽度**：固定 50～58 px，并且不允许收缩（`flex: 0 0 auto`），窄屏上 5 本加「＋」可能放不下，最后一本跑出书架。
+- **Fix Summary（V10.75，一套共享的书脊排版，两种书脊共用）**：`Public/js/cover-fit.mjs` 新增 `spineTitleHTML` / `fitSpineTitle`，`Public/app.js` 的两种书脊都改用 `spineTitle()`。
+  - **真正的竖排、单列不换行**：`writing-mode: vertical-rl` + `text-orientation: mixed`（汉字直立、拉丁文横躺，和印刷书脊一样）。
+  - **标点用竖排字形**：中文标点和全角符号放在带竖排字形的系统字体里（苹方 / 冬青黑 / Noto CJK），所以「！？：，。「」——……」都是竖排的样子和位置。
+  - **中文书名里的半角「!?」直立**；1～2 位数字**纵中横**（`text-combine-upright`），3 位以上的数字和拉丁文一样横躺。
+  - **截断**：
+    - 放不下时按**完整字符**截断，用 `Intl.Segmenter`，emoji 和组合字符不会被拆开；
+    - 末尾加竖排「…」；
+    - 用最后一个字形的实际边界判断是否放得下，不会出现半个字或半个符号；
+    - 截断处不留下「、，。：」这类标点再接「…」。
+  - **不按字数缩小字号**：杂志书脊固定 13px，经典书脊固定 14px。
+  - 完整书名保存在 `data-title`，按钮的无障碍标签里也是完整书名。
+  - **书脊宽度**：可以收缩到 38px，窄屏上 5 本加「＋」也放得下。
+- **Verification**：
+  - `tests/spine-title.test.mjs` 5 项通过：标点、直立、纵中横、拉丁文、转义、emoji 不拆。
+  - `tests/v172-browser.cjs` 21 项通过：
+    - Founder 的标题以及全角 / 半角标点、数字、英文、超长中文；
+    - 1、3、5 本一层，393 / 320 / 375 / 430 宽；
+    - 每个字形完整、在书脊里，显示的是书名开头，放不下才用「…」，书脊都在书架上；
+    - 竖排、「!?」直立、纵中横；字号没有缩小；重新打开后一致。
+  - 测试环境说明：
+    - 容器里原来只有文泉驿字体，Chromium 竖排中文时每个字的高度几乎为零（字叠在一起），无法测量；
+    - 装上 Noto Sans CJK 后正常，v172 才能做尺寸检查；没有可用竖排度量时，测试会跳过尺寸检查并打印说明。
+  - **iOS 模拟器**（`tools/mac/ios-shelf-check.sh`，iPhone 自带苹方）：见 agent.md 本次记录。
+  - 真机：**Pending Device Verification**。
+- **Related**：CAP-017（长书名，同一套共享排版）。
 
 ---
 

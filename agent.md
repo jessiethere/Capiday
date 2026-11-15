@@ -48,6 +48,55 @@
 
 ## 更新日志
 
+### 2026-11-15 — 书架排版：CAP-020（书脊竖排标点 / 截断）+ CAP-017 扩大（卡片、书本页）（网页 V10.75）
+
+- **需求**（Founder「Bookshelf Typography Bugs」，IMG_9468 / 9466 / 9467）：
+  - **Bug A**：一层 5 本时，书脊上的中文标点位置异常、显示不完整，长书名断行不自然（P2）；
+  - **Bug B**：长书名在创建弹窗、封面缩略图、大预览、书脊、书本页、书架卡片上显示不完整（P2）；
+  - 要求：与已有的 Long Title / Cover Typography Bug 关联，避免重复 ID；优先用共享排版逻辑；不靠全局缩小字号；
+  - 测试范围：1 / 3 / 5 本并排、中英数混合、全角 / 半角标点、超长中文、不同屏宽、动态字体、创建 / 保存 / 重开一致；
+  - 不上传 TestFlight。
+- **归档**：
+  - Bug B 合并到 CAP-017（范围扩大）；
+  - Bug A 是书脊竖排的问题，Backlog 里没有，新建 CAP-020，关联 CAP-017。
+- **根因（代码确认，详见 BUG_BACKLOG CAP-020）**：
+  - 杂志书脊是「横排、宽 1.2 个字」的叠字，不是竖排：标点保持横排字形和位置，字号按字数整体缩小；
+  - 经典书脊用了竖排，但字体是打包字体（不一定有竖排标点），而且靠 CSS 省略号（WebKit 竖排不画），可能裁到半个字；
+  - 书脊不能收缩，窄屏 5 本加「＋」可能跑出书架；
+  - 卡片名字没有行数限制；书本页标题没有换行规则。
+- **修复（一套共享逻辑，不分模板）**：
+  - `Public/js/cover-fit.mjs`：
+    - 新增 `spineTitleHTML`（标点用有竖排字形的系统字体、半角 !? 直立、1～2 位数字纵中横、HTML 转义）；
+    - 新增 `fitSpineTitle`（按完整字符 `Intl.Segmenter` 截断加竖排「…」，用最后一个字形的实际边界判断）；
+    - 与封面标题共用同一个 MutationObserver。
+  - `Public/app.js`：两种书脊都用 `spineTitle()`，完整书名放在 `data-title` 和无障碍标签里。
+  - `Public/styles.css`：
+    - 书脊 `vertical-rl` + `mixed`、单列不换行、固定 13 / 14px；
+    - 书脊可收缩到 38px；
+    - `.pulled-copy h2`、`.lib-now b` 最多两行；`.book-detail-copy h2` 自然换行。
+- **测试中的发现**：
+  - 容器里原来只有文泉驿字体，Chromium 竖排中文时每个字几乎不占高度（字叠在一起），一开始的截图和测量都不可信。
+  - 装 Noto Sans CJK（`fonts-noto-cjk`）后正常。
+  - v172 先判断浏览器的竖排度量是否可用，不可用就跳过尺寸检查并打印说明。
+  - 真机字体的验证放在 iOS 模拟器（新工具 `tools/mac/ios-shelf-check.sh/.js`）。
+  - 第一次尺寸检查发现：截断后的「…」字形比文字区多出 1～2px，于是改为按最后一个字形的实际边界判断。
+- **测试**：
+  - `tests/spine-title.test.mjs` 5 项；
+  - `tests/v172-browser.cjs` 21 项（Noto CJK 下）；
+  - 相关旧测试：v170、v171、v35、v3、v130、v45、v158 通过；
+  - 单元测试见下面「回归」。
+- **iOS 模拟器**：进行中（tools/mac/ios-shelf-check.sh：iPhone 17、SE 3 代、17 Pro Max、Pro Max 最大字号），结果另记一条。
+- **动态字体**：App 的界面字号是固定的 px，WKWebView 不跟随系统「更大字体」。模拟器最大字号那一轮用来确认书架不会因此变样（结果见上）。
+- **文件**：
+  - `Public/js/cover-fit.mjs`、`Public/app.js`、`Public/styles.css`、`Public/js/whats-new.mjs`（10.75），同步到 Native；
+  - `tests/v172-browser.cjs`、`tests/spine-title.test.mjs`、`tools/mac/ios-shelf-check.sh/.js`；
+  - BUG_BACKLOG.md（CAP-020 新建、CAP-017 扩大）、BETA_RELEASE_PLAN.md（书架排版真机验收 8 步）、README.md。
+- **回归**：单元测试 `node --test` 315 项、Python 18 项通过；全量浏览器回归 run-all12（110 个文件）提交时仍在运行，结果另记一条。
+- **未完成**：
+  - 全量回归；
+  - 固定链接发布 V10.73～V10.75；
+  - 真机验收。
+
 ### 2026-11-15 — CAP-018（P1）第二部分：统一的封面配置（网页 V10.74；新证据合并到 CAP-018，不新建 ID）
 
 - **需求**：
