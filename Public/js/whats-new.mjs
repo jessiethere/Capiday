@@ -4,6 +4,28 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.71",
+    date: "2026-11-15",
+    zh: {
+      title: "双击就能改字、封面字体看得见",
+      items: [
+        "在纸上双击文字框，就直接开始改字；以前在「只写几句话」的页面上，双击后光标会跑到这一页的正文里。",
+        "弹窗里的「保存」「创建」「开始写」等按钮，和下面的「取消」一样大，不再显得很小。",
+        "手帐本的封面字体加了「黑体」「宋体」；每种字体都用它自己的样子显示，点一下封面预览马上变化，取消就不改。",
+        "杂志类封面用的是固定的标题字体，选字体时会说明这一点。",
+      ],
+    },
+    en: {
+      title: "Double-tap to edit, see the cover fonts",
+      items: [
+        "Double-tap a text box on the paper to start typing in it; on a Just write page the caret used to jump to the page's words instead.",
+        "Main buttons in sheets and dialogs (Save, Create, Start …) are now the same size as Cancel.",
+        "Cover title fonts now include Sans and Serif; each choice is shown in its own face, the preview follows at once, and Cancel changes nothing.",
+        "Magazine covers keep their own title type; the font list says so.",
+      ],
+    },
+  },
+  {
     version: "10.70",
     date: "2026-11-15",
     zh: {

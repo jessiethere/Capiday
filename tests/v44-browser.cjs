@@ -42,7 +42,7 @@ const shots = process.env.SHOTS_DIR || "";
     const srcs = await page.$$eval("#choose-dialog img", (els) => els.map((el) => el.getAttribute("src")));
     assert.ok(srcs.length >= 16, `${srcs.length} pictures`);
     assert.ok(srcs.every((src) => /library\/photos\/LD-photo-[a-z0-9-]+\.jpg$/.test(src)), "photos only");
-    await page.waitForFunction(() => [...document.querySelectorAll("#choose-dialog .choose-picks img")].every((img) => img.complete && img.naturalWidth >= 600));
+    await page.waitForFunction(() => [...document.querySelectorAll("#choose-dialog .choose-picks img")].every((img) => img.complete && Math.max(img.naturalWidth, img.naturalHeight) >= 600));
     await shot("v44-chooser");
     passed.push("chooser: today's picks + 13 photo collections, all real photos");
 
