@@ -99,6 +99,24 @@ function spines() {
     };
   });
 }
+// A signed-in local account (synthetic), Chinese, a new journal without the
+// sample days; one reload, then this file runs again from the top.
+const seed = {
+  "little-days.language": "zh-CN",
+  "little-days.with-samples": "0",
+  "little-days.labs": "1",
+  "little-days.studio-guide": JSON.stringify({ tour: "skipped", tips: { dblTap: true } }),
+  "little-days.onboarding": JSON.stringify({ v: 1, home: "skipped", firstPage: "done", at: "2026-11-14T00:00:00.000Z" }),
+  "little-days.account": JSON.stringify({ version: 1, method: "local", name: "", avatar: "🌷", createdAt: "2026-11-08T00:00:00.000Z", signedIn: true, onboarded: true }),
+};
+let reload = false;
+for (const [k, v] of Object.entries(seed)) if (localStorage.getItem(k) === null) { localStorage.setItem(k, v); reload = true; }
+const d0 = new Date();
+localStorage.setItem("little-days.celebrated", `${d0.getFullYear()}-${String(d0.getMonth() + 1).padStart(2, "0")}-${String(d0.getDate()).padStart(2, "0")}`);
+if (reload) {
+  setTimeout(() => location.reload(), 50);
+  return "reloading for the account";
+}
 const report = { width: innerWidth, steps: [] };
 await until(() => $("#navigation [data-page]"), 20000);
 await wait(2500);
