@@ -77,6 +77,7 @@
 - **在线链接**：V10.69 已发布（version 121）。
 - **TestFlight 0.2.0 (4)**：构建号 3 → 4（版本 0.2.0、Bundle ID `com.capiday.app`、显示名 Capiday 不变）。从 aaa7d2a 的干净副本（git archive）Release 归档 **ARCHIVE SUCCEEDED**，归档在 `~/Library/Developer/Xcode/Archives/2026-11-14/Capiday 0.2.0 (4).xcarchive`，已核对 Info.plist 和里面的网页代码。**没有上传**：上传这一步被本机的权限规则拦下（属于对外发布），需要用户确认后再传，或在 Xcode Organizer 里点 Distribute App → TestFlight & App Store。
   - 2026-11-15 用户确认「可以上传」后执行 `xcodebuild -exportArchive`：**EXPORT FAILED**，「Failed to Use Accounts — App Store Connect access for 7VFYCTCXRS is required」。Mac 上 Xcode 里没有登录的 Apple 账号（14:31 上传 0.2.0 (3) 时还在）。**什么都没有传到 App Store Connect**。需要用户在 Xcode → 设置 → Accounts 重新登录后再上传。
+  - 用户重新登录 Xcode 后再次 `xcodebuild -exportArchive`（2026-11-14 22:35 EST，Mac 时间）：`Upload succeeded`、`Uploaded package is processing`、**EXPORT SUCCEEDED**。**这只表示文件已交给 App Store Connect；Apple 的处理尚未确认完成**，TestFlight 里还没确认可安装。
 - **没有验证**：真机上的触摸拖动；固定链接里估算的键盘线与实际键盘的差距；iOS 26 及更早系统上外壳键盘位置是否与可见区域一致（逻辑取较小值，不会更低）。
 
 ### 2026-11-14 — V10.68 全面检查「打字时键盘挡住输入框」
