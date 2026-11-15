@@ -110,7 +110,9 @@ async function streamBytes(download) {
       );
     }
     await page.locator(".cb-done").click();
-    await page.locator('[name="coverFont"]').selectOption("handwritten");
+    // V10.71: the cover font is a list of buttons, each in its own face.
+    await page.locator('#dialog-form .cover-font[data-font="handwritten"]').click();
+    assert.equal(await page.locator('[name="coverFont"]').inputValue(), "handwritten");
     await page.locator('[name="color"]').selectOption("blue");
     await page.locator('[name="coverDecoration"]').selectOption("bear");
     await page.locator('[data-action="cover-photo"]').click();
