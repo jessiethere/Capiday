@@ -5084,17 +5084,85 @@ function renderQuickRecord() {
     .join("")}</div><button class="primary full-width quick-start" data-action="${QUICK_ALSO.includes(quick.way) ? "quick-more" : "quick-start"}" data-more="${QUICK_ALSO.includes(quick.way) ? quick.way : ""}">${QUICK_ALSO.includes(quick.way) ? t("quick.start." + quick.way) : t(quick.way === "photo" && quick.photo === "mine" ? "quick.start.pick" : quick.way === "photo" && quick.photo === "pick" ? (quick.lib ? "quick.start.lib" : "quick.start.libPick") : "quick.start." + quick.way)}</button>${pages ? `<button class="quick-continue" data-action="quick-continue">${t("quick.continue", { count: pages })} ›</button>` : ""}<button class="choose-cancel" data-action="choose-close">${t("cancel")}</button></div>`;
 }
 // Every record is a new page of today, in the chosen journal.
-function startPage(book, date = dateKey()) {
+function startPage(book, date = dateKey(), remember = true) {
   try {
-    localStorage.setItem(QUICK_BOOK_KEY, book);
+    if (remember) localStorage.setItem(QUICK_BOOK_KEY, book);
   } catch {}
   if ($("#choose-dialog")?.open) $("#choose-dialog").close();
   openStudio(date);
+  pageBase = dayShape(editor);
   addMomentNow();
   changeTarget((m) => {
     if (m !== editor) m.bookId = book;
   }, false);
   return state().books.find((b) => b.id === book)?.title || "";
+}
+// V10.72 (CAP-016) · 写一页 (a book on the shelf) and 添加一页 (a book's own
+// page) used to open today's day and set the DAY's book to that book: an
+// existing day (e.g. 6 pages in 我的手帐) was opened instead of a new page,
+// and the day itself — its cover and every page without a book of its own —
+// was moved into the other book. A day holds pages from several books (each
+// page has its own bookId; Home's 写一页 always did this), so when today
+// already has something written, a new page is added to today, in that
+// book, and nothing else on the day changes.
+// Leaving it blank puts the day back exactly as it was: no empty page, and
+// nothing saved or changed in the other pages.
+let freshPage = null; // { id, date, base, hadDraft, draft }
+let pageBase = ""; // the day as it was before startPage added the new page
+function dayShape(day) {
+  if (!day) return "";
+  const { updatedAt, ...rest } = day;
+  return JSON.stringify(rest);
+}
+function blankDay(day) {
+  return !day || day.isDemo || (!hasDayPageContent(day) && !(day.moments || []).some((m) => hasMomentContent(m) || m.backdrop));
+}
+function writeInBook(bookId) {
+  if (!bookId || !state().books.some((b) => b.id === bookId)) return;
+  const date = dateKey();
+  freshPage = null;
+  // Nothing written today yet (in any book): the day itself starts in this
+  // book, as before — nothing of another book is moved, and the book's own
+  // 记录项 (its fields, kept on the day page) are there to fill in.
+  // (Home's 随手写 keeps its own book: writing from a book here does not change it.)
+  if (blankDay(state().drafts[date] || state().entries.find((entry) => entry.date === date))) {
+    openStudio(date);
+    changeEditor((entry) => {
+      entry.bookId = bookId;
+    });
+    toast(t("book.writingIn", { name: state().books.find((b) => b.id === bookId)?.title || "" }));
+    return;
+  }
+  const draft0 = state().drafts[date];
+  const draft = draft0 ? structuredClone(draft0) : null;
+  const name = startPage(bookId, date, false);
+  freshPage = { id: activeMomentId, date, base: pageBase, hadDraft: Boolean(draft0), draft };
+  logEvent("book_write", { way: "shelf" });
+  toast(t("book.writingIn", { name }));
+}
+// On ‹ back: a page from 写一页 that was left blank is taken away again.
+// Returns true when the day was put back as it was and the editor can just close.
+function dropBlankFreshPage() {
+  const fresh = freshPage;
+  freshPage = null;
+  if (!fresh || !editor || fresh.date !== editor.date) return false;
+  const moment = findMoment(editor, fresh.id);
+  if (!moment || hasMomentContent(moment) || moment.backdrop) return false;
+  const without = { ...editor, moments: editor.moments.filter((m) => m.id !== fresh.id) };
+  if (dayShape(without) === fresh.base) {
+    // Only the blank page was added: restore the day's draft exactly as it was.
+    try {
+      store.update((s) => {
+        if (fresh.hadDraft) s.drafts[fresh.date] = fresh.draft;
+        else delete s.drafts[fresh.date];
+      });
+    } catch {}
+    draftDirty = false;
+    return true;
+  }
+  // Something else on the day was changed too: keep that, drop only the blank page.
+  changeEditor((entry) => removeMoment(entry, fresh.id), false);
+  return false;
 }
 let lastQuick = null; // the sheet's choices, to go back to them on cancel
 async function startQuickRecord() {
@@ -8309,6 +8377,11 @@ function accountAction(target) {
     case "studio-back": {
       // Leaving the editor (never asked when switching pages, selecting
       // words or opening a tool — only here).
+      if (dropBlankFreshPage()) {
+        leaveStudio();
+        toast(t("book.writeCancelled"));
+        return true;
+      }
       try {
         draftDirty = draftDirty || draftState === "failed";
         flushDraft();
@@ -9310,13 +9383,7 @@ async function action(target) {
     calendarBook = target.dataset.book || "";
     render();
   }
-  if (actionName === "shelf-write") {
-    const book = target.dataset.book;
-    openStudio(dateKey());
-    changeEditor((e) => {
-      e.bookId = book;
-    });
-  }
+  if (actionName === "shelf-write") writeInBook(target.dataset.book);
   if (actionName === "books-view") {
     booksView = ["profile", "our"].includes(target.dataset.view) ? target.dataset.view : "shelf";
     selectedBook = null;
@@ -9328,13 +9395,7 @@ async function action(target) {
     selectedBook = null;
     render();
   }
-  if (actionName === "book-new-entry") {
-    const book = selectedBook;
-    openStudio(dateKey());
-    changeEditor((e) => {
-      e.bookId = book;
-    });
-  }
+  if (actionName === "book-new-entry") writeInBook(selectedBook);
   if (actionName === "editor-mode") {
     editorMode = target.dataset.mode;
     selectedLayer = null;

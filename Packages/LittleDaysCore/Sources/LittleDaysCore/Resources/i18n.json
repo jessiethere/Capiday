@@ -10414,5 +10414,9 @@
   "books.fontFixed": {
     "zh": "这个杂志封面用固定的标题字体；这里选的字体会用在其他封面样式上。",
     "en": "This magazine cover uses its own title type; the font chosen here is used by the other cover styles."
+  },
+  "book.writeCancelled": {
+    "zh": "这一页没有写内容，没有留下空白页。",
+    "en": "Nothing was written, so no blank page was kept."
   }
 }

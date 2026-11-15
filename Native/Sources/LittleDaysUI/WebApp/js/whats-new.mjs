@@ -4,6 +4,30 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.72",
+    date: "2026-11-15",
+    zh: {
+      title: "「写一页」写进你点的那本手帐",
+      items: [
+        "在我的手帐本里点某一本的「写一页」或「添加一页」，会打开这本手帐的一张新页；以前会打开今天已经写好的那一天，还把整天移进了这本手帐。",
+        "今天别的手帐里写好的页一页都不动，保存后这一页只出现在你点的那本手帐里。",
+        "什么都没写就返回，不会留下空白页，也不会改动原来的内容。",
+        "从书架写一页，不会改变首页「只写几句话」默认写进的手帐。",
+        "如果之前有一天被移到了别的手帐：打开那一天，选中封面，在「页面信息」里把「记到」改回原来的手帐。App 不会自动改。",
+      ],
+    },
+    en: {
+      title: "Write a page goes into the journal you tapped",
+      items: [
+        "Write a page / Add a page on a journal now opens a new page in that journal; it used to open today's existing day and move the whole day into that journal.",
+        "Pages already written today in other journals stay as they are; the new page shows only in the journal you tapped.",
+        "Going back without writing leaves no blank page and changes nothing.",
+        "Writing from the shelf no longer changes which journal Home's Just write uses.",
+        "If a day was moved before: open it, select the cover, and set In back to its journal under Page details. The app does not change it for you.",
+      ],
+    },
+  },
+  {
     version: "10.71",
     date: "2026-11-15",
     zh: {
