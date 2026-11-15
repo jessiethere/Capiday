@@ -59,19 +59,29 @@
 | [CAP-011](#cap-011) | 「查看更多封面」关闭键盘后弹窗布局 / 滚动异常 | P2 | Fixed — Pending Device Verification | TBD | 下一个构建（未上传，V10.70） |
 | [CAP-012](#cap-012) | 「写字 · 改字体」打字时面板下半部被截断 | P2 | Fixed — Pending Device Verification | 0.2.0 (4)（推断） | 下一个构建（未上传，V10.70） |
 | [CAP-013](#cap-013) | 改字体时「换照片 / 写文字 / 换个排版 / 保存」浮在页面中间 | P2 | Fixed — Pending Device Verification | 0.2.0 (4)（推断） | 下一个构建（未上传，V10.70） |
-| [CAP-014](#cap-014) | 双击文字元素无法进入编辑 | P2 | Triaged | 0.2.0 (4)（推断） | Beta 2（暂定） |
-| [CAP-015](#cap-015) | 弹层里的主按钮（保存、创建）字号比「取消」小很多 | P3 | Triaged | 0.2.0 (4)（推断） | Beta 2（暂定） |
+| [CAP-014](#cap-014) | 双击文字元素无法进入编辑 | P2 | Fixed — Pending Device Verification | 0.2.0 (4)（推断） | 下一个构建（未上传，V10.71） |
+| [CAP-015](#cap-015) | 弹层里的主按钮（保存、创建）字号比「取消」小很多 | P3 | Fixed — Pending Device Verification | 0.2.0 (4)（推断） | 下一个构建（未上传，V10.71） |
 
 **功能改进（Enhancement）**
 
 | ID | 标题 | 级别 | 状态 | 提出于 | 目标 Build |
 |---|---|---|---|---|---|
-| [CAP-E001](#cap-e001) | 封面等字体列表增加基础中文宋体、黑体 | P3 | Triaged | 2026-11-15 | Beta 2（暂定） |
-| [CAP-E002](#cap-e002) | 字体列表用每种字体本身显示，并实时预览 | P2 | Triaged | 2026-11-15 | Beta 2（暂定） |
+| [CAP-E001](#cap-e001) | 封面等字体列表增加基础中文宋体、黑体 | P3 | Fixed — Pending Device Verification | 2026-11-15 | 下一个构建（未上传，V10.71） |
+| [CAP-E002](#cap-e002) | 字体列表用每种字体本身显示，并实时预览 | P2 | Fixed — Pending Device Verification | 2026-11-15 | 下一个构建（未上传，V10.71） |
+| [CAP-E003](#cap-e003) | 杂志类封面的标题也跟随所选字体 | P3 | Triaged（需要 Founder 决定） | 2026-11-15 | TBD |
 
 统计（2026-11-15 第三次更新，Beta 2 · Editor Layout & Interaction Stability 之后）：
-- Bug 15 条：P0 0 · P1 0 · P2 13 · P3 2；Fixed 13（都是 Pending Device Verification）、Triaged 2（CAP-014、CAP-015）、Verified 0。
-- 功能改进 2 条：P2 1 · P3 1；都是 Triaged。
+- Bug 15 条：P0 0 · P1 0 · P2 13 · P3 2；Fixed 15（都是 Pending Device Verification）、Verified 0。
+- 功能改进 3 条：CAP-E001、CAP-E002 Fixed — Pending Device Verification；CAP-E003 Triaged（需要 Founder 决定）。
+
+### Alpha Stabilization Sprint 01 · 分类（2026-11-15）
+
+| 分类 | 条目 | 说明 |
+|---|---|---|
+| **Confirmed Open**（Sprint 开始时） | CAP-014、CAP-015、CAP-E001、CAP-E002 | 本 Sprint 已修，现为 Fixed — Pending Device Verification |
+| **Possibly Fixed, Needs Verification** | CAP-001～013 | 代码已修（V10.66–V10.70），自动化 / 模拟器通过，真机未确认；本 Sprint 不重复修 |
+| **Duplicate / Related** | Sprint 的 Priority A 七项 = CAP-002、012、003、011、010、013（Bottom Sheet 高度归入 011/012）；CAP-009 ↔ CAP-003；CAP-013 由 CAP-003 的修复引起 | 不新建重复条目 |
+| **Requires Founder Clarification** | CAP-001（需要真机「点按到出声」秒数和媒体检查毫秒数）、CAP-E003（杂志封面要不要跟随字体）、CAP-008（App 里键盘 ✓ 是否正常，模拟器测不了） | 见各条目 |
 
 ### 根因分组（2026-11-15，避免同一个根因修两次）
 
@@ -122,6 +132,13 @@
   - 自动化：`tests/v162-browser.cjs`、`v162-voice-format.test.mjs` 通过（Chromium，不等于 iPhone）。
   - 模拟器：见 Evidence（模拟器麦克风，不等于真机）。
   - 真机：**TBD**。固定链接在 Claude App 里不能录音，必须用 0.2.0 (4)。请记下「点按到听到声音」的秒数和媒体检查里的 moving 毫秒数。
+  - **Sprint 01 复查（2026-11-15，V10.71 代码，模拟器，没有改代码）**：
+    - 文件开头静音：0 ms（AAC），已排除。
+    - 文件写入时机：停止后 0.4 s 出现在页面上，播放用的是内存里的文件，不等存储写完。
+    - 播放器加载：读到时长 0.35–0.48 s。
+    - WKWebView Bridge：播放不经过外壳（WebKit 自己的播放器），不涉及。
+    - AudioSession：录音时是 play-and-record，之后切回 playback。App 里第一次播放 playing 1.18 s、moving 1.43 s，第二次 0.25 s。第一次多出的约 1 s，**推测**是录音后音频会话切换的预热（未确认）。
+    - 7 秒在模拟器上无法复现。需要 Founder 用 0.2.0 (4) 实测：点按到听到声音的秒数，以及设置 → 媒体检查里 `media_play` 的 first / again 毫秒数。没有新证据之前，不做没有依据的改动。
 
 <a id="cap-002"></a>
 ### CAP-002 · 标题编辑时键盘遮挡输入区
@@ -535,7 +552,7 @@
 - **Reported Date**：2026-11-15
 - **Source**：Founder（真实 iPhone）
 - **Severity**：P2（可以绕过：点底部「编辑」也能进入编辑——待 Founder 确认这条路径在真机上可用）
-- **Status**：Triaged（**只登记，没有改代码**）
+- **Status**：Fixed — Pending Device Verification（V10.71，Alpha Stabilization Sprint 01）
 - **Affected Build**：0.2.0 (4)（推断：截图 IMG_9460 是 iPhone App；「你猜」用的是 V10.69 才有的默认黑体加粗，所以这个文字框是 0.2.0 (4) 里新建的）
 - **Target Build**：Beta 2（暂定），归入 Editor Layout & Interaction Stability 工作流
 - **Steps to Reproduce**：
@@ -557,8 +574,23 @@
   3. ~~**文字类型**：「今天的故事」生成的、与页面标题绑定的文字（`bind`），或笔记页固定在纸上的标题 / 正文（不是图层），走的是不同的路径。~~ IMG_9460 显示「你猜」是普通文字框，基本排除。
   4. **覆盖层**：选中边框 `.sel-frame` 是 `pointer-events: none`，不拦截；控制点在边框外面。已检查，暂时排除；真机上仍要确认没有别的透明层。
   5. **WKWebView 双击手势**：页面禁止缩放（`maximum-scale=1`），图层是 `touch-action: none`，系统双击缩放应当不会介入。待真机确认。
-- **Fix Summary**：TBD（未开始；Founder 说「修复 CAP-014」后再动手）。建议先在模拟器里用真实触摸复现：选中后双击；记下两次抬起的时间间隔和手指移动距离。确认原因后再决定放宽间隔、改用 `dblclick`，或修正特定文字类型的路径。
-- **Verification**：TBD。
+- **Root Cause（已确认，2026-11-15 模拟器真实触摸复现）**：
+  - 在「只写几句话」页面上（Founder 截图的第 6 页也是这种页面：上方是这一页的文字，下面加了「你猜」），选中文字框后双击，焦点最后落在**这一页的正文**上，而不是文字框（`editing=body`）。
+  - 事件记录：两次按下和抬起都落在文字框上，之后 iOS 又合成了一个 click 和一个 dblclick，目标在画布外面。
+  - 原因：每次轻点都会重画页面，iOS 在手指抬起后才合成 click，那时被点的元素已经被替换掉；WebKit 随后把光标放进了手指下方能编辑的地方，也就是这一页的正文。
+  - 上面的第 1 条（重画导致计时超时）在 Chromium 6 倍降速下没能复现，不是这次的主因，但一起做了加固。
+- **Fix Summary（V10.71）**：`Public/app.js`。
+  - 画布自己处理过的触摸（选中、拖动、双击开始打字），在那个触摸自己的 `touchend` 上取消默认动作，iOS 就不再合成 click。
+    - 监听器挂在手指最初按下的那个元素上：重画后这个元素已经不在页面里，document 上的监听收不到它的 touchend。
+    - 第一版用了 document 上的全局标记，结果它残留下来，拦掉了下一次正常点击（v112 发现），已改正。
+  - 双击计时改为「两次按下之间」（事件时间戳），窗口 450 ms，不再在重画之后才计时。
+  - 不影响：拖动、缩放、旋转、图层、撤销 / 重做；画布以外的按钮照常响应点击。
+- **Verification**：
+  - 模拟器真实触摸（`testTextDoubleTap`，iPhone 17 / iOS 27.2）：修复前双击后 `editing=body`，修复后 `editing=layer`，文字工具条出现。
+  - `tests/v167-browser.cjs` 10 项通过：单击只选中；CPU 降速 6 倍、间隔 250 ms 的双击（已选中 / 未选中两种）进入编辑；相隔 1.2 s 不算双击；底部「编辑」可用；编辑后文字、位置、样式不变；拖动、撤销、重做正常。
+  - `v111`、`v112`（已有的双击 / 文字测试）通过。
+  - 真机：**Pending Device Verification**。
+  - 注意：`testTextDoubleTap` 要单独运行；和别的模拟器测试同一次运行时，前面留下的页面会让入口按钮不同。
 - **Related**：CAP-006（V10.69 改过「正在输入的文字可以拖动」，要确认没有影响双击）。
 
 <a id="cap-015"></a>
@@ -568,7 +600,7 @@
 - **Reported Date**：2026-11-15
 - **Source**：Founder（真实 iPhone）
 - **Severity**：P3（只影响观感，按钮能用）
-- **Status**：Triaged（只登记，没有改代码）
+- **Status**：Fixed — Pending Device Verification（V10.71）
 - **Affected Build**：0.2.0 (4)（推断：截图 IMG_9461 是 iPhone App）
 - **Target Build**：Beta 2（暂定）
 - **Steps to Reproduce**：Studio → 选中一段声音 → 更多工具 → 标题 → 看「保存」和「取消」。
@@ -580,11 +612,16 @@
   - 底部弹层的「取消」用 `.choose-cancel`，`600 16px`（约 7924 行）；
   - 很多地方给主按钮单独加了更大的字号（例如写字面板的「完成」、「今天怎么记」的开始按钮），但「标题」弹层的「保存」、新建手帐本的「创建」等没有，所以保留了 11px。
 - **影响范围**：所有没有单独设置字号的 `.primary` 按钮。具体有哪些需要一次全面清点（TBD）。
-- **Fix Summary**：TBD（未开始）。建议方向：
+- **清点结果（2026-11-15）**：新建手帐本「创建」、今天怎么记「开始写」、备份「下载备份文件」、恢复「选择备份文件」都是 11px；旁边的「取消 / 以后再说」是 16px 600。
+- **Fix Summary（V10.71）**：`Public/styles.css` 新增 `dialog .primary { font: 600 16px var(--ui-sans) }`，只作用在弹窗和底部弹层里。
+  - 页面里的 `.primary` 不变。
+  - 弹窗里已经单独设置过字号的（`.export-choice .primary`、`.collab-invite .primary`）优先级更高，保持原样。
+  - 修复后清点：创建、开始写、下载备份文件都是 16px 600。
+- **原来的建议方向**：
   - 定一套按钮字号（例如弹层里的主 / 次按钮都是 16px 600，页面里的小按钮保持现状）；
   - 先改底部弹层和表单弹窗里的主按钮，避免一次改动全局 `.primary` 影响所有页面；
   - 修改前后各截一次图对比。
-- **Verification**：TBD（浏览器里比较字号，模拟器截图，真机确认）。
+- **Verification**：`tests/v168-browser.cjs`（「创建」16px）；上面的清点。真机：**Pending Device Verification**（录音「标题」弹层的「保存」）。
 - **Related**：CAP-002（同一个「标题」弹层）、CAP-010（「新建手帐本」的「创建」按钮）。
 
 ---
@@ -600,9 +637,9 @@
 - **Reported Date**：2026-11-15
 - **Source**：Founder（真实 iPhone 测试）
 - **Severity**：P3
-- **Status**：Triaged
+- **Status**：Fixed — Pending Device Verification（V10.71）
 - **Affected Build**：TBD
-- **Target Build**：Beta 2（暂定），建议和 CAP-E002 一起做
+- **Target Build**：下一个构建（未上传，V10.71）
 - **现状**（代码核对，2026-11-15）：
   - Studio 里打字时的字体条和「今天的故事」字体面板（`TYPE_FONTS`）**已经有** 黑体、宋体、楷体。它们用设备自带的字体（`Public/js/library.mjs` `SYSTEM_FONTS`：iPhone 上是苹方 PingFang SC、宋体 Songti SC），App 里没有打包，也不需要授权。
   - **新建 / 编辑手帐本的「字体」**（`Public/js/personal-ui.mjs` 里的 `<select name="coverFont">`）只列出 `library.json` 里打包的 11 种字体：6 种英文（Cormorant、Caveat、Quicksand、Libre Baskerville、DM Sans、Pacifico）和 5 种中文艺术字（马善政、站酷快乐体、站酷小薇、龙藏体、霞鹜文楷）。**没有宋体、黑体**。
@@ -626,8 +663,15 @@
     - 书的数据里只存字体 ID（`coverFont` 是字符串），**不改数据结构**；
     - 改 `library.json` 后运行 `tools/sync_library.py`，保留来源和授权说明；
     - 导出 PNG 在同一台设备上用同一字体渲染，要实际导出一次确认。
-- **Fix Summary**：TBD（未开始）
-- **Verification**：TBD
+- **Fix Summary（V10.71）**：采用方案 1（设备自带字体）。
+  - 封面字体列表最前面加「黑体」「宋体」，复用已有的 `hei` / `song` ID：iPhone 上是苹方 PingFang SC、宋体 Songti SC。
+  - 不打包，不增加 App 体积，不涉及授权。
+  - i18n 新增 `font.heiPlain`、`font.songPlain`。只存字体 ID，**数据结构不变**。
+- **Verification**：
+  - `tests/v168`：选宋体后预览变宋体，保存的 ID 是 `song`，重新打开、书架、重启 App 后都是宋体。
+  - 导出 PNG：没有单独测，Pending。
+  - 「Songti SC」在 iPhone 上是否不用下载就能用：**Pending Device Verification**。
+  - 原来列的验证项：
   - 新建手帐本选宋体、黑体 → 保存 → 重新打开 → 导出 PNG，三处字形一致；
   - 中英文书名各试一次；
   - iPhone 和固定链接各试一次。
@@ -639,9 +683,9 @@
 - **Reported Date**：2026-11-15
 - **Source**：Founder（真实 iPhone 测试）
 - **Severity**：P2
-- **Status**：Triaged
+- **Status**：Fixed — Pending Device Verification（V10.71）
 - **Affected Build**：TBD
-- **Target Build**：Beta 2（暂定），建议和 CAP-E001 一起做
+- **Target Build**：下一个构建（未上传，V10.71）
 - **现状**（代码核对，2026-11-15）：
   - 手帐本封面的字体是一个原生 `<select>`。在 iPhone 上点开是系统的滚轮选择器，选项一律用系统字体显示；给 `<option>` 设置字体在 iOS 上不起作用。这就是「名字几乎相同字体」的原因。
   - Studio「详情 / 文字」面板里还有两个同样的 `<select>` 字体选择（`fontOptions()`）。
@@ -658,11 +702,39 @@
   - 打开列表时用 `document.fonts.load()` 预加载，没加载完的行先显示占位、不可选或标明「加载中」；
   - 选择只改草稿（`bookDraft`），按「创建 / 保存」才写入，取消就丢弃；
   - 三个 `<select>` 字体选择是否一起换，需要 Founder 确认范围。
-- **Fix Summary**：TBD（未开始）
-- **Verification**：TBD
+- **Fix Summary（V10.71）**：`Public/js/personal-ui.mjs`、`Public/app.js`、`Public/styles.css`。
+  - 封面字体的原生 `<select>` 换成横向列表；每个选项用自己的字体写示例（中文字体写「开铺手帐」，英文字体写「Capiday」），下面一行小字是字体名。
+  - 点选后只改草稿和预览，「创建 / 保存」才写入，「取消」不改。
+  - 打包字体在没加载完时半透明，并标「加载中」。字体在展开「个性化」时才加载（打包字体共约 28 MB，中文艺术字每个 5–7 MB）。
+  - **发现的限制**：6 个杂志封面（日系杂志等）的标题本来就用固定字体，不跟随封面字体。选这些样式时，列表上方会提示这一点。要不要让它们也跟随，记为 CAP-E003，由 Founder 决定。
+  - Studio 详情面板里的两个 `<select>` 字体选择，这次没有改（不在封面范围内）。
+- **Verification**：
+  - `tests/v168` 15 项通过：13 个选项都是自己的字体、中英文示例、加载状态会消失、杂志封面有提示、预览实时变化、只有一个被选中、保存、重新打开、编辑后取消不改、书架、重启。
+  - 真机：**Pending Device Verification**。
+  - 原来列的验证项：
   - 浏览器测试：每个选项的计算字体是否正确；选择后预览更新；取消后恢复；
   - 模拟器截图；
   - 真机确认，包括离线、首次打开时字体还没缓存的情况。
+
+<a id="cap-e003"></a>
+### CAP-E003 · 杂志类封面的标题也跟随所选字体
+
+- **Title**：6 个杂志封面（日系、欧美、黑白、胶片、留白、拼贴）的标题字体是写死的，选了封面字体也不会变。
+- **Reported Date**：2026-11-15（Sprint 01 实施 CAP-E002 时发现）
+- **Source**：开发中发现（不是 Founder 报告）
+- **Severity**：P3
+- **Status**：Triaged（需要 Founder 决定）
+- **Target Build**：TBD
+- **现状**：
+  - 杂志封面由 `magazineCoverHTML` 生成，不读 `coverFont`；
+  - 「主题」封面和经典封面会跟随。
+  - V10.71 在字体列表上方加了提示，没有改变任何封面的样子。
+- **为什么没有直接改**：每本书都有 `coverFont`，默认是 `elegant`（Cormorant），而大部分用户从没主动选过。如果让杂志封面跟随这个值，所有已有的杂志封面标题都会立刻变样。
+- **方案**（待决定）：
+  1. 保持现状（只提示）；
+  2. 增加一个可选字段（例如 `coverFontChosen`），只有用户在新列表里主动选过字体时，杂志封面才跟随。需要同时更新 `Packages/LittleDaysCore` 的 `Models.swift` 和 Core 测试；老数据没有这个字段，样子不变。
+- **Fix Summary**：TBD
+- **Verification**：TBD
 
 ---
 

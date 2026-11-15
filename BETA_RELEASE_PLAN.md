@@ -10,6 +10,32 @@
 - **上传成功 ≠ Apple 处理完成 ≠ 测试者已能安装**。三件事分别记录。
 - 每个 Build 都要先过第 3 节的 Release Gate。
 
+## 1b. 当前阶段：Alpha Stabilization（2026-11-15 起）
+
+- Founder 决定**暂缓 TestFlight 外部测试申请**，先进入 Alpha Stabilization：修复已记录的问题，等 Founder 真机验收后，再决定下一步发布。
+- 这个阶段**不上传 TestFlight，不提交 Apple 外部审核，不加新功能**。
+
+### Sprint 01（2026-11-15，网页 V10.70–V10.71）
+
+| Phase | 内容 | 结果 |
+|---|---|---|
+| 1 架构与根因审查 | 按 Backlog 分类（见 BUG_BACKLOG「Sprint 01 · 分类」） | 完成 |
+| 2 布局、键盘、编辑状态 | CAP-002、003、010、011、012、013（V10.70，Editor Layout Coordinator）；CAP-015 弹窗主按钮字号 | Fixed — Pending Device Verification |
+| 3 文字双击编辑 | CAP-014：模拟器复现并确认根因（iOS 合成的 click 把光标给了这一页的正文），已修 | Fixed — Pending Device Verification |
+| 4 录音播放 | CAP-001：模拟器复查四个因素，7 秒无法复现，没有新证据不改代码 | 需要真机数据 |
+| 5 备份恢复安全 | 复查 V10.65 / V10.67 的机制（预览、二次确认、恢复前快照、失败回滚；恢复是「替换」），没有发现新的数据风险，不改代码 | 回归 v161 / v163 覆盖 |
+| 6 字体体验 | CAP-E001（黑体 / 宋体，设备自带字体）、CAP-E002（字体列表用字体本身显示 + 实时预览 + 取消不改）；发现 CAP-E003（杂志封面标题字体固定） | E001 / E002 Fixed — Pending Device Verification；E003 待决定 |
+| 7 自动化与回归 | 见 agent.md 本次记录 | 见下 |
+
+- **Alpha 稳定状态**：
+  - 已知问题在代码层面都已处理，但**没有一项经过真机验证**；
+  - CAP-001（录音）还需要真机数据。
+- **进入外部 Beta 的条件**（都还没满足）：
+  - Founder 在真机上完成 Sprint 01 的验收清单（agent.md）；
+  - Release Gate 的真机项（核心保存读取、升级保留数据、备份恢复）通过；
+  - 出新的内部 TestFlight 构建（需要 Founder 批准）；
+  - 测试者说明定稿。
+
 ## 2. 三个阶段
 
 ### Beta 1 — Initial Testing（初始测试）
@@ -62,8 +88,8 @@
   | 4 悬浮操作栏 | CAP-013 | Fixed — Pending Device Verification |
   | 5 新建手帐本顶部安全区 | CAP-010 | Fixed — Pending Device Verification |
   | 6 封面选择弹窗高度 / 滚动 | CAP-011 | Fixed — Pending Device Verification |
-  | 双击文字无法编辑 | CAP-014 | Triaged（只登记，未修；2026-11-15 补充截图 IMG_9460） |
-  | 弹层主按钮字号偏小（「保存」「创建」） | CAP-015 | Triaged（只登记，未修，P3） |
+  | 双击文字无法编辑 | CAP-014 | Fixed — Pending Device Verification（Sprint 01，V10.71） |
+  | 弹层主按钮字号偏小（「保存」「创建」） | CAP-015 | Fixed — Pending Device Verification（Sprint 01，V10.71） |
 
 - **统一布局规则**（Editor Layout Coordinator，`Public/app.js` `updateVisibleArea` 一处判断，CSS 读结果）：
   1. **键盘状态**：只有「有输入框获得焦点」并且量到键盘（外壳给出的位置，或可见区域变小）才算弹出。弹出时设置 `html.kb-open`、`--vv-h`、`--kb`，否则全部清掉。在失去焦点、可见区域变化、外壳通知（含动画结束后的 didHide / didChangeFrame）时重新计算。
