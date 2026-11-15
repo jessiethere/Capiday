@@ -87,7 +87,16 @@ function magazineCoverHTML(book, ctx, template) {
   }
   if (template === "magazine-west")
     return `<div class="book-cover cover-magazine-west" style="--cover-color:${coverColor(book, tokens)}">${img}<span class="mag-shade" aria-hidden="true"></span><span class="mag-top"><span>${esc(issue)}</span><span>${esc(topic)}</span></span><span class="mag-masthead">CAPIDAY</span><span class="mag-lines"><b class="cover-title">${title}</b>${line ? `<i>${line}</i>` : ""}</span><span class="mag-barcode" aria-hidden="true"></span></div>`;
-  return `<div class="book-cover cover-magazine-jp" style="--cover-color:${coverColor(book, tokens)}"><span class="mag-top"><span class="mag-brand">capiday</span><span>${esc(issue)}</span></span><span class="mag-frame">${img}</span><b class="mag-vertical cover-title" style="--n:${Math.max(4, [...String(book.title || "Capiday")].length)}">${title}</b><span class="mag-foot"><span>${esc(topic)}</span><i></i><span>${line || "LIFESTYLE JOURNAL"}</span></span></div>`;
+  // V10.73 (CAP-017): the vertical title is for Chinese / Japanese titles; a
+  // long one takes 2–3 columns, a Latin or mixed title becomes a band.
+  const chars = [...String(book.title || "Capiday")].filter((c) => c.trim());
+  const cjk = chars.filter((c) => /[\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff]/.test(c)).length;
+  const upright = cjk >= Math.ceil(chars.length * 0.7);
+  const cols = chars.length > 20 ? 3 : chars.length > 10 ? 2 : 1;
+  const jpTitle = upright
+    ? `<b class="mag-vertical cover-title" style="--cols:${cols};--n:${Math.max(4, Math.ceil(chars.length / cols))}">${title}</b>`
+    : `<b class="mag-wide cover-title">${title}</b>`;
+  return `<div class="book-cover cover-magazine-jp" style="--cover-color:${coverColor(book, tokens)}"><span class="mag-top"><span class="mag-brand">capiday</span><span>${esc(issue)}</span></span><span class="mag-frame">${img}</span>${jpTitle}<span class="mag-foot"><span>${esc(topic)}</span><i></i><span>${line || "LIFESTYLE JOURNAL"}</span></span></div>`;
 }
 // V10.54 · Ten themed covers. Each one is its own composition (a herbarium
 // sheet, a café receipt, a recipe card, a postcard, a pet tag, polaroids, a

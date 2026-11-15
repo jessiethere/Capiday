@@ -78,6 +78,7 @@ import { communityHTML, profileHTML, inboxHTML, bellHTML } from "./js/community-
 import { experience } from "./js/levels.mjs";
 import { openDrawBoard } from "./js/draw.mjs";
 import { logEvent, readEvents, summarize } from "./js/events.mjs";
+import { watchCoverTitles } from "./js/cover-fit.mjs";
 import { UPDATES, LATEST, noteFor, hasUnseen, markSeen } from "./js/whats-new.mjs";
 import { recordedDays, streakInfo, bestStreak, CELEBRATED_KEY } from "./js/streak.mjs";
 import * as Community from "./js/community.mjs";
@@ -254,6 +255,8 @@ let media = new MediaStore(),
   recordingTargetId = null;
 // V10.22: what went wrong with a file goes to the local log (see media-check.mjs).
 media.onEvent = (name, data) => logEvent(name, data);
+// V10.73 (CAP-017): every cover title is fitted to its template after it is drawn.
+watchCoverTitles();
 // V10.25: 精确调整 in 图层 stays open / closed as the person left it.
 document.addEventListener("toggle", (event) => {
   if (event.target.matches?.("details.layer-precise")) layerPreciseOpen = event.target.open;

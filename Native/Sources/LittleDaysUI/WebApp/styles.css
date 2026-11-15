@@ -1665,7 +1665,8 @@ dialog .dialog-description {
     3px 4px 0 var(--c-dfd9cd, #dfd9cd),
     4px 7px 8px var(--c-5f4e3c12, #5f4e3c12);
 }
-.book-cover-preview .cover-title {
+/* Classic paper covers only: magazine and themed covers size their titles to the cover (CAP-017). */
+.book-cover-preview .book-cover:not(.cover-theme):not([class*="cover-magazine"]) .cover-title {
   font-size: 17px;
 }
 .cover-template-grid {
@@ -9051,6 +9052,9 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
   writing-mode: horizontal-tb;
   background: var(--c-f6f2ea, #f6f2ea);
   font: 700 min(8.6cqw, calc(60cqh / var(--n, 6) / 1.18)) / 1.18 -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  /* V10.73 (CAP-017): a long Chinese title takes 2–3 columns of characters
+     (--cols), so the characters stay a readable size. */
+  width: calc(var(--cols, 1) * 1em + 4.4cqw);
   letter-spacing: 0;
   color: var(--t-2b2622, #2b2622);
   text-align: center;
@@ -22171,7 +22175,7 @@ body.typing:not(.typing-dialog) .ctx-caption {
   width: 92px;
   height: 122px;
 }
-.book-editor-dialog .book-top .book-cover-preview .cover-title {
+.book-editor-dialog .book-top .book-cover-preview .book-cover:not(.cover-theme):not([class*="cover-magazine"]) .cover-title {
   font-size: 13px;
 }
 .book-editor-dialog .book-top-fields {
@@ -22975,7 +22979,9 @@ body.typing:not(.typing-dialog) .ctx-caption {
   right: 4cqw;
   bottom: 3cqw;
   font-size: 7.4cqw;
-  -webkit-line-clamp: 1;
+  /* V10.73 (CAP-017): two lines in the white strip for a long title. */
+  -webkit-line-clamp: 2;
+  max-height: 11cqw;
   color: var(--t-3f362c, #3f362c);
 }
 .cover-everyday-polaroid .cv-date {
@@ -25226,4 +25232,34 @@ dialog .primary {
 }
 .cover-sample-note[hidden] {
   display: none;
+}
+
+/* V10.73 (CAP-017): cover titles break into even lines (no character left
+   alone on the last line); js/cover-fit.mjs makes a long title smaller to
+   fit its template, and only a title too long even then ends with "…". */
+.book-cover .cover-title:not(.mag-vertical),
+.book-cover .cv-title {
+  text-wrap: balance;
+}
+/* Japanese magazine with a Latin or mixed title: a title band across the
+   bottom of the photo instead of the one-character column. */
+.cover-magazine-jp .cover-title.mag-wide {
+  top: auto;
+  bottom: 23cqh;
+  left: 12cqw;
+  right: 12cqw;
+  width: auto;
+  max-height: 24cqh;
+  padding: 2cqw 3cqw;
+  word-break: normal;
+  overflow-wrap: anywhere;
+  font: 700 8cqw/1.15 -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  text-align: left;
+}
+.book-cover .fit-cut:not(.mag-vertical) {
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--fit-lines, 3);
+  overflow: hidden;
+  white-space: normal;
 }
