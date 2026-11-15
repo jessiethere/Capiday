@@ -48,6 +48,21 @@
 
 ## 更新日志
 
+### 2026-11-15 — V10.78：备份三项小修、杂志封面跟随字体、单页导出、照片墙 v1.0、自动 iCloud 备份（构建 0.2.0 (6)）
+
+- **需求**（Founder）：「可以做：单页导出（CAP-E004）、照片墙 v1.0、自动 iCloud 备份。杂志封面标题是跟随所选字体（CAP-E003）；批准先修 3 个备份小问题（DS-09、DS-10、DS-12）。」照片墙和 iCloud 规划里的待决问题没有逐条回答，**按规划里的推荐选项实施**，分别记在两份计划的实施记录里。顺序：先数据安全（DS-09/10/12），再小功能，最后大功能。
+- **DS-09（R3）**：`runBackup` 生成后检查文件大小，超过恢复上限（150 MB）不交出、不记为备份，说明原因。
+- **DS-10（R4）**：`visitMediaReferences` 新增「辅助引用」（`memo`）：日封面的 `coverPhotos[页].reference`、书的 `coverSample.own / photos`、照片墙隐藏记录里的照片——恢复时一起改写；但 `mediaReferences` 默认不算它们，所以备份是否完整、恢复检查、缺失提示都和以前一样，旧备份照常能恢复。发现并一起修了一个隐患：只改 `coverImage` 不改 `coverSample.own` 时，恢复后封面会换成示例照片（CAP-018 的问题）。
+- **DS-12（R6）**：外壳按 App 容器路径识别「我的 iPhone › 开铺手帐」（`place: "app"`），网页提醒会随 App 一起删除，不再说「删除开铺手帐不会删掉它」。
+- **CAP-E003**：可选字段 `coverFontChosen`（新书默认带；旧书在编辑里点选过字体并保存后带）→ 6 种杂志封面标题用所选字体；旧书不变。Swift 可选字段 + Core 测试。
+- **CAP-E004**：阅读器「···」：存成图片 / 分享 / 这一页 PDF / 整本书 PDF。`renderJournalCanvas({ scale: 2 })` 出 2160 × 2700；先加载页面字体；照片读不到不出文件；一片底色不交出；不改数据。
+- **照片墙 v1.0（MW-01～05）**：可选的 `state.wall`（隐藏、整页、顺序），只存来源 key；管理模式（选择、隐藏、已隐藏 / 恢复、时间 / 自定义排序、放到最前 / ‹ ›、拿下整页）；整页卡片用 `sharedCanvasHTML`；阅读器「贴到照片墙」（最多 50）；恢复预览提示旧备份没有照片墙设置；Swift `MemoryWallSetting`。**长按拖动没做**（按钮代替，留到 v1.1）。
+- **自动 iCloud 备份（DS-02、04～08）**：`capiday-format.mjs`（.capiday 读写，三层检查）；手动备份超过 100 MB 改出 .capiday；恢复支持 .capiday；`LittleDaysICloudBackup.swift`（容器写入 + 大小核对 + 保留规则 + 列表 + 下载后经 `__icloud` 路由给网页）；设置里的开关与状态；`Capiday.entitlements`。详见 `docs/ICLOUD_AUTO_BACKUP_PLAN.md` 第 9 节。
+- **测试**：新 v178（单元 4、浏览器 9）、v179（9）、v180（14）、v181（单元 9、浏览器 21）、v182（单元 8、浏览器 18）；更新 v102、v163、v168；单元测试 344/344；Mac 模拟器构建 BUILD SUCCEEDED；Release 归档（开发签名）ARCHIVE SUCCEEDED 且带 iCloud 权限。全量回归 run-all15 结果见下一行。
+- **构建**：构建号 5 → 6（5 归档过但从未上传）。上传仍需要 Founder 在 Mac 上确认；本地导出（验证发布签名）也被 Mac 权限规则拦下，**发布签名能否带上 iCloud 没有验证**。
+- **没有验证**：所有新功能的真机行为；iCloud 的真实写入、上传、清理、换机恢复；模拟器里外壳的单页导出分享面板；大量媒体时 `.capiday` 的内存占用。
+- **未做 / 留待**：照片墙长按拖动；Swift 原生流式 `.capiday`；ZIP64；`NSUbiquitousContainers`（让「文件」App 看得到 iCloud 里的备份）；DS-11（回滚失败入口）、DS-13（账户名进备份）。
+
 ### 2026-11-15 — Nightly Sprint · Books Alpha Stability Review（网页 V10.77，构建 0.2.0 (5)）
 
 - **需求**（Founder，四条消息合并）：书架与手帐创建系统完整审查和修复（P0 → P1 → P2）；首页「我的手帐」按书架顺序（P1）；日期与时区一致性（P1）；Nightly Sprint：自主连续开发、统一 Alpha Backlog、测试、构建并上传 TestFlight Internal Testing（Founder 本次明确授权上传）。

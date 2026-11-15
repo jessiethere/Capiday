@@ -4,6 +4,32 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.78",
+    date: "2026-11-15",
+    zh: {
+      title: "照片墙可以整理了，备份更放心",
+      items: [
+        "照片墙「管理」：隐藏不想放的照片（手帐里的照片不变）、随时恢复；可以按时间，也可以按自己的顺序排；在阅读器「···」里把整页手帐「贴到照片墙」。",
+        "阅读器「···」新增：把这一页存成图片、分享这一页、把这一页存成 PDF，以及整本书 PDF。图片是高清的 2160 × 2700，只有这一页本身。",
+        "iPhone App 里可以自动备份到你自己的 iCloud：每天最多一次，存好前会逐个文件检查，设置里能看到最近一次和是否已上传；也可以从 iCloud 恢复（照样先看对比、再确认，7 天内可撤销）。",
+        "照片和视频超过 100 MB 也能备份了：会存成一个 .capiday 文件，恢复时同样支持。",
+        "杂志封面的标题跟随你选的字体（新建的手帐，以及你选过字体的手帐）；以前的手帐不会自己变样。",
+        "备份更稳：太大、恢复不了的备份不会生成；存到「我的 iPhone › 开铺手帐」时会提醒它会随 App 一起删除；恢复后封面照片保持不变。",
+      ],
+    },
+    en: {
+      title: "Curate your photo wall; safer backups",
+      items: [
+        "Photo wall Manage: hide photos you'd rather not show (the photos in your journal stay), bring them back any time; by date or in your own order; put a whole page on the wall from the reader's ···.",
+        "Reader ···: save this page as an image, share it, save it as a PDF, or the whole book as a PDF. The image is 2160 × 2700, just the page itself.",
+        "In the iPhone app, automatic backups to your own iCloud: at most once a day, every file checked first; Settings shows the last one and whether it uploaded; restore from iCloud with the same preview, confirm and 7-day undo.",
+        "More than 100 MB of photos and videos can be backed up now, as one .capiday file, and restored the same way.",
+        "Magazine cover titles follow the font you chose (new journals, and journals you picked a font for); older journals keep their look.",
+        "Steadier backups: a backup too large to restore is never made; saving to On My iPhone › Capiday warns it's deleted with the app; covers keep their photos after a restore.",
+      ],
+    },
+  },
+  {
     version: "10.77",
     date: "2026-11-15",
     zh: {

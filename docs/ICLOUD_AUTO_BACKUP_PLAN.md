@@ -1,6 +1,7 @@
 # 自动 iCloud 备份升级规划
 
-> **状态：Planned — Post-Alpha Data Safety Upgrade**（已规划，Alpha 稳定性修复和备份恢复验证完成后实施）。
+> **状态：V10.78 已实施（2026-11-15）— Fixed / Awaiting Device Verification**。Founder 2026-11-15 批准开发（「可以做」），第 7 节的决定按推荐选项实施，见第 9 节。
+> 原状态：Planned — Post-Alpha Data Safety Upgrade。
 > 2026-11-15。本文只做技术调查、需求整理和规划：**没有修改备份逻辑、没有启用 iCloud / CloudKit、没有修改数据结构、没有删除或迁移任何数据**。现有的手动 JSON 备份保留，作为安全兜底。
 > 代码证据以 commit `a3cea07` 为准（容器快照，和 Mac 的 HEAD 相同；`Native/…/WebApp/` 和 `Public/` 逐字节一致）。行号会漂移，以函数名为准。
 > 本文在 [STORAGE_ARCHITECTURE.md](STORAGE_ARCHITECTURE.md)（2026-11-14 架构设计）和 [SPRINT1_BACKUP_RESTORE_PLAN.md](SPRINT1_BACKUP_RESTORE_PLAN.md) 的基础上更新，不重复的细节见这两份。任务 ID 见 [DEVELOPMENT_TRACKER.md](DEVELOPMENT_TRACKER.md) 第 5 节（DS-01～DS-14）。
@@ -144,3 +145,18 @@
 - 没有修改 STORAGE_ARCHITECTURE.md 的设计；其中已过时的描述（§3.1 下载到 Documents → 分享；部分行号）在本文第 2 节按当前代码重新写了。
 
 本次只规划，不实施新备份功能。
+
+## 9. 实施记录（V10.78）
+
+第 7 节的决定（Founder 批准开发，没有逐条回答，按推荐）：1 自动备份**默认开**（设置里可关）；2 R3 / R4 / R6 已先修（DS-09 / 10 / 12，Founder 明确批准）；3 格式 `.capiday`；4 保留 3 份最近 + 每月 1 份（6 个月）；5 是否只在 Wi-Fi 由 iCloud 云盘自己的设置决定（App 不另加开关）；6 账户名 / 头像暂不进备份（DS-13 保持待定）；7 文件不另外加密（依赖 iCloud 加密 / 高级数据保护）；8 本版本即上；9 CloudKit 不做。
+
+- **`.capiday`（DS-02）**：`Public/js/capiday-format.mjs`，按 `CAPIDAY_BACKUP_FORMAT.md` 1.0 写读（只存储的 ZIP、`mimetype` 第一个、`state.json`、`media/<id>.<ext>` 原始字节、`manifest.json` 带每个文件的大小和 SHA-256）。读取三层检查（CRC-32、SHA-256、手帐结构），拒绝更新版本、损坏、不安全路径。**与规划不同**：由网页（JS）生成，不是 Swift 流式写入，所以内存约等于媒体总大小；不支持 ZIP64（超过 4 GB 会明确拒绝）。
+- **手动备份**：媒体不超过 100 MB 时仍是 JSON（行为不变）；超过时自动改成 `.capiday`（以前直接拒绝）。恢复时两种都支持（`.capiday` 不受 150 MB 文件上限限制）。
+- **自动 iCloud 备份（DS-04 / 05）**：只在 iPhone App 里；App 打开且不在编辑器时，每天最多一次、手帐有变化才做。网页生成 `.capiday` 并回读校验后，以下载的方式交给外壳（`Capiday-Auto-日期-时分.capiday`）；外壳（`LittleDaysICloudBackup.swift`）用 `NSFileCoordinator` 写进 `iCloud.com.capiday.app/Documents/Backups`（先写 `.partial` 再改名），核对大小，结果告诉网页。失败不影响写日记，只在设置里显示。
+- **设置（DS-06）**：「自动备份到 iCloud」开关、最近一次（时间、大小、已检查、等待上传 / 已上传）、失败原因、「现在备份到 iCloud」「从 iCloud 恢复」。打开设置时问外壳一次上传状态。在 iCloud 里的完整备份也算一次备份（备份提醒不再催）。
+- **从 iCloud 恢复（DS-07）**：列出容器里的备份 → 外壳确保文件已下载（最多等 60 秒）→ 网页通过 `littledays://app/__icloud/<文件名>` 读取（只允许我们自己的备份文件名）→ 原有的恢复安全流程。
+- **保留（DS-08）**：3 份最近 + 每月 1 份；只有最新一份 `isUploaded` 后才删除旧的。
+- **iCloud 权限**：`Native/App/Capiday.entitlements`（iCloud Documents，容器 `iCloud.com.capiday.app`），工程 `CODE_SIGN_ENTITLEMENTS`。Mac 上开发签名的 Release 归档已带上这些权限（自动签名配好了容器）。**上架用的发布签名没有验证**（本地导出被 Mac 的权限规则拦下）；如果 Organizer 上传时提示 iCloud 能力，按提示让 Xcode 自动处理即可。
+- **测试**：`tests/v182-capiday.test.mjs` 8 项（往返逐字节、缺文件、改一个字节被发现、截断、非备份、更新版本、zip-slip、CRC 标准值）；`tests/v182-browser.cjs` 18 项（外壳由测试按 Swift 的回答方式模拟：浏览器里不显示、默认开、现在备份 → 文件在 Node 里三层检查通过且与 App 里的手帐一致、等待上传 → 已上传、从 iCloud 恢复含图片、iCloud 不可用如实提示且不生成文件、可关闭）；模拟器构建通过。
+- **没有验证 / 已知限制**：真机上的 iCloud 写入、上传、清理、换机恢复（模拟器没有 iCloud 账号）；后台时间（App 切到后台时网页会被暂停，所以只在打开时做）；大量媒体时的内存；`NSUbiquitousContainers` 没有加，所以备份在「文件」App 的 iCloud 云盘里看不到（从 App 里恢复）。
+

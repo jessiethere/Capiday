@@ -131,16 +131,16 @@ P0 的 9 项：CAP-016（Testing）、DS-01（In Progress）、DS-02、DS-05、D
 
 ### 4.3 Data Safety Upgrade
 
-全部 **Planned — Post-Alpha Data Safety Upgrade**。方案见 [ICLOUD_AUTO_BACKUP_PLAN.md](ICLOUD_AUTO_BACKUP_PLAN.md)。
+DS-02、DS-04～08：**V10.78 已实施，等真机验收**（Founder 2026-11-15 批准开发；第 7 节的待决问题按推荐选项）。方案见 [ICLOUD_AUTO_BACKUP_PLAN.md](ICLOUD_AUTO_BACKUP_PLAN.md)。
 
 | ID | 标题 | 优先级 | 状态 | 目标版本 | 相关模块 | 验收标准 | 测试结果 | 完成日期 |
 |---|---|---|---|---|---|---|---|---|
-| DS-02 | 流式 `.capiday` 备份包（取消 100 MiB 上限、manifest + sha256 回读校验；JSON v1 仍可恢复） | P0 | Planned | Data Safety Upgrade | 新 Swift `CapidayArchive`；JS 分块；`spikes/s1-0/` | 计划第 6 节第 1～4 项 | 只有 spike | — |
-| DS-04 | iCloud 容器 `iCloud.com.capiday.app`（entitlements、`NSUbiquitousContainers`、登录 / 空间 / 换账号） | P1 | Planned | Data Safety Upgrade | Xcode 工程；外壳 Swift | 计划第 6 节第 13、14 项 | — | — |
-| DS-05 | 自动备份（有改动 + 后台任务 + BGProcessingTask；生成 → 写入 → 已上传状态机；失败不影响写日记） | P0 | Planned | Data Safety Upgrade | 外壳 Swift；`app.js` 备份入口 | 计划第 6 节第 4、8、16 项 | — | — |
-| DS-06 | 设置「数据与备份」状态（iCloud 可用、开关、最近一次经验证的成功备份、等待 / 失败、立即备份、恢复、手动导出） | P1 | Planned | Data Safety Upgrade | `app.js` 设置；i18n | 未上传时不显示成功 | — | — |
-| DS-07 | 从 iCloud 恢复（列表、下载进度、无网络、沿用恢复安全机制、不静默覆盖） | P0 | Planned | Data Safety Upgrade | `restore-safety.mjs`；外壳 Swift | 计划第 6 节第 7、9、11、12 项 | — | — |
-| DS-08 | 保留与清理（最近 3 份 + 每月 1 份；新的一份上传后才删旧的） | P2 | Planned | Data Safety Upgrade | 外壳 Swift | 永远至少有一份已上传的备份 | — | — |
+| DS-02 | 流式 `.capiday` 备份包（取消 100 MiB 上限、manifest + sha256 回读校验；JSON v1 仍可恢复） | P0 | Testing | V10.78 | 新 Swift `CapidayArchive`；JS 分块；`spikes/s1-0/` | 计划第 6 节第 1～4 项 | JS `.capiday` 读写（`capiday-format.mjs`）：v182 单元 8 项 ✅；手动备份超过 100 MB 改用 .capiday、恢复支持 ✅（v163 更新）；Swift 原生流式写入没有做（JS 生成，内存约等于媒体大小） | — |
+| DS-04 | iCloud 容器 `iCloud.com.capiday.app`（entitlements、`NSUbiquitousContainers`、登录 / 空间 / 换账号） | P1 | Testing | V10.78 | Xcode 工程；外壳 Swift | 计划第 6 节第 13、14 项 | `Capiday.entitlements`（iCloud Documents，`iCloud.com.capiday.app`）；开发签名归档已带上 iCloud 权限 ✅；**发布签名（上架）未验证**：本地导出被 Mac 权限规则拦下 | — |
+| DS-05 | 自动备份（有改动 + 后台任务 + BGProcessingTask；生成 → 写入 → 已上传状态机；失败不影响写日记） | P0 | Testing | V10.78 | 外壳 Swift；`app.js` 备份入口 | 计划第 6 节第 4、8、16 项 | `LittleDaysICloudBackup.swift` + `runICloudBackup`：v182 浏览器 18 项（外壳由测试模拟）✅；模拟器构建 ✅；**真机 iCloud 未验证** | — |
+| DS-06 | 设置「数据与备份」状态（iCloud 可用、开关、最近一次经验证的成功备份、等待 / 失败、立即备份、恢复、手动导出） | P1 | Testing | V10.78 | `app.js` 设置；i18n | 未上传时不显示成功 | 设置里开关、最近一次（已检查 / 等待上传 / 已上传）、失败原因、现在备份、从 iCloud 恢复：v182 ✅；真机 ⏳ | — |
+| DS-07 | 从 iCloud 恢复（列表、下载进度、无网络、沿用恢复安全机制、不静默覆盖） | P0 | Testing | V10.78 | `restore-safety.mjs`；外壳 Swift | 计划第 6 节第 7、9、11、12 项 | 从 iCloud 恢复走原有恢复流程（预览、二次确认、快照、撤销）：v182 完整恢复含图片 ✅；真机 ⏳ | — |
+| DS-08 | 保留与清理（最近 3 份 + 每月 1 份；新的一份上传后才删旧的） | P2 | Testing | V10.78 | 外壳 Swift | 永远至少有一份已上传的备份 | 3 份最近 + 每月 1 份，新的一份上传后才删旧的（Swift `prune`）：**只有代码，未测试**（需要真机 iCloud） | — |
 | DS-11 | R5：恢复回滚失败后找不到恢复前的数据 | P2 | Planned | Data Safety Upgrade | `app.js` restore / undoRestore | 回滚失败时设置里仍有「恢复前的数据」入口 | — | — |
 | DS-13 | R7：账户名、头像等 localStorage 设置是否加入备份 | P3 | Blocked | Data Safety Upgrade | `account.mjs`；备份格式 | Founder 决定 | **等 Founder 决定** | — |
 | DS-14 | CloudKit 增量同步（路线 C）是否进入路线图 | P3 | Blocked | 以后 | — | Founder 决定 | **等 Founder 决定**（推荐等真实的多设备需求） | — |
