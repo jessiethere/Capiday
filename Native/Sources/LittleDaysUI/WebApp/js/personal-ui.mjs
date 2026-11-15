@@ -30,13 +30,27 @@ export function coverCollection(book) {
   const text = `${book.category || ""} ${book.title || ""}`;
   return (COVER_COLLECTIONS.find(([pattern]) => pattern.test(text)) || [null, "views"])[1];
 }
+// V10.73 (CAP-018): a cover with no photo of its own shows an example photo
+// from the library, picked by the book's id — always the same one for the
+// same book. A new book has no id until it is created, so the dialog gives it
+// its id up front (pendingId, the id it is created with): the photo chosen in
+// 选择封面 is the one the book keeps. (It used to be picked by the title in the
+// dialog and by the new id after 创建, so a different photo appeared.)
+function photoKey(book) {
+  return String(book.id || book.pendingId || book.title || "");
+}
+// The cover shows an example photo (not one the person chose).
+export function coverShowsSample(book) {
+  const tpl = book.coverTemplate || "";
+  return !book.coverImage && (MAGAZINE_COVERS.includes(tpl) || Object.hasOwn(THEME_COVERS, tpl));
+}
 export function coverPhotoRef(book, catalog) {
   if (book.coverImage) return book.coverImage;
   const photos = catalog.photos || [];
   const pool = photos.filter((photo) => photo.collection === coverCollection(book));
   const list = pool.length ? pool : photos;
   if (!list.length) return "";
-  const seed = [...String(book.id || book.title || "")].reduce((sum, c) => (sum * 31 + c.charCodeAt(0)) >>> 0, 7);
+  const seed = [...photoKey(book)].reduce((sum, c) => (sum * 31 + c.charCodeAt(0)) >>> 0, 7);
   return `photo:${list[seed % list.length].id}`;
 }
 export const MAGAZINE_COVERS = ["magazine-jp", "magazine-west", "magazine-mono", "magazine-film", "magazine-minimal", "magazine-collage"];
@@ -47,7 +61,7 @@ function extraPhotoRefs(book, catalog, count) {
   const photos = catalog.photos || [];
   const pool = photos.filter((photo) => photo.collection === coverCollection(book) && `photo:${photo.id}` !== main);
   const list = pool.length ? pool : photos;
-  const seed = [...String(book.id || book.title || "")].reduce((sum, c) => (sum * 17 + c.charCodeAt(0)) >>> 0, 3);
+  const seed = [...photoKey(book)].reduce((sum, c) => (sum * 17 + c.charCodeAt(0)) >>> 0, 3);
   return [main, ...Array.from({ length: count }, (_, k) => list.length ? `photo:${list[(seed + k * 2) % list.length].id}` : "")];
 }
 function magazineCoverHTML(book, ctx, template) {
@@ -105,7 +119,7 @@ export function coverSeason(date = new Date()) {
   return m >= 3 && m <= 5 ? "spring" : m >= 6 && m <= 8 ? "summer" : m >= 9 && m <= 11 ? "autumn" : "winter";
 }
 function seedOf(book, salt = 7) {
-  return [...String(book.id || book.title || "")].reduce((sum, c) => (sum * 31 + c.charCodeAt(0)) >>> 0, salt);
+  return [...photoKey(book)].reduce((sum, c) => (sum * 31 + c.charCodeAt(0)) >>> 0, salt);
 }
 // The book's own photo first; then a library photo from the theme.
 function themePhotoRefs(book, catalog, template, count = 1) {
@@ -297,8 +311,8 @@ export function bookDialogHTML(book, ctx) {
   const lookBody = `<div class="field"><span class="field-label">${t("books.coverPhotoTitle")}</span><div class="cover-photo-quick" data-cover-photo-quick>${coverPhotoQuickHTML(book, ctx)}</div></div><div class="field-row"><label class="field">${t("books.color")}<select name="color">${["blush", "sage", "butter", "blue", "cream"].map((color) => `<option value="${color}" ${book.color === color ? "selected" : ""}>${t("color." + color)}</option>`).join("")}</select></label></div>${coverFontPickerHTML(book, ctx)}<label class="field">${t("books.decoration")}<select name="coverDecoration"><option value="none" ${book.coverDecoration === "none" ? "selected" : ""}>${t("books.none")}</option>${catalog.stickers.slice(0, 16).map((sticker) => `<option value="${sticker.id}" ${(book.coverDecoration || "tulip") === sticker.id ? "selected" : ""}>${ctx.language === "en" ? sticker.nameEn : sticker.nameZh}</option>`).join("")}</select></label>`;
   const settingsBody = `<label class="field">${t("books.permission")}<select name="visibility"><option value="private">${t("private")}</option><option value="public" disabled>${t("public")}</option><option value="shared" disabled>${t("shared")}</option></select></label><p class="save-help">${t("books.privateNotice")}</p><label class="field">${t("books.preset")}<select id="book-preset"><option value="blank">${t("books.blank")}</option>${(catalog.recordTemplates || []).map((item) => `<option value="${item.id}">${ctx.language === "en" ? item.nameEn : item.nameZh}</option>`).join("")}</select></label><h3 class="field-section-title">${t("books.fields")}</h3><div id="book-field-list">${(book.fields || []).map((f) => fieldDefinitionHTML(f, ctx)).join("")}</div><button class="secondary" type="button" data-action="field-add">${t("books.fieldAdd")}</button>`;
   const tabs = COVER_GROUPS.map((group, k) => `<button type="button" role="tab" data-action="cover-group" data-group="${group}" aria-selected="${k === 0}" class="${k === 0 ? "selected" : ""}">${t("coverGroup." + group)}</button>`).join("");
-  const browser = `<section class="cover-browser" id="cover-browser" hidden aria-label="${esc(t("books.coverBrowser"))}"><header class="cover-browser-head"><button type="button" class="cb-back" data-action="cover-browse-close" aria-label="${esc(t("back"))}">‹ ${t("back")}</button><b>${t("books.coverBrowser")}</b><button type="button" class="primary cb-done" data-action="cover-browse-close">${t("books.coverDone")}</button></header><div class="cb-top"><div id="cover-browser-preview" class="cb-preview">${coverHTML(book, ctx)}</div><div class="cb-top-copy"><b id="cover-browser-name">${esc(t("cover." + tpl))}</b><small class="cb-season-note">${t("books.seasonNote")}</small><button type="button" class="text-button" data-action="cover-reset">${t("books.coverReset")}</button></div></div><div class="cb-tabs" role="tablist">${tabs}</div><div class="cover-template-grid cb-grid" id="cover-browser-grid" data-group="all"></div><div class="cb-photos"><div class="book-pick-head"><b>${t("books.coverPhotoTitle")}</b></div><p class="save-help">${t("books.coverPhotoHint")}</p><div class="cover-photo-picks" id="cover-browser-photos"></div></div></section>`;
-  return `<div class="book-main"><h2>${t(book.id ? "books.dialogEdit" : "books.dialogNew")}</h2><div class="book-top"><div id="book-cover-preview" class="book-cover-preview">${coverHTML(book, ctx)}</div><div class="book-top-fields"><label class="field book-name">${t("books.name")}<input name="title" required maxlength="60" placeholder="${t("books.namePlaceholder")}" value="${esc(book.title || "")}" enterkeyhint="done" autocomplete="off"></label><small class="book-lock">🔒 ${t("private")}</small></div></div>
+  const browser = `<section class="cover-browser" id="cover-browser" hidden aria-label="${esc(t("books.coverBrowser"))}"><header class="cover-browser-head"><button type="button" class="cb-back" data-action="cover-browse-close" aria-label="${esc(t("back"))}">‹ ${t("back")}</button><b>${t("books.coverBrowser")}</b><button type="button" class="primary cb-done" data-action="cover-browse-close">${t("books.coverDone")}</button></header><div class="cb-top"><div id="cover-browser-preview" class="cb-preview">${coverHTML(book, ctx)}</div><div class="cb-top-copy"><b id="cover-browser-name">${esc(t("cover." + tpl))}</b><small class="cover-sample-note" data-cover-sample-note ${coverShowsSample(book) ? "" : "hidden"}>${t("books.coverSample")}</small><small class="cb-season-note">${t("books.seasonNote")}</small><button type="button" class="text-button" data-action="cover-reset">${t("books.coverReset")}</button></div></div><div class="cb-tabs" role="tablist">${tabs}</div><div class="cover-template-grid cb-grid" id="cover-browser-grid" data-group="all"></div><div class="cb-photos"><div class="book-pick-head"><b>${t("books.coverPhotoTitle")}</b></div><p class="save-help">${t("books.coverPhotoHint")}</p><div class="cover-photo-picks" id="cover-browser-photos"></div></div></section>`;
+  return `<div class="book-main"><h2>${t(book.id ? "books.dialogEdit" : "books.dialogNew")}</h2><div class="book-top"><div id="book-cover-preview" class="book-cover-preview">${coverHTML(book, ctx)}</div><div class="book-top-fields"><label class="field book-name">${t("books.name")}<input name="title" required maxlength="60" placeholder="${t("books.namePlaceholder")}" value="${esc(book.title || "")}" enterkeyhint="done" autocomplete="off"></label><small class="book-lock">🔒 ${t("private")}</small><small class="cover-sample-note" data-cover-sample-note ${coverShowsSample(book) ? "" : "hidden"}>${t("books.coverSample")}</small></div></div>
  <div class="book-pick"><div class="book-pick-head"><b>${t("books.coverStyle")}</b><button type="button" class="text-button cover-more-link" data-action="cover-browse">${t("books.moreCovers")} ›</button></div><input name="coverTemplate" type="hidden" value="${esc(tpl)}"><div class="cover-template-grid cover-template-row cover-featured">${featured}<button type="button" class="cover-more-tile" data-action="cover-browse"><span aria-hidden="true">＋</span><b>${t("books.moreCoversShort")}</b><small>${t("books.moreCoversCount", { count: total })}</small></button></div></div>
  <div class="book-more-group"><div class="book-more-title"><b>${t("books.morePersonal")}</b><small>${t("books.morePersonalHint")}</small></div>${section("basics", t("books.moreBasics"), hints.basics, basicsBody)}${section("look", t("books.moreLook"), hints.look, lookBody)}${section("settings", t("books.moreBook"), hints.settings, settingsBody)}</div></div>
  ${browser}

@@ -18,6 +18,7 @@ import {
   coverHTML,
   coverPhotoRef,
   MAGAZINE_COVERS,
+  coverShowsSample,
   bookDialogHTML,
   coverBrowserGridHTML,
   coverBrowserPhotosHTML,
@@ -10924,6 +10925,8 @@ function openBookDialog(book = null) {
   bookDraft = book
     ? structuredClone(book)
     : {
+        // The id the new book is created with (its example cover photo is picked by it — CAP-018).
+        pendingId: id(),
         title: "",
         description: "",
         category: "Daily Life",
@@ -11067,6 +11070,9 @@ function refreshBookPreview({ covers = false } = {}) {
   if (fontNote) fontNote.hidden = !MAGAZINE_COVERS.includes(bookDraft?.coverTemplate || "");
   if (!$("#book-cover-preview")) return;
   bookDraft = readBookForm();
+  document.querySelectorAll("[data-cover-sample-note]").forEach((el) => {
+    el.hidden = !coverShowsSample(bookDraft);
+  });
   const html = coverHTML(bookDraft, ctx());
   $("#book-cover-preview").innerHTML = html;
   if ($("#cover-browser-preview")) $("#cover-browser-preview").innerHTML = html;

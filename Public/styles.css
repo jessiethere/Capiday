@@ -25216,3 +25216,14 @@ dialog .primary {
   font: 500 10px var(--ui-sans);
   color: var(--t-675d54, #675d54);
 }
+
+/* V10.73 (CAP-018): the cover shows an example photo — say so. */
+.cover-sample-note {
+  display: block;
+  margin-top: 6px;
+  font: 400 12px/1.45 var(--ui-sans);
+  color: var(--muted-ink, var(--t-6f675e, #6f675e));
+}
+.cover-sample-note[hidden] {
+  display: none;
+}

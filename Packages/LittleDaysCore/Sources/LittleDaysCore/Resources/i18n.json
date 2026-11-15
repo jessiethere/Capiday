@@ -10418,5 +10418,9 @@
   "book.writeCancelled": {
     "zh": "这一页没有写内容，没有留下空白页。",
     "en": "Nothing was written, so no blank page was kept."
+  },
+  "books.coverSample": {
+    "zh": "封面上是示例照片，创建后保持这一张；想用自己的照片，在「封面照片」里换。",
+    "en": "The cover shows an example photo; it stays the same after you create the journal. To use your own, change it under Cover photo."
   }
 }
