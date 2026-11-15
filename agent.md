@@ -48,6 +48,13 @@
 
 ## 更新日志
 
+### 2026-11-15 — TestFlight 0.2.0 (6) 已上传（Founder 在 Xcode 里操作）
+
+- **经过**：上一条命令行上传因 Xcode 没登录账号失败后，Founder 在 Mac 上登录并自己上传。
+- **核对**（Mac 上的 Xcode 分发日志 `LittleDays_2026-11-15_14-05-31.153.xcdistributionlogs`）：`Upload succeeded`，19:06 UTC（14:06 EST）；BundleVersion 6；发布签名的描述文件里有 `iCloud.com.capiday.app`（之前没验证的「发布签名能否带上 iCloud」从日志看是带上了，真机仍要验证）。这次上传 `testFlightInternalTestingOnly` 为 false（没有勾「只限内部测试」），可以给外部测试者，但外部测试仍要 Apple 审核。
+- **未知**：Apple 处理（Processing → Ready to Test）TBD；Mac 副本在 80a1a5e，网页内容与 V10.78 相同。
+- **下一步**：Ready to Test 后在 iPhone 上从 TestFlight 更新（不删除旧 App），按 BETA_RELEASE_PLAN「0.2.0 (6) 真机重点验收」测试。
+
 ### 2026-11-15 — 试传 TestFlight 0.2.0 (6)：失败，Xcode 没有登录 Apple 账号（没有改 App）
 
 - **需求**（Founder）：TestFlight 还是 0.2.0 (4)。原因：(5)、(6) 只归档了，上传一直没执行（见 BETA_RELEASE_PLAN「Gate 检查」）。Founder 选择「现在上传 (6)」。

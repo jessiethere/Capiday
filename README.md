@@ -186,6 +186,10 @@ npm run test:browser:v65
 
 ## 更新日志
 
+### 2026-11-15 — TestFlight 0.2.0 (6) 已上传
+
+- 你在 Xcode 里上传了 0.2.0 (6)，上传成功（14:06）。等 App Store Connect 处理完（Ready to Test）后，在 iPhone 上从 TestFlight 更新，按 BETA_RELEASE_PLAN.md「0.2.0 (6) 真机重点验收」测试。
+
 ### 2026-11-15 — TestFlight 0.2.0 (6) 还没传上去
 
 - TestFlight 仍是 0.2.0 (4)：(5)、(6) 只在 Mac 上归档好了。这次试传 (6) 失败，因为 Mac 上的 Xcode 没有登录 Apple 账号，什么都没传上去。在 Xcode → Settings → Accounts 登录后再传（步骤见 BETA_RELEASE_PLAN.md「Gate 检查：0.2.0 (6)」）。
