@@ -10235,6 +10235,16 @@
     "zh": "注意：「开铺手帐」这个文件夹属于 App 自己，删除开铺手帐时会一起被删除。请再备份一份，存到 iCloud 云盘或「我的 iPhone」里别的文件夹。",
     "en": "Note: the Capiday folder belongs to the app and is deleted together with it. Please back up once more to iCloud Drive or another folder On My iPhone."
   },
+  "pageExport.png": { "zh": "把这一页存成图片", "en": "Save this page as an image" },
+  "pageExport.share": { "zh": "分享这一页", "en": "Share this page" },
+  "pageExport.pdf": { "zh": "把这一页存成 PDF", "en": "Save this page as a PDF" },
+  "pageExport.book": { "zh": "整本书做成 PDF", "en": "The whole book as a PDF" },
+  "pageExport.making": { "zh": "正在做这一页…", "en": "Making this page…" },
+  "pageExport.saved": { "zh": "这一页的图片做好了", "en": "This page's image is ready" },
+  "pageExport.savedPdf": { "zh": "这一页的 PDF 做好了", "en": "This page's PDF is ready" },
+  "pageExport.shared": { "zh": "已分享这一页", "en": "Page shared" },
+  "pageExport.missing": { "zh": "这一页有照片读不到，没有生成文件。可以在设置里的「检查照片和视频」看看。", "en": "A photo on this page can't be read, so no file was made. Try Check photos & videos in Settings." },
+  "pageExport.failed": { "zh": "这一页没能做出来，没有生成文件。请再试一次。", "en": "This page couldn't be made, so no file was created. Please try again." },
   "bk2.title": {
     "zh": "备份我的手帐",
     "en": "Back up my journal"

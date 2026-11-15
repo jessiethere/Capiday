@@ -82,7 +82,7 @@
 | [CAP-E001](#cap-e001) | 封面等字体列表增加基础中文宋体、黑体 | P3 | Fixed — Pending Device Verification | 2026-11-15 | 下一个构建（未上传，V10.71） |
 | [CAP-E002](#cap-e002) | 字体列表用每种字体本身显示，并实时预览 | P2 | Fixed — Pending Device Verification | 2026-11-15 | 下一个构建（未上传，V10.71） |
 | [CAP-E003](#cap-e003) | 杂志类封面的标题也跟随所选字体 | P3 | Fixed — Pending Device Verification | 2026-11-15 | 下一个构建（V10.78） |
-| [CAP-E004](#cap-e004) | 阅读器单页导出：PNG / 分享 / PDF（保留整本书 PDF） | P2 | Planned（Alpha 稳定性修复之后实施） | 2026-11-15 | 下一个构建之后（V10.76 起） |
+| [CAP-E004](#cap-e004) | 阅读器单页导出：PNG / 分享 / PDF（保留整本书 PDF） | P2 | Fixed — Pending Device Verification | 2026-11-15 | 下一个构建（V10.78） |
 
 统计（2026-11-15 第八次更新，Books Alpha Stability Review 之后）：
 - Bug 28 条：P0 1（CAP-016）· P1 5（CAP-018、021、022、023、024）· P2 19 · P3 3；Fixed 28（CAP-001、004～009 已随 0.2.0 (4) 上传，其余未上传；都还没有真机确认）、Verified 0。
@@ -1239,6 +1239,13 @@
     - 照片读不到时提示失败、不生成文件。
   - iOS 模拟器：从阅读器导出 PNG 和 PDF，确认分享面板出现、文件类型正确。
   - 真机：Pending Device Verification。
+- **实施（V10.78，Founder 2026-11-15 批准开发）**：
+  - 阅读器「···」新增一组：把这一页存成图片 / 分享这一页 / 把这一页存成 PDF / 整本书做成 PDF（`exportReaderPage`、`app.js`）。
+  - `renderJournalCanvas` 新增 `scale: 2`：同一套绘制，输出 2160 × 2700（4:5）；整本书 PDF 和 Studio 图片仍是原来的尺寸。
+  - 画之前加载页面用到的字体（`document.fonts.load` + `fonts.ready`）；照片读不到时提示、不生成文件；画出来是一片底色时不交出（`canvasLooksBlank`），PNG / JPEG 太小也不交出。
+  - 分享：能分享文件时用系统分享（`navigator.share`）；不能时保存。iPhone App 里保存走现有的 `WKDownload` → 系统分享面板（存储图像、AirDrop、存到「文件」）。没有新增原生代码。
+  - 不改任何手帐数据。
+- **Verification**：`tests/v180-browser.cjs` 14 项（菜单四项；PNG 是 2160 × 2700、有实际内容、照片 / 贴纸 / 文字都画上、文件名带日期；PDF 只有一页、里面是 2160 × 2700 的这一页；不能分享文件时改为保存；照片读不到不生成文件；整本书 PDF 入口；导出前后数据完全一样）；11 个已有导出相关测试通过；人工看过导出的 PNG（没有阅读器界面）。**iOS 模拟器分享面板 / 真机**：⏳。
 - **Related**：整本书 PDF 分享（V6.x「分享给家人」）、9:16 分享、CAP-020 / CAP-017（同一个阅读器和书架）。
 
 ---

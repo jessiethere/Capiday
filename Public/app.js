@@ -3184,10 +3184,100 @@ function openReaderMore() {
   const demo = item && isSampleDay(item.entry);
   // D3 (V10.44): a day cover can be hidden from reading, and shown again
   // (a display choice only: nothing is deleted).
+  // V10.78 · CAP-E004: this page on its own, and the whole book as a PDF.
+  const exportGroup = `<div class="reader-menu-group reader-export">${item ? row('data-action="page-export" data-kind="png"', t("pageExport.png")) + row('data-action="page-export" data-kind="share"', t("pageExport.share")) + row('data-action="page-export" data-kind="pdf"', t("pageExport.pdf")) : ""}${row(`data-action="book-share" data-book="${esc(readerBook)}"`, t("pageExport.book"))}</div>`;
   const coverRow = item && isDayCover(item.entry) ? row(`data-action="day-cover-toggle" data-date="${esc(item.date)}" data-hide="${item.entry.dayCoverHidden ? "" : "1"}"`, t(item.entry.dayCoverHidden ? "cover.show" : "cover.hide")) : "";
   const dialog = $("#choose-dialog");
-  dialog.innerHTML = `<div class="choose-sheet kp reader-sheet"><div class="choose-grabber" aria-hidden="true"></div><div class="kp-title"><span></span><b>${item ? esc(Reader.positionLabel(flipIndex, pages.length, t)) : t("reader.more")}</b><button class="kp-x" data-action="choose-close" aria-label="${t("close")}">×</button></div>${checklist}<div class="reader-menu-group">${row(`data-action="pm-open" data-book="${esc(readerBook)}"`, t("pm.manage"))}${item ? row(`data-action="open-day" data-date="${esc(item.date)}"`, t("flip.openDay")) : ""}</div><div class="reader-menu-group">${row('data-action="music-sheet" data-target="book"', t("music.bookTitle"), track ? esc(trackName(track, languageCode())) : "")}${flipIndex > 0 ? row('data-action="reader-go" data-at="0"', t("reader.toCover")) : ""}${coverRow}</div>${item && !demo ? `<div class="reader-menu-group reader-keeper">${keeperAskHTML(item.date, item.moment?.id || "")}</div>` : ""}</div>`;
+  dialog.innerHTML = `<div class="choose-sheet kp reader-sheet"><div class="choose-grabber" aria-hidden="true"></div><div class="kp-title"><span></span><b>${item ? esc(Reader.positionLabel(flipIndex, pages.length, t)) : t("reader.more")}</b><button class="kp-x" data-action="choose-close" aria-label="${t("close")}">×</button></div>${checklist}<div class="reader-menu-group">${row(`data-action="pm-open" data-book="${esc(readerBook)}"`, t("pm.manage"))}${item ? row(`data-action="open-day" data-date="${esc(item.date)}"`, t("flip.openDay")) : ""}</div><div class="reader-menu-group">${row('data-action="music-sheet" data-target="book"', t("music.bookTitle"), track ? esc(trackName(track, languageCode())) : "")}${flipIndex > 0 ? row('data-action="reader-go" data-at="0"', t("reader.toCover")) : ""}${coverRow}</div>${exportGroup}${item && !demo ? `<div class="reader-menu-group reader-keeper">${keeperAskHTML(item.date, item.moment?.id || "")}</div>` : ""}</div>`;
   if (!dialog.open) dialog.showModal();
+}
+// V10.78 · CAP-E004 · This one page, on its own: a PNG, the share sheet, or a
+// one-page PDF. The same drawing as the whole-book PDF and Studio's image
+// (renderJournalCanvas: no reader bar, buttons or progress; 4:5, never
+// stretched), at 2160 × 2700. Fonts the page uses are loaded first; a photo
+// that can't be read stops it (no half-empty file); a blank result is never
+// handed out. Nothing in the journal is changed.
+async function exportReaderPage(kind) {
+  const pages = readerPages();
+  const item = pages[flipIndex - 1];
+  if (!item || busyMedia) return;
+  if ($("#choose-dialog").open) $("#choose-dialog").close();
+  const { date, entry, moment } = item;
+  const pageData = moment || entry;
+  busyMedia = true;
+  toast(t("pageExport.making"));
+  try {
+    const only = moment ? { ...entry, layers: [], media: [], photo: "", backdrop: "", moments: [moment] } : { ...entry, moments: [] };
+    const refs = [...mediaReferences({ entries: [], books: [], checks: [], drafts: { [date]: only } })];
+    const missing = refs.length ? await media.missing(refs).catch(() => refs) : [];
+    if (missing.length) throw Object.assign(new Error("missing"), { code: "missing" });
+    // The page's fonts, loaded before drawing (a font not loaded draws in a fallback).
+    const fontIds = new Set([pageData.font, ...(pageData.layers || []).map((l) => l.font)].filter(Boolean));
+    await Promise.all([...fontIds].map((f) => document.fonts.load(`48px ${fontFamily(f, catalog)}`).catch(() => null)));
+    await document.fonts.ready;
+    const firstOfDay = flipIndex === 1 || pages[flipIndex - 2].date !== date;
+    const canvas = await renderJournalCanvas(pageData, { ...exportOptionsFor(!moment, date, "", firstOfDay), skipVideo: true, scale: 2 });
+    if (canvasLooksBlank(canvas)) throw Object.assign(new Error("blank"), { code: "blank" });
+    const book = state().books.find((b) => b.id === (pageData.bookId || entry.bookId));
+    const sameDay = pages.filter((p) => p.date === date);
+    const base = `Capiday-${date}${sameDay.length > 1 ? "-" + (sameDay.indexOf(item) + 1) : ""}`;
+    let file;
+    if (kind === "pdf") {
+      const jpeg = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.9));
+      if (!jpeg || jpeg.size < 2000) throw Object.assign(new Error("blank"), { code: "blank" });
+      const pdf = buildPdf([{ bytes: new Uint8Array(await jpeg.arrayBuffer()), width: canvas.width, height: canvas.height }], { title: book?.title || "Capiday" });
+      file = new File([pdf], `${base}.pdf`, { type: "application/pdf" });
+    } else {
+      const png = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+      if (!png || png.size < 2000) throw Object.assign(new Error("blank"), { code: "blank" });
+      file = new File([png], `${base}.png`, { type: "image/png" });
+    }
+    let how = "saved";
+    if (kind === "share" && navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: book?.title || "Capiday" });
+        how = "shared";
+      } catch (error) {
+        how = error?.name === "AbortError" ? "cancelled" : "saved";
+      }
+    }
+    // Saving (and sharing where the browser can't share files): a download —
+    // in the iPhone app it opens the system share sheet (save image, AirDrop, Files).
+    if (how === "saved") {
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(file);
+      link.download = file.name;
+      link.hidden = true;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(link.href), 30000);
+    }
+    logEvent("page_export", { kind, way: how });
+    if (how !== "cancelled") toast(t(how === "shared" ? "pageExport.shared" : kind === "pdf" ? "pageExport.savedPdf" : "pageExport.saved"));
+  } catch (error) {
+    logEvent("page_export_failed", { kind, err: error?.code || "draw" });
+    toast(t(error?.code === "missing" ? "pageExport.missing" : "pageExport.failed"));
+  } finally {
+    busyMedia = false;
+  }
+}
+// A drawing that is one flat colour (nothing drawn) is not handed out.
+function canvasLooksBlank(canvas) {
+  try {
+    const small = document.createElement("canvas");
+    small.width = 54;
+    small.height = 68;
+    const c = small.getContext("2d");
+    c.drawImage(canvas, 0, 0, 54, 68);
+    const d = c.getImageData(0, 0, 54, 68).data;
+    const [r, g, b] = [d[0], d[1], d[2]];
+    let differ = 0;
+    for (let i = 0; i < d.length; i += 4) if (Math.abs(d[i] - r) + Math.abs(d[i + 1] - g) + Math.abs(d[i + 2] - b) > 24) differ++;
+    return differ < 8;
+  } catch {
+    return false; // can't be read back (a tainted canvas): this check does not block
+  }
 }
 // The whole words of a page that do not fit on the paper (read only; from the journal itself).
 function openReaderFullText() {
@@ -8935,6 +9025,7 @@ async function action(target) {
     el?.scrollIntoView({ block: "start", behavior: "smooth" });
     return;
   }
+  if (actionName === "page-export") return exportReaderPage(target.dataset.kind || "png");
   if (actionName === "pm-open") return openPageManager({ bookId: target.dataset.book || null, date: target.dataset.date || null });
   if (actionName?.startsWith("pm-") && pmAction(actionName, target)) return;
   if (actionName === "wall-photo") openWallViewer(target.dataset.ref);

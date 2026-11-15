@@ -233,9 +233,13 @@ export async function renderJournalCanvas(editor, options = {}) {
   const resolvePhoto = options.resolvePhoto || safePhoto;
   const dayPage = options.dayPage !== false;
   const canvas = document.createElement("canvas");
-  canvas.width = 1080;
-  canvas.height = 1350;
+  // V10.78 · CAP-E004: `scale` 2 draws the same page at 2160 × 2700 (high
+  // definition for a single page). Everything below is in 1080 × 1350 units.
+  const scale = options.scale === 2 ? 2 : 1;
+  canvas.width = 1080 * scale;
+  canvas.height = 1350 * scale;
   const ctx = canvas.getContext("2d");
+  if (scale !== 1) ctx.scale(scale, scale);
   ctx.fillStyle =
     {
       vintage: "#EEE6D5",
