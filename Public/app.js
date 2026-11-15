@@ -10936,7 +10936,9 @@ function openBookDialog(book = null) {
         color: "blush",
         cover: "🌷",
         coverTemplate: "magazine-jp",
-        coverFont: "elegant",
+        // V10.73 (CAP-019, Founder's decision): new books start with 黑体. Books
+        // that already exist keep the font they have (or the old default).
+        coverFont: "hei",
         coverDecoration: "tulip",
         coverImage: "",
         fields: [],
