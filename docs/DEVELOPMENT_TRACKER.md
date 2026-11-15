@@ -1,0 +1,136 @@
+# Capiday Development Tracker · 唯一任务总表
+
+> **One source of truth. No forgotten tasks. Every plan has an owner, status, and next action.**
+>
+> 建立：2026-11-15（Development HQ）。所有 Bug、产品需求、技术债、规划都在这里有一个 ID 和状态；只写在聊天记录里的计划不算数。
+> 详细的 Bug 记录（复现步骤、根因、验证）仍在 [BUG_BACKLOG.md](../BUG_BACKLOG.md)，发布检查在 [BETA_RELEASE_PLAN.md](../BETA_RELEASE_PLAN.md)；本表是索引和状态的唯一来源，两边状态不一致时**以本表为准**，并立即改正另一边。
+
+## 1. 规则
+
+### 1.1 状态
+
+| 状态 | 含义 |
+|---|---|
+| **Inbox** | 刚收到，还没分析 |
+| **Planned** | 已分析、已排进某个版本，但前置条件没满足（例如要等 Alpha 稳定） |
+| **Ready** | 可以马上开发：需求清楚、没有阻塞 |
+| **In Progress** | 正在开发 |
+| **Testing** | 代码已改、自动化测试通过，**等真机或 Founder 验收**。自动化通过不等于完成 |
+| **Done** | Founder 在真机上按验收标准确认过（写明日期和构建） |
+| **Blocked** | 卡住了：写明卡在哪里、等谁 |
+
+- 不删除未完成的任务；不再做的，写明原因，状态保持 Blocked（等 Founder 确认关闭）。
+- 从 BUG_BACKLOG 映射：`Fixed — Pending Device Verification` → **Testing**；`Verified` → **Done**；`Triaged（需要 Founder 决定）` → **Blocked**。
+
+### 1.2 优先级
+
+P0 数据丢失 / 无法使用 · P1 核心流程错误 · P2 明显影响体验 · P3 小问题、观感。高优先级 Bug 不被未来功能挤占。
+
+### 1.3 ID
+
+| 前缀 | 用途 |
+|---|---|
+| `CAP-0xx` | Bug（详细记录在 BUG_BACKLOG.md） |
+| `CAP-E0xx` | 功能改进（BUG_BACKLOG.md 5b 节） |
+| `MW-0x` | Memory Wall 照片墙 v1.0 |
+| `DS-0x` | Data Safety：备份、恢复、自动 iCloud 备份 |
+| `TD-0x` | 技术债、工具、测试环境 |
+| `REL-0x` | 发布、验收、构建 |
+| `FT-0x` | 其他已有规划的功能（Beta 及以后） |
+
+### 1.4 每次开发前后
+
+- **开发前**：读本表，选定任务（Ready 里优先级最高的 Bug 优先），把它改成 In Progress。
+- **开发后**：
+  1. 更新状态和「测试结果」；
+  2. 在 agent.md 记录实际修改；
+  3. README.md 写摘要；
+  4. 在本表末尾「变更记录」加一行；
+  5. 回复里给出下一个建议执行的任务。
+
+## 2. 总览
+
+（统计见第 4 节末尾，随每次更新改写。）
+
+## 3. 版本计划
+
+| 版本 | 目标 | 进入条件 | 包含 |
+|---|---|---|---|
+| **Alpha Stability**（当前） | 已记录的 Bug 全部修好并在真机确认；数据不丢 | — | CAP-001～020、CAP-E001/E002、DS-01、TD-01、REL-01/02 |
+| **Alpha UX Polish** | 小的体验改进，不碰数据结构 | Alpha Stability 的 P1 全部 Done | CAP-E003、CAP-E004、TD-02 |
+| **Data Safety Upgrade** | 备份恢复验证完成、自动 iCloud 备份 | Alpha Stability 完成；DS-01 Done | DS-02～DS-08 |
+| **Beta Features** | 新功能 | Data Safety Upgrade 的 P0 完成 | MW-01～MW-05、FT-01～FT-05 |
+
+顺序（Founder 2026-11-15 确认）：Alpha 关键 Bug → 数据完整性和备份恢复验证 → 自动 iCloud 备份 → Memory Wall v1.0 → 后续 Beta 功能。
+
+## 4. 任务表
+
+### 4.1 Alpha Stability
+
+| ID | 标题 | 优先级 | 状态 | 目标版本 | 相关模块 | 验收标准 | 测试结果 | 完成日期 |
+|---|---|---|---|---|---|---|---|---|
+| CAP-016 | My Books「写一页」写进目标手帐，不打开 / 不改已有日记 | P1 | Testing | 下一构建（V10.72） | `app.js` writeInBook / startPage | BETA_RELEASE_PLAN「CAP-016 真机验收」9 步 | v169 20 项 ✅；全量回归 106/106 ✅；真机 ⏳ | — |
+| CAP-018 | 封面一致：缩略图 = 大预览 = 创建后 = 书架 = 重开（统一封面配置） | P1 | Testing | 下一构建（V10.73 + V10.74） | `personal-ui.mjs` coverPhotos / coverSampleToKeep；`app.js` openBookDialog / saveBookForm；`Models.swift` CoverSample | 封面系统真机验收第 1b、2、7、8、9 步 | v170 30 项、v171 21 项 ✅；Swift Core 7 项（Mac）✅；真机 ⏳ | — |
+| CAP-017 | 长书名：封面模板自适应；书架卡片两行；书本页完整 | P2 | Testing | 下一构建（V10.73 + V10.75） | `cover-fit.mjs`；`styles.css` | 封面系统验收第 3～5 步；书架排版验收第 5、6 步 | 封面审查 528 组合 0 问题；v170、v172 ✅；真机 ⏳ | — |
+| CAP-019 | 新建手帐默认黑体 | P2 | Testing | 下一构建（V10.73） | `app.js` openBookDialog | 封面系统验收第 1、6 步 | v170 ✅；真机 ⏳ | — |
+| CAP-020 | 书脊竖排：标点竖排字形、按完整字符截断、5 本一层不跑出书架 | P2 | Testing | 下一构建（V10.75） | `cover-fit.mjs` spineTitleHTML / fitSpineTitle；`app.js` spineTitle；`styles.css` | 书架排版验收 8 步 | spine-title 单元 5 项、v172 21 项 ✅；iOS 模拟器 4 轮（SE / 17 / 17 Pro Max / 最大字号）0 问题 ✅；真机 ⏳ | — |
+| CAP-014 | 双击文字进入编辑 | P2 | Testing | 下一构建（V10.71） | `app.js` beginGesture / DOUBLE_TAP_MS | Sprint 01 验收清单第 2 项 | v167 10 项 ✅；模拟器 testTextDoubleTap ✅；真机 ⏳ | — |
+| CAP-002 | 标题编辑时键盘遮挡 | P2 | Testing | 下一构建（V10.70） | Editor Layout Coordinator `updateVisibleArea` | Sprint 01 验收第 1 项 | v162、v166 ✅；模拟器布局测量 ✅；真机 ⏳ | — |
+| CAP-003 | 字体面板遮挡正在编辑的页面 | P2 | Testing | 同上 | 同上 | 同上 | 同上 | — |
+| CAP-010 | 新建手帐本弹窗离状态栏太近 | P2 | Testing | 同上 | `styles.css` 安全区 | 同上 | v166 ✅；真机 ⏳ | — |
+| CAP-011 | 查看更多封面关闭键盘后弹窗异常 | P2 | Testing | 同上 | `updateVisibleArea`、`--avail` | 同上 | v166 ✅；真机 ⏳ | — |
+| CAP-012 | 写字面板被截断 | P2 | Testing | 同上 | 同上 | 同上 | 同上 | — |
+| CAP-013 | 改字体时操作栏浮在页面中间 | P2 | Testing | 同上 | `styles.css` `#app::after` | 同上 | 同上 | — |
+| CAP-006 | 新文字框要先打字才能移动 | P2 | Testing | 0.2.0 (4) | `app.js` textPress | V10.69 修复说明 | v165 ✅；真机 ⏳ | — |
+| CAP-007 | 「只写几句话」标题正文不能移动 | P2 | Testing | 0.2.0 (4) | `app.js` noteToLayout | 同上 | v165 ✅；真机 ⏳ | — |
+| CAP-008 | Captain 起名后回车不收键盘 | P3 | Testing | 0.2.0 (4) | `app.js` ONE_LINE | 同上 | v165 ✅；模拟器测不了键盘 ✓ 键；真机 ⏳ | — |
+| CAP-009 | 打字时字体工具条被键盘挡住 | P2 | Testing | 0.2.0 (4) | `app.js` nativeKeyboardTop；`LittleDaysKeyboard` | 同上 | v165 ✅；真机 ⏳ | — |
+| CAP-015 | 弹窗主按钮字号太小 | P3 | Testing | 下一构建（V10.71） | `styles.css` `dialog .primary` | Sprint 01 验收第 1 项 | v168 ✅；真机 ⏳ | — |
+| CAP-E001 | 字体列表加黑体、宋体 | P3 | Testing | 下一构建（V10.71） | `personal-ui.mjs` coverFontChoices | Sprint 01 验收第 4 项 | v168 ✅；真机 ⏳ | — |
+| CAP-E002 | 字体列表用字体本身显示、实时预览 | P2 | Testing | 下一构建（V10.71） | 同上 | 同上 | v168 ✅；真机 ⏳ | — |
+| CAP-004 | 备份流程不够直观 | P2 | Testing | 0.2.0 (4) | `app.js` openBackupSheet；外壳 UIDocumentPicker | 备份恢复真机演练（DS-01） | v163 ✅；真机 ⏳ | — |
+| CAP-005 | 恢复备份缺少引导 | P2 | Testing | 0.2.0 (4) | `restore-safety.mjs` | 同上 | v161、v163 ✅；真机 ⏳ | — |
+| CAP-001 | 录音首次播放延迟（约 7 秒） | P2 | Blocked | TBD | `voice-skin.mjs`、`canvas.mjs` | 真机「点按到出声」< 1.5 s | 模拟器：首次 1.18 s、第二次 0.25 s；7 s 复现不出。**等 Founder 真机秒数**（设置 → 媒体检查 first / again） | — |
+| DS-01 | 现有手动备份的数据完整性审查与恢复演练 | P0 | （见第 5 节） | Alpha Stability | 备份 / 恢复 | 见第 5 节 | — | — |
+| TD-01 | Mac 模拟器脚本仍用旧 Bundle ID（dev.sh、sim-shots.sh、ios-layout-check.sh） | P3 | Ready | Alpha Stability | `tools/mac/*` | 三个脚本都能在模拟器里启动 App | ios-shelf-check.sh 已修（79ee727）；已建议另开任务 | — |
+| REL-01 | Founder 真机验收 Sprint 01（CAP-002～020、E001/E002） | P1 | Blocked | Alpha Stability | — | BETA_RELEASE_PLAN 各验收清单逐项通过 | 等新的内部构建 | — |
+| REL-02 | 下一个内部 TestFlight 构建（含 V10.70～V10.75） | P1 | Blocked | Alpha Stability | Xcode Archive | Release Gate 通过 | **需要 Founder 批准上传**；本阶段不上传 | — |
+
+### 4.2 Alpha UX Polish
+
+| ID | 标题 | 优先级 | 状态 | 目标版本 | 相关模块 | 验收标准 | 测试结果 | 完成日期 |
+|---|---|---|---|---|---|---|---|---|
+| CAP-E004 | 阅读器单页导出：PNG / 分享 / PDF（保留整本书 PDF） | P2 | Planned | Alpha UX Polish（V10.76 起） | `export.mjs` renderJournalCanvas；`book-share.mjs` buildPdf；`app.js` openReaderMore；外壳 WKDownload → UIActivityViewController | BUG_BACKLOG CAP-E004「测试计划」 | — | — |
+| CAP-E003 | 杂志封面标题是否跟随所选字体 | P3 | Blocked | TBD | `personal-ui.mjs` magazineCoverHTML | Founder 决定方案 1 或 2 | **等 Founder 决定** | — |
+| TD-02 | 测试环境：容器 Chromium 竖排中文需要 Noto Sans CJK | P3 | Planned | Alpha UX Polish | 云端环境 setup | 新会话里 v172 自动做尺寸检查 | 本会话手动装了 `fonts-noto-cjk`；环境的 setup 脚本还没加 | — |
+| TD-03 | `text-wrap: balance` 在 iOS 17.5 以下不生效（单字孤行） | P3 | Planned | Alpha UX Polish | `styles.css` | iOS 17.0～17.4 上没有单字孤行，或确认接受 | 已知限制，未处理 | — |
+
+### 4.3 Data Safety Upgrade
+
+（见第 5 节，调查完成后填写。）
+
+### 4.4 Beta Features
+
+（Memory Wall v1.0 见第 6 节；其他已有规划见 4.5。）
+
+### 4.5 其他已有规划（不在近期版本里）
+
+| ID | 标题 | 优先级 | 状态 | 说明 |
+|---|---|---|---|---|
+| FT-01 | Captain Playroom 后续（素材与互动） | P3 | Planned | docs/CAPTAIN_PLAYROOM_PLAN.md；部分素材缺失（无领巾的 Yarn Play、开心反应） |
+| FT-02 | Meme & Sticker Studio Phase A（静态 Meme 图层） | P3 | Planned | docs/MEME_STICKER_PLAN.md：设计已通过，**要等可靠存储和恢复验证完成**（DS 系列）才实施 |
+| FT-03 | Quick Create v3（EXIF / PhotoKit 今天的照片等） | P3 | Blocked | docs/QUICK_CREATE_PLAN.md：提案，等 Founder 确认 |
+| FT-04 | 社区、好友、协作的真实后端（ROADMAP Phase 3 / 4） | P3 | Blocked | 现在只有明确标注的本机演示；真实联网需要服务端访问控制，等 Founder 决定是否继续 |
+| FT-05 | 一个 Moment 内继续拆分多页（ROADMAP V3.1 未完成项） | P3 | Inbox | 旧规划，待重新评估 |
+| TD-04 | ROADMAP 旧项：原生 SwiftUI 逐项追平 Web | — | Blocked | 2026-11-07 已改为 WKWebView 外壳只维护 `Public/` 一份界面，**建议关闭**，等 Founder 确认 |
+| TD-05 | ROADMAP 旧项：Windows 实机验证 | — | Blocked | 2026-11-09 起不再用 Windows localhost 查看，**建议关闭**，等 Founder 确认 |
+
+## 5. Data Safety（调查中）
+
+## 6. Memory Wall v1.0（调查中）
+
+## 7. 变更记录
+
+| 日期 | 变更 |
+|---|---|
+| 2026-11-15 | 建立本表：Backlog 的 CAP-001～020、CAP-E001～E004 全部收进来，并逐条核对代码中的修复标记和测试文件；新增 TD、REL、FT 条目；旧 ROADMAP 中已过时的两项标为建议关闭 |
