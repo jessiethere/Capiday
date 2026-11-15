@@ -181,6 +181,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 7VFYCTCXRS;
+				CODE_SIGN_ENTITLEMENTS = App/Capiday.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Capiday;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
@@ -209,6 +210,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 7VFYCTCXRS;
+				CODE_SIGN_ENTITLEMENTS = App/Capiday.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Capiday;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;

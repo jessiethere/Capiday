@@ -87,6 +87,25 @@ final class LittleDaysSchemeHandler: NSObject, WKURLSchemeHandler {
             urlSchemeTask.didFailWithError(URLError(.badURL))
             return
         }
+        // V10.78: a backup in the app's iCloud folder, read by the page to restore it
+        // (only our own backup file names; nothing else in the container).
+        if url.path.hasPrefix("/__icloud/") {
+            let name = String(url.path.dropFirst("/__icloud/".count))
+            guard let file = LittleDaysICloudBackup.file(named: name), let data = try? Data(contentsOf: file, options: .mappedIfSafe),
+                  let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: ["Content-Type": "application/vnd.capiday.backup+zip", "Content-Length": String(data.count), "Cache-Control": "no-store"]) else {
+                urlSchemeTask.didFailWithError(URLError(.fileDoesNotExist))
+                return
+            }
+            urlSchemeTask.didReceive(response)
+            var at = 0
+            while at < data.count {
+                let end = min(at + 4 << 20, data.count)
+                urlSchemeTask.didReceive(data.subdata(in: at..<end))
+                at = end
+            }
+            urlSchemeTask.didFinish()
+            return
+        }
         let status: Int
         let body: Data
         let type: String

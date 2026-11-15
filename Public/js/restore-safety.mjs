@@ -27,6 +27,7 @@ export const SNAPSHOT_RULES = { keep: 3, maxDays: 14, totalBytes: 60 * 1024 * 10
 // (codecs lists may contain commas, e.g. "avc1,mp4a.40.2"), base64.
 // V10 refused any codecs with a comma — a backup could be made but not restored.
 const DATA_URL = /^data:(image\/(jpeg|png|webp|gif|heic|heif)|audio\/[a-z0-9.+-]+|video\/[a-z0-9.+-]+)((;[a-z0-9-]+=("[^"]*"|[^;"]*))*);base64,/i;
+const BLOB_MIME = /^(image\/(jpeg|png|webp|gif|heic|heif)|audio\/[a-z0-9.+-]+|video\/[a-z0-9.+-]+)((;[a-z0-9-]+=("[^"]*"|[^;"]*))*)$/i;
 export function validMediaData(data) {
   return typeof data === "string" && DATA_URL.test(data);
 }
@@ -108,10 +109,13 @@ export function analyzeBackup(backup) {
     if (!record || typeof record.id !== "string") return fail("damaged");
     if (!references.has(record.id)) continue; // unused file in the backup: ignored
     if (byId.has(record.id)) return fail("damaged");
-    if (!validMediaData(record.data)) return fail("bad-media");
-    const size = dataBytes(record.data);
+    // V10.78: from a `.capiday` the file's bytes come as a Blob (already
+    // checked by size and SHA-256 there), not as a base64 data URL.
+    const fromBlob = record.blob && typeof record.blob.size === "number" && typeof record.blob.arrayBuffer === "function";
+    if (fromBlob ? !BLOB_MIME.test(String(record.mime || "")) : !validMediaData(record.data)) return fail("bad-media");
+    const size = fromBlob ? record.blob.size : dataBytes(record.data);
     if (size > MAX_RESTORE_MEDIA_BYTES) return fail("media-too-large");
-    const mime = mimeOfData(record.data);
+    const mime = fromBlob ? String(record.mime).toLowerCase() : mimeOfData(record.data);
     byId.set(record.id, { id: record.id, mime, size, kind: kindOfMime(mime, record.kind), record });
   }
   // A backup that lists the files it could not include (C2) may leave them out;

@@ -164,10 +164,12 @@ async function seed(page) {
           MediaStore.prototype.usage = async () => ({ bytes: 150 * 1024 * 1024, count: 9, missing: 0 });
         });
         await page.locator('[data-action="backup"]').click();
-        await page.waitForFunction(() => document.querySelector('#choose-dialog [data-action="backup-go"]')?.disabled === true);
-        assert.match(await page.locator("#choose-dialog .bk2-note").innerText(), /100 MB/);
+        // V10.78 · DS-02: over 100 MB the backup is made as a .capiday file (it used to be refused).
+        await page.waitForFunction(() => /\.capiday/.test(document.querySelector("#choose-dialog .bk2-note")?.textContent || ""));
+        assert.match(await page.locator("#choose-dialog .bk2-note").innerText(), /100 MB[\s\S]*\.capiday/);
+        assert.equal(await page.locator('#choose-dialog [data-action="backup-go"]').isDisabled(), false, "the button stays on");
         await page.locator('#choose-dialog [data-action="choose-close"]').click();
-        passed.push("iPhone app D · more media than one backup holds: said in the sheet, the button is off (nothing made)");
+        passed.push("iPhone app D · more than 100 MB of media: said in the sheet, saved as a .capiday file (V10.78), the button stays on");
       }
 
       // E · 从备份恢复

@@ -39,6 +39,7 @@ import {
 } from "./js/personal-ui.mjs";
 import { loadImage, exportJournalImage, exportJournalVideo, shareStory, renderJournalCanvas, renderBookTitleCanvas } from "./js/export.mjs";
 import { bookSharePages, limitPages, dateRange, buildPdf } from "./js/book-share.mjs";
+import * as Capiday from "./js/capiday-format.mjs";
 import { photoTime, reliableTime } from "./js/exif.mjs";
 import * as AppLock from "./js/app-lock.mjs";
 import { MetaStore } from "./js/meta-store.mjs";
@@ -589,7 +590,11 @@ function navigate(target) {
     openQuickRecord();
     return;
   }
-  if (target === "settings" && page !== "settings") settingsReturn = page;
+  if (target === "settings" && page !== "settings") {
+    settingsReturn = page;
+    // V10.78: ask the shell how the iCloud backups stand (uploaded yet?).
+    setTimeout(() => refreshICloud().catch(() => {}), 0);
+  }
   page = target;
   selectedBook = null;
   render();
@@ -2605,14 +2610,15 @@ async function openBackupSheet() {
     const usage = await media.usage(state());
     const sheet = dialog.querySelector('[data-bk2="intro"]');
     if (!sheet) return;
-    const est = Math.round(usage.bytes * 1.34 + JSON.stringify(state()).length);
+    // Over 100 MB of media: a `.capiday` file (raw bytes, no base64) — V10.78.
+    const large = usage.bytes > MAX_BACKUP_MEDIA;
+    const est = Math.round(usage.bytes * (large ? 1.01 : 1.34) + JSON.stringify(state()).length);
     sheet.querySelector(".bk2-size").textContent = t("bk2.size", { size: mbText(est) });
     sheet.dataset.est = String(est);
     const note = sheet.querySelector(".bk2-note");
-    if (usage.bytes > MAX_BACKUP_MEDIA) {
+    if (large) {
       note.hidden = false;
-      note.textContent = t("error.backupSize");
-      sheet.querySelector('[data-action="backup-go"]').disabled = true;
+      note.textContent = t("bk2.largeNote");
     } else if (usage.missing) {
       note.hidden = false;
       note.textContent = t("bk2.missingNote", { count: usage.missing });
@@ -2648,15 +2654,29 @@ async function runBackup() {
   flushDraft();
   backupStep(`<h2>${t("bk2.title")}</h2><div class="vr-line" role="status"><span class="vr-spin" aria-hidden="true"></span><b>${t("bk2.preparing")}</b></div>`, "preparing");
   let backup;
+  let capidayBlob = null;
   try {
     try {
       backup = await media.backup(state());
     } catch (error) {
+      // V10.78 · DS-02 (R1): more than 100 MB of photos, videos and sounds —
+      // the JSON file can't hold them (base64), so a `.capiday` file is made
+      // instead: each file's own bytes, every size and SHA-256 checked by
+      // reading it back before it is handed out. Before, no backup at all.
+      if (error.code === "backup-size") {
+        backupStep(`<h2>${t("bk2.title")}</h2><div class="vr-line" role="status"><span class="vr-spin" aria-hidden="true"></span><b>${t("bk2.preparingLarge")}</b></div>`, "preparing");
+        const made = await Capiday.buildCapiday(state(), (id) => media.readable(id), { version: UPDATES[0]?.version || "", platform: shellSavesBackup() ? "ios" : "web" });
+        await Capiday.readCapiday(made.blob); // read back: every layer must pass before it counts
+        capidayBlob = made.blob;
+        backup = { complete: made.manifest.complete, missing: made.manifest.missing, capiday: true };
+        if (!backup.complete && !(await backupMissingSheet(made.manifest.missing))) return;
+      } else {
       if (error.code !== "backup-missing") throw error;
       // C2: a file that can't be read is listed, and left out only when the person chooses to.
       if (!(await backupMissingSheet(error.missing))) return;
       backupStep(`<h2>${t("bk2.title")}</h2><div class="vr-line" role="status"><span class="vr-spin" aria-hidden="true"></span><b>${t("bk2.preparing")}</b></div>`, "preparing");
       backup = await media.backup(state(), { allowMissing: true });
+      }
     }
   } catch (error) {
     logEvent("backup_failed", { err: errName(error) });
@@ -2664,7 +2684,7 @@ async function runBackup() {
   }
   let blob;
   try {
-    blob = new Blob([JSON.stringify(backup)], { type: "application/json" });
+    blob = capidayBlob || new Blob([JSON.stringify(backup)], { type: "application/json" });
   } catch (error) {
     logEvent("backup_failed", { err: errName(error) });
     return backupStep(`<h2>${t("bk2.failedTitle")}</h2><p class="save-help">${t("bk2.memory")}</p><p class="rs-safe">${t("bk2.nothingChanged")}</p><button class="primary full-width" data-action="choose-close">${t("rs.ok")}</button>`, "failed");
@@ -2672,11 +2692,11 @@ async function runBackup() {
   // V10.78 · DS-09 (R3): the media cap is counted in raw bytes, the file is
   // base64 — with a large journal it could pass here and then be too large
   // to restore (150 MB). Such a file is not handed out or counted as a backup.
-  if (blob.size > RS.MAX_RESTORE_FILE_BYTES) {
+  if (!capidayBlob && blob.size > RS.MAX_RESTORE_FILE_BYTES) {
     logEvent("backup_failed", { err: "too-large-restore", size: Math.round(blob.size / 1024 / 1024) });
     return backupStep(`<h2>${t("bk2.failedTitle")}</h2><p class="save-help">${t("bk2.tooLargeRestore", { size: mbText(blob.size), max: mbText(RS.MAX_RESTORE_FILE_BYTES) })}</p><p class="rs-safe">${t("bk2.nothingChanged")}</p><button class="primary full-width" data-action="choose-close">${t("rs.ok")}</button>`, "failed");
   }
-  const name = `Capiday-Backup-${dateKey()}${backup.complete ? "" : "-incomplete"}.json`;
+  const name = `Capiday-Backup-${dateKey()}${backup.complete ? "" : "-incomplete"}${capidayBlob ? ".capiday" : ".json"}`;
   logEvent("backup", { complete: backup.complete, missing: backup.missing?.length || 0, size: Math.round(blob.size / 1024) });
   const native = shellSavesBackup();
   const answer = native ? new Promise((resolve) => (backupWaiter = resolve)) : null;
@@ -7961,7 +7981,7 @@ function settingsPageHTML() {
   const privacyRow = (id) => toggle(`data-action="privacy-toggle" data-privacy="${id}"`, privacyOn(id), t("privacy." + id), t("s2." + id + "Short"));
   // V10.10: backup first and easy to find; one short line each; the full
   // notes (what a backup holds, size limits) stay in 隐私说明.
-  const data = `<section class="s2-sec privacy-card">${title("s2.data")}<div class="s2-row stack s2-backup"><span><b>${t("s2.backup")}</b><small>${t("s2.backupShort")}</small></span>${backupWhenHTML()}<div class="s2-btns"><button class="primary-outline" data-action="backup">${t("settings.backup")}</button><button data-action="restore-backup">${t("settings.restore")}</button></div><p id="media-usage" class="s2-usage" role="status"></p><p id="rs-snap" class="s2-usage rs-snap"></p></div>${restoreUndoRowHTML()}${more('data-action="media-check"', t("check.title"), t("check.short"))}${lockRowsHTML()}${privacyRow("hideToday")}${privacyRow("shareList")}${toggle('data-action="keeper-toggle" data-key="aiConsent"', false, `${t("s2.ai")}<i class="s2-tag">${t("s2.aiNot")}</i>`, t("s2.aiShort"), true)}${more('data-action="settings-sheet" data-sheet="privacy"', t("s2.privacyNotes"))}</section>`;
+  const data = `<section class="s2-sec privacy-card">${title("s2.data")}<div class="s2-row stack s2-backup"><span><b>${t("s2.backup")}</b><small>${t("s2.backupShort")}</small></span>${backupWhenHTML()}<div class="s2-btns"><button class="primary-outline" data-action="backup">${t("settings.backup")}</button><button data-action="restore-backup">${t("settings.restore")}</button></div><p id="media-usage" class="s2-usage" role="status"></p><p id="rs-snap" class="s2-usage rs-snap"></p></div>${icloudRowHTML()}${restoreUndoRowHTML()}${more('data-action="media-check"', t("check.title"), t("check.short"))}${lockRowsHTML()}${privacyRow("hideToday")}${privacyRow("shareList")}${toggle('data-action="keeper-toggle" data-key="aiConsent"', false, `${t("s2.ai")}<i class="s2-tag">${t("s2.aiNot")}</i>`, t("s2.aiShort"), true)}${more('data-action="settings-sheet" data-sheet="privacy"', t("s2.privacyNotes"))}</section>`;
   // -- About & more.
   const samples = state().entries.filter((e) => e.isDemo).length;
   const about = `<section class="s2-sec s2-about">${title("s2.about")}${more('data-action="whats-new"', t("news.title"), `V${esc(LATEST)}`, hasUnseen())}${more('data-action="tour-replay"', t("s2.tour"), t("s2.tourAgain"))}${more('data-action="settings-sheet" data-sheet="licenses"', t("settings.licenses"))}${samples ? more('data-action="settings-sheet" data-sheet="samples"', t("samples.title"), t("s2.sampleDays", { count: samples })) : ""}${more('data-action="settings-sheet" data-sheet="testlog"', t("testlog.title"))}${more('data-action="settings-sheet" data-sheet="labs"', t("labs.title"), t(labsOn() ? "s2.on" : "s2.off"))}${labsOn() && account ? more('data-action="sign-out"', t("s2.welcome"), t("s2.dataKept")) : ""}</section>`;
@@ -9102,6 +9122,15 @@ async function action(target) {
     el?.scrollIntoView({ block: "start", behavior: "smooth" });
     return;
   }
+  if (actionName === "icloud-toggle") {
+    writeKey(ICLOUD_AUTO_KEY, icloudAutoOn() ? "0" : "1");
+    render();
+    if (icloudAutoOn()) runICloudBackup().catch(() => {});
+    return;
+  }
+  if (actionName === "icloud-now") return runICloudBackup({ manual: true });
+  if (actionName === "icloud-restore") return openICloudRestore();
+  if (actionName === "icloud-pick") return restoreFromICloud(target.dataset.name);
   if (actionName === "page-export") return exportReaderPage(target.dataset.kind || "png");
   if (actionName === "pm-open") return openPageManager({ bookId: target.dataset.book || null, date: target.dataset.date || null });
   if (actionName?.startsWith("pm-") && pmAction(actionName, target)) return;
@@ -10948,6 +10977,188 @@ async function settleBeforeRestore() {
   if (editor && draftDirty) return false; // the edit could not be put into the journal
   return Boolean(await store.stored());
 }
+// ---------- V10.78 · DS-04…DS-08 · Automatic iCloud backup ----------
+// In the iPhone app only (the shell says `capidayFiles.icloud`). At most once
+// a day, when something changed and the app is open and not in the editor,
+// the journal is written as a `.capiday` file, read back and checked here,
+// then handed to the shell, which puts it in the app's own iCloud folder,
+// checks its size and keeps the 3 newest + one a month (pruning only after
+// the newest one has finished uploading). It never runs on a schedule of its
+// own, never blocks writing, and a failure only shows in Settings. The manual
+// backup (save to Files) stays as it was.
+const ICLOUD_AUTO_KEY = "little-days.icloud-auto"; // "0" = off (default on)
+const ICLOUD_LAST_KEY = "little-days.icloud-last"; // the last checked, saved backup
+const ICLOUD_STATE_KEY = "little-days.icloud-state"; // working / saved / failed / unavailable
+let icloudInfo = null;
+let icloudBusy = false;
+let autoBackupWaiter = null;
+const icloudWaits = new Map();
+const icloudShell = () => Boolean(window.capidayFiles?.icloud && window.webkit?.messageHandlers?.capidayICloud);
+const icloudAutoOn = () => readKey(ICLOUD_AUTO_KEY) !== "0";
+const readJSONKey = (key) => {
+  try {
+    return JSON.parse(readKey(key) || "null");
+  } catch {
+    return null;
+  }
+};
+function icloudAsk(cmd, extra = {}) {
+  return new Promise((resolve) => {
+    const id = crypto.randomUUID();
+    icloudWaits.set(id, resolve);
+    try {
+      window.webkit.messageHandlers.capidayICloud.postMessage({ cmd, id, ...extra });
+    } catch {
+      icloudWaits.delete(id);
+      return resolve({ ok: false, err: "bridge" });
+    }
+    setTimeout(() => {
+      if (!icloudWaits.has(id)) return;
+      icloudWaits.delete(id);
+      resolve({ ok: false, err: "timeout" });
+    }, cmd === "prepare" ? 70000 : 15000);
+  });
+}
+window.capidayICloudReply = (reply) => {
+  const done = icloudWaits.get(reply?.id);
+  if (!done) return;
+  icloudWaits.delete(reply.id);
+  done(reply);
+};
+window.capidayAutoBackupDone = (result) => {
+  const done = autoBackupWaiter;
+  autoBackupWaiter = null;
+  done?.(result || { status: "failed" });
+};
+// A quick fingerprint of the journal: an automatic backup is made only when it changed.
+function journalStamp() {
+  const text = JSON.stringify(state());
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+  return `${text.length}-${(h >>> 0).toString(36)}`;
+}
+function saveBlobAs(blob, name) {
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = name;
+  link.hidden = true;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 120000);
+}
+async function refreshICloud() {
+  if (!icloudShell()) return;
+  icloudInfo = await icloudAsk("status");
+  if (page === "settings") render();
+}
+async function runICloudBackup({ manual = false } = {}) {
+  if (!icloudShell() || icloudBusy) return;
+  if (busyMedia) return manual ? toast(t("media.busy")) : undefined;
+  const info = await icloudAsk("status");
+  icloudInfo = info;
+  if (!info.ok || !info.available) {
+    writeKey(ICLOUD_STATE_KEY, JSON.stringify({ state: "unavailable", at: new Date().toISOString() }));
+    if (manual) toast(t("icloud.unavailable"));
+    if (page === "settings") render();
+    return;
+  }
+  const stamp = journalStamp();
+  const last = readJSONKey(ICLOUD_LAST_KEY);
+  if (!manual && (last?.stamp === stamp || (last?.at && Date.now() - Date.parse(last.at) < 20 * 3600 * 1000))) return;
+  icloudBusy = true;
+  writeKey(ICLOUD_STATE_KEY, JSON.stringify({ state: "working", at: new Date().toISOString() }));
+  if (manual) toast(t("icloud.working"));
+  if (page === "settings") render();
+  try {
+    flushDraft();
+    await store.stored();
+    const made = await Capiday.buildCapiday(state(), (id) => media.readable(id), { version: UPDATES[0]?.version || "", platform: "ios" });
+    await Capiday.readCapiday(made.blob); // every layer checked before it is handed over
+    const now = new Date();
+    const name = `Capiday-Auto-${dateKey(now)}-${String(now.getHours()).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}.capiday`;
+    const answer = new Promise((resolve) => {
+      autoBackupWaiter = resolve;
+      setTimeout(() => {
+        if (autoBackupWaiter !== resolve) return;
+        autoBackupWaiter = null;
+        resolve({ status: "failed", err: "timeout" });
+      }, 300000);
+    });
+    saveBlobAs(made.blob, name);
+    const result = await answer;
+    const at = new Date().toISOString();
+    if (result.status === "saved") {
+      writeKey(ICLOUD_LAST_KEY, JSON.stringify({ at, stamp, name, size: result.size || made.blob.size, complete: made.manifest.complete, missing: made.manifest.missing.length }));
+      writeKey(ICLOUD_STATE_KEY, JSON.stringify({ state: "saved", at }));
+      // A complete backup in iCloud counts as a backup (the reminder rests).
+      if (made.manifest.complete) writeKey(BACKUP_AT_KEY, dateKey());
+      logEvent("icloud_backup", { stage: "saved", kind: manual ? "manual" : "auto", size: Math.round(made.blob.size / 1048576) });
+      if (manual) toast(t("icloud.saved"));
+    } else {
+      writeKey(ICLOUD_STATE_KEY, JSON.stringify({ state: result.status === "unavailable" ? "unavailable" : "failed", at, err: result.err || result.status }));
+      logEvent("icloud_backup", { stage: "failed", err: String(result.err || result.status).slice(0, 16) });
+      if (manual) toast(t(result.err === "space" ? "icloud.space" : "icloud.failed"));
+    }
+  } catch (error) {
+    writeKey(ICLOUD_STATE_KEY, JSON.stringify({ state: "failed", at: new Date().toISOString(), err: String(error?.code || "build").slice(0, 16) }));
+    logEvent("icloud_backup", { stage: "failed", err: String(error?.code || "build").slice(0, 16) });
+    if (manual) toast(t("icloud.failed"));
+  } finally {
+    icloudBusy = false;
+    refreshICloud();
+  }
+}
+// When to try: the app opened or came back, and it is quiet (not in the editor).
+function maybeAutoBackup() {
+  if (!icloudShell() || !icloudAutoOn() || document.hidden || page === "studio" || page === "story") return;
+  runICloudBackup().catch(() => {});
+}
+if (typeof window !== "undefined") {
+  setTimeout(maybeAutoBackup, 15000);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) setTimeout(maybeAutoBackup, 8000);
+  });
+}
+function icloudRowHTML() {
+  if (!icloudShell()) return "";
+  const on = icloudAutoOn();
+  const st = readJSONKey(ICLOUD_STATE_KEY);
+  const last = readJSONKey(ICLOUD_LAST_KEY);
+  const newest = icloudInfo?.backups?.find((b) => b.name === last?.name) || icloudInfo?.backups?.[0];
+  const when = (iso) => new Date(iso).toLocaleString(locale(), { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  let line;
+  if (icloudInfo && icloudInfo.available === false) line = t("icloud.unavailable");
+  else if (st?.state === "working") line = t("icloud.working");
+  else if (last?.at) line = t(newest?.uploaded ? "icloud.lastUploaded" : "icloud.lastWaiting", { when: when(last.at), size: mbText(last.size || 0) }) + (last.complete === false ? ` ${t("icloud.incomplete", { count: last.missing || 0 })}` : "");
+  else line = t("icloud.never");
+  const failed = st?.state === "failed" ? `<p class="rs-note">${t(st.err === "space" ? "icloud.space" : "icloud.lastFailed", { when: when(st.at) })}</p>` : "";
+  // The same switch row as the other settings toggles.
+  return `<button class="privacy-row s2-toggle s2-icloud-toggle" data-action="icloud-toggle" role="switch" aria-checked="${on}"><span><b>${t("icloud.title")}</b><small>${t("icloud.short")}</small></span><i class="switch ${on ? "on" : ""}" aria-hidden="true"></i></button><div class="s2-row stack s2-icloud"><p class="s2-usage icloud-status" role="status">${esc(line)}</p>${failed}<div class="s2-btns"><button class="primary-outline" data-action="icloud-now" ${icloudBusy ? "disabled" : ""}>${t("icloud.now")}</button><button data-action="icloud-restore">${t("icloud.restore")}</button></div></div>`;
+}
+async function openICloudRestore() {
+  const dialog = $("#choose-dialog");
+  const info = await icloudAsk("status");
+  icloudInfo = info;
+  const list = info.available ? (info.backups || []) : [];
+  const when = (iso) => (iso ? new Date(iso).toLocaleString(locale(), { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "");
+  dialog.innerHTML = `<div class="choose-sheet icloud-restore-sheet"><div class="choose-grabber" aria-hidden="true"></div><h2>${t("icloud.restoreTitle")}</h2><p class="save-help">${t(info.available ? (list.length ? "icloud.restoreHint" : "icloud.restoreNone") : "icloud.unavailable")}</p>${list.map((b) => `<button class="contribute-option" data-action="icloud-pick" data-name="${esc(b.name)}"><b>${esc(when(b.date))}</b><small>${esc(mbText(b.size || 0))} · ${t(b.uploaded ? "icloud.inCloud" : "icloud.notUploaded")}${b.name.startsWith("Capiday-Auto-") ? "" : ` · ${t("icloud.manualFile")}`}</small></button>`).join("")}<p class="rs-note">${t("rs2.replace")}</p><button class="choose-cancel" data-action="choose-close">${t("cancel")}</button></div>`;
+  if (!dialog.open) dialog.showModal();
+}
+async function restoreFromICloud(name) {
+  if ($("#choose-dialog").open) $("#choose-dialog").close();
+  toast(t("icloud.downloading"));
+  const ready = await icloudAsk("prepare", { name });
+  if (!ready.ok) return toast(t(ready.err === "download" ? "icloud.downloadFailed" : "icloud.unavailable"));
+  try {
+    const response = await fetch(ready.url);
+    if (!response.ok) throw new Error("fetch");
+    const blob = await response.blob();
+    await checkRestoreFile(new File([blob], name, { type: Capiday.MIMETYPE }));
+  } catch {
+    toast(t("icloud.downloadFailed"));
+  }
+}
 function showRestoreProblem(code) {
   const dialog = $("#choose-dialog");
   dialog.innerHTML = `<div class="choose-sheet restore-sheet" data-restore-problem="${esc(code)}"><div class="choose-grabber" aria-hidden="true"></div><h2>${t("rs.problemTitle")}</h2><p>${t("rs.err." + code)}</p><p class="rs-safe">${t("rs.unchanged")}</p><button class="primary full-width" data-action="choose-close">${t("rs.ok")}</button></div>`;
@@ -10957,19 +11168,35 @@ $("#backup-input").addEventListener("change", async (event) => {
   const file = event.target.files[0];
   event.target.value = "";
   if (!file) return;
-  if (file.size > RS.MAX_RESTORE_FILE_BYTES) return showRestoreProblem("too-large");
+  await checkRestoreFile(file);
+});
+// A backup file to restore: the JSON backup (v1), or a `.capiday` (V10.78 ·
+// DS-02 — read in place with File.slice, every size and SHA-256 checked
+// first, no 150 MB ceiling). Nothing is written until the person confirms.
+async function checkRestoreFile(file) {
   let backup;
-  try {
-    backup = JSON.parse(await file.text());
-  } catch {
-    return showRestoreProblem("damaged");
+  if (await Capiday.looksLikeCapiday(file)) {
+    toast(t("rs.checking"));
+    try {
+      backup = await Capiday.readCapiday(file);
+    } catch (error) {
+      logEvent("restore_checked", { stage: "capiday", err: String(error?.code || "damaged").slice(0, 16) });
+      return showRestoreProblem(error?.code === "newer-format" ? "newer-format" : error?.code === "bad-state" ? "damaged" : "damaged");
+    }
+  } else {
+    if (file.size > RS.MAX_RESTORE_FILE_BYTES) return showRestoreProblem("too-large");
+    try {
+      backup = JSON.parse(await file.text());
+    } catch {
+      return showRestoreProblem("damaged");
+    }
   }
   const analysis = RS.analyzeBackup(backup);
   logEvent("restore_checked", { stage: analysis.ok ? "ok" : analysis.error });
   if (!analysis.ok) return showRestoreProblem(analysis.error);
   restoreCandidate = { backup, analysis };
   openRestorePreview();
-});
+}
 function openRestorePreview() {
   const c = restoreCandidate;
   if (!c) return;
@@ -11069,7 +11296,7 @@ async function runRestore() {
       shaIndex = JSON.parse((await metaStore.read(MEDIA_SHA_KEY)) || "{}") || {};
     } catch {}
     for (const m of c.analysis.media) {
-      const bytes = await (await (await fetch(m.record.data)).blob()).arrayBuffer();
+      const bytes = m.record.blob ? await m.record.blob.arrayBuffer() : await (await (await fetch(m.record.data)).blob()).arrayBuffer();
       const meta = { kind: m.record.kind || m.kind, name: m.record.name || "Restored media", duration: m.record.duration || 0 };
       for (const key of ["aspect", "edited", "origin", "width", "height", "createdAt"]) if (m.record[key] !== undefined) meta[key] = m.record[key];
       const sha = await sha256Hex(bytes);

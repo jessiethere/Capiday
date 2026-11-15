@@ -187,7 +187,7 @@ struct LittleDaysWebView: UIViewRepresentable {
         configuration.mediaTypesRequiringUserActionForPlayback = []
         // Lets the shared CSS drop the "web preview" phone frame and use real safe areas.
         let marker = WKUserScript(
-            source: "window.littleDaysBiometry = '\(LittleDaysLockBridge.biometry())'; document.documentElement.dataset.shell = 'ios'; document.documentElement.dataset.biometric = window.littleDaysBiometry; window.capidayFiles = { saveBackup: 1 };",
+            source: "window.littleDaysBiometry = '\(LittleDaysLockBridge.biometry())'; document.documentElement.dataset.shell = 'ios'; document.documentElement.dataset.biometric = window.littleDaysBiometry; window.capidayFiles = { saveBackup: 1, icloud: 1 };",
             injectionTime: .atDocumentStart,
             forMainFrameOnly: true
         )
@@ -199,10 +199,13 @@ struct LittleDaysWebView: UIViewRepresentable {
         configuration.userContentController.add(LittleDaysReminders.shared, name: LittleDaysReminders.name)
         // Captain's Playroom: a light tap (V10.17).
         configuration.userContentController.add(LittleDaysHaptics(), name: LittleDaysHaptics.name)
+        // Automatic backups to iCloud (V10.78 · DS-04…08).
+        configuration.userContentController.add(LittleDaysICloudBackup.shared, name: LittleDaysICloudBackup.name)
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
         lockBridge.webView = webView
         LittleDaysReminders.shared.webView = webView
+        LittleDaysICloudBackup.shared.webView = webView
         context.coordinator.keyboard.start(webView)
         webView.uiDelegate = context.coordinator
         webView.navigationDelegate = context.coordinator
@@ -373,7 +376,11 @@ final class LittleDaysWebCoordinator: NSObject, WKUIDelegate, WKNavigationDelega
         // The app's own Documents folder is deleted with the app, so it is no
         // backup at all. PNG exports and other files still land in Documents.
         let isBackup = Self.isBackup(safeName)
-        let folder = isBackup
+        // V10.78: an automatic backup goes to a temporary file, then into iCloud (no panel).
+        let isAuto = LittleDaysICloudBackup.isAutoBackup(safeName)
+        let folder = isAuto
+            ? FileManager.default.temporaryDirectory.appendingPathComponent("capiday-auto", isDirectory: true)
+            : isBackup
             ? FileManager.default.temporaryDirectory.appendingPathComponent("capiday-backup", isDirectory: true)
             : FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
@@ -384,11 +391,15 @@ final class LittleDaysWebCoordinator: NSObject, WKUIDelegate, WKNavigationDelega
     }
 
     static func isBackup(_ name: String) -> Bool {
-        name.hasPrefix("Capiday-Backup-") && name.hasSuffix(".json")
+        name.hasPrefix("Capiday-Backup-") && (name.hasSuffix(".json") || name.hasSuffix(".capiday"))
     }
 
     func downloadDidFinish(_ download: WKDownload) {
         guard let url = downloads.removeValue(forKey: ObjectIdentifier(download)), let webView = download.webView else { return }
+        if LittleDaysICloudBackup.isAutoBackup(url.lastPathComponent) {
+            LittleDaysICloudBackup.shared.save(url)
+            return
+        }
         if Self.isBackup(url.lastPathComponent) {
             let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
             // The system's own "save to Files" panel (export a copy). It tells
@@ -407,6 +418,11 @@ final class LittleDaysWebCoordinator: NSObject, WKUIDelegate, WKNavigationDelega
 
     func download(_ download: WKDownload, didFailWithError error: Error, resumeData: Data?) {
         guard let url = downloads.removeValue(forKey: ObjectIdentifier(download)) else { return }
+        if LittleDaysICloudBackup.isAutoBackup(url.lastPathComponent) {
+            try? FileManager.default.removeItem(at: url)
+            LittleDaysICloudBackup.shared.failed(url.lastPathComponent, err: "write")
+            return
+        }
         // A backup that could not even be written here (most often: no space).
         if Self.isBackup(url.lastPathComponent), let webView = download.webView {
             let space = (error as NSError).code == NSFileWriteOutOfSpaceError || (error as NSError).domain == NSPOSIXErrorDomain && (error as NSError).code == Int(ENOSPC)
