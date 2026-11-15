@@ -24,8 +24,15 @@ run() { # run <device type> <name> [content size]
   local JS=$W/check.js LOG=$W/$2.log
   { print -r -- "const CHECK_PAUSE = 3500;"; cat $W/src/tools/mac/ios-shelf-check.js; } > $JS
   xcrun simctl install $DEV $APP
-  : > $LOG
-  xcrun simctl launch --console-pty $DEV com.jessiethere.littledays -LittleDaysCheck $JS > $LOG 2>&1 &
+  sleep 5
+  # A just-booted simulator sometimes refuses the first launch: try again.
+  for try in 1 2 3; do
+    : > $LOG
+    xcrun simctl launch --console-pty $DEV com.jessiethere.littledays -LittleDaysCheck $JS > $LOG 2>&1 &
+    sleep 6
+    grep -q 'failed to launch' $LOG || break
+    sleep 5
+  done
   for i in {1..160}; do
     sleep 1.5
     xcrun simctl io $DEV screenshot --type=png $W/shots/$2-$(python3 -c 'import time;print(int(time.time()*1000))').png >/dev/null 2>&1
