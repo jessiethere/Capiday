@@ -5135,13 +5135,17 @@ function renderQuickRecord() {
     .join("")}</div><button class="primary full-width quick-start" data-action="${QUICK_ALSO.includes(quick.way) ? "quick-more" : "quick-start"}" data-more="${QUICK_ALSO.includes(quick.way) ? quick.way : ""}">${QUICK_ALSO.includes(quick.way) ? t("quick.start." + quick.way) : t(quick.way === "photo" && quick.photo === "mine" ? "quick.start.pick" : quick.way === "photo" && quick.photo === "pick" ? (quick.lib ? "quick.start.lib" : "quick.start.libPick") : "quick.start." + quick.way)}</button>${pages ? `<button class="quick-continue" data-action="quick-continue">${t("quick.continue", { count: pages })} ›</button>` : ""}<button class="choose-cancel" data-action="choose-close">${t("cancel")}</button></div>`;
 }
 // Every record is a new page of today, in the chosen journal.
-function startPage(book, date = dateKey(), remember = true) {
+// `scoped` (V10.77): opened from a book (书架 写一页 / 书本页 记录新的一页 —
+// writeInBook) → the editor shows that book's pages only (CAP-016). Home's
+// ＋ quick record picks a book for the new page but is a day's record, so it
+// keeps showing the whole day, as before V10.76.
+function startPage(book, date = dateKey(), remember = true, scoped = false) {
   try {
     if (remember) localStorage.setItem(QUICK_BOOK_KEY, book);
   } catch {}
   if ($("#choose-dialog")?.open) $("#choose-dialog").close();
   openStudio(date);
-  studioScope = book;
+  if (scoped) studioScope = book;
   pageBase = dayShape(editor);
   addMomentNow();
   changeTarget((m) => {
@@ -5239,7 +5243,7 @@ function writeInBook(bookId) {
   }
   const draft0 = state().drafts[date];
   const draft = draft0 ? structuredClone(draft0) : null;
-  const name = startPage(bookId, date, false);
+  const name = startPage(bookId, date, false, true);
   freshPage = { id: activeMomentId, date, base: pageBase, hadDraft: Boolean(draft0), draft };
   logEvent("book_write", { way: "shelf" });
   toast(t("book.writingIn", { name }));
