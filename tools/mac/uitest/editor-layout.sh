@@ -17,5 +17,8 @@ trap 'xcrun simctl shutdown $DEV 2>/dev/null; xcrun simctl delete $DEV 2>/dev/nu
 xcrun simctl boot $DEV; xcrun simctl bootstatus $DEV -b > /dev/null
 xcodebuild build -project Native/LittleDays.xcodeproj -scheme LittleDays -destination "id=$DEV" -derivedDataPath $W/DD 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)" | tail -3
 mkdir -p Native/LittleDays.xcodeproj/xcshareddata/xcschemes && cp tools/mac/uitest/CapidayUITests.xcscheme Native/LittleDays.xcodeproj/xcshareddata/xcschemes/
-xcodebuild test -project Native/LittleDays.xcodeproj -scheme CapidayUITests -destination "id=$DEV" -derivedDataPath $W/DD -only-testing:CapidayUITests/DrawUITests/testBookDialogLayout -only-testing:CapidayUITests/DrawUITests/testStoryWordsLayout ONLY_ACTIVE_ARCH=YES ARCHS=arm64 2>&1 | grep -E "LDLAYOUT|LDTEXT|error:|XCTAssert|failed|passed|TEST (SUCCEEDED|FAILED)" > $W/layout.log
+# Which tests: TESTS="testTextDoubleTap" tools/mac/uitest/editor-layout.sh …
+ONLY=()
+for t in ${=${TESTS:-testBookDialogLayout testStoryWordsLayout}}; do ONLY+=(-only-testing:CapidayUITests/DrawUITests/$t); done
+xcodebuild test -project Native/LittleDays.xcodeproj -scheme CapidayUITests -destination "id=$DEV" -derivedDataPath $W/DD $ONLY ONLY_ACTIVE_ARCH=YES ARCHS=arm64 2>&1 | grep -E "LDLAYOUT|LDTEXT|LDTAP|error:|XCTAssert|failed|passed|TEST (SUCCEEDED|FAILED)" > $W/layout.log
 grep -E "TEST (SUCC|FAIL)|failed|error:" $W/layout.log | tail -5

@@ -6,6 +6,8 @@ document.addEventListener("pointerdown", (e) => { ev.down++; rec(`d${e.pointerId
 document.addEventListener("pointerup", (e) => { ev.up++; rec(`u${e.pointerId}`); }, true);
 document.addEventListener("pointercancel", (e) => { ev.cancel++; rec(`c${e.pointerId}`); }, true);
 document.querySelector("#app").addEventListener("pointerup", () => ev.appUp++);
+window.__ldTaps = [];
+for (const t of ["pointerdown", "pointerup", "pointercancel", "click", "dblclick"]) document.addEventListener(t, (e) => { window.__ldTaps.push(`${t[7] ? t.slice(7, 9) : t.slice(0, 2)}${Math.round(e.timeStamp)}${e.target.closest?.(".text-layer") ? "T" : e.target.closest?.("#journal-canvas") ? "C" : "-"}`); if (window.__ldTaps.length > 40) window.__ldTaps.shift(); }, true);
 const box = document.createElement("div");
 box.setAttribute("role", "img");
 box.style.cssText = "position:fixed;left:0;top:0;width:4px;height:4px;opacity:0.02;pointer-events:none;z-index:2147483647";
@@ -64,6 +66,8 @@ const tick = () => {
     coverTiles: (() => { const d = document.querySelector("#form-dialog[open]")?.getBoundingClientRect(); if (!d) return null; const tiles = [...document.querySelectorAll("#cover-browser-grid .cover-option")]; return [tiles.length, tiles.filter((t) => { const b = t.getBoundingClientRect(); return b.height && b.top >= d.top && b.bottom <= d.bottom; }).length]; })(),
     active: (() => { const a = document.activeElement; return a && a !== document.body ? (a.tagName + (a.name ? "[" + a.name + "]" : "") + (a.dataset?.swText !== undefined ? "[sw]" : "")) : ""; })(),
     bodyClass: document.body.className,
+    typeDone: r('#type-bar:not([hidden]) [data-action="type-done"]'), textBox: r("#journal-canvas .text-layer"), textSel: document.querySelector("#journal-canvas .text-layer.active") ? 1 : 0, ctxEdit: r('.tool-dock [data-action="ctx-edit-text"]'),
+    tapLog: (window.__ldTaps || []).slice(-12).join(" "),
     typeBar: r("#type-bar:not([hidden])"), kbVar: document.documentElement.style.getPropertyValue("--kb"), vv: [innerHeight, Math.round(visualViewport?.height || 0), Math.round(visualViewport?.offsetTop || 0), screen.height, document.documentElement.dataset.kbNative || "-", scrollY, document.querySelector("#app-scroll")?.scrollTop || 0, document.querySelector(".canvas-wrap")?.style.transform || ""].join(","),
     dayInk: [...document.querySelectorAll(".chapter-canvas .drawing-layer img")].filter((i) => i.complete && i.naturalWidth > 0).length,
     saved, draftDrawings, down: ev.down, up: ev.up, cancel: ev.cancel, appUp: ev.appUp, log: ev.log.slice(-8).join(" ") };

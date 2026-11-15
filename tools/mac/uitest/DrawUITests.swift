@@ -525,4 +525,44 @@ final class DrawUITests: XCTestCase {
         tap("swDone", wait: 2.0)
         dumpLayout("s6-done")
     }
+
+    // CAP-014 · select a text box, then double-tap it with a real finger.
+    func testTextDoubleTap() throws {
+        startFresh()
+        tap("quickOpen", wait: 1.2)
+        tap("quickWrite", wait: 0.8)
+        tap("quickStart", wait: 2.5)
+        if rect("skip") != nil { tap("skip") }
+        tap("addText", wait: 1.5)
+        for k in ["n", "i"] where app.keys[k].exists { app.keys[k].tap() }
+        if app.keys["space"].exists { app.keys["space"].tap() } else if app.keys["空格"].exists { app.keys["空格"].tap() }
+        Thread.sleep(forTimeInterval: 0.6)
+        tap("typeDone", wait: 1.5)
+        dumpTap("d1-written")
+        guard let box = waitFor("textBox", 5) else { XCTFail("text box"); return }
+        point(box, 0.5, 0.5).tap()
+        Thread.sleep(forTimeInterval: 1.2)
+        dumpTap("d2-selected")
+        guard let box2 = rect("textBox") else { XCTFail("text box 2"); return }
+        point(box2, 0.5, 0.5).doubleTap()
+        Thread.sleep(forTimeInterval: 1.5)
+        dumpTap("d3-double-tapped")
+        let s = state()
+        print("LDTAP result editing=\(s["editing"] ?? "-")")
+        if (s["editing"] as? String) != "layer" {
+            // Two separate taps ~250 ms apart, as a person does it.
+            if (s["editing"] as? String) != nil { }
+            guard let box3 = rect("textBox") else { return }
+            point(box3, 0.5, 0.5).tap()
+            Thread.sleep(forTimeInterval: 0.25)
+            point(box3, 0.5, 0.5).tap()
+            Thread.sleep(forTimeInterval: 1.5)
+            dumpTap("d4-two-taps")
+        }
+    }
+    func dumpTap(_ step: String) {
+        let s = state()
+        print("LDTAP \(step) editing=\(s["editing"] ?? "-") sel=\(s["textSel"] ?? "-") ctx=\(s["ctx"] ?? "-") taps=\(s["tapLog"] ?? "-")")
+        try? XCUIScreen.main.screenshot().pngRepresentation.write(to: URL(fileURLWithPath: "/tmp/ld-uitest/shots/\(step).png"))
+    }
 }
