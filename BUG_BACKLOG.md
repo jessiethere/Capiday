@@ -59,7 +59,8 @@
 | [CAP-011](#cap-011) | 「查看更多封面」关闭键盘后弹窗布局 / 滚动异常 | P2 | Fixed — Pending Device Verification | TBD | 下一个构建（未上传，V10.70） |
 | [CAP-012](#cap-012) | 「写字 · 改字体」打字时面板下半部被截断 | P2 | Fixed — Pending Device Verification | 0.2.0 (4)（推断） | 下一个构建（未上传，V10.70） |
 | [CAP-013](#cap-013) | 改字体时「换照片 / 写文字 / 换个排版 / 保存」浮在页面中间 | P2 | Fixed — Pending Device Verification | 0.2.0 (4)（推断） | 下一个构建（未上传，V10.70） |
-| [CAP-014](#cap-014) | 双击文字元素无法进入编辑 | P2 | Triaged | TBD | Beta 2（暂定） |
+| [CAP-014](#cap-014) | 双击文字元素无法进入编辑 | P2 | Triaged | 0.2.0 (4)（推断） | Beta 2（暂定） |
+| [CAP-015](#cap-015) | 弹层里的主按钮（保存、创建）字号比「取消」小很多 | P3 | Triaged | 0.2.0 (4)（推断） | Beta 2（暂定） |
 
 **功能改进（Enhancement）**
 
@@ -69,7 +70,7 @@
 | [CAP-E002](#cap-e002) | 字体列表用每种字体本身显示，并实时预览 | P2 | Triaged | 2026-11-15 | Beta 2（暂定） |
 
 统计（2026-11-15 第三次更新，Beta 2 · Editor Layout & Interaction Stability 之后）：
-- Bug 14 条：P0 0 · P1 0 · P2 13 · P3 1；Fixed 13（都是 Pending Device Verification）、Triaged 1（CAP-014）、Verified 0。
+- Bug 15 条：P0 0 · P1 0 · P2 13 · P3 2；Fixed 13（都是 Pending Device Verification）、Triaged 2（CAP-014、CAP-015）、Verified 0。
 - 功能改进 2 条：P2 1 · P3 1；都是 Triaged。
 
 ### 根因分组（2026-11-15，避免同一个根因修两次）
@@ -535,7 +536,7 @@
 - **Source**：Founder（真实 iPhone）
 - **Severity**：P2（可以绕过：点底部「编辑」也能进入编辑——待 Founder 确认这条路径在真机上可用）
 - **Status**：Triaged（**只登记，没有改代码**）
-- **Affected Build**：TBD（推测是 0.2.0 (4)；消息里提到截图「你猜」，本次没有收到图片）
+- **Affected Build**：0.2.0 (4)（推断：截图 IMG_9460 是 iPhone App；「你猜」用的是 V10.69 才有的默认黑体加粗，所以这个文字框是 0.2.0 (4) 里新建的）
 - **Target Build**：Beta 2（暂定），归入 Editor Layout & Interaction Stability 工作流
 - **Steps to Reproduce**：
   1. 打开 Journal Studio 里已有的手帐页面。
@@ -546,16 +547,45 @@
   - 编辑完成后保留原有样式、位置和图层属性；
   - 双击不触发拖动、缩放或其他操作。
 - **Actual Behavior**：双击后没有进入编辑（Founder 描述）。
-- **Evidence**：Founder 截图（本次没有收到图片附件；截图不放进仓库）。
+- **Evidence**：Founder 截图 IMG_9460（2026-11-15 补充；不放进仓库）。截图显示：
+  - 11月14日第 6 页，「你猜」是普通的自由排版文字框，选中边框、上方的旋转把手、右下的缩放圆点都在；
+  - 底部是「文字 · 已选中」工具条：返回 / 编辑 / 字体 / 颜色 / 对齐 / 图层 / 删除。
+  - 所以下面第 3 条（绑定文字或笔记页固定字段）基本可以排除；底部「编辑」这个替代入口是存在的。
 - **Root Cause**：**推测，未复现**（代码阅读，`Public/app.js` `commitGesture`、`DOUBLE_TAP_MS`）。双击是 App 自己判断的：两次「轻点」（手指移动不超过 8 px）落在同一个文字框上，间隔小于 400 ms，相距小于 32 px。可能原因：
   1. **400 ms 太紧**：每次轻点都会重画页面（`render()`）；页面图层多时，在 WKWebView 里两次抬起之间可能超过 400 ms。
   2. **移动阈值**：手指在两次点按中移动超过 8 px 会被当成拖动，双击计数被清零。
-  3. **文字类型**：「今天的故事」生成的、与页面标题绑定的文字（`bind`），或笔记页固定在纸上的标题 / 正文（不是图层），走的是不同的路径。截图里的「你猜」属于哪一类，TBD。
+  3. ~~**文字类型**：「今天的故事」生成的、与页面标题绑定的文字（`bind`），或笔记页固定在纸上的标题 / 正文（不是图层），走的是不同的路径。~~ IMG_9460 显示「你猜」是普通文字框，基本排除。
   4. **覆盖层**：选中边框 `.sel-frame` 是 `pointer-events: none`，不拦截；控制点在边框外面。已检查，暂时排除；真机上仍要确认没有别的透明层。
   5. **WKWebView 双击手势**：页面禁止缩放（`maximum-scale=1`），图层是 `touch-action: none`，系统双击缩放应当不会介入。待真机确认。
 - **Fix Summary**：TBD（未开始；Founder 说「修复 CAP-014」后再动手）。建议先在模拟器里用真实触摸复现：选中后双击；记下两次抬起的时间间隔和手指移动距离。确认原因后再决定放宽间隔、改用 `dblclick`，或修正特定文字类型的路径。
 - **Verification**：TBD。
 - **Related**：CAP-006（V10.69 改过「正在输入的文字可以拖动」，要确认没有影响双击）。
+
+<a id="cap-015"></a>
+### CAP-015 · 弹层里的主按钮（保存、创建）字号比「取消」小很多
+
+- **Title**：录音「标题」弹层里，「保存」的字明显比下面的「取消」小，看起来不协调。
+- **Reported Date**：2026-11-15
+- **Source**：Founder（真实 iPhone）
+- **Severity**：P3（只影响观感，按钮能用）
+- **Status**：Triaged（只登记，没有改代码）
+- **Affected Build**：0.2.0 (4)（推断：截图 IMG_9461 是 iPhone App）
+- **Target Build**：Beta 2（暂定）
+- **Steps to Reproduce**：Studio → 选中一段声音 → 更多工具 → 标题 → 看「保存」和「取消」。
+- **Expected Behavior**：同一个弹层里的主按钮和次按钮字号协调，主按钮至少不比次按钮小。
+- **Actual Behavior**（IMG_9461）：「保存」约 11px、常规字重；「取消」16px 加粗。
+- **Evidence**：IMG_9461（Founder 截图，不放进仓库）。2026-11-15 的模拟器截图里，「新建手帐本」的「创建」也比「取消」小。
+- **Root Cause（代码确认）**：
+  - 主按钮用全局 `.primary`，字号 11px（`Public/styles.css` 约 666 行，早期网页预览手机框时的尺寸）；
+  - 底部弹层的「取消」用 `.choose-cancel`，`600 16px`（约 7924 行）；
+  - 很多地方给主按钮单独加了更大的字号（例如写字面板的「完成」、「今天怎么记」的开始按钮），但「标题」弹层的「保存」、新建手帐本的「创建」等没有，所以保留了 11px。
+- **影响范围**：所有没有单独设置字号的 `.primary` 按钮。具体有哪些需要一次全面清点（TBD）。
+- **Fix Summary**：TBD（未开始）。建议方向：
+  - 定一套按钮字号（例如弹层里的主 / 次按钮都是 16px 600，页面里的小按钮保持现状）；
+  - 先改底部弹层和表单弹窗里的主按钮，避免一次改动全局 `.primary` 影响所有页面；
+  - 修改前后各截一次图对比。
+- **Verification**：TBD（浏览器里比较字号，模拟器截图，真机确认）。
+- **Related**：CAP-002（同一个「标题」弹层）、CAP-010（「新建手帐本」的「创建」按钮）。
 
 ---
 

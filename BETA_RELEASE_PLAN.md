@@ -62,7 +62,8 @@
   | 4 悬浮操作栏 | CAP-013 | Fixed — Pending Device Verification |
   | 5 新建手帐本顶部安全区 | CAP-010 | Fixed — Pending Device Verification |
   | 6 封面选择弹窗高度 / 滚动 | CAP-011 | Fixed — Pending Device Verification |
-  | 双击文字无法编辑 | CAP-014 | Triaged（只登记，未修） |
+  | 双击文字无法编辑 | CAP-014 | Triaged（只登记，未修；2026-11-15 补充截图 IMG_9460） |
+  | 弹层主按钮字号偏小（「保存」「创建」） | CAP-015 | Triaged（只登记，未修，P3） |
 
 - **统一布局规则**（Editor Layout Coordinator，`Public/app.js` `updateVisibleArea` 一处判断，CSS 读结果）：
   1. **键盘状态**：只有「有输入框获得焦点」并且量到键盘（外壳给出的位置，或可见区域变小）才算弹出。弹出时设置 `html.kb-open`、`--vv-h`、`--kb`，否则全部清掉。在失去焦点、可见区域变化、外壳通知（含动画结束后的 didHide / didChangeFrame）时重新计算。
