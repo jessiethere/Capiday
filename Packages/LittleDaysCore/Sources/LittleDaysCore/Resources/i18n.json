@@ -10398,5 +10398,21 @@
   "bk2.phoneNote": {
     "zh": "它在「我的 iPhone」里：删除开铺手帐不会删掉它，但换手机或手机丢失时它不会跟着走。建议再存一份到 iCloud 云盘或电脑。",
     "en": "It is “On My iPhone”: deleting Capiday won't remove it, but it won't come with you to a new phone or survive a lost one. Keep another copy in iCloud Drive or on a computer."
+  },
+  "font.heiPlain": {
+    "zh": "黑体",
+    "en": "Sans"
+  },
+  "font.songPlain": {
+    "zh": "宋体",
+    "en": "Serif"
+  },
+  "books.fontLoading": {
+    "zh": "加载中",
+    "en": "Loading"
+  },
+  "books.fontFixed": {
+    "zh": "这个杂志封面用固定的标题字体；这里选的字体会用在其他封面样式上。",
+    "en": "This magazine cover uses its own title type; the font chosen here is used by the other cover styles."
   }
 }

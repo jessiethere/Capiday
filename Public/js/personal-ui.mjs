@@ -247,12 +247,37 @@ export function coverBrowserPhotosHTML(book, ctx) {
   return `<button type="button" class="cover-upload" data-action="cover-photo" aria-label="${esc(t("books.coverPhoto"))}"><span aria-hidden="true">＋</span><small>${t("books.upload")}</small></button><button type="button" class="cover-auto ${book.coverImage ? "" : "selected"}" data-action="cover-photo-remove"><span aria-hidden="true">✧</span><small>${t("books.photoAuto")}</small></button>${ownSrc ? `<button type="button" class="selected cover-own" data-action="cover-photo" aria-label="${esc(t("books.photoOwn"))}"><img src="${esc(ownSrc)}" alt=""></button>` : ""}${photos}`;
 }
 // The short summaries shown on the folded sections (updated as you type).
+// V10.71 (CAP-E001 / CAP-E002) · The cover's title font. 黑体 and 宋体 first:
+// the device's own fonts (PingFang SC / Songti SC on iPhone; nothing bundled,
+// no licence, no extra size), then the bundled fonts. Each choice is written
+// in its own face — Chinese sample for fonts with Chinese, Latin otherwise —
+// instead of a system <select> wheel where every name looked the same.
+// Only the font id is stored (book.coverFont), as before.
+export function coverFontChoices(catalog, t) {
+  return [
+    { id: "hei", name: t("font.heiPlain"), zh: true, system: true },
+    { id: "song", name: t("font.songPlain"), zh: true, system: true },
+    ...(catalog.fonts || []).map((f) => ({ id: f.id, name: f.name, zh: Boolean(f.supportsChinese), family: f.family })),
+  ];
+}
+export const COVER_FONT_SAMPLE = { zh: "开铺手帐", latin: "Capiday" };
+function coverFontPickerHTML(book, ctx) {
+  const { catalog, t } = ctx;
+  const now = book.coverFont || "elegant";
+  const items = coverFontChoices(catalog, t)
+    .map((c) => `<button type="button" role="radio" aria-checked="${c.id === now}" class="cover-font${c.id === now ? " selected" : ""}" data-action="cover-font" data-font="${esc(c.id)}"${c.family ? ` data-family="${esc(c.family)}"` : ""} style="font-family:${esc(fontFamily(c.id, catalog))}"><span class="cf-sample">${c.zh ? COVER_FONT_SAMPLE.zh : COVER_FONT_SAMPLE.latin}</span><small>${esc(c.name)}</small></button>`)
+    .join("");
+  // The six magazine covers set their own title type (they always did); say so
+  // rather than let a choice look like it does nothing there.
+  const fixed = MAGAZINE_COVERS.includes(book.coverTemplate || "");
+  return `<div class="field cover-font-field"><span class="field-label">${t("books.font")}</span><input type="hidden" name="coverFont" value="${esc(now)}"><p class="save-help cover-font-note" data-cover-font-note${fixed ? "" : " hidden"}>${t("books.fontFixed")}</p><div class="cover-font-list" role="radiogroup" aria-label="${esc(t("books.font"))}">${items}</div></div>`;
+}
 export function bookSectionHints(book, ctx) {
   const { t, catalog, language } = ctx;
   const tags = book.tags || [];
   const tagText = tags.slice(0, 3).map((tag) => `#${tag}`).join(" ") + (tags.length > 3 ? ` +${tags.length - 3}` : "");
   const basics = [String(book.category || "").trim() || "Daily Life", tagText].filter(Boolean).join(" · ");
-  const font = (catalog.fonts || []).find((f) => f.id === (book.coverFont || "elegant"));
+  const font = coverFontChoices(catalog, t).find((f) => f.id === (book.coverFont || "elegant"));
   const sticker = (catalog.stickers || []).find((x) => x.id === (book.coverDecoration || "tulip"));
   const deco = book.coverDecoration === "none" ? t("books.none") : sticker ? (language === "en" ? sticker.nameEn : sticker.nameZh) : "";
   const look = [t("color." + (book.color || "blush")), font?.name, deco, book.coverImage ? t("books.photoOwn") : t("books.photoAuto")].filter(Boolean).join(" · ");
@@ -269,7 +294,7 @@ export function bookDialogHTML(book, ctx) {
   const hints = bookSectionHints(book, ctx);
   const section = (id, title, hint, body) => `<details class="book-more" data-book-section="${id}"><summary><span><b>${title}</b><small data-section-hint="${id}">${esc(hint)}</small></span><i aria-hidden="true">›</i></summary><div class="book-more-body">${body}</div></details>`;
   const basicsBody = `<label class="field">${t("books.description")}<textarea name="description" rows="2" maxlength="300" placeholder="${esc(t("books.descriptionPlaceholder"))}">${esc(book.description || "")}</textarea></label>${tagChipsHTML(tags, t)}<label class="field">${t("books.category")}<input name="category" maxlength="40" placeholder="Daily Life" value="${esc(book.category || "Daily Life")}"></label>`;
-  const lookBody = `<div class="field"><span class="field-label">${t("books.coverPhotoTitle")}</span><div class="cover-photo-quick" data-cover-photo-quick>${coverPhotoQuickHTML(book, ctx)}</div></div><div class="field-row"><label class="field">${t("books.color")}<select name="color">${["blush", "sage", "butter", "blue", "cream"].map((color) => `<option value="${color}" ${book.color === color ? "selected" : ""}>${t("color." + color)}</option>`).join("")}</select></label><label class="field">${t("books.font")}<select name="coverFont">${catalog.fonts.map((font) => `<option value="${font.id}" ${(book.coverFont || "elegant") === font.id ? "selected" : ""}>${font.name}</option>`).join("")}</select></label></div><label class="field">${t("books.decoration")}<select name="coverDecoration"><option value="none" ${book.coverDecoration === "none" ? "selected" : ""}>${t("books.none")}</option>${catalog.stickers.slice(0, 16).map((sticker) => `<option value="${sticker.id}" ${(book.coverDecoration || "tulip") === sticker.id ? "selected" : ""}>${ctx.language === "en" ? sticker.nameEn : sticker.nameZh}</option>`).join("")}</select></label>`;
+  const lookBody = `<div class="field"><span class="field-label">${t("books.coverPhotoTitle")}</span><div class="cover-photo-quick" data-cover-photo-quick>${coverPhotoQuickHTML(book, ctx)}</div></div><div class="field-row"><label class="field">${t("books.color")}<select name="color">${["blush", "sage", "butter", "blue", "cream"].map((color) => `<option value="${color}" ${book.color === color ? "selected" : ""}>${t("color." + color)}</option>`).join("")}</select></label></div>${coverFontPickerHTML(book, ctx)}<label class="field">${t("books.decoration")}<select name="coverDecoration"><option value="none" ${book.coverDecoration === "none" ? "selected" : ""}>${t("books.none")}</option>${catalog.stickers.slice(0, 16).map((sticker) => `<option value="${sticker.id}" ${(book.coverDecoration || "tulip") === sticker.id ? "selected" : ""}>${ctx.language === "en" ? sticker.nameEn : sticker.nameZh}</option>`).join("")}</select></label>`;
   const settingsBody = `<label class="field">${t("books.permission")}<select name="visibility"><option value="private">${t("private")}</option><option value="public" disabled>${t("public")}</option><option value="shared" disabled>${t("shared")}</option></select></label><p class="save-help">${t("books.privateNotice")}</p><label class="field">${t("books.preset")}<select id="book-preset"><option value="blank">${t("books.blank")}</option>${(catalog.recordTemplates || []).map((item) => `<option value="${item.id}">${ctx.language === "en" ? item.nameEn : item.nameZh}</option>`).join("")}</select></label><h3 class="field-section-title">${t("books.fields")}</h3><div id="book-field-list">${(book.fields || []).map((f) => fieldDefinitionHTML(f, ctx)).join("")}</div><button class="secondary" type="button" data-action="field-add">${t("books.fieldAdd")}</button>`;
   const tabs = COVER_GROUPS.map((group, k) => `<button type="button" role="tab" data-action="cover-group" data-group="${group}" aria-selected="${k === 0}" class="${k === 0 ? "selected" : ""}">${t("coverGroup." + group)}</button>`).join("");
   const browser = `<section class="cover-browser" id="cover-browser" hidden aria-label="${esc(t("books.coverBrowser"))}"><header class="cover-browser-head"><button type="button" class="cb-back" data-action="cover-browse-close" aria-label="${esc(t("back"))}">‹ ${t("back")}</button><b>${t("books.coverBrowser")}</b><button type="button" class="primary cb-done" data-action="cover-browse-close">${t("books.coverDone")}</button></header><div class="cb-top"><div id="cover-browser-preview" class="cb-preview">${coverHTML(book, ctx)}</div><div class="cb-top-copy"><b id="cover-browser-name">${esc(t("cover." + tpl))}</b><small class="cb-season-note">${t("books.seasonNote")}</small><button type="button" class="text-button" data-action="cover-reset">${t("books.coverReset")}</button></div></div><div class="cb-tabs" role="tablist">${tabs}</div><div class="cover-template-grid cb-grid" id="cover-browser-grid" data-group="all"></div><div class="cb-photos"><div class="book-pick-head"><b>${t("books.coverPhotoTitle")}</b></div><p class="save-help">${t("books.coverPhotoHint")}</p><div class="cover-photo-picks" id="cover-browser-photos"></div></div></section>`;

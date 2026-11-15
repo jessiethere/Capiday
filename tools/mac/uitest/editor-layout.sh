@@ -10,7 +10,7 @@ git -C $REPO fetch -q origin
 git -C $REPO archive $REF | tar -x -C $W
 cd $W
 mkdir -p Native/UITests && cp tools/mac/uitest/DrawUITests.swift Native/UITests/
-cat tools/mac/uitest/fake-photos.js tools/mac/uitest/probe.js > $W/editor-probe.js
+cat tools/mac/uitest/fake-photos.js tools/mac/uitest/probe.js > $W/editor-probe.js && cp tools/mac/uitest/probe.js $W/probe.js
 python3 tools/mac/uitest/add_uitest_target.py Native/LittleDays.xcodeproj/project.pbxproj
 DEV=$(xcrun simctl create "Capiday Layout UITest" com.apple.CoreSimulator.SimDeviceType.iPhone-17 com.apple.CoreSimulator.SimRuntime.iOS-27-2)
 trap 'xcrun simctl shutdown $DEV 2>/dev/null; xcrun simctl delete $DEV 2>/dev/null' EXIT

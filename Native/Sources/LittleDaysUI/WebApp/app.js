@@ -10881,6 +10881,29 @@ function openBookDialog(book = null) {
   $("#dialog-form").innerHTML = bookDialogHTML(bookDraft, ctx());
   $("#form-dialog").classList.add("book-editor-dialog");
   $("#form-dialog").showModal();
+  watchCoverFonts();
+}
+// V10.71 · A bundled font shows as 加载中 (faded) until it is really loaded,
+// so a choice never shows a stand-in face as if it were that font. The fonts
+// load only when 个性化 is opened (the list is inside it). What is stored is
+// the font id only, so loading can never change what is saved.
+function watchCoverFonts() {
+  const section = $('#dialog-form details[data-book-section="look"]');
+  const load = () => {
+    if (!document.fonts?.load) return;
+    document.querySelectorAll("#dialog-form .cover-font[data-family]").forEach((b) => {
+      const family = b.dataset.family;
+      const sample = b.querySelector(".cf-sample")?.textContent || "";
+      if (document.fonts.check(`20px "${family}"`, sample)) return;
+      b.dataset.loading = t("books.fontLoading");
+      document.fonts.load(`20px "${family}"`, sample).then(
+        () => delete b.dataset.loading,
+        () => delete b.dataset.loading,
+      );
+    });
+  };
+  if (!section || section.open) load();
+  else section.addEventListener("toggle", () => section.open && load(), { once: true });
 }
 // V10.54 · 创建 / 保存: checked, once only (the button says 正在创建…), kept in
 // the store and then waited for until it is really stored (and its own cover
@@ -10979,6 +11002,8 @@ function readBookForm() {
   };
 }
 function refreshBookPreview({ covers = false } = {}) {
+  const fontNote = $("[data-cover-font-note]");
+  if (fontNote) fontNote.hidden = !MAGAZINE_COVERS.includes(bookDraft?.coverTemplate || "");
   if (!$("#book-cover-preview")) return;
   bookDraft = readBookForm();
   const html = coverHTML(bookDraft, ctx());
@@ -12331,6 +12356,19 @@ async function v3Action(target) {
     bookDraft.coverImage = "";
     $('#dialog-form [name="coverTemplate"]').value = DEFAULT_COVER_TEMPLATE;
     refreshBookPreview({ covers: true });
+    return true;
+  }
+  if (name === "cover-font") {
+    // V10.71 · Only the draft changes (and the preview): 取消 keeps the book as it was.
+    const input = $('#dialog-form [name="coverFont"]');
+    if (input) input.value = target.dataset.font;
+    document.querySelectorAll("#dialog-form .cover-font").forEach((b) => {
+      const on = b === target;
+      b.classList.toggle("selected", on);
+      b.setAttribute("aria-checked", String(on));
+    });
+    bookDraft = readBookForm();
+    refreshBookPreview();
     return true;
   }
   if (name === "cover-template") {
