@@ -48,6 +48,19 @@
 
 ## 更新日志
 
+### 2026-11-18 — V10.88（续）：Founder 参考图里的插画作为正式素材（Captain 场景 + 书封）
+
+- **需求**：Founder 发来更新后的参考图（Captain 改为灰色长毛猫、琥珀色眼睛，四个场景：趴着休息 / 坐着看一看 / 准备盖章 / 帮你盖章），选择「裁出插画当正式素材」。
+- **做法**：
+  - 参考图存为 `docs/visual/botanical-board-v1.png`（来源：Founder 2026-11-18 在对话中提供的 Capiday Botanical Decorative System v1 素材板）。
+  - 新工具 `tools/cut_botanical_art.py`：从素材板裁出 4 个 Captain 场景和 3 个书封插画到 `Public/botanical/*.png`。纸色底变成纯白、边缘渐隐成白，界面里用 `mix-blend-mode: multiply` 融进纸面（猫是实心的，没有抠图白边或方框）；旅行笔记的白花在绿布上，绿布做成透明。PNG 256 色，每张 3–30 KB，`loading="lazy"`。以后换高清原图：替换素材板（或直接放高清 PNG）后重跑工具。
+  - `botanicals.mjs`：`captainVignette({ pose })` 改为这四张插画（`sleep` / `sit` / `ready` / `stamp`），原来代码画的 SVG 猫删除（避免出现两种 Captain）；新增 `coverArt("travel" | "everyday" | "captain")`。植物（角落、小枝、小果枝、白色小花）仍是轻量 SVG。
+  - 书封：旅行笔记 = 白花插画 + 小印；日常 = 淡枝叶插画 + 纸纹 + 小印；Captain = 抬头的 Captain 和小草 + 纸纹 + 小印（标题仍由 App 排版，用户自己的书名）。
+  - 深色（cool）主题：插画不做 multiply，改成一张圆角小画片。
+- **用在哪**：集章页空月份（`sit`：坐在小印章和书旁，抬头看）；Captain 书封。`sleep` / `ready` / `stamp` 已在素材系统里，还没有放到页面上（建议：首次盖章仪式里 Captain 出现时用 `stamp`，需 Founder 确认，因为首页现在仍是 3D 柠檬帽 Captain）。
+- **测试**：v192 41/41（新增：7 张图都能加载、读屏隐藏、multiply 融合、单张 < 40 KB、四种 pose）。
+- **已知限制**：素材板只有 1448 px 宽，单个场景约 290 px，在 iPhone 3x 屏上会略软；有高清单张透明 PNG 后直接替换。首页的 Captain（趴在今天卡片上、标签、面板、邀请卡）仍是已确认的 3D 柠檬帽形象，和新插画风格不同——是否统一由 Founder 决定。
+
 ### 2026-11-18 — V10.88：Capiday Botanical Decorative System（植物装饰系统 v1）
 
 - **需求**：Founder 给出 Capiday 现代中式视觉参考图（Botanical Corner / Small Sprig / Berry Branch / White Blossom / Paper Texture / Captain Vignette / Color Palette / Usage Examples），要求把 V10.87 的「加花花草草」升级成一套可复用、可控制密度、能长期扩展的视觉资产系统：Modern Editorial Journal × Chinese Stationery Sensibility × Living Media。美国用户感到 calm / tactile / refined / distinctive，不是 Chinese-themed app；中国用户自然感到纸张、留白、植物、册页和印章。先 Visual Audit，再实施 Phase 1。

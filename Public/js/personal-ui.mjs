@@ -1,4 +1,4 @@
-import { botanical, captainVignette } from "./botanicals.mjs";
+import { coverArt } from "./botanicals.mjs";
 import { fontFamily, coverColor, stickerURL } from "./library.mjs";
 import { mediaCardHTML } from "./canvas.mjs";
 export const escapeHTML = (value = "") =>
@@ -252,13 +252,12 @@ function themeCoverHTML(book, ctx, template) {
       const sub = line || year;
       const art =
         template === "capiday-captain"
-          ? captainVignette({ pose: "sit", place: "inline", cls: "cv-art" })
+          ? coverArt("captain", "cv-art")
           : template === "capiday-travel"
-            ? botanical("blossom", { variant: 0, place: "inline", cls: "cv-art" })
-            : `<i class="cv-rule" aria-hidden="true"></i>${botanical("sprig", { variant: 0, place: "inline", tone: "quiet", cls: "cv-art" })}`;
+            ? coverArt("travel", "cv-art")
+            : `<i class="cv-rule" aria-hidden="true"></i>${coverArt("everyday", "cv-art")}`;
       const grain = template === "capiday-travel" ? "" : " paper-grain";
-      // Captain's cover has its own little seal in the scene (one seal per cover).
-      const seal = template === "capiday-captain" ? "" : '<i class="cv-seal" aria-hidden="true">C</i>';
+      const seal = '<i class="cv-seal" aria-hidden="true">C</i>';
       const kicker = template === "capiday-everyday" ? `<small class="cv-kicker">CAPIDAY · ${esc(year)}</small>` : "";
       return `<div class="book-cover cover-theme cover-capiday cover-${template}${grain}" style="${style};--cover-font:${esc(editorialFont(book, catalog))}">${kicker}<b class="cv-title">${title}</b><small class="cv-sub">${esc(sub)}</small>${art}${seal}</div>`;
     }

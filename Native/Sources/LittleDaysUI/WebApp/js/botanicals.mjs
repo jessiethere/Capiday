@@ -1,8 +1,9 @@
 // Capiday Botanical Decorative System (V10.88; V10.87 was the first sketch).
 //
-// One place for every plant, the Captain vignette and the paper grain, so
-// pages never draw their own. Original line-and-wash SVG made in code — no
-// downloaded or traced art, no raster images.
+// One place for every plant, the Captain vignette, the cover art and the paper
+// grain, so pages never draw their own. Plants are original line-and-wash SVG
+// made in code; Captain scenes and cover art are small PNGs cut from the
+// Founder's reference board (V10.88, see captainVignette below).
 //
 //   botanical(kind, options)   kind: "corner" | "sprig" | "berry" | "blossom"
 //   captainVignette(options)   Captain with two books, a small seal, a sprig
@@ -136,55 +137,46 @@ export function botanical(kind, { variant = 0, size = "m", place = "tr", flip = 
   return `<svg class="${classes.join(" ")}" viewBox="0 0 ${w} ${h}" aria-hidden="true" focusable="false">${body}</svg>`;
 }
 
-// ---------- Captain vignette ----------
-// Captain beside (or asleep on) two or three books, a small seal, a sprig.
-// A modern, natural little cat — the Eastern feeling comes from the books,
-// paper, seal and plants, never from costume. Static; one drawing per pose.
-function books(x, y) {
-  return (
-    `<rect class="bk-b" x="${x}" y="${y + 15}" width="86" height="15" rx="2"/><rect class="bk-p" x="${x + 3}" y="${y + 18}" width="80" height="2.4" rx="1"/>` +
-    `<rect class="bk-c" x="${x + 6}" y="${y + 1}" width="76" height="14" rx="2"/><rect class="bk-p" x="${x + 9}" y="${y + 4}" width="70" height="2" rx="1"/>` +
-    `<path class="bk-l" d="M${x + 16} ${y + 1}v14M${x + 20} ${y + 1}v14M${x + 12} ${y + 15}v15M${x + 16} ${y + 15}v15"/>`
-  );
-}
-function seal(x, y) {
-  return `<rect class="bs-top" x="${x + 2.5}" y="${y - 6}" width="5" height="7" rx="2.2"/><rect class="bs" x="${x}" y="${y}" width="10" height="7" rx="1.4"/>`;
-}
-const CAT_POSES = {
-  // Sitting beside the books, looking at the seal.
-  sit:
-    `<path class="ct" d="M146 101c8-1 13-7 11-15-1-5-6-8-10-6"/>` +
-    `<path class="ck" d="M116 102c-5-12-4-29 7-38 6-5 15-5 20 1 7 9 9 25 4 37Z"/>` +
-    `<path class="ck" d="M117 47l2-15 9 9M139 41l8-9 2 15"/>` +
-    `<path class="ce" d="M120 45l1.4-9 5 5M140 40l5-5 1.4 9"/>` +
-    `<ellipse class="ck" cx="132" cy="51" rx="17" ry="14"/>` +
-    `<path class="cl" d="M122 52q3 2.4 6 0M136 52q3 2.4 6 0M129 31.8"/>` +
-    `<path class="cn" d="M130.6 56.4h2.8l-1.4 1.6Z"/><path class="cl" d="M132 58v1.4M132 59.4q-2 1.4-3.6 .4M132 59.4q2 1.4 3.6 .4"/>` +
-    `<path class="cl" d="M128 41.5l1 3M132 40.8v3.2M136 41.5l-1 3"/>` +
-    `<ellipse class="ck" cx="125" cy="101" rx="5" ry="2.8"/><ellipse class="ck" cx="137" cy="101" rx="5" ry="2.8"/>`,
-  // Asleep on top of the books.
-  sleep:
-    `<path class="ct" d="M96 62c10 3 16 1 18-5"/>` +
-    `<path class="ck" d="M40 64c0-12 14-19 32-19 18 0 30 6 30 17 0 3-1 5-3 6H44c-3-1-4-2-4-4Z"/>` +
-    `<path class="ck" d="M33 51l1-12 8 7M47 45l8-6 0 12"/>` +
-    `<path class="ce" d="M35.6 48l.8-6.5 4 3.6M48.4 45.6l4.6-3.4 0 6.6"/>` +
-    `<ellipse class="ck" cx="44" cy="56" rx="14" ry="12"/>` +
-    `<path class="cl" d="M36 57q2.6 2 5.2 0M46.6 57q2.6 2 5.2 0"/>` +
-    `<path class="cn" d="M42.6 61.4h2.6l-1.3 1.4Z"/>` +
-    `<path class="cl" d="M41 46.6l.8 2.6M44 46v2.8M47 46.8l-.8 2.6M64 50c2 3 2 6 0 9M72 49c2 3 2 6 0 9"/>` +
-    `<ellipse class="ck" cx="52" cy="67.5" rx="5" ry="2.4"/>`,
+// ---------- Captain vignette & cover art (raster) ----------
+// Captain — the grey long-haired Little Keeper with amber eyes — with books,
+// a small seal and a few leaves. A modern, natural little cat: the Eastern
+// feeling comes from the books, paper, seal and plants, never from costume.
+// The pictures are cut from the Founder's reference board
+// (docs/visual/botanical-board-v1.png, tools/cut_botanical_art.py) with the
+// paper turned white, so they sit on paper with `mix-blend-mode: multiply`.
+// Static; one picture per pose; small PNGs (24–30 KB), loaded lazily.
+const ART = {
+  "captain-sleep": [315, 170],
+  "captain-sit": [290, 180],
+  "captain-ready": [290, 158],
+  "captain-stamp": [325, 153],
+  "cover-sprig": [97, 107],
+  "cover-captain": [166, 182],
+  "cover-travel-blossom": [108, 104],
 };
-export const CAPTAIN_POSES = Object.keys(CAT_POSES);
-
+// sleep: asleep on the books · sit: sitting by the books, looking up ·
+// ready: a paw on the seal · stamp: has just pressed a stamp for you.
+export const CAPTAIN_POSES = ["sleep", "sit", "ready", "stamp"];
+function artImg(name, classes) {
+  const [w, h] = ART[name];
+  return `<img class="${classes.join(" ")}" src="botanical/${name}.png" width="${w}" height="${h}" alt="" aria-hidden="true" loading="lazy" decoding="async" draggable="false">`;
+}
 export function captainVignette({ pose = "sit", size = "m", place = "inline", cls = "" } = {}) {
-  const p = CAT_POSES[pose] ? pose : "sit";
-  const art =
-    p === "sit"
-      ? `<ellipse class="gd" cx="80" cy="104" rx="72" ry="4"/><g transform="translate(2 44) scale(.9)">${inner("sprig", 2)}</g>${books(20, 72)}${seal(86, 96)}${CAT_POSES.sit}`
-      : `<ellipse class="gd" cx="80" cy="104" rx="72" ry="4"/><g transform="translate(124 50) scale(.9)">${inner("sprig", 1)}</g>${books(22, 70)}${seal(116, 96)}${CAT_POSES.sleep}`;
-  const classes = ["bot", "bot-vignette", `bot-${SIZES.has(size) ? size : "m"}`, `bot-at-${PLACES.has(place) ? place : "inline"}`, `pose-${p}`];
+  const p = CAPTAIN_POSES.includes(pose) ? pose : "sit";
+  const classes = ["bot", "bot-art", "bot-vignette", `bot-${SIZES.has(size) ? size : "m"}`, `bot-at-${PLACES.has(place) ? place : "inline"}`, `pose-${p}`];
   if (cls) classes.push(cls);
-  return `<svg class="${classes.join(" ")}" viewBox="0 0 160 110" aria-hidden="true" focusable="false">${art}</svg>`;
+  return artImg(`captain-${p}`, classes);
+}
+// The three default covers' art: "travel" (white blossom on the green cloth),
+// "everyday" (a barely-there sprig), "captain" (Captain looking up, plants).
+const COVER_ART = { travel: "cover-travel-blossom", everyday: "cover-sprig", captain: "cover-captain" };
+export function coverArt(kind, cls = "") {
+  const name = COVER_ART[kind];
+  if (!name) return "";
+  // The travel blossom is a cut-out (its cloth is transparent); the others blend into paper.
+  const classes = ["bot", kind === "travel" ? "bot-cutout" : "bot-art", `bot-cover-${kind}`];
+  if (cls) classes.push(cls);
+  return artImg(name, classes);
 }
 
 // ---------- density ----------

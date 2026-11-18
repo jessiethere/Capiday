@@ -11,8 +11,8 @@ export const UPDATES = [
       items: [
         "植物装饰整理成一套：小枝叶、角落枝、小果枝、白色小花和 Captain 小场景，颜色更柔和（灰绿、竹青、枝干棕），朱砂只留给印章。",
         "首页更克制：日期旁一小枝叶子（今天照片多时就不放），集章卡角落一枝小果枝；其他卡片保持干净。",
-        "月令集章页加了很轻的纸纹和一个很淡的角落枝叶；这个月还没有章时，Captain 会坐在书旁看着印章。",
-        "三个默认书封换上同一套素材：旅行笔记有白色小花，日常有极淡的枝叶，Captain 封面是 Captain 坐在书旁。",
+        "月令集章页加了很轻的纸纹和一个很淡的角落枝叶；这个月还没有章时，灰色长毛的 Captain 会坐在小印章和书旁边，抬头看着你。",
+        "三个默认书封换上水彩插画：旅行笔记是绿布上的白色小花，日常是一小枝淡淡的叶子，Captain 封面是抬头的 Captain 和小草。",
       ],
     },
     en: {
@@ -20,8 +20,8 @@ export const UPDATES = [
       items: [
         "Plant details are now one calm set — small sprigs, a corner branch, a berry branch, tiny white blossoms and a little Captain scene — in soft greens and branch brown; cinnabar is kept for seals.",
         "Home is more restrained: one small sprig by the date (left out when today already has many photos) and one berry branch on the stamp card; other cards stay clean.",
-        "The Stamps page has a faint paper grain and a very light corner sprig; a month without stamps shows Captain sitting by the books, looking at a seal.",
-        "The three default covers use the same set: white blossom on Travel Notes, a barely-there sprig on Everyday, Captain by the books on the Captain cover.",
+        "The Stamps page has a faint paper grain and a very light corner sprig; a month without stamps shows Captain — grey, long-haired — sitting by a little seal and a book, looking up.",
+        "The three default covers get watercolour art: white blossom on green cloth for Travel Notes, a faint sprig for Everyday, Captain looking up among the grasses for the Captain cover.",
       ],
     },
   },

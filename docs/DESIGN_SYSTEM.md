@@ -553,3 +553,4 @@ Web 运行时加载共享 JSON。`Public/tokens.css` 是加载前的回退，由
 - 画法：同色半透明填色 + 内部淡洗 + 淡叶脉，没有墨色描边；单件 3–4 色；每件都按「从右上角长出」绘制，其他角用 CSS 镜像。
 - 尺寸 xs 34 / s 56 / m 92 / l 140 px；quiet 色调 0.62；cool 主题 0.45；minimal 主题 0.6 + 降饱和；打印隐藏。
 - 位置与密度、哪里不用、Captain 场景方向：见 agent.md「V10.88」条目（同一份规则）。
+- **V10.88（续）**：Captain 场景（sleep / sit / ready / stamp）和书封插画是 `Public/botanical/*.png`，由 `tools/cut_botanical_art.py` 从 `docs/visual/botanical-board-v1.png`（Founder 素材板）裁出：纸色变白、边缘渐隐，用 `mix-blend-mode: multiply` 放在纸面上；旅行笔记白花是透明抠图。cool 主题下插画显示为圆角小画片。植物仍是 SVG。

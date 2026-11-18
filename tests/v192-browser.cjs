@@ -81,7 +81,7 @@ const audit = (page) =>
       .map((el) => {
         const box = el.getBoundingClientRect();
         const cs = getComputedStyle(el);
-        const shapes = [...el.querySelectorAll("path, circle, ellipse, rect")].map((s) => s.getBoundingClientRect()).filter((r) => r.width * r.height > 4);
+        const shapes = el.tagName === "IMG" ? [box] : [...el.querySelectorAll("path, circle, ellipse, rect")].map((s) => s.getBoundingClientRect()).filter((r) => r.width * r.height > 4);
         const card = el.closest(".stamp-strip, .sp-card, .stamps-page, .v9-masthead") || el.parentElement;
         const scope = card.classList.contains("v9-masthead") ? card.parentElement : card;
         const hits = [];
@@ -102,8 +102,20 @@ const kinds = (list) => list.map((d) => (d.cls.match(/bot-(corner|sprig|berry|bl
         const B = await import("./js/botanicals.mjs");
         const root = getComputedStyle(document.documentElement);
         const tokens = ["paper", "warmGray", "bamboo", "sage", "lightLeaf", "branch", "fruit", "blossom", "seal"].map((k) => [k, root.getPropertyValue("--bot-" + k).trim()]);
-        const svg = ["corner", "sprig", "berry", "blossom"].map((k) => B.botanical(k)).join("") + B.CAPTAIN_POSES.map((p) => B.captainVignette({ pose: p })).join("");
         const plants = ["corner", "sprig", "berry", "blossom"].map((k) => B.botanical(k)).join("");
+        const svg = plants;
+        // Captain scenes and cover art: small PNGs that must load.
+        const pics = [...B.CAPTAIN_POSES.map((p) => B.captainVignette({ pose: p })), ...["travel", "everyday", "captain"].map((k) => B.coverArt(k))];
+        const box = document.createElement("div");
+        box.style.cssText = "position:fixed;left:0;top:0;width:300px;opacity:.01";
+        box.innerHTML = pics.join("");
+        document.body.append(box);
+        const imgs = [...box.querySelectorAll("img")];
+        imgs.forEach((i) => (i.loading = "eager"));
+        await Promise.all(imgs.map((i) => (i.complete ? null : new Promise((r) => { i.onload = i.onerror = r; }))));
+        const loaded = imgs.map((i) => [i.getAttribute("src"), i.naturalWidth > 0, i.getAttribute("alt") === "" && i.getAttribute("aria-hidden") === "true", getComputedStyle(i).mixBlendMode]);
+        const sizes = await Promise.all(imgs.map(async (i) => (await (await fetch(i.getAttribute("src"))).arrayBuffer()).byteLength));
+        box.remove();
         return {
           tokens,
           hex: /#[0-9a-f]{3,8}\b/i.test(svg),
@@ -111,6 +123,8 @@ const kinds = (list) => list.map((d) => (d.cls.match(/bot-(corner|sprig|berry|bl
           sealOnPlants: /class="bs/.test(plants),
           options: [B.botanical("sprig", { size: "s", place: "bl", flip: true, tone: "quiet" }).match(/class="([^"]+)"/)[1]],
           bytes: svg.length,
+          loaded,
+          sizes,
           poses: B.CAPTAIN_POSES,
           plans: ["home", "stampCard", "stamps"].map((s) => [s, B.withinDensity(B.decorPlan(s, { empty: true })), B.decorPlan(s, { empty: true }).length]),
           busyHome: B.decorPlan("home", { photos: 6 }).length,
@@ -118,11 +132,13 @@ const kinds = (list) => list.map((d) => (d.cls.match(/bot-(corner|sprig|berry|bl
         };
       });
       check("system: botanical color tokens are defined (--bot-*)", sys.tokens.every(([, v]) => /^#[0-9A-F]{6}$/i.test(v)), JSON.stringify(sys.tokens));
-      check("system: assets use only token classes (no literal colors), no raster images", !sys.hex && !sys.raster);
+      check("system: plants use only token classes (no literal colors) and no raster images", !sys.hex && !sys.raster);
+      check("system: Captain scenes (4) and cover art (3) load, are hidden from VoiceOver, and blend into paper (multiply; the travel blossom is a cut-out)", sys.loaded.length === 7 && sys.loaded.every(([, ok, quiet]) => ok && quiet) && sys.loaded.filter(([src]) => !/travel/.test(src)).every(([, , , blend]) => blend === "multiply"), JSON.stringify(sys.loaded));
+      check(`system: pictures stay small (largest ${Math.max(...sys.sizes)} bytes)`, sys.sizes.every((n) => n < 40000), JSON.stringify(sys.sizes));
       check("system: cinnabar (seal) never on plants — only in the Captain vignette's seal", !sys.sealOnPlants);
       check("system: size / placement / flip / tone are options", /bot-s/.test(sys.options[0]) && /bot-at-bl/.test(sys.options[0]) && /bot-flip/.test(sys.options[0]) && /bot-quiet/.test(sys.options[0]), sys.options[0]);
-      check(`system: light — every asset together is ${sys.bytes} bytes of SVG`, sys.bytes < 20000);
-      check("system: Captain vignette has the sit and sleep poses", sys.poses.includes("sit") && sys.poses.includes("sleep"));
+      check(`system: light — every plant together is ${sys.bytes} bytes of SVG`, sys.bytes < 20000);
+      check("system: Captain vignette has four poses (sleep, sit, ready, stamp)", JSON.stringify(sys.poses) === JSON.stringify(["sleep", "sit", "ready", "stamp"]));
       check("system: every surface plan keeps the density rules", sys.plans.every(([, ok]) => ok), JSON.stringify(sys.plans));
       check("system: many photos → Home drops its sprig; a busy stamp month → a smaller corner", sys.busyHome === 0 && sys.busyStamps === "xs");
       await context.close();
@@ -188,10 +204,10 @@ const kinds = (list) => list.map((d) => (d.cls.match(/bot-(corner|sprig|berry|bl
         const ctx = { catalog, tokens, media: { resolve: () => "" }, t: (k) => k, language: "en" };
         return ["capiday-travel", "capiday-everyday", "capiday-captain"].map((tpl) => {
           const html = coverHTML({ id: "x", title: "Travel Notes", coverTemplate: tpl }, ctx);
-          return [tpl, (html.match(/bot-(blossom|sprig|vignette)/) || [])[1], /cv-seal/.test(html), /paper-grain/.test(html)];
+          return [tpl, (html.match(/bot-cover-(\w+)/) || [])[1], /cv-seal/.test(html), /paper-grain/.test(html)];
         });
       });
-      check("covers: Travel Notes = white blossom + seal; Everyday = quiet sprig + seal + paper; Captain = vignette + paper (one seal, in the scene)", JSON.stringify(covers) === JSON.stringify([["capiday-travel", "blossom", true, false], ["capiday-everyday", "sprig", true, true], ["capiday-captain", "vignette", false, true]]), JSON.stringify(covers));
+      check("covers: Travel Notes = white blossom + seal; Everyday = a faint sprig + seal + paper; Captain = Captain looking up + seal + paper", JSON.stringify(covers) === JSON.stringify([["capiday-travel", "travel", true, false], ["capiday-everyday", "everyday", true, true], ["capiday-captain", "captain", true, true]]), JSON.stringify(covers));
       await context.close();
     }
     // Themes: dark quieter, minimal paler.

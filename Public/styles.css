@@ -27103,7 +27103,6 @@ html[lang="en"] .keeper-perch .keeper-entry::before {
 .bot-sprig { aspect-ratio: 1; }
 .bot-berry { aspect-ratio: 120 / 90; }
 .bot-blossom { aspect-ratio: 70 / 90; }
-.bot-vignette { aspect-ratio: 160 / 110; }
 /* Placement: every asset is drawn growing from the top-right corner. */
 .bot-at-tr { top: 0; right: 0; }
 .bot-at-tl { top: 0; left: 0; transform: scaleX(-1); }
@@ -27128,19 +27127,22 @@ html[lang="en"] .keeper-perch .keeper-entry::before {
 .bot .bp { fill: var(--bot-blossom); stroke: var(--bot-warmGray); stroke-opacity: 0.28; stroke-width: 0.45; }
 .bot .bc { fill: var(--bot-blossomCenter); }
 .bot .bd { fill: var(--bot-blossomCenter); fill-opacity: 0.9; }
-/* The Captain vignette: books, a seal (the only cinnabar), the cat. */
-.bot .gd { fill: var(--bot-warmGray); fill-opacity: 0.08; }
-.bot .bk-b { fill: var(--bot-bamboo); fill-opacity: 0.78; }
-.bot .bk-c { fill: var(--bot-bookCream); stroke: var(--bot-branch); stroke-width: 0.5; stroke-opacity: 0.5; }
-.bot .bk-p { fill: var(--bot-paper); fill-opacity: 0.85; }
-.bot .bk-l { fill: none; stroke: var(--bot-branch); stroke-opacity: 0.45; stroke-width: 0.6; }
-.bot .bs { fill: var(--bot-seal); fill-opacity: 0.88; }
-.bot .bs-top { fill: var(--bot-branch); fill-opacity: 0.8; }
-.bot .ck { fill: var(--bot-cat); stroke: var(--bot-warmGray); stroke-opacity: 0.55; stroke-width: 0.8; stroke-linejoin: round; }
-.bot .ce { fill: var(--bot-catEar); }
-.bot .ct { fill: none; stroke: var(--bot-cat); stroke-width: 5; stroke-linecap: round; }
-.bot .cl { fill: none; stroke: var(--bot-warmGray); stroke-width: 0.8; stroke-linecap: round; stroke-opacity: 0.85; }
-.bot .cn { fill: var(--bot-catEar); stroke: var(--bot-warmGray); stroke-width: 0.4; }
+/* Captain scenes and cover art: pictures whose paper is white, multiplied
+   into the paper they sit on (no box, no halo). The travel blossom is a
+   cut-out on its own. In the dark theme a picture shows as a small print. */
+.bot-art,
+.bot-cutout {
+  height: auto;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+.bot-art {
+  mix-blend-mode: multiply;
+}
+:root[data-theme="cool"] .bot-art {
+  mix-blend-mode: normal;
+  border-radius: 14px;
+}
 /* Paper texture: warm off-white, faint grain, no stains — a 160px tile. */
 .paper-grain {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .4 0 0 0 0 .33 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
@@ -27204,7 +27206,7 @@ html[lang="en"] .keeper-perch .keeper-entry::before {
 /* An empty month: Captain looking at a seal. */
 .sp-empty-art {
   display: block;
-  width: 168px;
+  width: 210px;
   margin: 4px auto 0;
 }
 .sp-empty-art > .bot-vignette {
@@ -27228,24 +27230,25 @@ html[lang="en"] .keeper-perch .keeper-entry::before {
   transform: none;
 }
 .cover-capiday-travel .bot.cv-art {
-  right: 7%;
-  bottom: 6%;
-  width: 46%;
-  opacity: 0.95;
+  right: 6%;
+  bottom: 5%;
+  width: 52%;
+  opacity: 1;
 }
 .cover-capiday-everyday.paper-grain {
   background-color: var(--bot-paper);
 }
 .cover-capiday-everyday .bot.cv-art {
-  right: 9%;
-  bottom: 9%;
-  width: 22%;
+  right: 8%;
+  bottom: 7%;
+  width: 34%;
+  opacity: 0.85;
 }
 .cover-capiday-captain.paper-grain {
   background-color: var(--bot-paper);
 }
 .cover-capiday-captain .bot.cv-art {
-  left: 8%;
-  bottom: 7%;
-  width: 84%;
+  right: 3%;
+  bottom: 3%;
+  width: 80%;
 }
