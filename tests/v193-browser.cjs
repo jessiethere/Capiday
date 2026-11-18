@@ -64,7 +64,7 @@ const check = (name, ok, detail = "") => {
     };
   });
   check("only the confirmed Pack v1 pictures ship (face, lie, sit-up, happy)", JSON.stringify(sys.shipped) === JSON.stringify(sys.packKeys) && sys.packKeys.join() === "captain-face,captain-lie,captain-sit-up,expr-happy", JSON.stringify(sys));
-  check("staged Pack v1 pictures are not in the app (404)", sys.stagedStatus.length === 9 && sys.stagedStatus.every((s) => s === 404), JSON.stringify(sys.stagedStatus));
+  check("staged Pack v1 pictures are not in the app (404)", sys.stagedStatus.length >= 9 && sys.stagedStatus.every((s) => s === 404), JSON.stringify(sys.stagedStatus));
   check("the code registry matches Public/captain/manifest.json", sys.registry.every(([, ok]) => ok), JSON.stringify(sys.registry));
   check("every portrait loads from captain/", sys.loaded.every(([, ok, dir]) => ok && dir), JSON.stringify(sys.loaded));
   check("a request for more is held at the clear size", sys.widths.every(([, w, ceil]) => w <= ceil + 0.5), JSON.stringify(sys.widths));

@@ -6,6 +6,7 @@
    "status": "APPROVED",
    "shipped": true,
    "source": "docs/visual/captain-pack-v1/source-lying.png",
+   "canvas": false,
    "sourceSize": [
     1254,
     1254
@@ -32,6 +33,7 @@
    "status": "APPROVED",
    "shipped": true,
    "source": "docs/visual/captain-pack-v1/source-sheet.png",
+   "canvas": false,
    "sourceSize": [
     1254,
     1254
@@ -61,6 +63,7 @@
    "status": "APPROVED",
    "shipped": true,
    "source": "docs/visual/captain-pack-v1/source-sheet.png",
+   "canvas": false,
    "sourceSize": [
     1254,
     1254
@@ -88,6 +91,7 @@
    "status": "APPROVED",
    "shipped": false,
    "source": "docs/visual/captain-pack-v1/source-sheet.png",
+   "canvas": false,
    "sourceSize": [
     1254,
     1254
@@ -118,6 +122,7 @@
    "status": "APPROVED",
    "shipped": false,
    "source": "docs/visual/captain-pack-v1/source-sheet.png",
+   "canvas": false,
    "sourceSize": [
     1254,
     1254
@@ -145,23 +150,24 @@
    "status": "APPROVED",
    "shipped": false,
    "source": "docs/visual/captain-pack-v1/source-play.png",
+   "canvas": true,
    "sourceSize": [
     1536,
     1024
    ],
    "sourceBox": [
-    20,
-    79,
-    736,
-    457
+    0,
+    0,
+    768,
+    512
    ],
-   "width": 708,
-   "height": 368,
-   "bytes": 64461,
-   "maxSharpPt": 236,
+   "width": 768,
+   "height": 512,
+   "bytes": 65664,
+   "maxSharpPt": 256,
    "plannedPt": 220,
-   "upscaleAt3x": 0.93,
-   "use": "Playroom 1: watching the yarn ball",
+   "upscaleAt3x": 0.86,
+   "use": "Playroom yarn 1 (no hat): watching the ball",
    "auditRows": [
     20
    ]
@@ -171,23 +177,24 @@
    "status": "APPROVED",
    "shipped": false,
    "source": "docs/visual/captain-pack-v1/source-play.png",
+   "canvas": true,
    "sourceSize": [
     1536,
     1024
    ],
    "sourceBox": [
-    788,
-    80,
-    1503,
-    457
+    768,
+    0,
+    1536,
+    512
    ],
-   "width": 708,
-   "height": 368,
-   "bytes": 64084,
-   "maxSharpPt": 236,
+   "width": 768,
+   "height": 512,
+   "bytes": 65403,
+   "maxSharpPt": 256,
    "plannedPt": 220,
-   "upscaleAt3x": 0.93,
-   "use": "Playroom 2: paw raised",
+   "upscaleAt3x": 0.86,
+   "use": "Playroom yarn 2 (no hat): paw raised",
    "auditRows": [
     20
    ]
@@ -197,23 +204,24 @@
    "status": "APPROVED",
    "shipped": false,
    "source": "docs/visual/captain-pack-v1/source-play.png",
+   "canvas": true,
    "sourceSize": [
     1536,
     1024
    ],
    "sourceBox": [
-    20,
-    592,
-    758,
-    969
+    0,
+    512,
+    768,
+    1024
    ],
-   "width": 720,
-   "height": 362,
-   "bytes": 62356,
-   "maxSharpPt": 240,
+   "width": 768,
+   "height": 512,
+   "bytes": 64646,
+   "maxSharpPt": 256,
    "plannedPt": 220,
-   "upscaleAt3x": 0.92,
-   "use": "Playroom 3: paw on the ball",
+   "upscaleAt3x": 0.86,
+   "use": "Playroom yarn 3 (no hat): paw on the ball",
    "auditRows": [
     20
    ]
@@ -223,23 +231,240 @@
    "status": "APPROVED",
    "shipped": false,
    "source": "docs/visual/captain-pack-v1/source-play.png",
+   "canvas": true,
    "sourceSize": [
     1536,
     1024
    ],
    "sourceBox": [
-    788,
-    592,
-    1527,
-    969
+    768,
+    512,
+    1536,
+    1024
    ],
-   "width": 720,
-   "height": 362,
-   "bytes": 62311,
-   "maxSharpPt": 240,
+   "width": 768,
+   "height": 512,
+   "bytes": 65079,
+   "maxSharpPt": 256,
    "plannedPt": 220,
-   "upscaleAt3x": 0.92,
-   "use": "Playroom 4: ball rolled away, watching",
+   "upscaleAt3x": 0.86,
+   "use": "Playroom yarn 4 (no hat): ball rolled away",
+   "auditRows": [
+    20
+   ]
+  },
+  {
+   "name": "play-hat-1",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1.1/playroom/yarn-lemon-hat/01-notice.png",
+   "canvas": true,
+   "sourceSize": [
+    768,
+    512
+   ],
+   "sourceBox": [
+    0,
+    0,
+    768,
+    512
+   ],
+   "width": 768,
+   "height": 512,
+   "bytes": 72852,
+   "maxSharpPt": 256,
+   "plannedPt": 220,
+   "upscaleAt3x": 0.86,
+   "use": "Playroom yarn, lemon hat 1: notice",
+   "auditRows": [
+    20
+   ]
+  },
+  {
+   "name": "play-hat-2",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1.1/playroom/yarn-lemon-hat/02-reach.png",
+   "canvas": true,
+   "sourceSize": [
+    768,
+    512
+   ],
+   "sourceBox": [
+    0,
+    0,
+    768,
+    512
+   ],
+   "width": 768,
+   "height": 512,
+   "bytes": 71237,
+   "maxSharpPt": 256,
+   "plannedPt": 220,
+   "upscaleAt3x": 0.86,
+   "use": "Playroom yarn, lemon hat 2: reach",
+   "auditRows": [
+    20
+   ]
+  },
+  {
+   "name": "play-hat-3",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1.1/playroom/yarn-lemon-hat/03-nudge.png",
+   "canvas": true,
+   "sourceSize": [
+    768,
+    512
+   ],
+   "sourceBox": [
+    0,
+    0,
+    768,
+    512
+   ],
+   "width": 768,
+   "height": 512,
+   "bytes": 72329,
+   "maxSharpPt": 256,
+   "plannedPt": 220,
+   "upscaleAt3x": 0.86,
+   "use": "Playroom yarn, lemon hat 3: nudge",
+   "auditRows": [
+    20
+   ]
+  },
+  {
+   "name": "play-hat-4",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1.1/playroom/yarn-lemon-hat/04-settle.png",
+   "canvas": true,
+   "sourceSize": [
+    768,
+    512
+   ],
+   "sourceBox": [
+    0,
+    0,
+    768,
+    512
+   ],
+   "width": 768,
+   "height": 512,
+   "bytes": 72091,
+   "maxSharpPt": 256,
+   "plannedPt": 220,
+   "upscaleAt3x": 0.86,
+   "use": "Playroom yarn, lemon hat 4: settle",
+   "auditRows": [
+    20
+   ]
+  },
+  {
+   "name": "hug-1",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1.1/playroom/hug/01-notice.png",
+   "canvas": true,
+   "sourceSize": [
+    768,
+    512
+   ],
+   "sourceBox": [
+    0,
+    0,
+    768,
+    512
+   ],
+   "width": 768,
+   "height": 512,
+   "bytes": 80859,
+   "maxSharpPt": 256,
+   "plannedPt": 220,
+   "upscaleAt3x": 0.86,
+   "use": "Playroom hug 1: notice the cushion",
+   "auditRows": [
+    20
+   ]
+  },
+  {
+   "name": "hug-2",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1.1/playroom/hug/02-lean-in.png",
+   "canvas": true,
+   "sourceSize": [
+    768,
+    512
+   ],
+   "sourceBox": [
+    0,
+    0,
+    768,
+    512
+   ],
+   "width": 768,
+   "height": 512,
+   "bytes": 78732,
+   "maxSharpPt": 256,
+   "plannedPt": 220,
+   "upscaleAt3x": 0.86,
+   "use": "Playroom hug 2: lean in",
+   "auditRows": [
+    20
+   ]
+  },
+  {
+   "name": "hug-3",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1.1/playroom/hug/03-hug.png",
+   "canvas": true,
+   "sourceSize": [
+    768,
+    512
+   ],
+   "sourceBox": [
+    0,
+    0,
+    768,
+    512
+   ],
+   "width": 768,
+   "height": 512,
+   "bytes": 78048,
+   "maxSharpPt": 256,
+   "plannedPt": 220,
+   "upscaleAt3x": 0.86,
+   "use": "Playroom hug 3: hug",
+   "auditRows": [
+    20
+   ]
+  },
+  {
+   "name": "hug-4",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1.1/playroom/hug/04-settle.png",
+   "canvas": true,
+   "sourceSize": [
+    768,
+    512
+   ],
+   "sourceBox": [
+    0,
+    0,
+    768,
+    512
+   ],
+   "width": 768,
+   "height": 512,
+   "bytes": 73876,
+   "maxSharpPt": 256,
+   "plannedPt": 220,
+   "upscaleAt3x": 0.86,
+   "use": "Playroom hug 4: settle",
    "auditRows": [
     20
    ]
@@ -249,6 +474,7 @@
    "status": "APPROVED",
    "shipped": false,
    "source": "docs/visual/captain-pack-v1/source-expressions.png",
+   "canvas": false,
    "sourceSize": [
     1254,
     1254
@@ -277,6 +503,7 @@
    "status": "APPROVED",
    "shipped": true,
    "source": "docs/visual/captain-pack-v1/source-expressions.png",
+   "canvas": false,
    "sourceSize": [
     1254,
     1254
@@ -305,6 +532,7 @@
    "status": "APPROVED",
    "shipped": false,
    "source": "docs/visual/captain-pack-v1/source-expressions.png",
+   "canvas": false,
    "sourceSize": [
     1254,
     1254
@@ -332,6 +560,7 @@
    "status": "APPROVED",
    "shipped": false,
    "source": "docs/visual/captain-pack-v1/source-expressions.png",
+   "canvas": false,
    "sourceSize": [
     1254,
     1254
