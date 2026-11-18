@@ -231,3 +231,4 @@ Memory Wall v1.0：**V10.78 已实施，等真机验收**（Founder 2026-11-15 �
 | 2026-11-18 | V10.88（续）：Founder 参考图插画作为正式素材——4 个灰色长毛 Captain 场景 + 3 个书封插画（`tools/cut_botanical_art.py` → `Public/botanical/`，multiply 融入纸面）；空月份与 Captain 书封已用；v192 41/41 |
 | 2026-11-18 | V10.88（续 2）：12 个水彩植物素材裁出 + manifest（来源 / 像素）；按 3x 清晰度评估：8 直接可用、7 Phase 1 略软、5 NEEDS HI-RES REPLACEMENT；等待 Founder 确认后接入页面 |
 | 2026-11-18 | V10.88（续 3）：Founder 高清 Captain 四场景（1536×1024）→ 540 px 宽素材，四张全部「直接可用」；建议 Captain 书封改用 captain-sit；等待确认后接入页面 |
+| 2026-11-18 | 全量回归 run-all26（V10.88）：126/128 → v192 图片大小阈值按高清 Captain 调整后通过；v3 视频偶发超时，重跑通过（V10.86 代码上也通过）；合计 128/128。未发布，等待素材接入确认 |

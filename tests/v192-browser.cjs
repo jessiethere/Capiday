@@ -134,7 +134,8 @@ const kinds = (list) => list.map((d) => (d.cls.match(/bot-(corner|sprig|berry|bl
       check("system: botanical color tokens are defined (--bot-*)", sys.tokens.every(([, v]) => /^#[0-9A-F]{6}$/i.test(v)), JSON.stringify(sys.tokens));
       check("system: plants use only token classes (no literal colors) and no raster images", !sys.hex && !sys.raster);
       check("system: Captain scenes (4) and cover art (3) load, are hidden from VoiceOver, and blend into paper (multiply; the travel blossom is a cut-out)", sys.loaded.length === 7 && sys.loaded.every(([, ok, quiet]) => ok && quiet) && sys.loaded.filter(([src]) => !/travel/.test(src)).every(([, , , blend]) => blend === "multiply"), JSON.stringify(sys.loaded));
-      check(`system: pictures stay small (largest ${Math.max(...sys.sizes)} bytes)`, sys.sizes.every((n) => n < 40000), JSON.stringify(sys.sizes));
+      // Captain scenes are 540 px wide (sharp to 180 pt on a 3x iPhone): ≤ 120 KB; cover art ≤ 40 KB.
+      check(`system: pictures stay small (Captain ≤ 120 KB, cover art ≤ 40 KB; largest ${Math.max(...sys.sizes)} bytes)`, sys.sizes.slice(0, 4).every((n) => n < 120000) && sys.sizes.slice(4).every((n) => n < 40000), JSON.stringify(sys.sizes));
       check("system: cinnabar (seal) never on plants — only in the Captain vignette's seal", !sys.sealOnPlants);
       check("system: size / placement / flip / tone are options", /bot-s/.test(sys.options[0]) && /bot-at-bl/.test(sys.options[0]) && /bot-flip/.test(sys.options[0]) && /bot-quiet/.test(sys.options[0]), sys.options[0]);
       check(`system: light — every plant together is ${sys.bytes} bytes of SVG`, sys.bytes < 20000);
