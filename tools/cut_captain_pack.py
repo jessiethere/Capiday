@@ -6,6 +6,8 @@ Sources (already transparent PNGs, supplied by the Founder; "Approved reference
 - source-sheet.png (1254x1254): front bust, sitting, lemon hat, yarn ball;
 - source-play.png (1536x1024): four Playroom frames with the yarn ball;
 - source-expressions.png (1254x1254): calm, happy, curious, sleepy busts.
+- source-reading-journal.webp (768x547) and source-weekly-recap.webp (768x640):
+  sent in the chat as transparent WebP; weekly recap entry and page.
 
 Playroom Asset Addendum v1.1 (Founder, 2026-11-18), docs/visual/captain-pack-v1.1/:
 - playroom/yarn-lemon-hat/01–04 and playroom/hug/01–04: 768x512 transparent
@@ -38,6 +40,10 @@ DIR = ROOT / "docs/visual/captain-pack-v1"
 OUT = DIR / "cut"
 PUBLIC = ROOT / "Public/captain"
 SOURCES = {key: DIR / f"source-{key}.png" for key in ("lying", "sheet", "play", "expressions")}
+# Sent in the chat on 2026-11-18 as transparent WebP (the README's v1
+# poses/reading-journal.png and interactions/weekly-recap.png).
+SOURCES["reading-journal"] = DIR / "source-reading-journal.webp"
+SOURCES["weekly-recap"] = DIR / "source-weekly-recap.webp"
 V11 = ROOT / "docs/visual/captain-pack-v1.1/playroom"
 for seq, prefix in (("yarn-lemon-hat", "play-hat"), ("hug", "hug")):
     for i, f in enumerate(sorted((V11 / seq).glob("*.png")), 1):
@@ -65,6 +71,8 @@ ASSETS = {
     "hug-2": ("hug-2", (0, 0, 768, 512), 768, 220, "Playroom hug 2: lean in", [20]),
     "hug-3": ("hug-3", (0, 0, 768, 512), 768, 220, "Playroom hug 3: hug", [20]),
     "hug-4": ("hug-4", (0, 0, 768, 512), 768, 220, "Playroom hug 4: settle", [20]),
+    "captain-reading": ("reading-journal", (0, 0, 768, 547), 768, 120, "Looking at the journal, a sprig beside (weekly recap entry: week card)", [18]),
+    "captain-recap": ("weekly-recap", (0, 0, 768, 640), 768, 200, "Lying by an open album of landscapes, looking up (weekly recap page)", [18]),
     "expr-calm": ("expressions", (102, 16, 566, 610), 360, 96, "Expression calm (looking aside)", [12, 13, 17]),
     "expr-happy": ("expressions", (687, 25, 1158, 615), 360, 96, "Expression happy (eyes closed, smiling)", [6, 12, 13]),
     "expr-curious": ("expressions", (94, 619, 559, 1233), 360, 96, "Expression curious (wide eyes, head tilt)", [12, 17]),

@@ -48,6 +48,20 @@
 
 ## 更新日志
 
+### 2026-11-18 — 每周回看两张 Captain 插画收到（reading-journal / weekly-recap，STAGED）
+
+- **需求**：Founder 在对话里发来两张透明 WebP（没有附文字），正是补充包 README 提到的 v1 `poses/reading-journal.png`（Captain 低头看摊开的手帐，旁边一枝白花）和 `interactions/weekly-recap.png`（Captain 趴在一本风景画册旁，抬头看你）。
+- **同一轮的另外两组**：此前 Founder 又把抱抱 4 帧、戴帽玩毛线球 4 帧以 WebP 发了一遍。逐像素比对和补充包 PNG 相同（alpha 完全一致，RGB 平均差 < 1），没有另存，继续用 PNG。
+- **文件**：
+  - `docs/visual/captain-pack-v1/source-reading-journal.webp`（768×547）、`source-weekly-recap.webp`（768×640）；
+  - 裁切工具加入 `captain-reading`（739×514，计划 120pt）和 `captain-recap`（758×613，计划 200pt）：只去边、去杂点，不缩放，都 APPROVED；
+  - manifest 23 项；`test_captain_pack` 改为 23。
+- **审查**：
+  - 第 2 节「看手帐」「每周回看」从 NEEDS CHARACTER ASSET → APPROVED · staged；
+  - #18 每周回看 → READY AFTER CONFIRMATION。现在的周卡片和周回看页本来没有 Captain，属于新增位置，等 Founder 确认放法。
+  - README 里提到的 v1 文件只剩 card-edge-peek / expressions/happy / playroom/01–04 仍用我们从总图裁出的画面（画相同）。
+- **决定**：没有改 App 代码，没有发布；V10.90 回归继续。
+
 ### 2026-11-18 — Captain Playroom Asset Addendum v1.1 收到：入库、裁切、对齐检查、Playroom 审查（STAGED，未接入）
 
 - **需求**：Founder 上传 `Captain-Playroom-Asset-Addendum-v1.1.zip`，没有附文字。包内：

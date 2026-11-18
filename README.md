@@ -186,6 +186,10 @@ npm run test:browser:v65
 
 ## 更新日志
 
+### 2026-11-18 — 每周回看的 Captain 插画（待确认，还没上线）
+
+- 收到两张：Captain 低头看摊开的手帐（每周回看入口），以及 Captain 趴在风景画册旁抬头看你（回看页）。都清晰，放在 `docs/visual/captain-pack-v1/`，等确认放在哪里再接入。
+
 ### 2026-11-18 — Captain Playroom 素材补充包 v1.1（待确认，还没上线）
 
 - 收到戴柠檬帽玩毛线球 4 帧和抱抱抱枕 4 帧，都清晰、对齐；连同 v1 的无帽毛线球 4 帧，放在 `docs/visual/captain-pack-v1.1/` 和 `docs/visual/captain-pack-v1/cut/`，附动画预览。

@@ -14,7 +14,7 @@ class CaptainPackTests(unittest.TestCase):
         self.assets = json.loads((CUT / 'manifest.json').read_text(encoding='utf-8'))['assets']
 
     def test_every_cut_matches_its_manifest_entry(self):
-        self.assertEqual(len(self.assets), 21)
+        self.assertEqual(len(self.assets), 23)
         for entry in self.assets:
             with Image.open(CUT / f"{entry['name']}.png") as img:
                 self.assertEqual(img.size, (entry['width'], entry['height']), entry['name'])

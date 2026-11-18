@@ -49,7 +49,7 @@ Updated 2026-11-18 (evening): the Founder supplied four Pack v1 sheets (transpar
 | Base pose | sitting, looking up (no props) | `captain-sit-up` (Pack v1) | 540×647 | 180 pt | APPROVED · staged |
 | Base pose | lying down, awake, paws forward | `captain-lie` (Pack v1) | 540×640 | 180 pt | APPROVED · shipped V10.90 (welcome card-edge peek) |
 | Base pose | sleeping | `captain-sleep` (scenes v1) | 540×306 | 180 pt | APPROVED · shipped |
-| Base pose | looking at journal | — | — | — | NEEDS CHARACTER ASSET |
+| Base pose | looking at journal (sprig beside) | `captain-reading` (README: `poses/reading-journal.png`) | 739×514 | 246 pt | APPROVED · staged |
 | Base pose | preparing stamp / pressing stamp | `captain-ready` / `captain-stamp` | 540×372 / 540×342 | 180 pt | APPROVED · shipped |
 | Base pose | peeking over a card edge | candidate: `captain-lie` (paws forward could rest on the card's top edge) | — | — | Founder to confirm |
 | Expression | calm / happy / curious / sleepy | `expr-calm` / `expr-happy` / `expr-curious` / `expr-sleepy` (busts) | 360×422–474 | 120 pt | APPROVED · staged |
@@ -59,7 +59,7 @@ Updated 2026-11-18 (evening): the Founder supplied four Pack v1 sheets (transpar
 | Interaction | greeting | stand-in: `captain-sit-up` | | | Founder to confirm |
 | Interaction | gentle reminder | stand-in: `expr-curious` | | | Founder to confirm |
 | Interaction | stamp moment | `captain-stamp` | | | APPROVED · shipped |
-| Interaction | weekly recap | — (looking at the journal) | | | NEEDS CHARACTER ASSET |
+| Interaction | weekly recap | entry: `captain-reading`; page: `captain-recap` (lying by an album of landscapes, looking up; README: `interactions/weekly-recap.png`) | 758×613 | 252 pt | APPROVED · staged |
 | Interaction | idle | `captain-sit` / `captain-sleep` / `captain-lie` | | | APPROVED |
 | Playroom | yarn play, no hat, 4 frames (watch → paw up → paw on ball → ball rolled away) | `play-watch` / `play-reach` / `play-bat` / `play-rolled` (the four 768×512 quadrants of the v1 sheet) | 768×512 each | 256 pt | APPROVED · staged |
 | Playroom | yarn play wearing the lemon hat, 4 frames (notice → reach → nudge → settle) | `play-hat-1…4` (Addendum v1.1) | 768×512 each | 256 pt | APPROVED · staged |
@@ -120,8 +120,7 @@ Received as `Captain-Playroom-Asset-Addendum-v1.1.zip`. Stored in `docs/visual/c
 | Idle (before any tap) | Frame 1 of the sequence | none |
 
 **Files the Founder's README refers to that we never received** (only four sheet images of Pack v1 reached us, not a structured pack):
-- `poses/reading-journal.png`: weekly-recap entry. NEEDS FILE.
-- `interactions/weekly-recap.png`: weekly-recap page. NEEDS FILE.
+- `poses/reading-journal.png` and `interactions/weekly-recap.png`: received later the same day in the chat, as transparent WebP (768×547, 768×640). Stored as `source-reading-journal.webp` and `source-weekly-recap.webp` and cut to `captain-reading` and `captain-recap`. The original PNGs would be slightly better: the chat delivers WebP, about 1 level of difference elsewhere.
 - `poses/card-edge-peek.png`: stand-in in use is `captain-lie`, cut from the lying sheet.
 - `expressions/happy.png`: stand-in in use is `expr-happy`, cut from the expressions sheet.
 - `playroom/01–04.png`: stand-in is the quadrants of the play sheet (the same art).
@@ -156,7 +155,7 @@ Status values:
 | 15 | Bookshelf Captain (`keeperShelfHTML`, idle / sleepy at night) | 3D | tap → line | shows outfit | none | 2 | sitting + sleeping with outfit variants | sit / sleep / lie exist; outfit waits on the lemon-hat decision | **NEEDS CHARACTER ASSET** · KEEP TEMPORARILY |
 | 16 | Settings · Captain card preview and Captain management profile (`keeper-card`, `keeper-profile`) | 3D idle | opens management | shows the chosen outfit (preview) | none | 2 | avatar / bust with outfit variants | art exists (`captain-face`); preview must show the outfit → lemon-hat decision | **WAITING ON FOUNDER DECISIONS** · KEEP TEMPORARILY |
 | 17 | Reminders / guidance (Captain prompt bubble on Home; daily reminder notification) | Text only (bubble sits on the 3D perch) | — | — | — | 2 | gentle reminder | stand-in `expr-curious` if the Founder agrees | **NEEDS CHARACTER ASSET** (or stand-in) |
-| 18 | Weekly recap (week card / week page; Captain panel look-back row) | No Captain today | — | — | — | 2 | weekly recap / looking at journal | no | **NEEDS CHARACTER ASSET** |
+| 18 | Weekly recap (week card / week page; Captain panel look-back row) | No Captain today | — | — | — | 2 | weekly recap: `captain-reading` / `captain-recap` (staged) | needs the Founder to confirm the placement: a new placement, not a swap | **READY AFTER CONFIRMATION** (`captain-reading` for the week card entry, `captain-recap` for the week page) |
 | 19 | Captain panel · Looks / dress-up chips (`keeperLooksHTML`) | 3D per outfit | choose outfit (writes `keeper.outfit`) | core | none | 3 | lemon hat + yarn for the chip pose | no | **BLOCKED** (accessories exist now; waits on the lemon-hat decision, then panel #12) |
 | 20 | Playroom (`keeperPlayHTML`: play idle, hug animation frames, yarn ball) | 3D photos / frames | drag / tap yarn ball, poke → happy | lemon / yarn sets (`keeperPlay`) | sprite frames, reduce-motion fallback | 3 | Playroom frames + yarn ball in the illustrated style | no | **KEEP TEMPORARILY** · assets nearly complete (v1 + v1.1: yarn no hat, yarn with hat, hug no hat); missing: hug wearing the lemon hat; dragging the ball is replaced by tap-to-play (Founder README). Waits on the Founder to migrate Playroom now (it was planned last) |
 | 21 | `keeperMiniHTML` (`.keeper-mini`) | 3D (defined, not rendered anywhere) | — | — | — | — | — | — | KEEP TEMPORARILY (dead code; remove once 3D rendering is retired) |

@@ -470,6 +470,60 @@
    ]
   },
   {
+   "name": "captain-reading",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1/source-reading-journal.webp",
+   "canvas": false,
+   "sourceSize": [
+    768,
+    547
+   ],
+   "sourceBox": [
+    0,
+    0,
+    768,
+    547
+   ],
+   "width": 739,
+   "height": 514,
+   "bytes": 89218,
+   "maxSharpPt": 246,
+   "plannedPt": 120,
+   "upscaleAt3x": 0.49,
+   "use": "Looking at the journal, a sprig beside (weekly recap entry: week card)",
+   "auditRows": [
+    18
+   ]
+  },
+  {
+   "name": "captain-recap",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1/source-weekly-recap.webp",
+   "canvas": false,
+   "sourceSize": [
+    768,
+    640
+   ],
+   "sourceBox": [
+    0,
+    0,
+    768,
+    640
+   ],
+   "width": 758,
+   "height": 613,
+   "bytes": 112153,
+   "maxSharpPt": 252,
+   "plannedPt": 200,
+   "upscaleAt3x": 0.79,
+   "use": "Lying by an open album of landscapes, looking up (weekly recap page)",
+   "auditRows": [
+    18
+   ]
+  },
+  {
    "name": "expr-calm",
    "status": "APPROVED",
    "shipped": false,

@@ -242,3 +242,4 @@ Memory Wall v1.0：**V10.78 已实施，等真机验收**（Founder 2026-11-15 �
 | 2026-11-18 | **V10.90** 新手引导微调：欢迎页 captain-lie 前爪搭在卡片上沿；照片步只高亮按钮、点击直接选图、引导暂停后继续（取消 → 其他方式；选图 → 做页 → 第一页卡）、去掉下一步；今天怎么记选中态 = 1px 橄榄绿 + 浅绿底。v194 6/6（390×844、375×667）、v158 / v193 / v192 / v71 通过 |
 | 2026-11-18 | V10.90（续）：引导步骤卡头像 → expr-happy，contain 居中、圆形底、留空隙；v194 加头像检查 6/6，v158 / v193 / v71 通过 |
 | 2026-11-18 | Playroom Asset Addendum v1.1：8 帧（柠檬帽毛线球、抱抱）入库，整画布 768×512 裁切 + v1 无帽 4 帧改按象限裁；21 项全部 APPROVED；对齐检查通过；Playroom 审查（缺戴帽抱抱；拖球 → 点一下播放）；README 提到的 reading-journal / weekly-recap 未收到。STAGED，未接入 |
+| 2026-11-18 | 每周回看插画：reading-journal → captain-reading（739×514）、weekly-recap → captain-recap（758×613），APPROVED · staged；重复发送的抱抱 / 戴帽毛线球 WebP 与补充包 PNG 相同，未另存；#18 → READY AFTER CONFIRMATION |
