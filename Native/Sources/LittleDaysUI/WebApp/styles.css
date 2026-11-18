@@ -27319,3 +27319,19 @@ html[lang="en"] .keeper-perch .keeper-entry::before {
   outline: none;
   border-color: var(--accent);
 }
+/* V10.90 · the guide's step-card avatar: the happy, eyes-closed Captain
+   (expr-happy), whole and centred inside the round paper disc — a little
+   room around the ear tips and the sides, never cropped. */
+.hg-avatar {
+  display: block;
+  flex: none;
+}
+.hg-avatar .bot {
+  display: block;
+  box-sizing: border-box;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 3px 3px 1px;
+  object-fit: contain;
+  object-position: 50% 50%;
+}

@@ -12,6 +12,7 @@ export const UPDATES = [
         "欢迎卡片上，Captain 趴在卡片上沿，两只前爪搭在边上，头和耳朵露在上面，下面留出完整的位置给文字。",
         "照片那一步只亮出「选今天的照片」：直接点它就会打开选图，不用再找「下一步」；选好照片就接着做这一页，取消选图则引导继续往下走。提示卡保留说明和「跳过」。",
         "「今天怎么记？」里选中的方式改成细细的橄榄绿边框和浅绿底色，不再有两层粗边框。",
+        "引导步骤卡左上角的小头像换成笑眯眯的 Captain，整张脸完整地放在圆形底里，耳尖和两侧留了一点空隙。",
       ],
     },
     en: {
@@ -20,6 +21,7 @@ export const UPDATES = [
         "On the welcome card, Captain lies across the card's top edge with both front paws resting on it, head and ears above, leaving the card clear for the words.",
         "The photo step highlights only Choose today's photos: tap it and the photo picker opens — no Next to look for. Pick photos to carry on making the page; cancel and the guide continues. The tip keeps its words and Skip.",
         "In How shall we keep today?, the chosen way now has a thin olive line and a light green wash instead of two thick borders.",
+        "The little avatar on the guide's step cards is now the smiling Captain, whole and centred in its round disc, with a little room around the ear tips and sides.",
       ],
     },
   },

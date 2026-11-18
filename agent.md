@@ -48,6 +48,20 @@
 
 ## 更新日志
 
+### 2026-11-18 — V10.90（续）引导步骤卡头像换成开心 Captain
+
+- **需求**：新手引导步骤卡左上角的 Captain 头像统一换成 expressions/happy（即 Pack v1 的 `expr-happy`，眯眼笑）；保留圆形底，contain 居中，耳尖和两侧留空隙，小尺寸下整张脸看得清。
+- **实现**：
+  - `placeHomeGuide` 的 `.hg-avatar` 改用 `captainPortrait("happy", { size: 30 })`；
+  - CSS：`.hg-avatar` 为 block（30×30 圆形纸色底不变）；图片 `object-fit: contain`、`object-position: 50% 50%`、`padding: 3px 3px 1px`（box-sizing border-box）、宽高 100%。
+  - 先试过 grid 居中，图片高度会按原图比例算成 34px，所以改成 block，固定 100% 高。
+- **影响范围**：三步（照片 / 其他方式 / 日历 + 书架）共用一个头部，所以三张卡都已换。阅读页「问 Captain」按钮的头像不在这次范围，仍是 captain-face。
+- **测试**：
+  - v194 新增头像检查：expr-happy、contain、居中、圆形、图片等于圆形大小、内边距 ≥ 2px，6/6；
+  - v158 改为 expr-happy；v193 / v71 通过；
+  - 截图确认整只猫头和胸前毛都在圆里，耳尖不被裁。
+- **环境**：8080 预览服务到了后台时限被系统停止，按系统提示没有重启；测试用临时 8089 服务。
+
 ### 2026-11-18 — V10.90 新手引导微调（Founder 三个细节）
 
 - **需求**：

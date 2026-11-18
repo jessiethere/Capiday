@@ -76,7 +76,7 @@ const shots = process.env.SHOTS || "";
         const c = await clear(page);
         assert.ok(!c.overlap && c.inView, `${id}: the card is beside the ring, on screen ${JSON.stringify(c)}`);
         assert.equal(await page.locator("#home-guide .hg-captain").count(), 0, "Captain only as a small avatar here");
-        assert.equal(await page.locator('#home-guide .hg-avatar img.bot-captain[data-asset="captain-face"]').count(), 1);
+        assert.equal(await page.locator('#home-guide .hg-avatar img.bot-captain[data-asset="expr-happy"]').count(), 1);
         if (shots) await page.screenshot({ path: `${shots}/v158-${id}-zh-375.png` });
         seen.push(`${id} ring ${c.ring.join("–")} card ${c.card.join("–")}`);
         if (id === "photos") {

@@ -7,6 +7,7 @@
 //  3. Photos picked → the page is made with no guide in the way → saved → the
 //     first-page card. Picker cancelled → the guide carries on (其他方式 → …
 //     → the invitation with the smiling, eyes-closed Captain).
+//     The step card's avatar is the happy Captain, whole inside its disc.
 //  4. 今天怎么记？: the chosen way is a thin olive line on a light green wash,
 //     no dark border and no second ring.
 const { chromium } = require("playwright");
@@ -69,6 +70,17 @@ const lib = path.join(__dirname, "../Packages/LittleDaysCore/Sources/LittleDaysC
         assert.match(await page.locator("#home-guide .hg-body").innerText(), /选几张喜欢的照片/);
         assert.equal(await page.locator('#home-guide [data-action="hg-next"], #home-guide [data-action="hg-prev"]').count(), 0, "no 下一步");
         assert.equal(await page.locator('#home-guide [data-action="hg-skip"]').count(), 1, "跳过 stays");
+        // The step card's avatar: the happy Captain, whole (contain) and centred in the round disc.
+        const avatar = await page.evaluate(() => {
+          const a = document.querySelector("#home-guide .hg-avatar");
+          const i = a.querySelector("img");
+          const s = getComputedStyle(i);
+          const ar = a.getBoundingClientRect();
+          const ir = i.getBoundingClientRect();
+          return { asset: i.dataset.asset, fit: s.objectFit, pos: s.objectPosition, pad: [s.paddingTop, s.paddingLeft].map(parseFloat), round: getComputedStyle(a).borderRadius, inside: Math.abs(ir.width - ar.width) < 0.5 && Math.abs(ir.height - ar.height) < 0.5 };
+        });
+        assert.deepEqual([avatar.asset, avatar.fit, avatar.pos, avatar.round, avatar.inside], ["expr-happy", "contain", "50% 50%", "50%", true], JSON.stringify(avatar));
+        assert.ok(avatar.pad.every((v) => v >= 2), "room around the ear tips and the sides");
         if (shots) await page.screenshot({ path: `${shots}/v194-photos-${w}.png` });
 
         const [chooser] = await Promise.all([page.waitForEvent("filechooser"), page.locator("#home-guide .hg-hit").tap()]);

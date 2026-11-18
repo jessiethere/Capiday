@@ -9805,7 +9805,7 @@ function placeHomeGuide() {
   const art = step.captain ? `<div class="hg-captain${step.id === "welcome" ? " hg-peek" : ""}" aria-hidden="true">${step.id === "welcome" ? Bot.captainPortrait("peek", { size: 132 }) : Bot.captainPortrait("happy", { size: 112 })}</div>` : "";
   const head = step.captain
     ? ""
-    : `<div class="hg-head"><span class="hg-avatar" aria-hidden="true">${Bot.captainPortrait("face", { size: 30 })}</span><span class="hg-count">${t("guide.count", { n: index + 1, count: middle.length })}</span><button type="button" class="hg-skip" data-action="hg-skip">${t("guide.skip")}</button></div>`;
+    : `<div class="hg-head"><span class="hg-avatar" aria-hidden="true">${Bot.captainPortrait("happy", { size: 30 })}</span><span class="hg-count">${t("guide.count", { n: index + 1, count: middle.length })}</span><button type="button" class="hg-skip" data-action="hg-skip">${t("guide.skip")}</button></div>`;
   const actions =
     step.id === "welcome"
       ? `<button type="button" class="primary" data-action="hg-next">${t("hg.go")}</button><button type="button" class="secondary" data-action="hg-skip">${t("hg.explore")}</button>`
