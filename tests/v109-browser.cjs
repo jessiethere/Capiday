@@ -149,7 +149,7 @@ const transcript = [];
 
     // 4. Chat / Play / Look tabs. Play is honestly on its way (no stand-in interaction).
     await openCorner();
-    assert.deepEqual(await page.$$eval(".kp-tabs [role=tab]", (els) => els.map((el) => [el.dataset.view, el.textContent, el.getAttribute("aria-selected")])), [["home", "聊天", "true"], ["play", "玩耍", "false"], ["looks", "装扮", "false"]]);
+    assert.deepEqual(await page.$$eval(".kp-tabs [role=tab]", (els) => els.map((el) => [el.dataset.view, el.textContent, el.getAttribute("aria-selected")])), [["home", "今天", "true"], ["play", "玩耍", "false"], ["looks", "装扮", "false"]]);
     const tabH = await page.locator(".kp-tabs [role=tab]").first().evaluate((el) => el.getBoundingClientRect().height);
     assert.ok(tabH >= 38);
     await page.locator('.kp-tabs [data-view="play"]').tap();
@@ -201,7 +201,7 @@ const transcript = [];
       transcript.push([`(EN) ${text}`, reply]);
       assert.match(reply, pattern, `${text} → ${reply}`);
     }
-    assert.match(await ep.locator(".kp-tabs").innerText(), /Chat[\s\S]*Play[\s\S]*Look/);
+    assert.match(await ep.locator(".kp-tabs").innerText(), /Today[\s\S]*Play[\s\S]*Look/); // V10.85: the first tab is Today (chat lives there, below)
     if (shots) await ep.screenshot({ path: `${shots}/04-en.png` });
     await en.close();
     passed.push("English interface: compliment, tired-but-done and “what can you do” answered in English");

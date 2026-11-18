@@ -4,6 +4,32 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.85",
+    date: "2026-11-18",
+    zh: {
+      title: "新的样子：印章、竹青和守册猫 Captain",
+      items: [
+        "集章卡上的章改成白底朱砂描边的印章，像真的盖在纸上；刚盖下去那一下是实心的，随后落成描边。",
+        "「这一周」换成浅竹青色的回看卡；说明文字换成更清楚的暖灰色，标题用更好读的宋体。",
+        "集章卡详情页的大标题就是月份（例如「十一月」），小字写「月令集章」。",
+        "Captain 现在是守册猫：首页写着「Captain 在帮你看着这本册子」，打开先看到今天的提醒和回看，聊天放在下面。",
+        "每个月的第一枚章，Captain 会来帮你按一下；之后每周最多再来两次，其余时候只盖章。",
+        "新建手帐可以选三个新的封面：旅行笔记、日常、Captain。",
+      ],
+    },
+    en: {
+      title: "A new look: seals, bamboo green and Captain, your little keeper",
+      items: [
+        "Stamps are now outlined cinnabar seals on warm paper, like a real chop; the moment you press one it is solid, then it settles.",
+        "This week is a light bamboo-green card; secondary text is a clearer warm grey, and titles use a calm serif.",
+        "The stamp card page is titled with the month (for example “November”).",
+        "Captain is your little keeper now: Today says “Captain is keeping an eye on your little book”, and opening it shows today’s nudge and a look back first, with chat below.",
+        "Captain comes to help press the first stamp of every month, and at most twice more a week; otherwise it’s just the stamp.",
+        "Three new covers for new journals: Travel Notes, Everyday and Captain.",
+      ],
+    },
+  },
+  {
     version: "10.84",
     date: "2026-11-18",
     zh: {

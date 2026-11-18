@@ -48,6 +48,29 @@
 
 ## 更新日志
 
+### 2026-11-18 — V10.85：Visual Direction v1 Phase 1（颜色 · 字体 · 印章 · 竹青这一周 · Captain 守册猫 · 3 个默认书封）
+
+- **需求**（Founder 已确认的产品决策，按 Phase 1 实施）：现代国际化的功能层 + 东方手帐气质的内容层 + 印章 / 纸张 / 留白 / 植物 / Captain 的细节层；不做传统「中国风主题」。逐项：配色（暖灰 #756D63、朱砂只用于印章、红字 #A9483A、竹青辅助）、集章命名、这一周改竹青、字章改白底描边、Captain 首次盖章频率（确定可测）、Captain 首页定位与聊天降级、3 个默认书封、天气不做、「今天一个字」进 Phase 3、中英文、验收 A–O、文档。
+- **新 color tokens**（`design-tokens.json` → `tools/sync_tokens.py`）：`muted` #8D857B → **#756D63**（对比度 3.34 → 4.68）；新增 `bamboo` #6B7F62、`bambooWash` #E8EEE3、`cinnabar` #C2544A、`cinnabarInk` #A9483A、`moon` #E4EDF1。界面规则里 14 种近似暖灰（对比度 2.9–4.4）统一成 #756D63，共 142 处；手帐页面 / 封面 / 画布 / 阅读器 / 贴纸等纸上的颜色不动（按选择器排除）。主题（深色等）由 sync_tokens 自动换算。
+- **字体决定**：中文标题宋体栈（`Songti SC`、`STSong`、`LD-zh-xiaowei`）；英文标题 Serif（`LD-vintage-serif` / Georgia）；界面正文系统字体。界面字体栈里 26 处毛笔字后备（马善政 `LD-chinese`）换成宋体（Serif 标题）或霞鹜文楷（手写风格）；首页刊头问句、日详情大标题、引导卡等都受益。**页面内容**的字体后备（`library.mjs fontFamily` 里 `"LD-chinese"`）没改，避免旧页面变样，记为 Phase 2。
+- **印章视觉规则**：字章 / 图标章 = 纸色底 + 1.5 px 朱砂（#C2544A）描边 + #A9483A 字（5.63），边角极轻不规则、按位置轻微倾斜（-4° / 0 / +3°，减弱动态效果时不倾斜）；照片章 = 降饱和（0.72）+ 0.86 不透明 + 朱砂细圈；空章 = 朱砂细虚线 + 淡墨日期；没记 = 极淡点线；今天没记 = 竹青虚线。**刚盖下**：首次盖章胶囊里和首页集章条那一枚先实心朱砂，约 1.5 秒落成描边（`seal-settle`）。首页没有任何实心朱砂块（自动检查）。
+- **集章命名**：中文首页小标题「集章卡」+ 月份「十一月」；详情页小字「月令集章」、大标题「十一月」、年份另起；英文首页 “This month” / “November”，详情页 “Stamps” / “November” / 2026。i18n：`stamp.homeKicker`、`stamp.pageKicker`。
+- **这一周**：卡片改浅竹青（`bambooWash` 底，墨色主句 12.0，深竹青小字和「翻开看看」5.13，小点用竹青），不再是墨色大卡；拍立得缩略图保留。
+- **Captain 出现频率**（`Public/js/captain-stamp.mjs`，纯函数，Founder 要求可测试）：
+  - 输入：这次第一次盖章的日期、此前所有有章的日期、今天、本机记录；输出 `first` / `extra` / 空。
+  - 当月（按章的手帐日期）第一枚新章 → `first`，**必出现**；
+  - 否则：本周（周一到周日，按发生的那天）`extra` 已有 2 次 → 不出现；否则只有日期的固定号码（FNV-1a 哈希 % 3 === 0，约三分之一）才出现。没有随机数：同一天同一枚章永远同一个答案。
+  - 只在 Captain 已开启时；记录在本机 `little-days.captain-stamps`（最近 90 天），**不写进手帐、不进备份**。
+  - 不会重复：触发源仍是 V10.84 的数据事件（新日期第一次盖章 + 保存成功），恢复 / 历史 / 重启 / 重新渲染都没有这个事件；同一天的同一日期也会被本机记录挡住。
+  - 画面：胶囊左边 Captain（现有的开心表情图）上来、轻轻一按（0.9 秒），章落下；减弱动态效果时只淡入。没有新美术。
+- **Captain 首页角色变化**：首页标签「找 Captain / Ask Captain」→「Captain 在帮你看着这本册子 / Captain is keeping an eye on your little book」，图标从对话气泡换成一本册子；中文一行、英文最多两行（圆角标签）。面板第一页标签「聊天 / Chat」→「今天 / Today」：先是原来的今天提醒卡（一句话 + 记录按钮），再是新的回看行（「这一周，你留下了 N 个小日子。」或「这个月已经留下 N 个小日子啦。」+ 翻开看看 / 看整张），最后是「也可以和 Captain 说几句」+ 聊天输入。聊天功能本身没改。邀请卡说明改为「Captain 会帮你盖章、提醒你回来看看，陪你把日子慢慢收进手帐。聊天是可选的，随时可以关掉。」
+- **中英文文案（新增 / 改动的 key）**：`kp.entry`、`corner.chat`、`kp.chatLabel`、`kp.lookMonth(One)`、`keeper.invite.body`、`stamp.homeKicker`、`stamp.pageKicker`、`cover.capiday-travel` / `-everyday` / `-captain`（旅行笔记 / 日常 / Captain；Travel Notes / Everyday / Captain）。新增界面代码里没有写死中文（v189 S14 检查）。
+- **默认 Book covers**：`library.json` 新增 `capiday-travel`、`capiday-everyday`、`capiday-captain`（`featured` + `lead`，排在精选封面最前；放在 6 个杂志封面之后以保持旧约定）；`personal-ui.mjs` 用排版 + 颜色 + 纹理画：竹青布纹 + 植物线 + 小印 / 暖纸编辑排版 + 细线 + 小印 / 奶油白 + 简笔猫 + 植物 + 小印。书名用用户自己的（没有时显示 Capiday），中文书名用宋体后备。新建手帐的默认封面没改（仍 `magazine-jp`）。**Captain 封面上的猫是占位简笔轮廓**（现有 Captain 素材是 3D 抠图，不能自然变成线稿），正式线稿等统一美术。
+- **Phase 3 backlog**（这版没做）：「今天一个字」（用户自选的私人印记：晴 / 忙 / 慢 / 累 / 好 / 游 / 家 / 静…）；Captain 伸爪按章的新美术和动画、Captain 正式线稿；节气小字（可关）；月记照片条；页面内容字体后备去掉毛笔字（Phase 2）；Signature Papers、声笺录音外观（Phase 2）。**不加**天气 API、定位权限、Growth / Habit。
+- **文件**：`design-tokens.json`、`Public/tokens.css` / `themes.css` / `styles.css`（V10.85 一节 + 灰色统一 + 字体后备）、`Public/js/captain-stamp.mjs`（新）、`Public/app.js`（stampMoment 里的 Captain、集章条 / 详情页标题、Captain 标签图标、面板回看与聊天标签）、`Public/js/personal-ui.mjs`（3 个封面、精选顺序）、`library.json`、`i18n.json`、`Public/js/whats-new.mjs`（10.85）、`Native/…/WebApp/`（同步）、`docs/DESIGN_SYSTEM.md`、`docs/PRODUCT_SPEC.md`、`docs/VISUAL_DIRECTION_V1.md`（标为已确认）、测试 `tests/v190-captain-stamp.test.mjs`（4）、`tests/v190-browser.cjs`（42）、`v103` / `v109` / `v189`（新文案）。
+- **验收 A–O**（`tests/v190-browser.cjs` 42/42 + 单元 4/4，Chromium，**不是真机**）：A 中文首页 ✅；B 英文自然 ✅；C This month / November ✅；D 集章卡 / 十一月 / 月令集章 ✅；E 字章白底描边，字 5.63、已集 N 枚 5.63、说明 5.02、看整张 5.97 ✅；F 首页没有实心朱砂块、按钮 / 导航不用朱砂 ✅；G 这一周竹青，主句 12.01、其余 5.13 ✅；H 首页标签不是聊天、面板先提醒和回看、聊天在下 ✅；I 当月第一枚必出现 ✅；J 每周额外最多 2 次（02 来 / 03 不来 / 04 来 / 08 本周已满）✅；K 规则确定可测、只记本机、重启不出现 ✅；L 三个书封中英文都正常、不溢出 ✅；M 没有天气 / 定位代码、没有定位权限 ✅；N「今天一个字」没有实现 ✅；O 照片 / 视频 / 音频 / 手绘：见全量回归。
+- **全量回归 run-all22**：进行中（结果补记在下一条）。固定链接：等回归后发布。
+
 ### 2026-11-18 — V10.84 全量回归 run-all21、连续打卡界面彻底退出首页、固定链接 Version 131
 
 - **全量浏览器回归 run-all21**（125 个套件，含新 v188 / v189，代码 = 首次盖章 + 首页去掉小计划）：**118 通过、7 失败**。逐个处理：

@@ -398,6 +398,27 @@
       "group": "magazine"
     },
     {
+      "id": "capiday-travel",
+      "title": "Capiday Travel Notes",
+      "group": "paper",
+      "featured": true,
+      "lead": true
+    },
+    {
+      "id": "capiday-everyday",
+      "title": "Capiday Everyday",
+      "group": "paper",
+      "featured": true,
+      "lead": true
+    },
+    {
+      "id": "capiday-captain",
+      "title": "Capiday Captain",
+      "group": "life",
+      "featured": true,
+      "lead": true
+    },
+    {
       "id": "minimal-linen",
       "title": "Minimal Linen",
       "group": "paper",

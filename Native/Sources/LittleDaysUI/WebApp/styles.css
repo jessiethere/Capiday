@@ -1135,7 +1135,7 @@ label.field {
   flex-direction: column;
   gap: 7px;
   font-size: 10px;
-  color: var(--t-938674, #938674);
+  color: var(--t-756d63, #756d63);
 }
 /* A label above a group of choices: the same look as a field's label. */
 .small-label {
@@ -1143,7 +1143,7 @@ label.field {
   margin-bottom: 7px;
   font-size: 10px;
   font-weight: 400;
-  color: var(--t-938674, #938674);
+  color: var(--t-756d63, #756d63);
 }
 .field input,
 .field textarea,
@@ -2191,13 +2191,13 @@ dialog .dialog-description {
   font-style: normal;
 }
 .growth-card small {
-  color: var(--t-998c7a, #998c7a);
+  color: var(--t-756d63, #756d63);
   font-size: 0.9em;
 }
 .growth-card-note {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  font-family: "LD-handwritten", "LD-chinese", serif;
+  font-family: "LD-handwritten", "LD-zh-wenkai", serif;
   color: var(--t-3f3a33, #3f3a33);
 }
 .growth-card.faded {
@@ -2252,7 +2252,7 @@ dialog .dialog-description {
   border-radius: 11px;
   border: 1px solid var(--line);
   background: var(--c-fffdf8, #fffdf8);
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
 }
 .layout-option.selected {
   border-color: var(--accent);
@@ -2320,7 +2320,7 @@ dialog .dialog-description {
   align-items: center;
   gap: 6px;
   font-size: 10px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
 }
 .crop-sliders {
   display: grid;
@@ -2345,7 +2345,7 @@ dialog .dialog-description {
   margin-bottom: 8px;
 }
 .chapter-strip h2 {
-  font-family: "LD-elegant", "LD-chinese", Georgia, serif;
+  font-family: "LD-elegant", "Songti SC", "STSong", "LD-zh-xiaowei", Georgia, serif;
   font-size: 17px;
 }
 .chapter-list {
@@ -2421,7 +2421,7 @@ dialog .dialog-description {
   height: 30px;
   border-radius: 8px;
   font-size: 12px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
 }
 .chapter-tools button:not(:disabled):hover {
   background: var(--c-f1ece2, #f1ece2);
@@ -2446,7 +2446,7 @@ dialog .dialog-description {
 .chapter-preview p {
   font-size: 9px;
   line-height: 1.6;
-  color: var(--t-998c7a, #998c7a);
+  color: var(--t-756d63, #756d63);
   margin: 0;
   overflow: hidden;
   display: -webkit-box;
@@ -2474,7 +2474,7 @@ dialog .dialog-description {
   border-radius: 18px;
   background: var(--c-fffdf8, #fffdf8);
   border: 1px solid var(--line);
-  color: var(--t-9d907b, #9d907b);
+  color: var(--t-756d63, #756d63);
 }
 .moment-editor-head {
   display: flex;
@@ -2597,7 +2597,7 @@ dialog .dialog-description {
   display: flex;
   justify-content: space-between;
   font-size: 9px;
-  color: var(--t-9d907b, #9d907b);
+  color: var(--t-756d63, #756d63);
   font-variant-numeric: tabular-nums;
 }
 .ld-wave {
@@ -2722,12 +2722,12 @@ dialog .dialog-description {
   color: var(--t-a3957f, #a3957f);
 }
 .day-masthead h1 {
-  font: 400 24px/1.3 "LD-elegant", "LD-chinese", Georgia, serif;
+  font: 400 24px/1.3 "LD-elegant", "Songti SC", "STSong", "LD-zh-xiaowei", Georgia, serif;
   margin: 8px 50px 6px 0;
 }
 .day-stats {
   font-size: 10px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
   margin: 0;
 }
 .day-seal {
@@ -2892,7 +2892,7 @@ dialog .dialog-description {
 }
 .day-book {
   font-size: 9px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
 }
 .day-growth {
   padding: 16px 14px;
@@ -2962,7 +2962,7 @@ dialog .dialog-description {
 }
 .habit-note {
   display: block;
-  font: 11px/1.6 "LD-handwritten", "LD-chinese", serif;
+  font: 11px/1.6 "LD-handwritten", "LD-zh-wenkai", serif;
   color: var(--t-6c6559, #6c6559);
   margin-top: 2px;
 }
@@ -2994,11 +2994,11 @@ dialog .dialog-description {
   align-items: center;
 }
 .reflection-note b {
-  font: 600 13px "LD-elegant", "LD-chinese", Georgia, serif;
+  font: 600 13px "LD-elegant", "Songti SC", "STSong", "LD-zh-xiaowei", Georgia, serif;
 }
 .reflection-note p {
   margin: 6px 0 0;
-  font: 12px/1.75 "LD-handwritten", "LD-chinese", serif;
+  font: 12px/1.75 "LD-handwritten", "LD-zh-wenkai", serif;
   color: var(--t-4d463e, #4d463e);
   white-space: pre-wrap;
 }
@@ -3012,7 +3012,7 @@ dialog .dialog-description {
 }
 .past-reflections summary {
   font-size: 10px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
   margin: 10px 0 4px;
   cursor: pointer;
 }
@@ -3381,7 +3381,7 @@ body {
   text-overflow: ellipsis;
   text-align: right;
   font-size: 10px;
-  color: var(--t-9d907b, #9d907b);
+  color: var(--t-756d63, #756d63);
 }
 .tool-chevron {
   color: var(--t-b2a38f, #b2a38f);
@@ -3394,7 +3394,7 @@ body {
   display: grid;
   gap: 11px;
   padding: 2px 12px 14px;
-  color: var(--t-9d907b, #9d907b);
+  color: var(--t-756d63, #756d63);
 }
 .tool-body .media-section {
   margin-top: 0;
@@ -3458,7 +3458,7 @@ body {
 .journey-link span {
   flex: 1;
   font-weight: 400;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
   font-size: 10px;
 }
 .journey-book {
@@ -3520,13 +3520,13 @@ body {
 }
 .journey-cover h2 {
   margin: 0;
-  font: 400 24px/1.3 "LD-zh-xiaowei", "LD-elegant", "LD-chinese", Georgia, serif;
+  font: 400 24px/1.3 "LD-zh-xiaowei", "LD-elegant", "Songti SC", "STSong", "LD-zh-xiaowei", Georgia, serif;
   text-wrap: balance;
 }
 .journey-since {
   margin: 0;
   font-size: 11px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
 }
 .journey-stats {
   display: grid;
@@ -3592,7 +3592,7 @@ body {
   gap: 10px;
 }
 .journey-date b {
-  font: 400 26px/1.2 "LD-zh-longcang", "LD-handwritten", "LD-chinese", cursive;
+  font: 400 26px/1.2 "LD-zh-longcang", "LD-handwritten", "LD-zh-wenkai", cursive;
   color: var(--ink);
 }
 .journey-date span {
@@ -3612,7 +3612,7 @@ body {
 .journey-note {
   margin: 4px 0;
   padding: 0 2px;
-  font: 17px/28px "LD-zh-wenkai", "LD-handwritten", "LD-chinese", serif;
+  font: 17px/28px "LD-zh-wenkai", "LD-handwritten", serif;
   color: var(--t-3f3a33, #3f3a33);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -3649,7 +3649,7 @@ body {
   justify-content: space-between;
   margin-top: 8px;
   font-size: 10px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
 }
 .journey-nav button {
   width: 40px;
@@ -3673,7 +3673,7 @@ body {
 }
 .journey-month b {
   font-size: 10px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
   font-weight: 500;
 }
 .journey-month > div {
@@ -3812,7 +3812,7 @@ body {
   font-style: normal;
 }
 .day-cover-copy strong {
-  font: 500 14px/1.4 "LD-zh-xiaowei", "LD-chinese", Georgia, serif;
+  font: 500 14px/1.4 "LD-zh-xiaowei", "Songti SC", "STSong", "LD-zh-xiaowei", Georgia, serif;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -4215,7 +4215,7 @@ body {
   align-items: center;
   gap: 4px;
   font-size: 9px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
   overflow: hidden;
   white-space: nowrap;
 }
@@ -4258,7 +4258,7 @@ body {
 .work-author small,
 .c-user small {
   font-size: 10px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -4397,7 +4397,7 @@ button.small {
 }
 .c-replying {
   font-size: 10px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
 }
 .c-explain {
   padding: 12px 14px;
@@ -4437,7 +4437,7 @@ button.small {
 }
 .c-thread small {
   font-size: 10px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -4484,7 +4484,7 @@ button.small {
   display: block;
   margin-top: 3px;
   font-size: 9px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
 }
 .bubble-sticker {
   width: 56px;
@@ -4564,7 +4564,7 @@ button.small {
 }
 .pub-page small {
   font-size: 10px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
 }
 .pub-media-row {
   display: flex;
@@ -4679,15 +4679,15 @@ button.small {
 }
 .p-who h2 {
   margin: 0;
-  font: 400 20px/1.3 "LD-zh-xiaowei", "LD-chinese", Georgia, serif;
+  font: 400 20px/1.3 "LD-zh-xiaowei", "Songti SC", "STSong", "LD-zh-xiaowei", Georgia, serif;
 }
 .p-who small {
   font-size: 10px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
 }
 .p-who p {
   margin: 6px 0 0;
-  font: 12px/1.7 "LD-zh-wenkai", "LD-chinese", serif;
+  font: 12px/1.7 "LD-zh-wenkai", serif;
   color: var(--t-5d554b, #5d554b);
 }
 .p-edit {
@@ -4737,7 +4737,7 @@ button.small {
 }
 .p-stat span {
   font-size: 9px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
 }
 .p-section {
   display: grid;
@@ -4778,7 +4778,7 @@ button.small {
 }
 .p-work-copy small {
   font-size: 10px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
 }
 .p-section .section-heading {
   margin: 0;
@@ -4813,7 +4813,7 @@ button.small {
 }
 .today-prompt {
   margin: 0;
-  font: 400 20px/1.4 "LD-zh-xiaowei", "LD-elegant", "LD-chinese", Georgia, serif;
+  font: 400 20px/1.4 "LD-zh-xiaowei", "LD-elegant", "Songti SC", "STSong", "LD-zh-xiaowei", Georgia, serif;
   color: var(--ink);
   text-wrap: balance;
 }
@@ -4821,7 +4821,7 @@ button.small {
   margin: 0;
   font-size: 12px;
   line-height: 1.8;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
   white-space: pre-line;
 }
 .today-preview {
@@ -4859,7 +4859,7 @@ button.small {
 }
 .today-preview-copy small {
   font-size: 10px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -5250,7 +5250,7 @@ button.small {
 }
 .growth-habit-count {
   font-size: 10px;
-  color: var(--t-8a8172, #8a8172);
+  color: var(--t-756d63, #756d63);
   min-width: 26px;
   text-align: right;
 }
@@ -5293,10 +5293,10 @@ button.small {
     var(--c-fffbf0, #fffbf0);
 }
 .reflection-chip b {
-  font: 600 12px "LD-elegant", "LD-chinese", Georgia, serif;
+  font: 600 12px "LD-elegant", "Songti SC", "STSong", "LD-zh-xiaowei", Georgia, serif;
 }
 .reflection-chip span {
-  font: 11px/1.5 "LD-handwritten", "LD-chinese", serif;
+  font: 11px/1.5 "LD-handwritten", "LD-zh-wenkai", serif;
   color: var(--t-6c6559, #6c6559);
   overflow: hidden;
   display: -webkit-box;
@@ -5471,7 +5471,7 @@ details.check-history[open] > summary > span:first-child::after {
   display: flex;
   justify-content: space-between;
   font-size: 10px;
-  color: var(--t-8a7c66, #8a7c66);
+  color: var(--t-756d63, #756d63);
 }
 .collab-mark {
   background: var(--c-f1e9d8, #f1e9d8);
@@ -5482,11 +5482,11 @@ details.check-history[open] > summary > span:first-child::after {
   font-style: normal;
 }
 .collab-page h3 {
-  font: 600 14px "LD-elegant", "LD-chinese", Georgia, serif;
+  font: 600 14px "LD-elegant", "Songti SC", "STSong", "LD-zh-xiaowei", Georgia, serif;
   margin: 6px 0 2px;
 }
 .collab-page p {
-  font: 12px/1.7 "LD-handwritten", "LD-chinese", serif;
+  font: 12px/1.7 "LD-handwritten", "LD-zh-wenkai", serif;
   color: var(--t-4d463e, #4d463e);
   white-space: pre-wrap;
   margin: 0;
@@ -5551,7 +5551,7 @@ details.check-history[open] > summary > span:first-child::after {
 }
 .collab-versions summary {
   font-size: 11px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
   margin: 12px 0 4px;
   cursor: pointer;
 }
@@ -5600,7 +5600,7 @@ details.check-history[open] > summary > span:first-child::after {
   border-radius: 999px;
   background: transparent;
   font-size: 13px;
-  color: var(--t-7b7266, #7b7266);
+  color: var(--t-756d63, #756d63);
 }
 .shelf-switch button[aria-selected="true"] {
   background: var(--paper);
@@ -5753,12 +5753,12 @@ details.check-history[open] > summary > span:first-child::after {
   letter-spacing: 1px;
 }
 .pulled-copy h2 {
-  font: 600 17px/1.35 "LD-elegant", "LD-chinese", Georgia, serif;
+  font: 600 17px/1.35 "LD-elegant", "Songti SC", "STSong", "LD-zh-xiaowei", Georgia, serif;
   margin: 0;
 }
 .pulled-copy p {
   font-size: 11px;
-  color: var(--t-7b7266, #7b7266);
+  color: var(--t-756d63, #756d63);
   margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -5863,12 +5863,12 @@ details.check-history[open] > summary > span:first-child::after {
 }
 .visitor-head p {
   font-size: 11px;
-  color: var(--t-7b7266, #7b7266);
+  color: var(--t-756d63, #756d63);
   margin: 2px 0 0;
 }
 .visitor-card h4 {
   font-size: 11px;
-  color: var(--t-8a7c66, #8a7c66);
+  color: var(--t-756d63, #756d63);
   margin: 14px 0 6px;
 }
 .visitor-covers {
@@ -5944,8 +5944,8 @@ details.check-history[open] > summary > span:first-child::after {
   margin: 0;
 }
 .login-tag {
-  font: 13px/1.7 "LD-handwritten", "LD-chinese", serif;
-  color: var(--t-7b7266, #7b7266);
+  font: 13px/1.7 "LD-handwritten", "LD-zh-wenkai", serif;
+  color: var(--t-756d63, #756d63);
   margin: 0 12px;
 }
 .login-back {
@@ -5992,7 +5992,7 @@ details.check-history[open] > summary > span:first-child::after {
   border: 1px solid var(--line);
   font-size: 10px;
   white-space: nowrap;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
 }
 .login-provider {
   display: flex;
@@ -6017,7 +6017,7 @@ details.check-history[open] > summary > span:first-child::after {
 .login-note {
   font-size: 10px;
   line-height: 1.7;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
   margin: 4px 6px 0;
 }
 .login-language {
@@ -6105,7 +6105,7 @@ details.check-history[open] > summary > span:first-child::after {
   color: var(--t-a3957f, #a3957f);
 }
 .tour-card h2 {
-  font: 600 20px "LD-elegant", "LD-chinese", Georgia, serif;
+  font: 600 20px "LD-elegant", "Songti SC", "STSong", "LD-zh-xiaowei", Georgia, serif;
   margin: 0;
 }
 .tour-card p {
@@ -6485,7 +6485,7 @@ details.check-history[open] > summary > span:first-child::after {
 }
 .start-continue small {
   font-size: 11px;
-  color: var(--t-8a8172, #8a8172);
+  color: var(--t-756d63, #756d63);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -6496,7 +6496,7 @@ details.check-history[open] > summary > span:first-child::after {
 }
 .start-note {
   font-size: 11px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
   margin: -6px 4px 0;
 }
 .start-grid {
@@ -6521,7 +6521,7 @@ details.check-history[open] > summary > span:first-child::after {
 .start-card small {
   font-size: 10px;
   line-height: 1.5;
-  color: var(--t-7b7266, #7b7266);
+  color: var(--t-756d63, #756d63);
 }
 .start-icon {
   width: 40px;
@@ -6567,7 +6567,7 @@ details.check-history[open] > summary > span:first-child::after {
   border-radius: 999px;
   border: 1px dashed var(--c-d8cdb9, #d8cdb9);
   background: var(--c-fffdf8, #fffdf8);
-  font: 13px "LD-handwritten", "LD-chinese", serif;
+  font: 13px "LD-handwritten", "LD-zh-wenkai", serif;
   color: var(--t-5d554b, #5d554b);
 }
 
@@ -6667,7 +6667,7 @@ details.check-history[open] > summary > span:first-child::after {
 /* Calmer type on the Studio start screen (no heavy system bold). */
 .start-card b,
 .start-continue b {
-  font: 600 15px/1.35 "LD-elegant", "LD-chinese", Georgia, serif;
+  font: 600 15px/1.35 "LD-elegant", "Songti SC", "STSong", "LD-zh-xiaowei", Georgia, serif;
   letter-spacing: 0.2px;
 }
 .start-card small {
@@ -6684,7 +6684,7 @@ details.check-history[open] > summary > span:first-child::after {
   font-size: 17px;
 }
 .start-sub {
-  font: 600 14px "LD-elegant", "LD-chinese", Georgia, serif;
+  font: 600 14px "LD-elegant", "Songti SC", "STSong", "LD-zh-xiaowei", Georgia, serif;
 }
 .start-note {
   font-size: 10.5px;
@@ -7006,7 +7006,7 @@ details.check-history[open] > summary > span:first-child::after {
 .day-masthead h1,
 .day-cover-date b {
   font-variant-numeric: lining-nums;
-  font-family: Georgia, "LD-chinese", serif;
+  font-family: Georgia, "Songti SC", "STSong", "LD-zh-xiaowei", serif;
 }
 .demo-chip {
   display: inline-block;
@@ -7195,7 +7195,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
 }
 .scene-head small {
   font-size: 11px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
 }
 .scene-grid {
   display: grid;
@@ -7268,7 +7268,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
 }
 .today-scene b,
 .start-scene b {
-  font: 600 15px/1.3 "LD-elegant", "LD-chinese", Georgia, serif;
+  font: 600 15px/1.3 "LD-elegant", "Songti SC", "STSong", "LD-zh-xiaowei", Georgia, serif;
 }
 .today-scene em {
   font-style: normal;
@@ -7394,7 +7394,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
 }
 .inbox-copy small {
   font-size: 12px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
 }
 .inbox-actions {
   display: flex;
@@ -7435,7 +7435,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
 }
 .level-top small {
   font-size: 12px;
-  color: var(--t-8a7c66, #8a7c66);
+  color: var(--t-756d63, #756d63);
   letter-spacing: 1px;
 }
 .level-top b {
@@ -7501,7 +7501,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
 }
 .level-how li small {
   font-size: 12px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
 }
 .level-how li b {
   text-align: right;
@@ -7521,7 +7521,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: var(--t-7b7266, #7b7266);
+  color: var(--t-756d63, #756d63);
   font-size: 12px;
   white-space: nowrap;
 }
@@ -7607,7 +7607,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
   list-style: none;
   text-align: center;
   font-size: 13px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
   padding: 30px 0;
 }
 .bubble p {
@@ -7720,7 +7720,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
   margin: 6px 0 10px;
   font-size: 13px;
   line-height: 1.45;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
 }
 .wall-get {
   min-height: 34px;
@@ -7879,7 +7879,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
 .choose-sheet h3 {
   margin: 6px 2px 0;
   font: 600 13px -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
-  color: var(--t-8a7c66, #8a7c66);
+  color: var(--t-756d63, #756d63);
 }
 .choose-album {
   display: flex;
@@ -7905,7 +7905,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
 }
 .choose-album small {
   font-size: 12px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
 }
 .choose-picks,
 .choose-collections {
@@ -8062,7 +8062,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
 }
 .cal-wall-head h2 {
   margin: 0;
-  font: 400 40px/1.1 "LD-handwritten", "LD-chinese", cursive;
+  font: 400 40px/1.1 "LD-handwritten", "LD-zh-wenkai", cursive;
   text-shadow: 0 2px 10px var(--c-00000040, #00000040);
 }
 .cal-wall-head small {
@@ -8221,7 +8221,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
 }
 .start-quicknote small {
   font-size: 12px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
 }
 .start-quicknote i {
   font-style: normal;
@@ -8353,7 +8353,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
 }
 .choose-backdrop small {
   font-size: 12px;
-  color: var(--t-8d857b, #8d857b);
+  color: var(--t-756d63, #756d63);
 }
 
 /* ---------- Home: photo-led, magazine-like (fewer boxes, no emoji) ---------- */
@@ -8380,7 +8380,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .home-mag .brand-title {
   font: 400 30px/1.1 "LD-elegant", Georgia, "Times New Roman", serif;
@@ -8547,7 +8547,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
 }
 .home-mag .moment-cta small {
   font-size: 12px;
-  color: var(--t-8a8178, #8a8178);
+  color: var(--t-756d63, #756d63);
 }
 .home-mag .moment-cta i {
   color: var(--t-b3a998, #b3a998);
@@ -8567,7 +8567,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
 }
 .home-mag .home-section .section-heading > button {
   font-size: 12px;
-  color: var(--t-8a8178, #8a8178);
+  color: var(--t-756d63, #756d63);
 }
 .home-mag .inspire-row {
   display: flex;
@@ -8643,7 +8643,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
 .home-mag .habit-detail small {
   font-size: 12px;
   margin-top: 3px;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .home-mag .habit-note {
   font-size: 12px;
@@ -8777,7 +8777,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
   display: block;
   margin: 10px 0 2px;
   font-size: 11px;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .write-tip {
   display: flex;
@@ -8786,7 +8786,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
   margin: 8px 0;
   font-size: 12px;
   line-height: 1.6;
-  color: var(--t-7a7166, #7a7166);
+  color: var(--t-756d63, #756d63);
 }
 .write-tip svg {
   flex: none;
@@ -8806,7 +8806,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
 }
 .home-mag .home-books .section-heading small {
   font-size: 12px;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .home-book-row {
   display: flex;
@@ -8851,7 +8851,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
 }
 .home-book > small {
   font-size: 11px;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .home-book-write {
   justify-self: start;
@@ -8886,7 +8886,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
   border: 1.5px dashed var(--c-d9d1c3, #d9d1c3);
   border-radius: 10px;
   background: none;
-  color: var(--t-8a8178, #8a8178);
+  color: var(--t-756d63, #756d63);
   font-size: 12px;
   scroll-snap-align: start;
 }
@@ -9248,7 +9248,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
 .pb-desc {
   margin: 10px 18px 4px;
   font-size: 12px;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .pb-grid {
   columns: 2;
@@ -9390,7 +9390,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
   display: grid;
   gap: 2px;
   font-size: 11px;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .space-stats b {
   font: 700 18px -apple-system, "PingFang SC", sans-serif;
@@ -9454,7 +9454,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
   border: 1.5px dashed var(--c-d9d1c3, #d9d1c3);
   border-radius: 14px;
   background: none;
-  color: var(--t-8a8178, #8a8178);
+  color: var(--t-756d63, #756d63);
   font-size: 13px;
 }
 .space-shelf {
@@ -9484,7 +9484,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
 }
 .space-shelf small {
   font-size: 11px;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .space-post {
   display: grid;
@@ -9505,7 +9505,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
 }
 .space-post header small {
   font-size: 11px;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .space-post h4 {
   margin: 0;
@@ -9523,7 +9523,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
   gap: 14px;
   align-items: center;
   font-size: 12px;
-  color: var(--t-8a8178, #8a8178);
+  color: var(--t-756d63, #756d63);
 }
 .space-post footer .text-button {
   margin-left: auto;
@@ -9539,7 +9539,7 @@ html[data-shell="ios"] body.typing:not(.typing-dialog) .phone .app-scroll {
 .space-dress-panel h4 {
   margin: 4px 0 0;
   font-size: 12px;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .space-banners {
   display: flex;
@@ -10025,7 +10025,7 @@ dialog h2,
   display: grid;
   gap: 1px;
   font-size: 11px;
-  color: var(--t-8a8178, #8a8178);
+  color: var(--t-756d63, #756d63);
 }
 .ig-counts b {
   font: 700 17px -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
@@ -10057,7 +10057,7 @@ dialog h2,
 .ig-handle {
   margin: -8px 0 0;
   font-size: 12px;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .ig-bio {
   margin: -6px 0 0;
@@ -10165,7 +10165,7 @@ dialog h2,
   padding-top: 16px;
   border-top: 1px solid var(--c-e6dfd3, #e6dfd3);
   font: 600 13px -apple-system, "PingFang SC", sans-serif;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .space-avatar-row {
   display: flex;
@@ -10237,7 +10237,7 @@ dialog h2,
   min-width: 0;
   flex: 1;
   font-size: 12px;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .write-book select {
   min-width: 0;
@@ -10426,7 +10426,7 @@ dialog h2,
   padding: 0 4px;
   font-size: 11px;
   line-height: 1.35;
-  color: var(--t-8a8073, #8a8073);
+  color: var(--t-756d63, #756d63);
 }
 .way-art {
   position: relative;
@@ -10517,7 +10517,7 @@ dialog h2,
   gap: 6px;
   margin: 4px 0 2px;
   font-size: 12px;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .quick-more button {
   min-height: 30px;
@@ -10606,7 +10606,7 @@ dialog h2,
   margin-top: 0.6cqw;
   font-size: 3.2cqw;
   line-height: 1.5;
-  color: var(--t-8a8073, #8a8073);
+  color: var(--t-756d63, #756d63);
 }
 .dark-backdrop.line-page .line-strip {
   background: var(--c-12101e8c, #12101e8c);
@@ -10903,7 +10903,7 @@ dialog h2,
 }
 .dress-looks small {
   font-size: 10px;
-  color: var(--t-8a8073, #8a8073);
+  color: var(--t-756d63, #756d63);
 }
 .look-avatar {
   display: block;
@@ -11218,7 +11218,7 @@ dialog h2,
   justify-content: space-between;
   margin: 0 2px 4px;
   font-size: 12px;
-  color: var(--t-8a8073, #8a8073);
+  color: var(--t-756d63, #756d63);
 }
 .strip-head .text-button {
   min-height: 28px;
@@ -11268,7 +11268,7 @@ dialog h2,
   margin: -4px 0 8px;
   text-align: center;
   font-size: 12px;
-  color: var(--t-8a8073, #8a8073);
+  color: var(--t-756d63, #756d63);
 }
 .quick-stage {
   position: static;
@@ -11301,7 +11301,7 @@ dialog h2,
 }
 .quick-result-bar small {
   font-size: 10px;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .quick-result-help {
   text-align: center;
@@ -11327,7 +11327,7 @@ dialog h2,
 }
 .smart-option small {
   font-size: 11px;
-  color: var(--t-8a8073, #8a8073);
+  color: var(--t-756d63, #756d63);
 }
 
 /* ---------- What's new ---------- */
@@ -11371,7 +11371,7 @@ dialog h2,
   border: 0;
   background: none;
   font-size: 18px;
-  color: var(--t-8a8073, #8a8073);
+  color: var(--t-756d63, #756d63);
 }
 .news-sheet {
   max-height: 86dvh;
@@ -11386,7 +11386,7 @@ dialog h2,
   align-items: center;
   gap: 8px;
   font-size: 11px;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .news-version {
   padding: 2px 8px;
@@ -11451,7 +11451,7 @@ dialog h2,
 .suggested-book small {
   font-size: 11px;
   line-height: 1.4;
-  color: var(--t-8a8073, #8a8073);
+  color: var(--t-756d63, #756d63);
 }
 .contribute-option {
   display: grid;
@@ -11471,7 +11471,7 @@ dialog h2,
 }
 .contribute-option small {
   font-size: 12px;
-  color: var(--t-8a8073, #8a8073);
+  color: var(--t-756d63, #756d63);
 }
 
 /* ---------- Reorder the shelf ---------- */
@@ -11641,7 +11641,7 @@ dialog h2,
 }
 .check-view-head small {
   font-size: 12px;
-  color: var(--t-8a8073, #8a8073);
+  color: var(--t-756d63, #756d63);
 }
 .check-view-head h2 {
   margin: 2px 0;
@@ -11768,7 +11768,7 @@ dialog h2,
 }
 .growth-card small {
   padding-left: 5.6cqw;
-  color: var(--t-7a7166, #7a7166);
+  color: var(--t-756d63, #756d63);
 }
 .growth-card-note {
   padding-top: 0.6cqw;
@@ -11916,12 +11916,12 @@ dialog h2,
 }
 .streak-week small {
   font-size: 10px;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .streak-meta {
   margin: 0;
   font-size: 12px;
-  color: var(--t-8a8073, #8a8073);
+  color: var(--t-756d63, #756d63);
 }
 .streak-card .primary {
   margin-top: 6px;
@@ -12019,7 +12019,7 @@ dialog h2,
   background: none;
   font-size: 18px;
   line-height: 1;
-  color: var(--t-8a8073, #8a8073);
+  color: var(--t-756d63, #756d63);
 }
 .chapter-title[data-title-edit] {
   cursor: text;
@@ -12101,7 +12101,7 @@ dialog h2,
   border-radius: 999px;
   background: none;
   font-size: 13px;
-  color: var(--t-7a7166, #7a7166);
+  color: var(--t-756d63, #756d63);
 }
 .book-view-switch button[aria-selected="true"] {
   background: var(--paper);
@@ -12274,7 +12274,7 @@ dialog h2,
 .music-chip i {
   font-style: normal;
   font-size: 10px;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .music-chip.playing {
   border-color: var(--accent);
@@ -12374,7 +12374,7 @@ dialog h2,
 }
 .music-info small {
   font-size: 11px;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .music-pick {
   min-height: 34px;
@@ -12384,7 +12384,7 @@ dialog h2,
 .music-note-line {
   margin: 4px 2px 6px;
   font-size: 11px;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .music-none {
   display: block;
@@ -12442,7 +12442,7 @@ dialog h2,
   min-width: 38px;
   text-align: right;
   font-size: 11px;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .book-music {
   display: flex;
@@ -12456,7 +12456,7 @@ dialog h2,
 }
 .book-music .book-music-label {
   font-size: 13px;
-  color: var(--t-7a7166, #7a7166);
+  color: var(--t-756d63, #756d63);
 }
 .book-music .text-button {
   white-space: nowrap;
@@ -12965,7 +12965,7 @@ dialog h2,
   font-size: 14px;
 }
 .today-plans li.done span {
-  color: var(--t-8d857b, #8D857B);
+  color: var(--t-756d63, #756d63);
   text-decoration: line-through;
 }
 .plan-check {
@@ -12986,7 +12986,7 @@ dialog h2,
   height: 36px;
   border: 0;
   background: none;
-  color: var(--t-8d857b, #8D857B);
+  color: var(--t-756d63, #756d63);
   font-size: 18px;
 }
 .plan-add {
@@ -13311,13 +13311,13 @@ dialog h2,
   text-align: left;
 }
 .today-habits-link small {
-  color: var(--t-8d857b, #8D857B);
+  color: var(--t-756d63, #756d63);
   font-size: 12px;
 }
 .today-habits-link i {
   margin-left: auto;
   font-style: normal;
-  color: var(--t-8d857b, #8D857B);
+  color: var(--t-756d63, #756d63);
 }
 /* What's new lives in Settings: a small dot on the gear when there is news. */
 .settings-gear {
@@ -13356,7 +13356,7 @@ dialog h2,
   cursor: pointer;
   list-style: none;
   font-size: 12px;
-  color: var(--t-8d857b, #8D857B);
+  color: var(--t-756d63, #756d63);
 }
 .news-latest summary::-webkit-details-marker {
   display: none;
@@ -13372,7 +13372,7 @@ dialog h2,
 }
 .news-latest summary b::after {
   content: " ›";
-  color: var(--t-8d857b, #8D857B);
+  color: var(--t-756d63, #756d63);
 }
 .news-latest[open] summary b::after {
   content: "";
@@ -13443,7 +13443,7 @@ dialog h2,
 }
 .check-line small {
   font-size: 12px;
-  color: var(--t-8d857b, #8D857B);
+  color: var(--t-756d63, #756d63);
 }
 .check-line em {
   font-size: 12px;
@@ -13462,7 +13462,7 @@ dialog h2,
 }
 .check-line-go {
   flex: none;
-  color: var(--t-8d857b, #8D857B);
+  color: var(--t-756d63, #756d63);
   font-size: 15px;
 }
 
@@ -13502,7 +13502,7 @@ dialog h2,
 .privacy-row small {
   font-size: 12px;
   line-height: 1.5;
-  color: var(--t-8d857b, #8D857B);
+  color: var(--t-756d63, #756d63);
 }
 .privacy-row .switch {
   flex: none;
@@ -13705,7 +13705,7 @@ dialog h2,
   padding: 0;
   border: 0;
   background: none;
-  color: var(--t-8d857b, #8D857B);
+  color: var(--t-756d63, #756d63);
   font-size: 18px;
 }
 .backup-when {
@@ -13738,7 +13738,7 @@ dialog h2,
   width: 18px;
   height: 18px;
   fill: none;
-  stroke: var(--t-8d857b, #8D857B);
+  stroke: var(--t-756d63, #756d63);
   stroke-width: 1.8;
   stroke-linecap: round;
 }
@@ -13757,7 +13757,7 @@ dialog h2,
   margin: 18px 4px;
   font-size: 13px;
   line-height: 1.7;
-  color: var(--t-8d857b, #8D857B);
+  color: var(--t-756d63, #756d63);
 }
 .search-group {
   margin: 18px 2px 8px;
@@ -13791,7 +13791,7 @@ dialog h2,
   display: grid;
   place-items: center;
   background: var(--cream);
-  color: var(--t-8d857b, #8D857B);
+  color: var(--t-756d63, #756d63);
   font-size: 15px;
 }
 .search-hit > span:last-child {
@@ -13801,7 +13801,7 @@ dialog h2,
 }
 .search-hit small {
   font-size: 11px;
-  color: var(--t-8d857b, #8D857B);
+  color: var(--t-756d63, #756d63);
 }
 .search-hit b {
   font-size: 15px;
@@ -13876,7 +13876,7 @@ dialog h2,
 }
 .memory-card .section-heading small {
   font-size: 12px;
-  color: var(--t-8d857b, #8D857B);
+  color: var(--t-756d63, #756d63);
 }
 .memory-close {
   width: 32px;
@@ -13885,7 +13885,7 @@ dialog h2,
   border: 0;
   background: none;
   font-size: 18px;
-  color: var(--t-8d857b, #8D857B);
+  color: var(--t-756d63, #756d63);
 }
 .memory-open {
   display: flex;
@@ -13973,7 +13973,7 @@ dialog h2,
   margin: 8px 0 0;
   font-size: 12px;
   line-height: 1.6;
-  color: var(--t-8d857b, #8D857B);
+  color: var(--t-756d63, #756d63);
 }
 .reminder-warn {
   color: var(--t-a0504f, #A0504F);
@@ -14010,7 +14010,7 @@ dialog h2,
   display: block;
   margin-top: 4px;
   font-size: 11px;
-  color: var(--t-8d857b, #8D857B);
+  color: var(--t-756d63, #756d63);
 }
 /* The today card uses each page's own fonts; titles keep the page's weight. */
 .home-mag .peek-slide b {
@@ -14039,7 +14039,7 @@ dialog h2,
   font-size: 11px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--t-8d857b, #8D857B);
+  color: var(--t-756d63, #756d63);
 }
 
 /* ---------- V7.7 · Little Keeper ---------- */
@@ -14259,7 +14259,7 @@ dialog h2,
   text-align: center;
 }
 .keeper-tone {
-  color: var(--t-8d857b, #8D857B);
+  color: var(--t-756d63, #756d63);
   font-size: 13px;
 }
 .keeper-local {
@@ -14359,7 +14359,7 @@ dialog h2,
 }
 .keeper-choice small {
   font-size: 11px;
-  color: var(--t-8d857b, #8D857B);
+  color: var(--t-756d63, #756d63);
 }
 .keeper-choice.selected,
 .keeper-mode.selected {
@@ -18327,7 +18327,7 @@ html[data-shell="ios"] .phone.sv ~ .toast {
 }
 .draft-status .ds-status {
   font: 400 10px var(--ui-sans);
-  color: var(--t-8a8177, #8a8177);
+  color: var(--t-756d63, #756d63);
 }
 
 /* =====================================================================
@@ -18537,7 +18537,7 @@ html[data-shell="ios"] .phone.sv ~ .toast {
   stroke-linejoin: round;
 }
 .kp-chip.later {
-  color: var(--t-8a8177, #8a8177);
+  color: var(--t-756d63, #756d63);
 }
 .kp-chip.later svg {
   stroke: var(--t-a39a8e, #a39a8e);
@@ -19787,7 +19787,7 @@ button.book-detail-showcase {
   margin-top: 3px;
   font-size: 11px;
   letter-spacing: 0.02em;
-  color: var(--t-8a8178, #8a8178);
+  color: var(--t-756d63, #756d63);
 }
 .sg-card.at-bottom.over-dock {
   bottom: calc(8px + env(safe-area-inset-bottom, 0px));
@@ -19996,7 +19996,7 @@ button.book-detail-showcase {
   font: 600 10px/1 var(--ui-sans);
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--t-8a8178, #8a8178);
+  color: var(--t-756d63, #756d63);
 }
 .pf-card-name {
   display: block;
@@ -20246,7 +20246,7 @@ button.book-detail-showcase {
 }
 .sw-moments button small {
   font-weight: 400;
-  color: var(--t-8a8178, #8a8178);
+  color: var(--t-756d63, #756d63);
 }
 .sw-moments [aria-selected="true"] {
   border-color: var(--sageDeep);
@@ -20365,7 +20365,7 @@ button.book-detail-showcase {
 .sw-count {
   justify-self: end;
   font-size: 11px;
-  color: var(--t-8a8178, #8a8178);
+  color: var(--t-756d63, #756d63);
 }
 /* Quick type: fonts in one scrolling row, then size / bold / align, colours. */
 .sw-type {
@@ -20513,14 +20513,14 @@ button.book-detail-showcase {
 .layout-hint i {
   margin-left: auto;
   font-style: normal;
-  color: var(--t-8a8178, #8a8178);
+  color: var(--t-756d63, #756d63);
 }
 .layout-hint-x {
   width: 40px;
   height: 40px;
   border-radius: 50%;
   font-size: 20px;
-  color: var(--t-8a8178, #8a8178);
+  color: var(--t-756d63, #756d63);
 }
 
 /* V10.21: the hint sits above the tools — the paper makes room for it, so
@@ -20810,7 +20810,7 @@ dialog.crop-editor::backdrop {
 .media-check .check-note {
   margin: 0 4px 10px;
   font: 13px/1.55 var(--ui-sans);
-  color: var(--t-8a8178, #8a8178);
+  color: var(--t-756d63, #756d63);
 }
 .media-check .check-body {
   max-height: min(64dvh, 560px);
@@ -20821,7 +20821,7 @@ dialog.crop-editor::backdrop {
   margin: 14px 0 4px;
   font: 600 13px var(--ui-sans);
   letter-spacing: 0.04em;
-  color: var(--t-8a8178, #8a8178);
+  color: var(--t-756d63, #756d63);
 }
 .media-check .check-row {
   display: flex;
@@ -20849,12 +20849,12 @@ dialog.crop-editor::backdrop {
 }
 .media-check code {
   font-size: 12px;
-  color: var(--t-8a8178, #8a8178);
+  color: var(--t-756d63, #756d63);
 }
 .media-check .check-running {
   padding: 18px 0;
   text-align: center;
-  color: var(--t-8a8178, #8a8178);
+  color: var(--t-756d63, #756d63);
 }
 .media-check .full-width {
   margin-top: 14px;
@@ -20914,7 +20914,7 @@ dialog.crop-editor::backdrop {
 .import-card small,
 .import-card .ic-note {
   font: 12px/1.45 var(--ui-sans);
-  color: var(--t-8a8178, #8a8178);
+  color: var(--t-756d63, #756d63);
 }
 .import-card .ic-stage {
   font: 600 13px var(--ui-sans);
@@ -21062,7 +21062,7 @@ dialog.crop-editor::backdrop {
 }
 .mood-picker .mood-head small {
   font: 12px var(--ui-sans);
-  color: var(--t-8a8178, #8a8178);
+  color: var(--t-756d63, #756d63);
   text-align: right;
 }
 .mood-stamps {
@@ -21103,7 +21103,7 @@ dialog.crop-editor::backdrop {
   color: var(--sageDeep);
 }
 .mood-stamp.mood-clear i {
-  color: var(--t-8a8178, #8a8178);
+  color: var(--t-756d63, #756d63);
 }
 .mood-stamp:disabled {
   opacity: 0.4;
@@ -21140,7 +21140,7 @@ dialog.crop-editor::backdrop {
 }
 .ctx-caption span {
   font-weight: 500;
-  color: var(--t-8a8178, #8a8178);
+  color: var(--t-756d63, #756d63);
 }
 .tool-dock.sv-tools.ctx .ctx-back .ctx-arrow {
   width: 26px;
@@ -21231,7 +21231,7 @@ body.typing:not(.typing-dialog) .ctx-caption {
   margin: 0 0 6px 2px;
   font: 600 12px var(--ui-sans);
   letter-spacing: 0.04em;
-  color: var(--t-8a8178, #8a8178);
+  color: var(--t-756d63, #756d63);
 }
 .more-group .more-grid {
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -21627,7 +21627,7 @@ body.typing:not(.typing-dialog) .ctx-caption {
   gap: 6px;
   margin: 0 0 6px;
   font-size: 12px;
-  color: var(--t-9a8f80, #9a8f80);
+  color: var(--t-756d63, #756d63);
 }
 .quick-also > span {
   flex: none;
@@ -23295,7 +23295,7 @@ body.typing:not(.typing-dialog) .ctx-caption {
   font: 600 11px/1.2 -apple-system, "Helvetica Neue", "PingFang SC", sans-serif;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--t-8a7f70, #8a7f70);
+  color: var(--t-756d63, #756d63);
 }
 :root:not([lang^="zh"]) .pw-month-label {
   letter-spacing: 0.22em;
@@ -23620,7 +23620,7 @@ body.typing:not(.typing-dialog) .ctx-caption {
 .lib-compact .lib-c-copy small {
   font: 500 11px var(--ui-sans);
   letter-spacing: 0.06em;
-  color: var(--t-8a7f70, #8a7f70);
+  color: var(--t-756d63, #756d63);
 }
 .lib-compact .lib-c-copy b {
   font-size: 16px;
@@ -24221,7 +24221,7 @@ body.typing:not(.typing-dialog) .ctx-caption {
 }
 .pm-meta small {
   font-size: 11px;
-  color: var(--t-8a7f70, #8a7f70);
+  color: var(--t-756d63, #756d63);
 }
 .pm-title {
   font-size: 12px;
@@ -24235,7 +24235,7 @@ body.typing:not(.typing-dialog) .ctx-caption {
   gap: 6px;
   min-height: 14px;
   font-size: 10px;
-  color: var(--t-8a7f70, #8a7f70);
+  color: var(--t-756d63, #756d63);
 }
 .pm-kinds i {
   font-style: normal;
@@ -24271,7 +24271,7 @@ body.typing:not(.typing-dialog) .ctx-caption {
 .pm-empty {
   padding: 40px 0;
   text-align: center;
-  color: var(--t-8a7f70, #8a7f70);
+  color: var(--t-756d63, #756d63);
 }
 .pm-foot {
   display: flex;
@@ -24416,7 +24416,7 @@ body.typing:not(.typing-dialog) .ctx-caption {
 }
 .day-toc-copy small {
   font-size: 12px;
-  color: var(--t-8a7f70, #8a7f70);
+  color: var(--t-756d63, #756d63);
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -24665,7 +24665,7 @@ body.typing:not(.typing-dialog) .ctx-caption {
 .rec-keys > i {
   font-style: normal;
   font-size: 3cqw;
-  color: var(--t-8a7f70, #8a7f70);
+  color: var(--t-756d63, #756d63);
 }
 /* C · 黑胶 — a cream sleeve, the record half out */
 .audio-ticket.skin-vinyl {
@@ -25219,7 +25219,7 @@ dialog .primary {
   padding: 10px 12px 8px;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: var(--paper, #fffdf8);
+  background: var(--paper, var(--c-fffdf8, #fffdf8));
   color: var(--ink);
 }
 .cover-font .cf-sample {
@@ -25346,17 +25346,17 @@ dialog .primary {
 .photo-wall .pw-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .photo-wall .pw-head .pw-count { margin: 0; }
 .pw-manage-btn { border: 1px solid var(--line, rgba(0, 0, 0, 0.12)); background: transparent; color: var(--ink, inherit); border-radius: 999px; padding: 6px 14px; font-family: inherit; font-size: 13px; font-weight: 600; line-height: 1.2; min-height: 34px; }
-.pw-manage-btn.on { background: var(--sage, #8fa58a); border-color: transparent; color: #fff; }
+.pw-manage-btn.on { background: var(--sage, var(--c-8fa58a, #8fa58a)); border-color: transparent; color: var(--t-ffffff, #fff); }
 .pw-manage-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 10px 0 14px; }
 .pw-manage-bar .pw-hint { flex-basis: 100%; margin: 0; font-size: 12px; line-height: 1.5; opacity: 0.72; }
 .pw-tile { position: relative; }
-.pw-tile .pw-check { position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff; background: rgba(0, 0, 0, 0.25); color: #fff; font-family: inherit; font-size: 14px; font-weight: 700; line-height: 20px; text-align: center; font-style: normal; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); }
-.pw-tile.picked { outline: 3px solid var(--sage, #8fa58a); outline-offset: -3px; }
-.pw-tile.picked .pw-check { background: var(--sage, #8fa58a); }
+.pw-tile .pw-check { position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--c-ffffff, #fff); background: rgba(0, 0, 0, 0.25); color: var(--t-ffffff, #fff); font-family: inherit; font-size: 14px; font-weight: 700; line-height: 20px; text-align: center; font-style: normal; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); }
+.pw-tile.picked { outline: 3px solid var(--sage, var(--c-8fa58a, #8fa58a)); outline-offset: -3px; }
+.pw-tile.picked .pw-check { background: var(--sage, var(--c-8fa58a, #8fa58a)); }
 .photo-wall.managing .pw-tile:not(.picked) { opacity: 0.92; }
-.pw-tile.pw-page { background: var(--paper, #fffdfa); border-radius: 6px; overflow: hidden; box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06), 0 4px 14px rgba(60, 50, 30, 0.12); padding: 0; }
+.pw-tile.pw-page { background: var(--paper, var(--c-fffdfa, #fffdfa)); border-radius: 6px; overflow: hidden; box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06), 0 4px 14px rgba(60, 50, 30, 0.12); padding: 0; }
 .pw-tile.pw-page .pw-paper { display: block; width: 100%; height: 100%; pointer-events: none; }
-.pw-tile.pw-page .pw-badge { position: absolute; left: 8px; bottom: 8px; padding: 2px 8px; border-radius: 999px; background: rgba(255, 253, 248, 0.92); color: var(--ink, #4a453c); font-family: inherit; font-size: 11px; font-weight: 600; line-height: 1.5; font-style: normal; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
+.pw-tile.pw-page .pw-badge { position: absolute; left: 8px; bottom: 8px; padding: 2px 8px; border-radius: 999px; background: rgba(255, 253, 248, 0.92); color: var(--ink, var(--t-4a453c, #4a453c)); font-family: inherit; font-size: 11px; font-weight: 600; line-height: 1.5; font-style: normal; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
 .pw-actions { position: sticky; bottom: calc(var(--nav-h, 64px) + 10px); z-index: 5; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 14px auto 0; padding: 10px; border-radius: 16px; background: var(--card, rgba(255, 253, 248, 0.96)); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14); width: fit-content; max-width: 100%; }
 .pw-actions button { min-height: 40px; }
 .pw-all-hidden { text-align: center; opacity: 0.7; padding: 32px 12px; }
@@ -25440,7 +25440,7 @@ dialog .primary {
   border-radius: 999px;
   background: var(--c-eef1e8, #eef1e8);
   font-size: 11px;
-  color: var(--c-5f6f52, #5F6F52);
+  color: var(--t-5f6f52, #5F6F52);
 }
 .book-pick .bp-check {
   display: grid;
@@ -25449,7 +25449,7 @@ dialog .primary {
   height: 26px;
   border-radius: 50%;
   background: var(--c-5f6f52, #5F6F52);
-  color: var(--c-ffffff, #ffffff);
+  color: var(--t-ffffff, #ffffff);
   font-style: normal;
   font-weight: 700;
 }
@@ -25614,13 +25614,13 @@ dialog .primary {
   border-radius: 999px;
   border: 1px solid var(--c-5f6f52, #5F6F52);
   background: var(--c-ffffff, #ffffff);
-  color: var(--c-5f6f52, #5F6F52);
+  color: var(--t-5f6f52, #5F6F52);
   font-size: 15px;
   font-weight: 600;
 }
 .daily-prompt .dp-say {
   background: var(--c-5f6f52, #5F6F52);
-  color: var(--c-ffffff, #ffffff);
+  color: var(--t-ffffff, #ffffff);
 }
 .daily-prompt .dp-next {
   margin-left: auto;
@@ -25705,7 +25705,7 @@ dialog .primary {
   border-radius: 999px;
   border: 1px solid var(--c-5f6f52, #5F6F52);
   background: var(--c-ffffff, #ffffff);
-  color: var(--c-5f6f52, #5F6F52);
+  color: var(--t-5f6f52, #5F6F52);
   font-size: 15px;
   font-weight: 600;
 }
@@ -25745,7 +25745,7 @@ dialog .primary {
   flex: 1;
   min-width: 60px;
   height: 28px;
-  color: var(--c-5f6f52, #5F6F52);
+  color: var(--t-5f6f52, #5F6F52);
 }
 .take-stop,
 .take-keep {
@@ -25763,7 +25763,7 @@ dialog .primary {
   bottom: 0;
   z-index: 2;
   padding: 10px 0 calc(6px + env(safe-area-inset-bottom, 0px));
-  background: var(--cream, #f6f1e8);
+  background: var(--cream, var(--c-f6f1e8, #f6f1e8));
 }
 .take .text-button.danger {
   color: var(--t-a0504f, #A0504F);
@@ -25795,7 +25795,7 @@ dialog .primary {
   border: 0;
   border-radius: 50%;
   background: var(--c-2b2622, #2b2622);
-  color: var(--c-ffffff, #ffffff);
+  color: var(--t-ffffff, #ffffff);
   font-size: 15px;
   line-height: 24px;
 }
@@ -26244,8 +26244,8 @@ dialog.scene-dialog {
   position: absolute;
   width: 46px;
   height: 56px;
-  border: 3px solid #fff;
-  background: #fff;
+  border: 3px solid var(--c-ffffff, #fff);
+  background: var(--c-ffffff, #fff);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 .week-card .wk-pol img {
@@ -26306,7 +26306,7 @@ dialog.scene-dialog {
 .sp-total {
   font-size: 13px;
   font-weight: 600;
-  color: var(--c-a9483a, #a9483a);
+  color: var(--t-a9483a, #a9483a);
 }
 .sp-card,
 .wp-card {
@@ -26333,7 +26333,7 @@ dialog.scene-dialog {
   margin: 4px 0 0;
   font-size: 14px;
   font-weight: 600;
-  color: var(--c-a9483a, #a9483a);
+  color: var(--t-a9483a, #a9483a);
 }
 .sp-arrow {
   width: 44px;
@@ -26431,7 +26431,7 @@ dialog.scene-dialog {
   font: inherit;
 }
 .sp-months small {
-  color: var(--c-a9483a, #a9483a);
+  color: var(--t-a9483a, #a9483a);
   font-weight: 600;
 }
 .wp-collage {
@@ -26442,8 +26442,8 @@ dialog.scene-dialog {
   position: absolute;
   width: 42%;
   height: 120px;
-  border: 5px solid #fff;
-  background: #fff;
+  border: 5px solid var(--c-ffffff, #fff);
+  background: var(--c-ffffff, #fff);
   box-shadow: 0 4px 12px rgba(47, 42, 38, 0.2);
 }
 .wp-pol img {
@@ -26532,7 +26532,7 @@ dialog.scene-dialog {
 /* One main action on Home: 每日一问's two buttons stay light beside it. */
 .home-mag .v9-home .daily-prompt .dp-say {
   background: var(--c-ffffff, #ffffff);
-  color: var(--c-5f6f52, #5F6F52);
+  color: var(--t-5f6f52, #5F6F52);
 }
 /* Today kept: Captain (if chosen) sits on today's card, as on the photo card. */
 .home-mag .v9-home .v9-hero-wrap.v84-done {
@@ -26643,4 +26643,285 @@ dialog.scene-dialog {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* ---------- V10.85 · Visual Direction v1, Phase 1 ----------
+   Shell stays modern; the journal surface (stamps, months, covers) carries a
+   little stationery sensibility. Cinnabar only for seals; bamboo green for
+   looking back; titles in a Song face for Chinese, a serif for English. */
+:root {
+  --title-serif: "LD-vintage-serif", Georgia, "Songti SC", "STSong", "LD-zh-xiaowei", "Noto Serif SC", serif;
+  --seal: var(--cinnabar, var(--c-c2544a, #C2544A));
+  --seal-ink: var(--cinnabarInk, var(--c-a9483a, #A9483A));
+}
+.stamp-strip .ss-month,
+.stamps-page .sp-head h1,
+.week-page .sp-head h1,
+.week-card .wk-line,
+.wp-quote {
+  font-family: var(--title-serif);
+}
+.stamp-strip .ss-count,
+.sp-total,
+.sp-count,
+.sp-months small {
+  color: var(--seal-ink);
+}
+.stamps-page .sp-year {
+  display: block;
+  margin-top: 2px;
+  font: 500 12px/1.2 var(--ui-sans);
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+/* Seals: warm paper, a cinnabar outline, cinnabar letters — like a real chop,
+   never a red badge. A hair of irregularity: each sits at its own slight tilt. */
+.stamp.word,
+.stamp.mark,
+.stamp-moment .stamp.word,
+.stamp-moment .stamp.mark {
+  background: var(--paper);
+  color: var(--seal-ink);
+  border: 1.5px solid var(--seal);
+  border-radius: 48% 52% 50% 50% / 52% 48% 51% 49%;
+}
+.stamp.photo {
+  border: 1.5px solid var(--seal);
+}
+.stamp.photo img {
+  filter: saturate(0.72);
+  opacity: 0.86;
+}
+.stamp.empty {
+  border: 1.2px dashed var(--seal);
+  background: transparent;
+  color: var(--muted);
+  opacity: 1;
+}
+.stamp.none {
+  border: 1px dotted var(--line);
+}
+.stamp.none.today {
+  border: 1.5px dashed var(--bamboo, var(--c-6b7f62, #6B7F62));
+}
+.ss-grid .stamp:nth-child(3n + 1):not(.none),
+.sp-grid .stamp:nth-child(3n + 1):not(.none) {
+  transform: rotate(-4deg);
+}
+.ss-grid .stamp:nth-child(3n + 2):not(.none),
+.sp-grid .stamp:nth-child(3n + 2):not(.none) {
+  transform: rotate(3deg);
+}
+.sp-grid .stamp.word,
+.sp-grid .stamp.mark {
+  border-width: 2px;
+}
+/* Just pressed: a moment of full ink, then it settles to the outline seal. */
+@keyframes seal-settle {
+  0% { background: var(--seal); color: var(--paper); }
+  55% { background: var(--seal); color: var(--paper); }
+  100% { background: var(--paper); color: var(--seal-ink); }
+}
+.stamp-moment .stamp.just.word,
+.stamp-moment .stamp.just.mark {
+  animation: stamp-press 520ms cubic-bezier(0.2, 0.7, 0.3, 1) 80ms both, seal-settle 1600ms ease-out 600ms both;
+}
+.stamp-strip .stamp.ink-in.word,
+.stamp-strip .stamp.ink-in.mark {
+  animation: stamp-press 520ms cubic-bezier(0.2, 0.7, 0.3, 1) 200ms both, seal-settle 1400ms ease-out 700ms both;
+}
+/* Captain, now and then, beside the stamp: comes up, presses, settles. */
+.stamp-moment .sm-captain {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  margin-right: -6px;
+  animation: captain-press 900ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.stamp-moment .sm-captain img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+@keyframes captain-press {
+  0% { opacity: 0; transform: translateY(8px); }
+  40% { opacity: 1; transform: translateY(0); }
+  60% { transform: translate(3px, 2px) rotate(4deg); }
+  100% { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stamp-moment .sm-captain,
+  .stamp-moment .stamp.just.word,
+  .stamp-moment .stamp.just.mark,
+  .stamp-strip .stamp.ink-in.word,
+  .stamp-strip .stamp.ink-in.mark {
+    animation: stamp-fade 240ms ease-out both;
+  }
+  .ss-grid .stamp,
+  .sp-grid .stamp {
+    transform: none !important;
+  }
+}
+/* 这一周: a bamboo-green memory card — light, not a dashboard banner. */
+.week-card {
+  background: var(--bambooWash, var(--c-e8eee3, #E8EEE3));
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px rgba(85, 104, 74, 0.12);
+}
+.week-card .v9-kicker,
+.week-card .wk-meta,
+.week-card .wk-go {
+  color: var(--sageDeep, var(--t-55684a, #55684A));
+}
+.week-card .wk-line {
+  color: var(--ink);
+}
+.week-card .wk-dots i {
+  background: rgba(85, 104, 74, 0.16);
+}
+.week-card .wk-dots i.on {
+  background: var(--bamboo, var(--c-6b7f62, #6B7F62));
+  box-shadow: none;
+}
+.week-card .wk-dots i.future {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px rgba(85, 104, 74, 0.28);
+}
+.week-card .wk-pol {
+  box-shadow: 0 4px 10px rgba(47, 42, 38, 0.18);
+}
+/* Captain's panel: the look back, and chatting as the quieter part. */
+.kp-lookback {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 10px 0 0;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--bambooWash, var(--c-e8eee3, #E8EEE3));
+}
+.kp-lookback p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink);
+}
+.kp-lookback .text-button {
+  flex: none;
+  min-height: 40px;
+  color: var(--sageDeep, var(--t-55684a, #55684A));
+}
+.kp-chat-label {
+  margin: 14px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+/* The tag beside Captain on Today: one line in Chinese; English (longer)
+   may take two, in a softly rounded label. */
+.keeper-perch .keeper-entry {
+  white-space: nowrap;
+  text-align: left;
+  line-height: 1.3;
+}
+html[lang="en"] .keeper-perch .keeper-entry {
+  white-space: normal;
+  max-width: 216px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+html[lang="en"] .keeper-perch .keeper-entry::before {
+  inset: 2px 0;
+  border-radius: 16px;
+}
+/* Capiday's own covers. */
+.book-cover.cover-capiday {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 4%;
+  padding: 14% 12% 12%;
+  overflow: hidden;
+  container-type: inline-size;
+  font-family: var(--cover-font);
+  color: var(--ink);
+}
+.cover-capiday .cv-title {
+  color: inherit;
+  font-family: var(--cover-font);
+  font-weight: 500;
+  font-size: 19cqi;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+.cover-capiday .cv-sub,
+.cover-capiday .cv-kicker {
+  font: 500 6.5cqi/1.3 var(--ui-sans);
+  letter-spacing: 0.12em;
+  color: inherit;
+  opacity: 0.78;
+}
+.cover-capiday svg {
+  position: absolute;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.7;
+}
+.cover-capiday .cv-sprig {
+  right: 8%;
+  bottom: 10%;
+  width: 26%;
+}
+.cover-capiday .cv-seal {
+  position: absolute;
+  left: 12%;
+  bottom: 9%;
+  display: grid;
+  place-items: center;
+  width: 9cqi;
+  height: 9cqi;
+  border-radius: 1.5px;
+  background: var(--seal);
+  color: var(--paper);
+  font: 700 5.4cqi/1 Georgia, serif;
+  font-style: normal;
+}
+.book-cover.cover-capiday-travel {
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.05) 0 1px, transparent 1px 3px),
+    var(--bamboo, var(--c-6b7f62, #6B7F62));
+  color: var(--t-fbf8f1, #FBF8F1);
+}
+.cover-capiday-everyday {
+  background:
+    radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.7), transparent 60%),
+    var(--cream);
+  justify-content: center;
+  text-align: left;
+}
+.cover-capiday-everyday .cv-rule {
+  display: block;
+  width: 30%;
+  height: 1px;
+  margin-top: 6%;
+  background: currentColor;
+  opacity: 0.4;
+}
+.cover-capiday-captain {
+  background:
+    radial-gradient(circle at 80% 10%, rgba(232, 207, 207, 0.35), transparent 55%),
+    var(--paper);
+}
+.cover-capiday-captain .cv-cat {
+  left: 14%;
+  bottom: 18%;
+  width: 34%;
+  stroke-width: 1.6;
+}
+.cover-capiday-captain .cv-sprig {
+  width: 20%;
 }

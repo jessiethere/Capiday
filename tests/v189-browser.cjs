@@ -167,7 +167,7 @@ function seedDays(list) {
       await page.evaluate(() => localStorage.setItem("little-days.language", "zh-CN"));
       await page.reload();
       await page.waitForSelector(".hero .stamp-strip");
-      check("S14 切换中文：今天已经记下来了 / 这个月 / 这一周…。 / 再加一页", (await page.locator(".today-prompt").innerText()) === "今天已经记下来了" && (await page.locator(".stamp-strip .v9-kicker").textContent()).startsWith("这个月") && (await page.locator(".week-card").innerText()).includes("这一周，你留下了 1 个小日子。") && (await page.locator(".home-more").innerText()).includes("再加一页"));
+      check("S14 切换中文：今天已经记下来了 / 集章卡 / 这一周…。 / 再加一页", (await page.locator(".today-prompt").innerText()) === "今天已经记下来了" && (await page.locator(".stamp-strip .v9-kicker").textContent()) === "集章卡" && (await page.locator(".week-card").innerText()).includes("这一周，你留下了 1 个小日子。") && (await page.locator(".home-more").innerText()).includes("再加一页"));
       check("S2/S14 · no page errors", errors.length === 0, errors.join(" | "));
       await context.close();
     }

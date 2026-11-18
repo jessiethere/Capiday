@@ -1055,10 +1055,7 @@
     "zh": "想要一个陪你记录的小伙伴吗？",
     "en": "Would you like a little companion for your journal?"
   },
-  "keeper.invite.body": {
-    "zh": "Little Keeper 会住在你的手帐里，随你记录的日子慢慢长大。完全可选，随时可以关掉。",
-    "en": "Little Keeper lives in your journal and grows as you keep your days. Entirely optional — turn it off any time."
-  },
+  "keeper.invite.body": { "zh": "Captain 会帮你盖章、提醒你回来看看，陪你把日子慢慢收进手帐。聊天是可选的，随时可以关掉。", "en": "Captain helps you stamp your days, nudges you back gently and keeps your little book with you. Chatting is optional — turn it off any time." },
   "keeper.invite.yes": {
     "zh": "认识一下",
     "en": "Meet them"
@@ -7275,10 +7272,7 @@
     "zh": "我在。你说。",
     "en": "Here. Go on."
   },
-  "corner.chat": {
-    "zh": "聊天",
-    "en": "Chat"
-  },
+  "corner.chat": { "zh": "今天", "en": "Today" },
   "corner.play": {
     "zh": "玩耍",
     "en": "Play"
@@ -10866,5 +10860,14 @@
   "week.next": { "zh": "下一周", "en": "Next week" },
   "stamp.thisMonth": { "zh": "这个月", "en": "This month" },
   "stamp.firstToday": { "zh": "今天，也留下来了。", "en": "Another little day, kept." },
-  "stamp.firstDay": { "zh": "{date}，也留下来了。", "en": "{date}, kept." }
+  "stamp.firstDay": { "zh": "{date}，也留下来了。", "en": "{date}, kept." },
+  "kp.entry": { "zh": "{name} 在帮你看着这本册子", "en": "{name} is keeping an eye on your little book" },
+  "kp.chatLabel": { "zh": "也可以和{name}说几句", "en": "You can also say a few words to {name}" },
+  "kp.lookMonth": { "zh": "这个月已经留下 {count} 个小日子啦。", "en": "{count} little days kept this month." },
+  "kp.lookMonthOne": { "zh": "这个月已经留下 {count} 个小日子啦。", "en": "{count} little day kept this month." },
+  "stamp.homeKicker": { "zh": "集章卡", "en": "This month" },
+  "stamp.pageKicker": { "zh": "月令集章", "en": "Stamps" },
+  "cover.capiday-travel": { "zh": "旅行笔记", "en": "Travel Notes" },
+  "cover.capiday-everyday": { "zh": "日常", "en": "Everyday" },
+  "cover.capiday-captain": { "zh": "Captain", "en": "Captain" }
 }

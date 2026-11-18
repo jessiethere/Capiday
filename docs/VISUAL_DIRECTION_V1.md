@@ -1,4 +1,4 @@
-# Capiday Visual Direction v1 Review（待 Founder 确认）
+# Capiday Visual Direction v1 Review（2026-11-18 Founder 已确认 → V10.85 实施 Phase 1）
 
 > 2026-11-18。基于 Founder 提供的参考图（首页 / 月令集章 / 集章样式 / 纸张 / 封面 / 配色 / 字体）和当前代码（V10.84）。
 > **这一轮只是设计系统方案，没有改 App 界面。** 确认后按 Phase 1 → 2 → 3 分批实施，每批单独发布、单独真机看。
@@ -222,7 +222,19 @@ English: “Captain is Capiday’s little keeper, helping you collect your days 
 
 红灯笼 / 中餐馆审美、大量书法、祥云、龙、大面积水墨山水、仿古按钮、大量朱红、传统框线、所有东西都中文化、streak / 积分 / 连续打卡（参考图首页的「连续 3 天 · 本周 3 天」只出现在 Labs 打开时，**普通用户看不到**，新设计里也不放）。
 
-## 15. 待确认
+## 15. Founder 的确认（2026-11-18）
+
+- Q1 颜色：确认；暖灰 #756D63 用于次要文字；纯朱砂只用于印章，红色文字用 #A9483A。
+- Q2 命名：中文首页继续「集章卡」；详情页大标题月份、小字「月令集章」；英文首页 This month、详情页 November。
+- Q3 这一周：改竹青。
+- Q4 字章：白底朱砂描边；刚盖下可以短暂实心。
+- Q5 Captain 频率：当月第一枚必出现；之后每周最多额外 2 次；规则要确定、可测试。
+- Q6 首页 Captain：「Captain 在帮你看着这本册子」；聊天降为次要。
+- Q7 默认书封：加 3 个（Travel Notes、My Days / Everyday、Captain / My Cat），先用排版 + 颜色 + 纹理 + 极简插画；Captain 线稿若现有素材不能自然提炼，先用占位。
+- Q8 天气：不读天气；「今天一个字」进 Phase 3 backlog，这版不做。
+- 实施记录见 agent.md「V10.85」、DESIGN_SYSTEM.md、PRODUCT_SPEC.md。
+
+## 16. 原待确认问题（已全部确认，见第 15 节）
 
 1. **Q1** 颜色：接受第 4 节 token（尤其 muted 改为 #756D63、朱砂只做填充、朱色文字用 #A9483A）？
 2. **Q2** 命名：中文「月令集章」+ 英文首页 “This month” / 集章页 “November”？还是中文继续用「集章卡」？

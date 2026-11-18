@@ -165,7 +165,18 @@ export const THEME_COVERS = {
   "editorial-grid": "",
   "pastel-cloud": "sweet",
   "seasonal-almanac": "",
+  // V10.85 · Capiday's own covers: typography, colour, a little paper texture,
+  // a very small line drawing and a tiny cinnabar seal. No photos needed.
+  "capiday-travel": "",
+  "capiday-everyday": "",
+  "capiday-captain": "",
 };
+// A thin botanical sprig and (placeholder until the real line art) a simple
+// sitting-cat outline for the Captain cover.
+const SPRIG_SVG = '<svg class="cv-sprig" viewBox="0 0 60 90" aria-hidden="true"><path d="M30 88C30 60 28 40 22 14"/><path d="M27 60c-8-2-14-9-15-17 8 1 14 7 15 17Z"/><path d="M28 45c8-3 13-10 13-18-8 2-13 9-13 18Z"/><path d="M25 30c-6-3-9-9-9-15 6 2 9 8 9 15Z"/><circle cx="22" cy="12" r="3"/></svg>';
+const CAT_SVG = '<svg class="cv-cat" viewBox="0 0 80 90" aria-hidden="true"><path d="M24 30l-4-16 12 9h16l12-9-4 16"/><path d="M24 30c-3 6-3 14 2 19M56 30c3 6 3 14-2 19"/><path d="M26 49c-8 8-10 22-6 32h40c4-10 2-24-6-32"/><path d="M60 81c10 0 14-6 12-12"/><path d="M34 38h1M45 38h1"/><path d="M38 43l2 2 2-2"/></svg>';
+// Chinese titles on these covers fall back to a Song face, never a brush one.
+const editorialFont = (book, catalog) => fontFamily(book.coverFont || "elegant", catalog).replace('"LD-chinese"', '"Songti SC","STSong","LD-zh-xiaowei"');
 const SEASON_PHOTOS = {
   spring: ["cherry-blossom", "spring-blooms"],
   summer: ["summer-tree", "golden-field"],
@@ -233,6 +244,15 @@ function themeCoverHTML(book, ctx, template) {
       return `${open()}<span class="cv-issue">${no}</span><span class="cv-mast">CAPIDAY<small>${topic}</small></span><span class="cv-frame">${img(refs[0])}</span>${tt()}<span class="cv-cols" aria-hidden="true"><i></i><i></i><i></i></span><small class="cv-foot">${line || "A LIFESTYLE JOURNAL"}</small></div>`;
     case "pastel-cloud":
       return `${open()}<span class="cv-stitch"></span><span class="cv-cloud">${img(refs[0])}</span>${tt()}<small class="cv-spark" aria-hidden="true">✦ ✧ ✦</small>${decoImg}</div>`;
+    case "capiday-travel":
+    case "capiday-everyday":
+    case "capiday-captain": {
+      const year = String(now.getFullYear());
+      const sub = line || year;
+      const art = template === "capiday-captain" ? CAT_SVG + SPRIG_SVG : template === "capiday-travel" ? SPRIG_SVG : '<i class="cv-rule" aria-hidden="true"></i>';
+      const kicker = template === "capiday-everyday" ? `<small class="cv-kicker">CAPIDAY · ${esc(year)}</small>` : "";
+      return `<div class="book-cover cover-theme cover-capiday cover-${template}" style="${style};--cover-font:${esc(editorialFont(book, catalog))}">${kicker}<b class="cv-title">${title}</b><small class="cv-sub">${esc(sub)}</small>${art}<i class="cv-seal" aria-hidden="true">C</i></div>`;
+    }
     case "seasonal-almanac": {
       const season = coverSeason(now);
       const names = { spring: ["SPRING", "春"], summer: ["SUMMER", "夏"], autumn: ["AUTUMN", "秋"], winter: ["WINTER", "冬"] };
@@ -299,7 +319,8 @@ export function coverOptionHTML(book, ctx, template) {
 }
 export function featuredCoverTemplates(book, catalog) {
   const all = catalog.coverTemplates || [];
-  const featured = all.filter((template) => template.featured).slice(0, 6);
+  // V10.85: Capiday's own covers ("lead") come first in the short row.
+  const featured = [...all.filter((template) => template.featured && template.lead), ...all.filter((template) => template.featured && !template.lead)].slice(0, 6);
   const current = all.find((template) => template.id === book.coverTemplate);
   // The chosen cover is always in the short row (first), so it stays in sight.
   if (current && !featured.includes(current)) return [current, ...featured.slice(0, 5)];

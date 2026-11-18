@@ -499,3 +499,13 @@ Owner 管理成员和共享；Editor 编辑授权内容；Viewer 查看和评论
   - 页面绘制 `renderJournalCanvas`（整本书 PDF 同一套）、PDF `buildPdf`；
   - 分享用 `navigator.share`，退回下载时由 iOS 外壳弹出系统分享面板。
   - 需要补：高清倍率、字体等待、空白检查、菜单与文案。
+
+## 2026-11-18 V10.85 · Captain 定位 v1（Founder 已确认）
+
+Captain 不是「披着猫皮的 AI 聊天机器人」，而是 Capiday 的 **Little Keeper / 守册猫**。核心职责：① 帮用户盖章；② 帮用户开始记录；③ 做轻提醒；④ 做回看反馈；⑤ 帮用户理解 Capiday 怎么用。聊天是**次要能力**（保留在 Captain 面板下方）。
+
+- 首页：「Captain 在帮你看着这本册子」/ “Captain is keeping an eye on your little book”（不再是「找 Captain」）。
+- 面板：第一页「今天 / Today」——今天的提醒和记录按钮 → 回看（这一周 / 这个月）→ 下面「也可以和 Captain 说几句」的聊天。
+- 首次盖章出现规则（`js/captain-stamp.mjs`，固定、可测试）：当月第一枚新章必出现；之后每周（周一到周日，按发生的那天）最多额外 2 次，只在「日期固定号码」落在三分之一的日子；其余只有章 + 一句 + 轻触感。只记在本机（`little-days.captain-stamps`），不进手帐、不进备份；恢复、历史、重启、重新渲染都不会触发（事件本身只在新日期第一次被盖章且保存成功时发生）。没开 Captain 时从不出现。
+- 不做：独立聊天 App、心理咨询、高频消息、任务管理、强 gamification、催促；不加天气 / 定位权限；不加 Growth / Habit。
+- **Phase 3 backlog**：「今天一个字」（晴 / 忙 / 慢 / 累 / 好 / 游 / 家 / 静…，用户主动选的私人印记，可出现在当天小印、页面标题旁、集章卡、回看页）——**本版没有实现**；Captain 伸爪按章的新美术与动画；Captain 正式线稿；节气小字（可关）；月记照片条。

@@ -154,6 +154,7 @@ import {
 import * as RS from "./js/restore-safety.mjs";
 import * as PhotoCaption from "./js/photo-caption.mjs";
 import * as Stamps from "./js/stamps.mjs";
+import * as CaptainStamp from "./js/captain-stamp.mjs";
 import { contentDays as stampContentDays } from "./js/recorded-days.mjs";
 
 // The iOS Swift shell opens index.html?shell=ios (and also injects this marker).
@@ -939,7 +940,7 @@ function stampStripHTML() {
   if (justStamped.size) setTimeout(() => justStamped.clear(), 0);
   const lead = Array.from({ length: card.lead }, () => '<i class="stamp-gap"></i>').join("");
   const count = card.count ? stampCount("stamp.monthCount", card.count) : t("stamp.monthNone");
-  return `<button class="stamp-strip" data-action="stamps-open" aria-label="${esc(t("stamp.openCard"))} · ${esc(monthLabel(year, month))} · ${esc(count)}"><span class="ss-copy"><small class="v9-kicker">${t("stamp.thisMonth")} · ${t("stamp.kicker")}</small><b class="ss-month">${esc(monthLabel(year, month))}</b><span class="ss-count">${esc(count)}</span><small class="ss-note">${t("stamp.note")}</small><span class="ss-go">${t("stamp.openCard")} ›</span></span><span class="ss-grid" aria-hidden="true">${lead}${cells.join("")}</span></button>`;
+  return `<button class="stamp-strip" data-action="stamps-open" aria-label="${esc(t("stamp.openCard"))} · ${esc(monthLabel(year, month))} · ${esc(count)}"><span class="ss-copy"><small class="v9-kicker">${t("stamp.homeKicker")}</small><b class="ss-month">${esc(monthLabel(year, month))}</b><span class="ss-count">${esc(count)}</span><small class="ss-note">${t("stamp.note")}</small><span class="ss-go">${t("stamp.openCard")} ›</span></span><span class="ss-grid" aria-hidden="true">${lead}${cells.join("")}</span></button>`;
 }
 // Home: 这一周 — this week once it has a stamp; early in the week (Mon–Wed)
 // with nothing yet, last week's (if it had any). Never a "4/7".
@@ -1008,7 +1009,7 @@ function stampsPage() {
     : `<p class="sp-hint">${t(card.count ? "stamp.pickHint" : "stamp.monthEmpty")}</p>`;
   const older = months.filter((m) => key(m) !== key(view));
   const list = older.length ? `<div class="sp-months"><h2>${t("stamp.otherMonths")}</h2>${older.map((m) => `<button data-action="stamps-month" data-year="${m.year}" data-month="${m.month}"><span>${esc(monthLabel(m.year, m.month, true))}</span><small>${esc(stampCount("stamp.monthCount", m.count))}</small></button>`).join("")}</div>` : "";
-  return `<section class="stamps-page"><header class="sp-top"><button class="back-button" data-action="nav" data-page="home">${icon("back")} ${t("back")}</button><span class="sp-total">${esc(stampCount("stamp.total", total))}</span></header><div class="sp-card"><div class="sp-head"><button class="sp-arrow" data-action="stamps-month" data-delta="-1" aria-label="${t("calendar.prev")}" ${canPrev ? "" : "disabled"}>‹</button><div><small class="v9-kicker">${t("stamp.kicker")}</small><h1>${esc(monthLabel(view.year, view.month, true))}</h1><p class="sp-count">${esc(card.count ? stampCount("stamp.monthCount", card.count) : t("stamp.monthNone"))}</p></div><button class="sp-arrow" data-action="stamps-month" data-delta="1" aria-label="${t("calendar.next")}" ${canNext ? "" : "disabled"}>›</button></div><div class="sp-week" aria-hidden="true">${heads}</div><div class="sp-grid">${lead}${cells}</div><p class="sp-note">${t("stamp.note")}</p></div>${panel}${list}</section>`;
+  return `<section class="stamps-page"><header class="sp-top"><button class="back-button" data-action="nav" data-page="home">${icon("back")} ${t("back")}</button><span class="sp-total">${esc(stampCount("stamp.total", total))}</span></header><div class="sp-card"><div class="sp-head"><button class="sp-arrow" data-action="stamps-month" data-delta="-1" aria-label="${t("calendar.prev")}" ${canPrev ? "" : "disabled"}>‹</button><div><small class="v9-kicker">${t("stamp.pageKicker")}</small><h1>${esc(monthLabel(view.year, view.month))}</h1><span class="sp-year">${view.year}</span><p class="sp-count">${esc(card.count ? stampCount("stamp.monthCount", card.count) : t("stamp.monthNone"))}</p></div><button class="sp-arrow" data-action="stamps-month" data-delta="1" aria-label="${t("calendar.next")}" ${canNext ? "" : "disabled"}>›</button></div><div class="sp-week" aria-hidden="true">${heads}</div><div class="sp-grid">${lead}${cells}</div><p class="sp-note">${t("stamp.note")}</p></div>${panel}${list}</section>`;
 }
 // The week page: what this week kept, read only.
 function weekPage() {
@@ -1045,6 +1046,7 @@ function weekPage() {
 // one line: no sheet to close, nothing to tap, no sound; one light tap on the
 // iPhone. The Store calls this only after the change is stored.
 const justStamped = new Set();
+const CAPTAIN_STAMP_KEY = "little-days.captain-stamps"; // device-only: when Captain came to a stamp
 let stampMomentTimer = null;
 function stampMoment(dates) {
   const list = (dates || []).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d));
@@ -1057,23 +1059,44 @@ function stampMoment(dates) {
   const face = stampFaceHTML({ date, stamp }, { today: dateKey(), photos: !privacyOn("hideToday"), big: true });
   const when = new Date(`${date}T12:00:00`).toLocaleDateString(locale(), { month: "long", day: "numeric" });
   const line = date === dateKey() ? t("stamp.firstToday") : t("stamp.firstDay", { date: when });
+  // V10.85: Captain comes for the month's first stamp, and now and then (at
+  // most twice more a week) — a fixed rule, see js/captain-stamp.mjs.
+  let role = "";
+  if (keeperNow().enabled) {
+    let log = {};
+    try {
+      log = JSON.parse(localStorage.getItem(CAPTAIN_STAMP_KEY) || "{}") || {};
+    } catch {}
+    // Dates stamped before this event (the ones it just added are left out).
+    const before = Object.keys(Stamps.stampsByDate(state())).filter((d) => !list.includes(d));
+    role = CaptainStamp.captainRole({ date, before, today: dateKey(), log });
+    if (role)
+      try {
+        localStorage.setItem(CAPTAIN_STAMP_KEY, JSON.stringify(CaptainStamp.remember(log, date, role, dateKey())));
+      } catch {}
+  }
   $("#stamp-moment")?.remove();
   clearTimeout(stampMomentTimer);
   const box = document.createElement("div");
   box.id = "stamp-moment";
-  box.className = "stamp-moment";
+  box.className = `stamp-moment${role ? " with-captain" : ""}`;
   box.setAttribute("role", "status");
   box.dataset.date = date;
-  box.innerHTML = `<i class="stamp ${face.cls}" aria-hidden="true">${face.inner}</i><span>${esc(line)}</span>`;
+  box.dataset.captain = role;
+  const k = keeperNow();
+  const cat = role ? `<span class="sm-captain" aria-hidden="true">${keeperImage(catalog, { animal: k.animal, outfit: k.outfit, mood: "happy", label: "" })}</span>` : "";
+  box.innerHTML = `${cat}<i class="stamp ${face.cls} just" aria-hidden="true">${face.inner}</i><span>${esc(line)}</span>`;
   $("#phone").append(box);
   prHaptic();
-  logEvent("stamp_first", { today: date === dateKey() });
+  logEvent("stamp_first", { today: date === dateKey(), captain: role || "none" });
   stampMomentTimer = setTimeout(() => {
     box.classList.add("leaving");
     setTimeout(() => box.remove(), 600);
   }, 2600);
 }
 async function stampsAction(actionName, target) {
+  // From Captain's panel: close it first.
+  if ($("#choose-dialog")?.open && (actionName === "stamps-open" || actionName === "week-open")) $("#choose-dialog").close();
   if (actionName === "stamps-open") {
     const [year, month] = dateKey().split("-").map(Number);
     stampsView = { year, month };
@@ -2026,7 +2049,7 @@ function keeperPerchHTML() {
   const line = keeperLine || (grew ? t("keeper.grew", { stage: t("keeper.stage." + growth.id) }) : spoken);
   const mood = "peek";
   // A small tag beside it opens the same panel as tapping it (not in Quiet mode).
-  const entry = Keeper.modeAllows(k, "invite") && !line ? `<button class="keeper-entry" data-action="keeper-panel">${keeperPanelIcon("chat")}${esc(tk("kp.entry", k))}</button>` : "";
+  const entry = Keeper.modeAllows(k, "invite") && !line ? `<button class="keeper-entry" data-action="keeper-panel">${keeperPanelIcon("book")}${esc(tk("kp.entry", k))}</button>` : "";
   return `<div class="keeper-home keeper-perch">${line ? `<p class="keeper-bubble" role="status"><b>${esc(name)}</b>${esc(line)}</p>` : ""}${entry}<button class="keeper-tap" data-action="keeper-tap" aria-label="${esc(t("keeper.tapLabel", { name }))}">${keeperArt(mood)}</button></div>`;
 }
 // V9.0 Home: the three secondary ways to start use the same quiet line
@@ -2155,7 +2178,7 @@ function keeperShelfFacts() {
   return { count: mine.length, untagged: mine.filter((bk) => !(bk.tags || []).length).length, latest: latest?.last ? latest.bk.title : "", title: latest?.last ? latest.bk.title : "" };
 }
 function keeperPanelIcon(kind) {
-  const paths = { organize: '<rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M9 3v4M15 3v4"/>', memory: '<path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 5v4h4"/><path d="M12 8v4l3 2"/>', write: '<path d="M4 20h4l10-10-4-4L4 16v4Z"/><path d="m13 7 4 4"/>', chat: '<path d="M5 6h14v9H10l-4 3v-3H5Z"/>' };
+  const paths = { book: '<path d="M5 4.5h11a2 2 0 0 1 2 2V20H7a2 2 0 0 1-2-2Z"/><path d="M5 18a2 2 0 0 1 2-2h11"/><path d="M9.5 8.5h5"/>', organize: '<rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M9 3v4M15 3v4"/>', memory: '<path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 5v4h4"/><path d="M12 8v4l3 2"/>', write: '<path d="M4 20h4l10-10-4-4L4 16v4Z"/><path d="m13 7 4 4"/>', chat: '<path d="M5 6h14v9H10l-4 3v-3H5Z"/>' };
   return `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[kind]}</svg>`;
 }
 // V10.5 · the composer: a clear Send button beside the field, a draft that
@@ -2463,7 +2486,9 @@ function openKeeperPanel(view = keeperView) {
   else if (view === "memory") body = top(t("kp.mem.title")) + `<div class="kp-scroll">${keeperMemoryHTML()}</div>`;
   else {
     const composer = `<div class="keeper-say kp-input"><textarea data-keeper-say rows="1" maxlength="300" enterkeyhint="enter" placeholder="${esc(tk("kp.say", k))}" aria-label="${esc(tk("kp.say", k))}">${esc(keeperUnsent())}</textarea><button class="kp-send" data-action="keeper-say" aria-label="${t("kp.send")}" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V6M6 11.5l6-6 6 6"/></svg><span>${t("kp.send")}</span><i class="kp-spin" aria-hidden="true"></i></button></div>`;
-    body = `${head}${keeperActsHTML()}<div class="keeper-msgs" aria-live="polite">${keeperLinesHTML()}</div>${composer}<p class="save-help keeper-local">${t(CaptainAI.devSettings() ? "kp.local" : "kp.simple")}</p>`;
+    // V10.85: Captain is the Little Keeper first — today's reminder and a way
+    // to start (the card), then a look back; chatting is the quieter part below.
+    body = `${head}${keeperActsHTML()}${keeperLookBackHTML()}${keeperChat.length ? "" : `<p class="kp-chat-label">${esc(tk("kp.chatLabel", k))}</p>`}<div class="keeper-msgs" aria-live="polite">${keeperLinesHTML()}</div>${composer}<p class="save-help keeper-local">${t(CaptainAI.devSettings() ? "kp.local" : "kp.simple")}</p>`;
   }
   const dialog = $("#choose-dialog");
   // Still typing (re-drawn while the field has the caret): keep the typing layout.
@@ -2473,6 +2498,17 @@ function openKeeperPanel(view = keeperView) {
   if (!dialog.open) dialog.showModal();
   scrollKeeperChat();
   syncKeeperComposer();
+}
+// V10.85: one quiet look back in Captain's panel — the stamps of this month
+// and this week's little days (only what is in the journal; no score).
+function keeperLookBackHTML() {
+  const today = dateKey();
+  const [y, m] = today.split("-").map(Number);
+  const month = Stamps.monthStamps(state(), y, m).count;
+  const week = Stamps.weekReview(state(), today).recorded;
+  if (!month) return "";
+  const line = week ? weekLine({ recorded: week }, false) : stampCount("kp.lookMonth", month);
+  return `<div class="kp-lookback"><p>${esc(line)}</p><button class="text-button" data-action="${week ? "week-open" : "stamps-open"}">${t(week ? "week.open" : "stamp.openCard")} ›</button></div>`;
 }
 function scrollKeeperChat() {
   const box = $("#choose-dialog .kp .keeper-msgs");
