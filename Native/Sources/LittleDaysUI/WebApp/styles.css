@@ -27335,3 +27335,145 @@ html[lang="en"] .keeper-perch .keeper-entry::before {
   object-fit: contain;
   object-position: 50% 50%;
 }
+
+/* =====================================================================
+   V10.91 · The illustrated Captain everywhere (Pack v1 + Addendum v1.1)
+   Home, Captain's panel, the shelf, Settings, Looks, the weekly recap and
+   the Playroom. Painted pictures: no eye-follow, no breathing squash.
+   ===================================================================== */
+.keeper.cap-art,
+.keeper.cap-shelf,
+.keeper.cap-perch {
+  transform: none;
+}
+.keeper.cap-art > .bot,
+.keeper.cap-shelf > .bot {
+  position: relative;
+  display: block;
+  width: 100% !important;
+  height: auto;
+  margin: 0;
+}
+.kp-head .keeper.cap-art,
+.kp-head .keeper.cap-art > .bot {
+  width: 64px !important;
+  height: auto;
+}
+.kp-note .keeper.cap-art,
+.kp-note .keeper.cap-art > .bot {
+  width: 48px !important;
+  height: auto;
+}
+.s2-keeper .keeper.cap-art > .bot,
+.keeper-profile .keeper.cap-art > .bot {
+  height: auto;
+  object-fit: contain;
+}
+/* Home: Captain looks over the top edge of today's card — the lower half of
+   the bust is behind the card. A tap closes its eyes for a moment. */
+.v9-hero-wrap .keeper-perch .keeper.cap-perch {
+  position: relative;
+  width: 84px;
+  margin: 0 0 -46px 0;
+  animation: k-peek 0.7s cubic-bezier(0.3, 1.3, 0.5, 1) both;
+}
+.v9-hero-wrap:has(.keeper-perch) .v9-hero,
+.v9-hero-wrap:has(.keeper-perch) .today-story {
+  position: relative;
+  z-index: 4;
+}
+.keeper.cap-perch > .bot {
+  position: relative;
+  display: block;
+  width: 100% !important;
+  height: auto;
+  margin: 0;
+  transition: opacity 0.12s ease;
+}
+.keeper.cap-perch > .cap-squint {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  opacity: 0;
+}
+.keeper.cap-perch.squint > .cap-squint { opacity: 1; }
+.keeper.cap-perch.squint > .cap-rest { opacity: 0; }
+/* The shelf: sitting up by day, asleep on the books at night. */
+.keeper-shelf .keeper.cap-shelf {
+  width: 64px;
+}
+.keeper-shelf .keeper.cap-shelf.mood-sleepy {
+  width: 96px;
+}
+/* Looks: the chip shows the look itself (no hat · the lemon hat · the yarn ball). */
+.look-chip .look-art .bot {
+  position: relative;
+  width: 100% !important;
+  height: 100%;
+  object-fit: contain;
+  margin: 0;
+}
+/* Weekly recap: Captain looking at the journal on the week card… */
+.week-card.has-captain {
+  position: relative;
+}
+.week-card .wk-captain {
+  position: absolute;
+  right: 12px;
+  top: 10px;
+  width: 84px;
+  pointer-events: none;
+}
+.week-card .wk-captain .bot {
+  position: relative;
+  width: 100% !important;
+  height: auto;
+}
+/* the words stay clear of Captain (with photos, the thumbs sit below it) */
+.week-card.has-captain .wk-head {
+  padding-right: 88px;
+}
+.week-card.has-captain .wk-thumbs {
+  margin-top: 56px;
+}
+/* …and by the open album on the recap page. */
+.wp-captain {
+  display: flex;
+  justify-content: center;
+  margin: 4px 0 6px;
+}
+.wp-captain .bot {
+  position: relative;
+  width: min(200px, 62%) !important;
+  height: auto;
+}
+/* Playroom: one fixed 3:2 frame box (≤ 256pt, the frames' clear size),
+   every frame stacked on the same origin; only the current one shows. */
+.pr-frames {
+  position: absolute;
+  left: 50%;
+  bottom: 4%;
+  width: min(256px, 94%);
+  aspect-ratio: 3 / 2;
+  transform: translateX(-50%);
+}
+.pr-frames .pr-frame {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100%;
+  margin: 0;
+  object-fit: contain;
+  visibility: hidden;
+}
+.pr-frames .pr-frame.on {
+  visibility: visible;
+}
+.pr .pr-body {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}

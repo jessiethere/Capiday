@@ -60,7 +60,7 @@ const shots = process.env.SHOTS || "";
     await page.locator('[data-action="keeper-start"]').tap();
     await page.waitForSelector(".keeper-home");
     await settings(page);
-    const art = await page.locator(".s2-keeper img.keeper-img").boundingBox();
+    const art = await page.locator(".s2-keeper img.bot-captain").boundingBox();
     assert.ok(art.width >= 88, `Captain is larger (${art.width}px)`);
     assert.equal(await page.locator('.s2-keeper [data-sheet="keeper"]').count(), 1, "角色与装扮 stays");
     const play = page.locator(".s2-keeper .s2-play");

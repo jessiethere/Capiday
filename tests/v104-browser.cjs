@@ -84,7 +84,7 @@ const shots = process.env.SHOTS || "";
     await page.waitForFunction(() => JSON.parse(localStorage.getItem("little-days.v1")).keeper?.enabled === true);
     await settings();
     await page.waitForSelector(".s2-keeper");
-    assert.equal(await page.locator(".s2-keeper img.keeper-img").count(), 1, "Captain's picture");
+    assert.equal(await page.locator(".s2-keeper img.bot-captain").count(), 1, "Captain's picture (V10.91: illustrated)");
     assert.match(await page.locator(".keeper-card").innerText(), /Captain[\s\S]*角色与装扮[\s\S]*安静[\s\S]*温柔[\s\S]*互动[\s\S]*关闭/);
     assert.equal(await page.locator(".s2 [data-keeper-rename]").count(), 0, "details are not spread on the page");
     await page.locator('.s2-seg [data-action="keeper-set"][data-value="interactive"]').tap();

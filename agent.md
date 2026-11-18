@@ -48,6 +48,50 @@
 
 ## 更新日志
 
+### 2026-11-18 — V10.91 Captain 全部换成插画（首页 → 面板 / 书架 / 设置 / 装扮 → Playroom，+ 每周回看）
+
+- **需求**（Founder 五条）：
+  1. v1 原图替换临时裁图，引导卡头像用眯眼 happy；
+  2. 每周回看入口 reading-journal、回看页 weekly-recap；
+  3. 按顺序迁移首页 → 面板和书架 → Playroom，重播引导时遮罩后的首页 Captain 也是插画，首页取消眼睛跟手、保留点一下短暂眯眼；
+  4. Playroom 选 B：默认无帽、点一下播无帽抱抱，戴柠檬帽后点一下播戴帽拍毛线球，各 4 帧 768×512，点一次播一轮停在末帧，戴帽抱抱以后再做；
+  5. 验证并记录，Linux 检查和 iPhone 真机分开写。
+- **第 1 条受阻**：会话里没有 `Captain-Illustrated-Asset-Pack-v1.zip`（上传目录和整个文件系统都找不到），所以 card-edge-peek / expressions/happy / playroom/01–04 仍是从总图裁出的同一张画。引导卡头像已经是 expr-happy（V10.90），居中并在耳尖留白。收到压缩包后直接替换文件即可，代码不用改。
+- **文件**：
+  - `tools/cut_captain_pack.py`：SHIP 扩到 22 张（只有 expr-curious 不上线）；
+  - `Public/js/captain.mjs`（新）：装扮 LOOKS（none / lemon / yarn，默认 none）、`lookOf` / `storedLook`、心情 → 插画、PLAY 三组帧和节奏；
+  - `botanicals.mjs`：CAPTAIN_PACK 22 张、`captainPortrait` 新增 calm / sleepy / reading / recap、`packArt`；
+  - `app.js`：
+    - `keeperArt` 改成按心情画插画（不再有 data-keeper-follow）；
+    - 首页 perch：expr-calm 在卡片上沿后探头，点击 0.7 秒换成 expr-happy，360ms 后打开面板；
+    - 书架：白天 sit-up，夜里 sleep；
+    - 装扮：三个选项，插画缩略；
+    - 本地模型的 wearing 字段、帽子台词判断改用 Cap；
+    - Playroom 整段重写（帧叠在同一个 3:2 框里，框宽 ≤ 256pt，点一下按节奏播一轮停末帧，再点重播，减少动态时直接末帧，台词保留）；
+    - 周卡片右上 captain-reading（邀请卡出现时不放，守住密度规则），回看页 captain-recap；
+    - 去掉 keeper-art.mjs 的 import（模块和 3D 图片都保留在仓库）。
+  - `styles.css`：V10.91 区块；`i18n.json`：play.hugInvite / hugHint / yarnHint / tapLabel / hug1 / hug2；`whats-new` 10.91。
+- **决定**：
+  - `keeper.outfit` 存法不变：默认存 ""（现在代表不戴帽），柠檬帽存 "lemon"。
+  - **注意**：V10.91 之前选过柠檬帽（当时是默认）的人存的也是 ""，现在会显示不戴帽，要重新选一次柠檬帽。数据没有被改动。
+  - 3D 模块和图片不删，只剩「戴帽抱抱」没有插画。
+- **测试（Linux / Chromium，不是真机）**：
+  - 新 `tests/v195-browser.cjs` 8/8：
+    - 首页 expr-calm 在卡片边、无眼睛跟随、点一下眯眼再开面板；
+    - 面板 / 装扮插画，三个装扮选项；
+    - 无帽抱抱 hug-1…4 按 180/150/220/420、停在 hug-4、再点重播；
+    - 戴帽 play-hat-1…4（160/130/130/360）；毛线球 v1 4 帧；
+    - 改装扮只改 outfit；减少动态直接末帧；
+    - 书架、设置插画；周卡片 / 回看页插画（不压字）；
+    - 重播引导时遮罩后是插画、全页没有 3D。
+  - v108 / v117（3D 装扮 / 3D Playroom）退役，由 v195 代替；v71 / v104 / v110 / v193 改查插画。
+  - 在工作副本里通过：v71 v104 v105 v109 v110 v124 v31 v158 v164 v178 v179 v190 v191 v192 v193 v194 v195；单元测试 382/382；Python 测试通过。
+- **iPhone 真机**：**未验证**（Mac 未连接）。待看：
+  - 首页探头是否被卡片正确遮住；
+  - 点一下眯眼的时长；
+  - Playroom 帧是否清晰、播放是否顺；
+  - 周卡片上 Captain 的大小。
+
 ### 2026-11-18 — 每周回看两张 Captain 插画收到（reading-journal / weekly-recap，STAGED）
 
 - **需求**：Founder 在对话里发来两张透明 WebP（没有附文字），正是补充包 README 提到的 v1 `poses/reading-journal.png`（Captain 低头看摊开的手帐，旁边一枝白花）和 `interactions/weekly-recap.png`（Captain 趴在一本风景画册旁，抬头看你）。

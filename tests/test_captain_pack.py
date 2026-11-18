@@ -37,7 +37,10 @@ class CaptainPackTests(unittest.TestCase):
 
     def test_only_confirmed_assets_ship(self):
         shipped = sorted(e['name'] for e in self.assets if e['shipped'])
-        self.assertEqual(shipped, ['captain-face', 'captain-lie', 'captain-sit-up', 'expr-happy'])
+        staged = sorted(e['name'] for e in self.assets if not e['shipped'])
+        # V10.91: everything the interface uses ships; curious stays staged (unused).
+        self.assertEqual(staged, ['expr-curious'])
+        self.assertIn('hug-4', shipped)
         for entry in self.assets:
             for folder in ('Public', 'Native/Sources/LittleDaysUI/WebApp'):
                 found = list((ROOT / folder).rglob(f"{entry['name']}.png"))

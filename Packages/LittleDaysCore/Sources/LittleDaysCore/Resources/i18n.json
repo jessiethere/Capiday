@@ -7669,6 +7669,30 @@
     "zh": "这边、这边！",
     "en": "Over here!"
   },
+  "play.hugInvite": {
+    "zh": "要抱抱我的小抱枕吗？",
+    "en": "Shall I hug my little cushion?"
+  },
+  "play.hugHint": {
+    "zh": "点一下{name}，它会抱住心形小抱枕。",
+    "en": "Tap {name} for a hug with the little heart cushion."
+  },
+  "play.yarnHint": {
+    "zh": "点一下{name}，它会拍拍毛线球。",
+    "en": "Tap {name} to bat the yarn ball."
+  },
+  "play.tapLabel": {
+    "zh": "点一下{name}",
+    "en": "Tap {name}"
+  },
+  "play.hug1": {
+    "zh": "抱住啦～",
+    "en": "Got my cushion~"
+  },
+  "play.hug2": {
+    "zh": "软软的，好舒服。",
+    "en": "So soft and cosy."
+  },
   "play.again1": {
     "zh": "再来一次？",
     "en": "Again?"

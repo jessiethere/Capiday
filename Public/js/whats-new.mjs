@@ -4,6 +4,28 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.91",
+    date: "2026-11-18",
+    zh: {
+      title: "Captain 全部换成插画",
+      items: [
+        "首页的 Captain 换成插画：从今天的卡片上沿探出头来，点一下会眯眼笑一下，再打开 Captain 的小角落。眼睛不再跟着手指转。",
+        "Captain 面板、书架、设置里的 Captain 都换成了插画；装扮里可以选「不戴帽」「柠檬帽」「毛线球」，默认不戴帽。",
+        "玩耍换成插画动画：点一下播放一轮，停在最后一帧，再点一下重播。不戴帽时 Captain 会抱住心形小抱枕；戴上柠檬帽后，它会拍拍毛线球。",
+        "每周回看：首页的这一周卡片上，Captain 在低头看手帐；点开回看页，Captain 趴在画册旁边看着你。",
+      ],
+    },
+    en: {
+      title: "Captain, illustrated everywhere",
+      items: [
+        "On Home, the illustrated Captain looks over the top of today's card; tap and it closes its eyes for a smile, then Captain's corner opens. Its eyes no longer follow your finger.",
+        "Captain's panel, the shelf and Settings show the illustrated Captain too. Looks offers No hat, Lemon hat and Yarn ball; no hat is the default.",
+        "Play is now illustrated: one tap plays one round and stays on the last frame; tap again to replay. With no hat Captain hugs a little heart cushion; in the lemon hat it bats the yarn ball.",
+        "Weekly recap: on Home's week card Captain is reading the journal; open the recap and Captain is lying by an album, looking at you.",
+      ],
+    },
+  },
+  {
     version: "10.90",
     date: "2026-11-18",
     zh: {

@@ -62,9 +62,10 @@ const shots = process.env.SHOTS_DIR || "";
     // V8.0: Home already greets, so Captain doesn't add a second greeting.
     assert.equal(await page.locator(".keeper-home .keeper-bubble").count(), 0, "no extra welcome line");
     // The approved character art as an image (Captain's Peek), never SVG.
-    const art = page.locator('.keeper-home img.keeper-img[data-animal="cat"]');
+    // V10.91: the illustrated Captain looks over the card's edge (no 3D, no eye-follow).
+    const art = page.locator('.keeper-home .cap-perch.mood-peek img.bot-captain[data-asset="expr-calm"]');
     assert.equal(await art.count(), 1);
-    assert.equal(await art.getAttribute("data-mood"), "peek");
+    assert.equal(await page.locator(".keeper-home .keeper-img, [data-keeper-follow]").count(), 0);
     // A tap: one short line, which goes away by itself.
     // V10.3: a tap (Gentle too) opens Captain's panel with a line that fits the day; a small tag beside it does the same.
     assert.equal(await page.locator('.keeper-home [data-action="keeper-panel"]').count(), 1);
@@ -75,7 +76,7 @@ const shots = process.env.SHOTS_DIR || "";
     const bubbleBox = await page.locator(".kp .cp-card p").boundingBox();
     assert.ok(bubbleBox.width > 100 && bubbleBox.height < 120, `bubble ${bubbleBox.width}×${bubbleBox.height}`);
     await page.locator('.kp [data-action="choose-close"]').click();
-    await page.waitForFunction(() => document.querySelector(".keeper-home img.keeper-img")?.naturalWidth > 0);
+    await page.waitForFunction(() => document.querySelector(".keeper-home img.bot-captain")?.naturalWidth > 0);
     assert.equal(await page.locator(".keeper svg").count(), 0);
     if (shots) await page.screenshot({ path: `${shots}/v71-home.png` });
     passed.push("onboarding: Captain only, name it, choose Gentle — kept after a reload; on Today a quiet Peek (no extra greeting); a tap opens the panel");

@@ -89,7 +89,7 @@
   {
    "name": "acc-lemon-hat",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1/source-sheet.png",
    "canvas": false,
    "sourceSize": [
@@ -120,7 +120,7 @@
   {
    "name": "acc-yarn",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1/source-sheet.png",
    "canvas": false,
    "sourceSize": [
@@ -148,7 +148,7 @@
   {
    "name": "play-watch",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1/source-play.png",
    "canvas": true,
    "sourceSize": [
@@ -175,7 +175,7 @@
   {
    "name": "play-reach",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1/source-play.png",
    "canvas": true,
    "sourceSize": [
@@ -202,7 +202,7 @@
   {
    "name": "play-bat",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1/source-play.png",
    "canvas": true,
    "sourceSize": [
@@ -229,7 +229,7 @@
   {
    "name": "play-rolled",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1/source-play.png",
    "canvas": true,
    "sourceSize": [
@@ -256,7 +256,7 @@
   {
    "name": "play-hat-1",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1.1/playroom/yarn-lemon-hat/01-notice.png",
    "canvas": true,
    "sourceSize": [
@@ -283,7 +283,7 @@
   {
    "name": "play-hat-2",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1.1/playroom/yarn-lemon-hat/02-reach.png",
    "canvas": true,
    "sourceSize": [
@@ -310,7 +310,7 @@
   {
    "name": "play-hat-3",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1.1/playroom/yarn-lemon-hat/03-nudge.png",
    "canvas": true,
    "sourceSize": [
@@ -337,7 +337,7 @@
   {
    "name": "play-hat-4",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1.1/playroom/yarn-lemon-hat/04-settle.png",
    "canvas": true,
    "sourceSize": [
@@ -364,7 +364,7 @@
   {
    "name": "hug-1",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1.1/playroom/hug/01-notice.png",
    "canvas": true,
    "sourceSize": [
@@ -391,7 +391,7 @@
   {
    "name": "hug-2",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1.1/playroom/hug/02-lean-in.png",
    "canvas": true,
    "sourceSize": [
@@ -418,7 +418,7 @@
   {
    "name": "hug-3",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1.1/playroom/hug/03-hug.png",
    "canvas": true,
    "sourceSize": [
@@ -445,7 +445,7 @@
   {
    "name": "hug-4",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1.1/playroom/hug/04-settle.png",
    "canvas": true,
    "sourceSize": [
@@ -472,7 +472,7 @@
   {
    "name": "captain-reading",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1/source-reading-journal.webp",
    "canvas": false,
    "sourceSize": [
@@ -499,7 +499,7 @@
   {
    "name": "captain-recap",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1/source-weekly-recap.webp",
    "canvas": false,
    "sourceSize": [
@@ -526,7 +526,7 @@
   {
    "name": "expr-calm",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1/source-expressions.png",
    "canvas": false,
    "sourceSize": [
@@ -612,7 +612,7 @@
   {
    "name": "expr-sleepy",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1/source-expressions.png",
    "canvas": false,
    "sourceSize": [

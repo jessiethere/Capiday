@@ -82,6 +82,11 @@ ASSETS = {
 # Founder 2026-11-18 ("可以放"): shipped with V10.89 for the places that use them;
 # captain-lie (paws forward) with V10.90 as the card-edge peek on the welcome.
 SHIP = {"captain-face", "captain-sit-up", "expr-happy", "captain-lie"}
+# V10.91 (Founder, 2026-11-18): Home, Captain's panel, the shelf, Settings,
+# Looks, the weekly recap and the Playroom move to the illustrated Captain.
+SHIP |= {"expr-calm", "expr-sleepy", "acc-lemon-hat", "acc-yarn", "captain-reading", "captain-recap"}
+SHIP |= {"play-watch", "play-reach", "play-bat", "play-rolled"}
+SHIP |= {f"play-hat-{i}" for i in range(1, 5)} | {f"hug-{i}" for i in range(1, 5)}
 # Playroom frames keep their full canvas (same origin across a sequence).
 CANVAS = {n for n in ASSETS if n.startswith(("play-", "hug-"))}
 

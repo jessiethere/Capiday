@@ -11,7 +11,9 @@
 //
 //   botanical(kind, options)  kind: "corner" | "sprig" | "berry" | "blossom"
 //   captainVignette(options)  pose: "sleep" | "sit" | "ready" | "stamp"
-//   captainPortrait(kind)     "face" | "happy" | "sit-up" | "peek" (Captain Pack v1)
+//   captainPortrait(kind)     "face" | "happy" | "sit-up" | "peek" | "calm" |
+//                             "sleepy" | "reading" | "recap" (Captain Pack v1)
+//   packArt(name, options)    any shipped Pack picture by name (looks, frames)
 //   coverArt(kind)            "everyday" | "captain" ("travel": NEEDS HI-RES)
 //   decorPlan(surface, ctx)   which decorations a surface may show (density)
 //
@@ -50,6 +52,26 @@ export const CAPTAIN_PACK = {
   "captain-sit-up": [540, 647, 180, "APPROVED"],
   "expr-happy": [360, 452, 120, "APPROVED"],
   "captain-lie": [540, 640, 180, "APPROVED"],
+  // V10.91: the rest of Captain moves to the illustrations.
+  "expr-calm": [360, 462, 120, "APPROVED"],
+  "expr-sleepy": [360, 422, 120, "APPROVED"],
+  "acc-lemon-hat": [436, 374, 145, "APPROVED"],
+  "acc-yarn": [300, 276, 100, "APPROVED"],
+  "captain-reading": [739, 514, 246, "APPROVED"],
+  "captain-recap": [758, 613, 252, "APPROVED"],
+  // Playroom frames: one 768x512 canvas and origin per sequence.
+  "play-watch": [768, 512, 256, "APPROVED"],
+  "play-reach": [768, 512, 256, "APPROVED"],
+  "play-bat": [768, 512, 256, "APPROVED"],
+  "play-rolled": [768, 512, 256, "APPROVED"],
+  "play-hat-1": [768, 512, 256, "APPROVED"],
+  "play-hat-2": [768, 512, 256, "APPROVED"],
+  "play-hat-3": [768, 512, 256, "APPROVED"],
+  "play-hat-4": [768, 512, 256, "APPROVED"],
+  "hug-1": [768, 512, 256, "APPROVED"],
+  "hug-2": [768, 512, 256, "APPROVED"],
+  "hug-3": [768, 512, 256, "APPROVED"],
+  "hug-4": [768, 512, 256, "APPROVED"],
 };
 const assetOf = (name) => ASSETS[name] || CAPTAIN_PACK[name];
 // Not good enough at their real size yet: never used in the interface.
@@ -111,10 +133,26 @@ export function captainVignette({ pose = "sit", size = 150, place = "inline", cl
 //   peek: lying with both front paws forward — rests its paws on a card's
 //   top edge, head and ears above it (the card-edge peek).
 // No outfit is drawn yet: keeper.outfit stays stored and untouched.
-const PORTRAITS = { face: "captain-face", happy: "expr-happy", "sit-up": "captain-sit-up", peek: "captain-lie" };
+const PORTRAITS = {
+  face: "captain-face",
+  happy: "expr-happy",
+  "sit-up": "captain-sit-up",
+  peek: "captain-lie",
+  // V10.91
+  calm: "expr-calm", // looking aside, eyes open (Home, at rest)
+  sleepy: "expr-sleepy",
+  reading: "captain-reading", // looking at the journal (weekly recap entry)
+  recap: "captain-recap", // by an open album, looking up (weekly recap page)
+};
 export function captainPortrait(kind = "face", { size = 64, cls = "" } = {}) {
   const name = PORTRAITS[kind] || PORTRAITS.face;
   return art(name, { width: size, place: "inline", cls: ["bot-captain", `cap-${kind in PORTRAITS ? kind : "face"}`, cls].filter(Boolean).join(" ") });
+}
+
+// Any shipped Captain Pack picture by name (Looks pictures, Playroom frames).
+export function packArt(name, { size, cls = "", place = "inline" } = {}) {
+  if (!CAPTAIN_PACK[name]) return "";
+  return art(name, { width: size ?? CAPTAIN_PACK[name][2], place, cls: ["bot-captain", cls].filter(Boolean).join(" ") });
 }
 
 // The default covers' art. Travel Notes has none until its blossom has a

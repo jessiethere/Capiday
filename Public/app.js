@@ -57,7 +57,8 @@ import * as Guide from "./js/studio-guide.mjs";
 import * as Onboard from "./js/onboarding.mjs";
 import * as PM from "./js/profile-mark.mjs";
 import * as CaptainAI from "./js/captain-ai.mjs";
-import { keeperImage, keeperLooks, DEFAULT_OUTFIT } from "./js/keeper-art.mjs";
+// V10.91: the 3D Captain (js/keeper-art.mjs, library/keepers) is no longer drawn;
+// the module and its pictures stay in the repo until every capability is replaced.
 import { suggestGroups, oneGroup, movePhotoTo, mergeWithPrevious, movePhoto, splitAt, removePhoto, clockLabel, partOfDay, timelineLayers } from "./js/day-story.mjs";
 import { kitList, findKit, kitForBook, kitName, applyKit, firstLook, decorate } from "./js/story-style.mjs";
 import { STYLES, STYLE_LOOK, styleOf, layoutMoment, layoutDay, heroIndex, fitPhoto, applyType, typeScale, TYPE_SCALES, textBlock, pickFont, PAGE_RATIO, PAIR_KINDS, suggestSplit, suggestTextSplit } from "./js/scrapbook-layout.mjs";
@@ -156,6 +157,7 @@ import * as PhotoCaption from "./js/photo-caption.mjs";
 import * as Stamps from "./js/stamps.mjs";
 import * as CaptainStamp from "./js/captain-stamp.mjs";
 import * as Bot from "./js/botanicals.mjs";
+import * as Cap from "./js/captain.mjs";
 import { contentDays as stampContentDays } from "./js/recorded-days.mjs";
 
 // The iOS Swift shell opens index.html?shell=ios (and also injects this marker).
@@ -979,7 +981,10 @@ function weekCardHTML() {
   const short = (k) => new Date(`${k}T12:00:00`).toLocaleDateString(locale(), { month: "short", day: "numeric" });
   const range = `${short(review.start)} – ${short(review.end)}`;
   const meta = [stampCount("week.days", review.recorded), review.photoCount ? stampCount("week.photos", review.photoCount) : ""].filter(Boolean).join(" · ");
-  return `<button class="week-card${thumbs ? "" : " no-photos"}" data-action="week-open" data-week="${review.start}"><span class="wk-head"><small class="v9-kicker">${t(last ? "week.kickerLast" : "week.kicker")} · ${esc(range)}</small><b class="wk-line">${esc(weekLine(review, last))}</b><small class="wk-meta">${esc(meta)}</small></span>${thumbs ? `<span class="wk-thumbs" aria-hidden="true">${thumbs}</span>` : ""}<span class="wk-foot"><span class="wk-dots" aria-hidden="true">${dots}</span><span class="wk-go">${t("week.open")} ›</span></span></button>`;
+  // V10.91: Captain looking at the journal marks the way into the week's
+  // recap (not while the invitation card shows its own Captain nearby).
+  const captain = keeperInviteHTML() ? "" : `<span class="wk-captain" aria-hidden="true">${Bot.captainPortrait("reading", { size: 96 })}</span>`;
+  return `<button class="week-card${captain ? " has-captain" : ""}${thumbs ? "" : " no-photos"}" data-action="week-open" data-week="${review.start}"><span class="wk-head"><small class="v9-kicker">${t(last ? "week.kickerLast" : "week.kicker")} · ${esc(range)}</small><b class="wk-line">${esc(weekLine(review, last))}</b><small class="wk-meta">${esc(meta)}</small></span>${captain}${thumbs ? `<span class="wk-thumbs" aria-hidden="true">${thumbs}</span>` : ""}<span class="wk-foot"><span class="wk-dots" aria-hidden="true">${dots}</span><span class="wk-go">${t("week.open")} ›</span></span></button>`;
 }
 // Small, light ways to start (手绘 stays one tap away, never hidden).
 function homeSmallActionsHTML(done) {
@@ -1050,7 +1055,7 @@ function weekPage() {
   const next = Stamps.addDaysKey(shown.start, 7);
   const canNext = next <= today;
   const body = shown.recorded ? `${collage}${quote}<p class="wp-meta">${esc(meta)}</p>` : `<p class="wp-none">${t("week.none")}</p>`;
-  return `<section class="week-page"><header class="sp-top"><button class="back-button" data-action="nav" data-page="home">${icon("back")} ${t("back")}</button></header><div class="wp-card"><div class="sp-head"><button class="sp-arrow" data-action="week-open" data-week="${prev}" aria-label="${t("week.prev")}">‹</button><div><small class="v9-kicker">${t(thisWeek ? "week.kicker" : "week.kickerPast")}</small><h1>${esc(range)}</h1>${shown.recorded ? `<p class="sp-count">${esc(weekLine(shown, !thisWeek))}</p>` : ""}</div><button class="sp-arrow" data-action="week-open" data-week="${next}" aria-label="${t("week.next")}" ${canNext ? "" : "disabled"}>›</button></div>${body}<ul class="wp-days">${dayRows}</ul></div></section>`;
+  return `<section class="week-page"><header class="sp-top"><button class="back-button" data-action="nav" data-page="home">${icon("back")} ${t("back")}</button></header><div class="wp-card"><div class="sp-head"><button class="sp-arrow" data-action="week-open" data-week="${prev}" aria-label="${t("week.prev")}">‹</button><div><small class="v9-kicker">${t(thisWeek ? "week.kicker" : "week.kickerPast")}</small><h1>${esc(range)}</h1>${shown.recorded ? `<p class="sp-count">${esc(weekLine(shown, !thisWeek))}</p>` : ""}</div><button class="sp-arrow" data-action="week-open" data-week="${next}" aria-label="${t("week.next")}" ${canNext ? "" : "disabled"}>›</button></div><div class="wp-captain">${Bot.captainPortrait("recap", { size: 200 })}</div>${body}<ul class="wp-days">${dayRows}</ul></div></section>`;
 }
 // V10.84 · 首次盖章: the first time a date gets its stamp (a new kept day —
 // never a second page, an edit, history, a restore, or a date that had a
@@ -2031,10 +2036,11 @@ function keeperGrowth() {
   const { total, reasons } = Keeper.growthPoints(state(), keeperNow(), config);
   return { ...Keeper.stageFor(total, config), total, reasons };
 }
-function keeperArt(mood = "idle", { follow = true, cls = "" } = {}) {
-  const k = keeperNow();
-  const name = Keeper.keeperName(k, languageCode());
-  return `<span class="keeper mood-${mood} ${cls}" ${follow ? "data-keeper-follow" : ""}>${keeperImage(catalog, { animal: k.animal, outfit: k.outfit, mood, label: name })}</span>`;
+// V10.91: the illustrated Captain everywhere (Pack v1 portraits by mood).
+// The eyes no longer follow the finger (a painted picture); the old 3D art
+// and its code stay in the repo, unused, until every capability is replaced.
+function keeperArt(mood = "idle", { cls = "" } = {}) {
+  return `<span class="keeper cap-art mood-${mood} ${cls}">${Bot.captainPortrait(Cap.moodArt(mood), { size: 120 })}</span>`;
 }
 function keeperInviteHTML() {
   const k = keeperNow();
@@ -2046,7 +2052,9 @@ function keeperInviteHTML() {
   // V10.88: the approved hi-res Captain illustration (sitting by the books).
   return `<div class="keeper-invite">${Bot.captainVignette({ pose: "sit", size: 92 })}<div><b>${t("keeper.invite.title")}</b><small>${t("keeper.invite.body")}</small><span class="keeper-invite-actions"><button class="secondary" data-action="keeper-onboard">${t("keeper.invite.yes")}</button><button class="text-button" data-action="keeper-invite-dismiss">${t("keeper.invite.later")}</button></span></div></div>`;
 }
-// Perched on the top edge of today's notebook card, paws over the edge.
+// Perched on the top edge of today's notebook card. V10.91: the illustrated
+// Captain looks over the edge (expr-calm); a tap closes its eyes for a
+// moment (expr-happy) before the panel opens. No eye-follow.
 function keeperPerchHTML() {
   const k = keeperNow();
   if (!k.enabled) return "";
@@ -2063,7 +2071,7 @@ function keeperPerchHTML() {
   const mood = "peek";
   // A small tag beside it opens the same panel as tapping it (not in Quiet mode).
   const entry = Keeper.modeAllows(k, "invite") && !line ? `<button class="keeper-entry" data-action="keeper-panel">${keeperPanelIcon("book")}${esc(tk("kp.entry", k))}</button>` : "";
-  return `<div class="keeper-home keeper-perch">${line ? `<p class="keeper-bubble" role="status"><b>${esc(name)}</b>${esc(line)}</p>` : ""}${entry}<button class="keeper-tap" data-action="keeper-tap" aria-label="${esc(t("keeper.tapLabel", { name }))}">${keeperArt(mood)}</button></div>`;
+  return `<div class="keeper-home keeper-perch">${line ? `<p class="keeper-bubble" role="status"><b>${esc(name)}</b>${esc(line)}</p>` : ""}${entry}<button class="keeper-tap" data-action="keeper-tap" aria-label="${esc(t("keeper.tapLabel", { name }))}"><span class="keeper cap-perch mood-${mood}">${Bot.captainPortrait("calm", { size: 120, cls: "cap-rest" })}${Bot.captainPortrait("happy", { size: 120, cls: "cap-squint" })}</span></button></div>`;
 }
 // V9.0 Home: the three secondary ways to start use the same quiet line
 // icons as the rest of the app (stationery 3D art is still to be made; no
@@ -2118,7 +2126,7 @@ function keeperShelfHTML(books) {
   const k = keeperNow();
   if (!k.enabled) return "";
   const line = keeperLine && page === "books" ? keeperLine : "";
-  return `<div class="keeper-shelf"><button class="keeper-tap" data-action="keeper-shelf-tap" aria-label="${esc(t("keeper.tapLabel", { name: Keeper.keeperName(k, languageCode()) }))}">${keeperArt(new Date().getHours() >= 22 || new Date().getHours() < 6 ? "sleepy" : "idle")}</button>${line ? `<p class="keeper-bubble" role="status">${esc(line)}${Keeper.modeAllows(k, "chat") ? ` <button class="text-button" data-action="open-search">${t("keeper.shelf.find")} ›</button>` : ""}</p>` : ""}</div>`;
+  return `<div class="keeper-shelf"><button class="keeper-tap" data-action="keeper-shelf-tap" aria-label="${esc(t("keeper.tapLabel", { name: Keeper.keeperName(k, languageCode()) }))}">${new Date().getHours() >= 22 || new Date().getHours() < 6 ? `<span class="keeper cap-shelf mood-sleepy">${Bot.captainVignette({ pose: "sleep", size: 120 })}</span>` : `<span class="keeper cap-shelf mood-idle">${Bot.captainPortrait("sit-up", { size: 120 })}</span>`}</button>${line ? `<p class="keeper-bubble" role="status">${esc(line)}${Keeper.modeAllows(k, "chat") ? ` <button class="text-button" data-action="open-search">${t("keeper.shelf.find")} ›</button>` : ""}</p>` : ""}</div>`;
 }
 function pageWords(date, momentId) {
   const entry = state().entries.find((e) => e.date === date) || state().drafts[date];
@@ -2248,10 +2256,10 @@ function refreshKeeperChat() {
 // are listed. The same picker is in Settings → 角色与装扮 and in the panel.
 function keeperLooksHTML() {
   const k = keeperNow();
-  const looks = keeperLooks(catalog, k.animal, languageCode());
-  // A look that is no longer in the wardrobe shows as the default one (as the pictures do).
-  const wearing = looks.some((look) => look.id === k.outfit) ? k.outfit : DEFAULT_OUTFIT[k.animal] || looks[0]?.id || "";
-  const chip = (look) => `<button class="look-chip" data-action="keeper-look" data-look="${esc(look.id)}" aria-pressed="${look.id === wearing}"><span class="look-art">${keeperImage(catalog, { animal: k.animal, outfit: look.id, mood: "idle", label: "" })}</span><b>${esc(look.name)}</b>${look.note ? `<small>${esc(look.note)}</small>` : ""}</button>`;
+  // V10.91: the illustrated wardrobe — no hat (default), the lemon hat, the yarn ball.
+  const looks = Cap.looks(languageCode());
+  const wearing = Cap.lookOf(k);
+  const chip = (look) => `<button class="look-chip" data-action="keeper-look" data-look="${esc(look.id)}" aria-pressed="${look.id === wearing}"><span class="look-art">${Bot.packArt(look.art, { size: 64 })}</span><b>${esc(look.name)}</b></button>`;
   const group = (kind) => {
     const items = looks.filter((look) => look.kind === kind);
     return items.length ? `<div class="look-group"><h4>${t("look." + kind)}</h4><div class="look-row">${items.map(chip).join("")}</div></div>` : "";
@@ -2314,34 +2322,26 @@ function keeperActsHTML() {
   const card = captainCardData();
   return `<section class="cp-card" data-state="${card.state}" aria-label="${t("cp.card")}"><p>${esc(captainLine(card.key))}</p>${card.meta ? `<small class="cp-meta">${esc(card.meta)}</small>` : ""}<div class="cp-acts">${card.acts}</div></section>`;
 }
-// V10.17 · Captain's Playroom (MVP): a big stage with Captain on it. Tap
-// Captain for a happy reaction; drag (or tap) the pink yarn ball to Captain
-// to have it caught. Each look plays only its own pictures (library.json
-// "keeperPlay"): an action without matching art is simply not offered —
-// never borrowed from the other look, never shown as "coming soon".
+// V10.91 · Captain's Playroom, illustrated (Founder: option B). A fixed stage
+// with Captain on it; one tap plays one round of the look's own frames and
+// stays on the last one; another tap plays it again.
+//   no hat (default) → the hug with the heart cushion
+//   lemon hat        → batting the yarn ball, wearing the hat
+//   yarn ball        → batting the yarn ball (Pack v1 playroom/01–04)
+// Reduced motion: straight to the last frame. (The hug wearing the lemon hat
+// is still to come; until then the lemon hat plays the yarn.)
 const PLAY_HINT_KEY = "little-days.play-hint";
-function wornLook(k = keeperNow()) {
-  const looks = keeperLooks(catalog, k.animal, languageCode());
-  return looks.some((look) => look.id === k.outfit) ? k.outfit : DEFAULT_OUTFIT[k.animal] || looks[0]?.id || "";
-}
-function playSetOf(k = keeperNow()) {
-  const wear = wornLook(k);
-  return (catalog?.keeperPlay || []).find((p) => p.animal === k.animal && p.outfit === wear) || null;
-}
 function keeperPlayHTML() {
   const k = keeperNow();
-  const set = playSetOf(k);
-  if (!set) return `<div class="kp-scroll"><div class="kp-note">${keeperArt("happy")}<p>${esc(tk("play.none", k))}</p></div></div>`;
-  const src = (file) => `library/keepers/${esc(file)}`;
+  const name = Keeper.keeperName(k, languageCode());
+  const play = Cap.playFor(k);
   let hinted = true;
   try {
     hinted = localStorage.getItem(PLAY_HINT_KEY) === "1";
   } catch {}
-  const h = set.happy;
-  const happy = h ? `<div class="pr-anim" aria-hidden="true" style="background-image:url('${src(h.file)}');--pr-n:${h.frames};--pr-time:${h.frames * h.frameMs}ms;--pr-loops:${h.loops || 1};--pr-key:${((h.still || 0) / Math.max(1, h.frames - 1)) * 100}%"></div>` : "";
-  const b = set.ball;
-  const ball = b ? `<button class="pr-ball" style="--bx:${b.x}%;--by:${b.y}%;--bd:${b.d}%" aria-label="${esc(tk("play.ballLabel", k))}"><i class="pr-ring" aria-hidden="true"></i><img src="${src(b.file)}" alt="" draggable="false"></button>` : "";
-  return `<div class="kp-scroll pr-scroll"><div class="pr" data-outfit="${esc(set.outfit)}" data-stage="${esc(set.stage)}"${hinted ? " data-hinted" : ""}><div class="pr-stage"><img class="pr-idle" src="${src(set.idle)}" alt="" draggable="false">${happy}<button class="pr-body" data-action="pr-poke" aria-label="${esc(tk("play.pokeLabel", k))}"></button>${ball}<p class="pr-bubble" aria-live="polite">${esc(tk(b ? "play.invite" : "play.inviteSolo", k))}</p></div><p class="pr-line">${esc(tk(b ? "play.hint" : "play.hintSolo", k))}</p></div></div>`;
+  const frames = play.frames.map((f, i) => Bot.packArt(f, { size: 256, cls: `pr-frame${i ? "" : " on"}` })).join("");
+  const hug = play.id === "hug";
+  return `<div class="kp-scroll pr-scroll"><div class="pr" data-play="${play.id}" data-look="${esc(Cap.lookOf(k))}"${hinted ? " data-hinted" : ""}><div class="pr-stage"><div class="pr-frames" data-ms="${play.ms.join(",")}">${frames}</div><button class="pr-body" data-action="pr-poke" aria-label="${esc(t("play.tapLabel", { name }))}"></button><p class="pr-bubble" aria-live="polite">${esc(hug ? t("play.hugInvite") : tk("play.invite", k))}</p></div><p class="pr-line">${esc(t(hug ? "play.hugHint" : "play.yarnHint", { name }))}</p></div></div>`;
 }
 const prReduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 function prSay(keys) {
@@ -2365,122 +2365,41 @@ function prPlayed(pr) {
     localStorage.setItem(PLAY_HINT_KEY, "1");
   } catch {}
 }
-// The happy reaction: the look's own animation (twice), then back to rest.
-// A look with no happy animation yet gives a small hop of its own picture.
-function prHappy(keys) {
+let prTimer = 0;
+// One round: frame 1 → 4 at the look's timings, then stay on frame 4.
+function prPlay() {
   const pr = $(".pr");
-  if (!pr || pr.dataset.busy) return;
-  pr.dataset.busy = "1";
+  const box = pr?.querySelector(".pr-frames");
+  if (!box) return;
+  const frames = [...box.querySelectorAll(".pr-frame")];
+  const ms = (box.dataset.ms || "").split(",").map(Number);
+  clearTimeout(prTimer);
   prPlayed(pr);
   prHaptic();
-  prSay(keys);
-  const anim = pr.querySelector(".pr-anim");
-  let over = false;
-  const done = () => {
-    if (over) return;
-    over = true;
-    pr.classList.remove("happy", "still", "hop");
-    const ball = pr.querySelector(".pr-ball");
-    setTimeout(() => {
-      if (ball) {
-        ball.style.transition = "none";
-        ball.style.transform = "";
-        void ball.offsetWidth;
-        ball.style.transition = "";
-        ball.classList.remove("caught");
-      }
-      delete pr.dataset.busy;
-      if (anim) prSay(["play.again1", "play.again2"]);
-    }, 240);
+  const show = (i) => {
+    frames.forEach((f, n) => f.classList.toggle("on", n === i));
+    pr.dataset.frame = String(i + 1);
   };
-  if (!anim) {
-    if (!prReduced()) pr.classList.add("hop");
-    return setTimeout(done, 900);
-  }
-  const ms = parseFloat(getComputedStyle(anim).getPropertyValue("--pr-time")) * (Number(getComputedStyle(anim).getPropertyValue("--pr-loops")) || 1);
-  if (prReduced()) {
-    pr.classList.add("happy", "still");
-    return setTimeout(done, 1600);
-  }
-  pr.classList.add("happy");
-  anim.addEventListener("animationend", done, { once: true });
-  setTimeout(done, (ms || 2200) + 600); // in case animationend never comes
-}
-// The ball, dragged: it follows the finger and rolls; let go near Captain's
-// paws and Captain catches it; anywhere else it rolls back.
-let prDrag = null;
-function prBallMove(ball, dx, dy, r, ms = 0) {
-  ball.style.transition = ms && !prReduced() ? `transform ${ms}ms cubic-bezier(.3,.7,.35,1)` : "none";
-  ball.style.transform = dx || dy ? `translate(${dx}px, ${dy}px) rotate(${dx / r}rad)` : "";
-}
-function prCatch(ball) {
-  ball.classList.add("caught");
-  prHappy(["play.caught1", "play.caught2", "play.caught3"]);
-}
-// A tap (or Enter / Space) on the ball: it rolls over to Captain by itself.
-function prToss(ball) {
-  const pr = ball.closest(".pr");
-  if (!pr || pr.dataset.busy) return;
-  const stage = pr.querySelector(".pr-stage").getBoundingClientRect();
-  const b = ball.getBoundingClientRect();
-  const dx = stage.left + stage.width * 0.47 - (b.left + b.width / 2);
-  const dy = stage.top + stage.height * 0.8 - (b.top + b.height / 2);
-  pr.dataset.busy = "1";
-  prBallMove(ball, dx, dy, b.width / 2, 520);
-  setTimeout(() => {
+  const last = frames.length - 1;
+  const done = () => {
+    show(last);
     delete pr.dataset.busy;
-    prCatch(ball);
-  }, prReduced() ? 0 : 520);
+    prSay(pr.dataset.play === "hug" ? ["play.hug1", "play.hug2"] : ["play.caught1", "play.caught2", "play.caught3"]);
+  };
+  if (prReduced()) return done();
+  pr.dataset.busy = "1";
+  let i = 0;
+  show(0);
+  const step = () => {
+    if (i >= last) return done();
+    prTimer = setTimeout(() => {
+      i += 1;
+      show(i);
+      step();
+    }, ms[i] || 150);
+  };
+  step();
 }
-document.addEventListener("pointerdown", (event) => {
-  const ball = event.target.closest?.(".pr-ball");
-  if (!ball || (event.pointerType === "mouse" && event.button !== 0)) return;
-  const pr = ball.closest(".pr");
-  if (pr.dataset.busy) return;
-  event.preventDefault();
-  try {
-    ball.setPointerCapture(event.pointerId);
-  } catch {}
-  const b = ball.getBoundingClientRect();
-  prDrag = { ball, pr, id: event.pointerId, x0: event.clientX, y0: event.clientY, dx: 0, dy: 0, moved: false, stage: pr.querySelector(".pr-stage").getBoundingClientRect(), home: { x: b.left + b.width / 2, y: b.top + b.height / 2 }, r: b.width / 2 };
-  ball.classList.add("held");
-});
-document.addEventListener("pointermove", (event) => {
-  const d = prDrag;
-  if (!d || event.pointerId !== d.id) return;
-  // Keep the whole ball on the stage.
-  const x = Math.min(d.stage.right - d.r, Math.max(d.stage.left + d.r, d.home.x + event.clientX - d.x0));
-  const y = Math.min(d.stage.bottom - d.r, Math.max(d.stage.top + d.r, d.home.y + event.clientY - d.y0));
-  d.dx = x - d.home.x;
-  d.dy = y - d.home.y;
-  if (Math.hypot(d.dx, d.dy) > 6) d.moved = true;
-  if (d.moved) prBallMove(d.ball, d.dx, d.dy, d.r);
-});
-const prDrop = (event) => {
-  const d = prDrag;
-  if (!d || event.pointerId !== d.id) return;
-  prDrag = null;
-  d.ball.classList.remove("held");
-  d.ball.dataset.handled = String(performance.now());
-  if (event.type === "pointercancel") return prBallMove(d.ball, 0, 0, d.r, 420);
-  if (!d.moved) return prToss(d.ball);
-  prPlayed(d.pr);
-  const x = (d.home.x + d.dx - d.stage.left) / d.stage.width;
-  const y = (d.home.y + d.dy - d.stage.top) / d.stage.height;
-  // Captain's paws and lap: the left two thirds, lower half of the stage.
-  if (x < 0.64 && y > 0.42) return prCatch(d.ball);
-  prBallMove(d.ball, 0, 0, d.r, 480);
-  prSay(["play.missed1", "play.missed2"]);
-};
-document.addEventListener("pointerup", prDrop);
-document.addEventListener("pointercancel", prDrop);
-// Keyboard (and VoiceOver) activation of the ball: no pointer came first.
-document.addEventListener("click", (event) => {
-  const ball = event.target.closest?.(".pr-ball");
-  if (!ball) return;
-  if (performance.now() - Number(ball.dataset.handled || 0) < 600) return;
-  prToss(ball);
-});
 function openKeeperPanel(view = keeperView) {
   const k = keeperNow();
   if (!Keeper.modeAllows(k, "invite")) return;
@@ -2604,7 +2523,7 @@ function keeperAnswer(intent, said = "") {
 // reply is a chat line only; it is never written into the journal.
 async function askLocalModel(settings, said, intent) {
   const k = keeperNow();
-  const look = keeperLooks(catalog, k.animal, languageCode()).find((item) => item.id === (k.outfit || DEFAULT_OUTFIT[k.animal]));
+  const look = Cap.lookOf(k) === Cap.DEFAULT_LOOK ? null : Cap.looks(languageCode()).find((item) => item.id === Cap.lookOf(k));
   const history = keeperChat
     .slice(0, -1)
     .filter((m) => m.who === "me" || m.local)
@@ -2643,7 +2562,7 @@ function keeperReply(intent, typed, fallback = false) {
   else {
     // A spoken reply that fits what was meant (a compliment, a finished page,
     // a tired day…). The hat lines need Captain to be wearing one.
-    const wearingHat = keeperLooks(catalog, k.animal, languageCode()).find((look) => look.id === (k.outfit || DEFAULT_OUTFIT[k.animal]))?.kind === "hat";
+    const wearingHat = Cap.lookOf(k) === "lemon";
     const event = intent === "hat" && !wearingHat ? "hatOff" : Keeper.LINE_COUNTS[`chat.${intent}`] ? intent : "unknown";
     // A line that echoes what they did needs the words; without them, listen.
     const echo = ["share", "shareHappy"].includes(event);
@@ -2740,6 +2659,15 @@ document.addEventListener("pointermove", (event) => {
   });
 });
 let keeperBack = 0;
+let keeperSquintTimer = 0;
+function keeperSquint(target) {
+  const el = target.closest?.(".keeper-tap")?.querySelector(".cap-perch");
+  if (!el) return false;
+  clearTimeout(keeperSquintTimer);
+  el.classList.add("squint");
+  keeperSquintTimer = setTimeout(() => el.classList.remove("squint"), 700);
+  return true;
+}
 function keeperBounce(target) {
   const el = target.closest?.(".keeper-tap")?.querySelector(".keeper") || target.querySelector?.(".keeper");
   if (!el) return;
@@ -10949,9 +10877,13 @@ async function action(target) {
   }
   if (actionName === "keeper-tap") {
     keeperBounce(target);
+    // V10.91: Captain closes its eyes for a moment (the happy, eyes-closed
+    // portrait), then the panel opens.
+    const squinted = keeperSquint(target);
     const k = keeperNow();
-    if (!Keeper.modeAllows(k, "invite")) return; // Quiet: just a little bounce
+    if (!Keeper.modeAllows(k, "invite")) return; // Quiet: just the squint
     keeperChat = [];
+    if (squinted) return setTimeout(() => openKeeperPanel("home"), 360);
     return openKeeperPanel("home");
   }
   if (actionName === "keeper-panel") {
@@ -10959,7 +10891,7 @@ async function action(target) {
     return openKeeperPanel("home");
   }
   if (actionName === "keeper-view") return openKeeperPanel(target.dataset.view || "home");
-  if (actionName === "pr-poke") return prHappy(["play.poke1", "play.poke2", "play.poke3"]);
+  if (actionName === "pr-poke") return prPlay();
   if (actionName === "kp-size") {
     kpTall = !kpTall;
     const sheet = $("#choose-dialog .kp");
@@ -11040,8 +10972,8 @@ async function action(target) {
   if (actionName === "keeper-look") {
     const look = target.dataset.look || "";
     const k = keeperNow();
-    if (!keeperLooks(catalog, k.animal, languageCode()).some((item) => item.id === look)) return;
-    saveKeeper((x) => (x.outfit = look === DEFAULT_OUTFIT[x.animal] ? "" : look));
+    if (!Cap.LOOKS.some((item) => item.id === look)) return;
+    saveKeeper((x) => (x.outfit = Cap.storedLook(look)));
     logEvent("keeper_look", { kind: look });
     render();
     // The open picker (panel or Settings sheet) shows the new choice.
