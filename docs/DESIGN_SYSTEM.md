@@ -554,3 +554,4 @@ Web 运行时加载共享 JSON。`Public/tokens.css` 是加载前的回退，由
 - 尺寸 xs 34 / s 56 / m 92 / l 140 px；quiet 色调 0.62；cool 主题 0.45；minimal 主题 0.6 + 降饱和；打印隐藏。
 - 位置与密度、哪里不用、Captain 场景方向：见 agent.md「V10.88」条目（同一份规则）。
 - **V10.88（续）**：Captain 场景（sleep / sit / ready / stamp）和书封插画是 `Public/botanical/*.png`，由 `tools/cut_botanical_art.py` 从 `docs/visual/botanical-board-v1.png`（Founder 素材板）裁出：纸色变白、边缘渐隐，用 `mix-blend-mode: multiply` 放在纸面上；旅行笔记白花是透明抠图。cool 主题下插画显示为圆角小画片。植物仍是 SVG。
+- **V10.88（续 4，取代上面的 SVG 说明）**：植物与 Captain 全部是 Founder 已确认的水彩插画（`Public/botanical/*.png`，透明底），没有 SVG 重画。每个资产有清晰上限（像素 ÷ 3 pt），`clearWidth()` 不允许放大；状态 APPROVED / LIMITED SIZE / NEEDS HI-RES 见 `docs/visual/asset-audit/manifest.json` 和 agent.md。NEEDS HI-RES 不上线。插画只左右镜像，不上下翻转。

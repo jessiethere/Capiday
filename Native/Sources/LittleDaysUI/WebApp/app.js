@@ -1095,8 +1095,8 @@ function stampMoment(dates) {
   box.setAttribute("role", "status");
   box.dataset.date = date;
   box.dataset.captain = role;
-  const k = keeperNow();
-  const cat = role ? `<span class="sm-captain" aria-hidden="true">${keeperImage(catalog, { animal: k.animal, outfit: k.outfit, mood: "happy", label: "" })}</span>` : "";
+  // V10.88: Captain pressing the stamp (approved hi-res illustration).
+  const cat = role ? `<span class="sm-captain" aria-hidden="true">${Bot.captainVignette({ pose: "stamp", size: 66 })}</span>` : "";
   box.innerHTML = `${cat}<i class="stamp ${face.cls} just" aria-hidden="true">${face.inner}</i><span>${esc(line)}</span>`;
   $("#phone").append(box);
   prHaptic();
@@ -2043,7 +2043,8 @@ function keeperInviteHTML() {
   // sits under the photo card (the way to start stays in the first screen).
   // (The old sample journal — older test suites only — behaves as before.)
   if (!state().entries.some((e) => !e.isDemo) && readKey("little-days.with-samples") !== "1") return "";
-  return `<div class="keeper-invite"><span class="keeper" data-keeper-follow>${keeperImage(catalog, { animal: "cat", mood: "happy", label: "" })}</span><div><b>${t("keeper.invite.title")}</b><small>${t("keeper.invite.body")}</small><span class="keeper-invite-actions"><button class="secondary" data-action="keeper-onboard">${t("keeper.invite.yes")}</button><button class="text-button" data-action="keeper-invite-dismiss">${t("keeper.invite.later")}</button></span></div></div>`;
+  // V10.88: the approved hi-res Captain illustration (sitting by the books).
+  return `<div class="keeper-invite">${Bot.captainVignette({ pose: "sit", size: 92 })}<div><b>${t("keeper.invite.title")}</b><small>${t("keeper.invite.body")}</small><span class="keeper-invite-actions"><button class="secondary" data-action="keeper-onboard">${t("keeper.invite.yes")}</button><button class="text-button" data-action="keeper-invite-dismiss">${t("keeper.invite.later")}</button></span></div></div>`;
 }
 // Perched on the top edge of today's notebook card, paws over the edge.
 function keeperPerchHTML() {

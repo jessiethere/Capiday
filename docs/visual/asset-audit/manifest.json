@@ -1,0 +1,461 @@
+{
+ "note": "Phase 1 production/prototype assets cut from Founder references; not brand masters. NEEDS HI-RES entries are not shipped.",
+ "assets": [
+  {
+   "name": "captain-sleep",
+   "status": "APPROVED",
+   "shipped": true,
+   "source": "docs/visual/captain-scenes-v1.png",
+   "sourceSize": [
+    1536,
+    1024
+   ],
+   "sourceBox": [
+    0,
+    55,
+    775,
+    492
+   ],
+   "width": 540,
+   "height": 306,
+   "bytes": 54506,
+   "maxSharpPt": 180,
+   "plannedPt": 120,
+   "productionPt": 120,
+   "upscaleAt3x": 0.67,
+   "use": "Captain resting on the books (reserved: Home Captain card)"
+  },
+  {
+   "name": "captain-sit",
+   "status": "APPROVED",
+   "shipped": true,
+   "source": "docs/visual/captain-scenes-v1.png",
+   "sourceSize": [
+    1536,
+    1024
+   ],
+   "sourceBox": [
+    795,
+    12,
+    1536,
+    488
+   ],
+   "width": 540,
+   "height": 371,
+   "bytes": 58556,
+   "maxSharpPt": 180,
+   "plannedPt": 150,
+   "productionPt": 150,
+   "upscaleAt3x": 0.83,
+   "use": "Empty stamp month; Captain / My Cat cover; Captain invitation"
+  },
+  {
+   "name": "captain-ready",
+   "status": "APPROVED",
+   "shipped": true,
+   "source": "docs/visual/captain-scenes-v1.png",
+   "sourceSize": [
+    1536,
+    1024
+   ],
+   "sourceBox": [
+    14,
+    512,
+    745,
+    996
+   ],
+   "width": 540,
+   "height": 372,
+   "bytes": 58144,
+   "maxSharpPt": 180,
+   "plannedPt": 120,
+   "productionPt": 120,
+   "upscaleAt3x": 0.67,
+   "use": "Captain about to stamp (reserved)"
+  },
+  {
+   "name": "captain-stamp",
+   "status": "APPROVED",
+   "shipped": true,
+   "source": "docs/visual/captain-scenes-v1.png",
+   "sourceSize": [
+    1536,
+    1024
+   ],
+   "sourceBox": [
+    755,
+    512,
+    1536,
+    1004
+   ],
+   "width": 540,
+   "height": 342,
+   "bytes": 58933,
+   "maxSharpPt": 180,
+   "plannedPt": 96,
+   "productionPt": 64,
+   "upscaleAt3x": 0.36,
+   "use": "First-stamp moment"
+  },
+  {
+   "name": "corner-berry",
+   "status": "APPROVED",
+   "shipped": true,
+   "source": "docs/visual/botanical-board-v1.png",
+   "sourceSize": [
+    1448,
+    1086
+   ],
+   "sourceBox": [
+    22,
+    132,
+    266,
+    302
+   ],
+   "width": 244,
+   "height": 169,
+   "bytes": 8066,
+   "maxSharpPt": 81,
+   "plannedPt": 72,
+   "productionPt": 72,
+   "upscaleAt3x": 0.89,
+   "use": "Botanical corner, seasonal (reserved)"
+  },
+  {
+   "name": "corner-blossom",
+   "status": "LIMITED SIZE",
+   "shipped": true,
+   "source": "docs/visual/botanical-board-v1.png",
+   "sourceSize": [
+    1448,
+    1086
+   ],
+   "sourceBox": [
+    272,
+    136,
+    448,
+    300
+   ],
+   "width": 175,
+   "height": 162,
+   "bytes": 6855,
+   "maxSharpPt": 58,
+   "plannedPt": 72,
+   "productionPt": 58,
+   "upscaleAt3x": 0.99,
+   "use": "Stamp page corner"
+  },
+  {
+   "name": "berry-1",
+   "status": "APPROVED",
+   "shipped": true,
+   "source": "docs/visual/botanical-board-v1.png",
+   "sourceSize": [
+    1448,
+    1086
+   ],
+   "sourceBox": [
+    46,
+    388,
+    229,
+    496
+   ],
+   "width": 177,
+   "height": 107,
+   "bytes": 4318,
+   "maxSharpPt": 59,
+   "plannedPt": 60,
+   "productionPt": 56,
+   "upscaleAt3x": 0.95,
+   "use": "Stamp card corner (seasonal accent)"
+  },
+  {
+   "name": "berry-2",
+   "status": "APPROVED",
+   "shipped": true,
+   "source": "docs/visual/botanical-board-v1.png",
+   "sourceSize": [
+    1448,
+    1086
+   ],
+   "sourceBox": [
+    246,
+    386,
+    386,
+    498
+   ],
+   "width": 140,
+   "height": 112,
+   "bytes": 3820,
+   "maxSharpPt": 46,
+   "plannedPt": 56,
+   "productionPt": 46,
+   "upscaleAt3x": 0.99,
+   "use": "Berry branch (reserved)"
+  },
+  {
+   "name": "blossom-1",
+   "status": "APPROVED",
+   "shipped": true,
+   "source": "docs/visual/botanical-board-v1.png",
+   "sourceSize": [
+    1448,
+    1086
+   ],
+   "sourceBox": [
+    428,
+    380,
+    589,
+    511
+   ],
+   "width": 161,
+   "height": 118,
+   "bytes": 4524,
+   "maxSharpPt": 53,
+   "plannedPt": 56,
+   "productionPt": 50,
+   "upscaleAt3x": 0.93,
+   "use": "White blossom (reserved: empty states, papers)"
+  },
+  {
+   "name": "blossom-2",
+   "status": "APPROVED",
+   "shipped": true,
+   "source": "docs/visual/botanical-board-v1.png",
+   "sourceSize": [
+    1448,
+    1086
+   ],
+   "sourceBox": [
+    611,
+    378,
+    764,
+    508
+   ],
+   "width": 151,
+   "height": 126,
+   "bytes": 4289,
+   "maxSharpPt": 50,
+   "plannedPt": 56,
+   "productionPt": 50,
+   "upscaleAt3x": 0.99,
+   "use": "White blossom (reserved)"
+  },
+  {
+   "name": "sprig-3",
+   "status": "LIMITED SIZE",
+   "shipped": true,
+   "source": "docs/visual/botanical-board-v1.png",
+   "sourceSize": [
+    1448,
+    1086
+   ],
+   "sourceBox": [
+    695,
+    142,
+    781,
+    222
+   ],
+   "width": 86,
+   "height": 80,
+   "bytes": 2424,
+   "maxSharpPt": 28,
+   "plannedPt": 44,
+   "productionPt": 28,
+   "upscaleAt3x": 0.98,
+   "use": "Small sprig (reserved)"
+  },
+  {
+   "name": "sprig-5",
+   "status": "LIMITED SIZE",
+   "shipped": true,
+   "source": "docs/visual/botanical-board-v1.png",
+   "sourceSize": [
+    1448,
+    1086
+   ],
+   "sourceBox": [
+    592,
+    234,
+    686,
+    314
+   ],
+   "width": 94,
+   "height": 80,
+   "bytes": 2356,
+   "maxSharpPt": 31,
+   "plannedPt": 44,
+   "productionPt": 30,
+   "upscaleAt3x": 0.96,
+   "use": "Small sprig by Home's date"
+  },
+  {
+   "name": "sprig-6",
+   "status": "LIMITED SIZE",
+   "shipped": true,
+   "source": "docs/visual/botanical-board-v1.png",
+   "sourceSize": [
+    1448,
+    1086
+   ],
+   "sourceBox": [
+    699,
+    234,
+    783,
+    314
+   ],
+   "width": 83,
+   "height": 76,
+   "bytes": 2299,
+   "maxSharpPt": 27,
+   "plannedPt": 44,
+   "productionPt": 27,
+   "upscaleAt3x": 0.98,
+   "use": "Small sprig (reserved)"
+  },
+  {
+   "name": "cover-sprig",
+   "status": "LIMITED SIZE",
+   "shipped": true,
+   "source": "docs/visual/botanical-board-v1.png",
+   "sourceSize": [
+    1448,
+    1086
+   ],
+   "sourceBox": [
+    1125,
+    868,
+    1222,
+    975
+   ],
+   "width": 94,
+   "height": 101,
+   "bytes": 2898,
+   "maxSharpPt": 31,
+   "plannedPt": 40,
+   "productionPt": 31,
+   "upscaleAt3x": 0.99,
+   "use": "My Days cover"
+  },
+  {
+   "name": "cover-travel-blossom",
+   "status": "NEEDS HI-RES",
+   "shipped": false,
+   "source": "docs/visual/botanical-board-v1.png",
+   "sourceSize": [
+    1448,
+    1086
+   ],
+   "sourceBox": [
+    950,
+    862,
+    1058,
+    966
+   ],
+   "width": 108,
+   "height": 104,
+   "bytes": 4783,
+   "maxSharpPt": 36,
+   "plannedPt": 62,
+   "productionPt": null,
+   "upscaleAt3x": 1.72,
+   "use": "Travel Notes cover (on green cloth)"
+  },
+  {
+   "name": "sprig-1",
+   "status": "NEEDS HI-RES",
+   "shipped": false,
+   "source": "docs/visual/botanical-board-v1.png",
+   "sourceSize": [
+    1448,
+    1086
+   ],
+   "sourceBox": [
+    488,
+    142,
+    568,
+    222
+   ],
+   "width": 80,
+   "height": 80,
+   "bytes": 2164,
+   "maxSharpPt": 26,
+   "plannedPt": 44,
+   "productionPt": null,
+   "upscaleAt3x": 1.65,
+   "use": "Small sprig"
+  },
+  {
+   "name": "sprig-2",
+   "status": "NEEDS HI-RES",
+   "shipped": false,
+   "source": "docs/visual/botanical-board-v1.png",
+   "sourceSize": [
+    1448,
+    1086
+   ],
+   "sourceBox": [
+    592,
+    142,
+    671,
+    222
+   ],
+   "width": 79,
+   "height": 72,
+   "bytes": 2107,
+   "maxSharpPt": 26,
+   "plannedPt": 44,
+   "productionPt": null,
+   "upscaleAt3x": 1.67,
+   "use": "Small sprig"
+  },
+  {
+   "name": "sprig-4",
+   "status": "NEEDS HI-RES",
+   "shipped": false,
+   "source": "docs/visual/botanical-board-v1.png",
+   "sourceSize": [
+    1448,
+    1086
+   ],
+   "sourceBox": [
+    485,
+    234,
+    563,
+    314
+   ],
+   "width": 78,
+   "height": 80,
+   "bytes": 2126,
+   "maxSharpPt": 26,
+   "plannedPt": 44,
+   "productionPt": null,
+   "upscaleAt3x": 1.69,
+   "use": "Small sprig"
+  },
+  {
+   "name": "cover-captain",
+   "status": "SUPERSEDED",
+   "shipped": false,
+   "source": "docs/visual/botanical-board-v1.png",
+   "sourceSize": [
+    1448,
+    1086
+   ],
+   "sourceBox": [
+    1252,
+    790,
+    1418,
+    972
+   ],
+   "width": 155,
+   "height": 182,
+   "bytes": 8621,
+   "maxSharpPt": 51,
+   "plannedPt": 96,
+   "productionPt": null,
+   "upscaleAt3x": 1.86,
+   "use": "Old Captain cover crop — replaced by captain-sit"
+  }
+ ]
+}

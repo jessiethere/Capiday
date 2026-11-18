@@ -48,6 +48,43 @@
 
 ## 更新日志
 
+### 2026-11-18 — V10.88（续 4）：按 Founder 规则接入 approved 资产（APPROVED / LIMITED SIZE / NEEDS HI-RES）
+
+- **需求**（Founder 确认）：① Captain / My Cat 默认书封改用高清「坐在册子旁」（captain-sit）；② 6 个略软的 botanical 资产继续用，但只在实际清晰的尺寸内显示，不为填满空间放大；③ cover-travel-blossom、sprig-1、sprig-2、sprig-4 正式 UI 不使用，标记 NEEDS HI-RES REPLACEMENT，可在 asset audit 中保留说明，不作为 production asset 上线；不自行重画、SVG 化或换风格。统一规则：高清且符合 approved reference → 使用；略软但在真实 UI 尺寸下自然清晰 → 缩小使用；真机尺寸下仍明显模糊 → 暂不使用。
+- **判断方法**：3x iPhone 上，「清晰上限」= 像素宽 ÷ 3（不放大）。APPROVED = 原计划尺寸也清晰（放大 ≤ 1.2×）；LIMITED SIZE = 原计划尺寸略软，上线尺寸限制在清晰上限内；NEEDS HI-RES = 真机尺寸下明显模糊（> 1.6×），不上线。
+- **资产清单**（`tools/cut_botanical_art.py` 生成；`Public/botanical/manifest.json` 只含上线资产信息，`docs/visual/asset-audit/manifest.json` 含全部）：
+
+| asset | source size（裁切像素，来源图） | 原计划显示 | production display size | Retina 清晰度判断 | 状态 | 用途 |
+|---|---|---|---|---|---|---|
+| captain-sleep | 540×306 px（captain-scenes-v1.png 1536×1024） | 120 pt | 120 pt（清晰上限 180 pt） | 清晰（≤ 原生尺寸） | **APPROVED** | Captain resting on the books (reserved: Home Captain card) |
+| captain-sit | 540×371 px（captain-scenes-v1.png 1536×1024） | 150 pt | 150 pt（清晰上限 180 pt） | 清晰（≤ 原生尺寸） | **APPROVED** | Empty stamp month; Captain / My Cat cover; Captain invitation |
+| captain-ready | 540×372 px（captain-scenes-v1.png 1536×1024） | 120 pt | 120 pt（清晰上限 180 pt） | 清晰（≤ 原生尺寸） | **APPROVED** | Captain about to stamp (reserved) |
+| captain-stamp | 540×342 px（captain-scenes-v1.png 1536×1024） | 96 pt | 64 pt（清晰上限 180 pt） | 清晰（≤ 原生尺寸） | **APPROVED** | First-stamp moment |
+| corner-berry | 244×169 px（botanical-board-v1.png 1448×1086） | 72 pt | 72 pt（清晰上限 81 pt） | 清晰（≤ 原生尺寸） | **APPROVED** | Botanical corner, seasonal (reserved) |
+| corner-blossom | 175×162 px（botanical-board-v1.png 1448×1086） | 72 pt | 58 pt（清晰上限 58 pt） | 按原计划尺寸略软；限制在原生尺寸内清晰 | **LIMITED SIZE** | Stamp page corner |
+| berry-1 | 177×107 px（botanical-board-v1.png 1448×1086） | 60 pt | 56 pt（清晰上限 59 pt） | 清晰（≤ 原生尺寸） | **APPROVED** | Stamp card corner (seasonal accent) |
+| berry-2 | 140×112 px（botanical-board-v1.png 1448×1086） | 56 pt | 46 pt（清晰上限 46 pt） | 清晰（≤ 原生尺寸） | **APPROVED** | Berry branch (reserved) |
+| blossom-1 | 161×118 px（botanical-board-v1.png 1448×1086） | 56 pt | 50 pt（清晰上限 53 pt） | 清晰（≤ 原生尺寸） | **APPROVED** | White blossom (reserved: empty states, papers) |
+| blossom-2 | 151×126 px（botanical-board-v1.png 1448×1086） | 56 pt | 50 pt（清晰上限 50 pt） | 清晰（≤ 原生尺寸） | **APPROVED** | White blossom (reserved) |
+| sprig-3 | 86×80 px（botanical-board-v1.png 1448×1086） | 44 pt | 28 pt（清晰上限 28 pt） | 按原计划尺寸略软；限制在原生尺寸内清晰 | **LIMITED SIZE** | Small sprig (reserved) |
+| sprig-5 | 94×80 px（botanical-board-v1.png 1448×1086） | 44 pt | 30 pt（清晰上限 31 pt） | 按原计划尺寸略软；限制在原生尺寸内清晰 | **LIMITED SIZE** | Small sprig by Home's date |
+| sprig-6 | 83×76 px（botanical-board-v1.png 1448×1086） | 44 pt | 27 pt（清晰上限 27 pt） | 按原计划尺寸略软；限制在原生尺寸内清晰 | **LIMITED SIZE** | Small sprig (reserved) |
+| cover-sprig | 94×101 px（botanical-board-v1.png 1448×1086） | 40 pt | 31 pt（清晰上限 31 pt） | 按原计划尺寸略软；限制在原生尺寸内清晰 | **LIMITED SIZE** | My Days cover |
+| cover-travel-blossom | 108×104 px（botanical-board-v1.png 1448×1086） | 62 pt | 不上线（清晰上限 36 pt） | 真机尺寸下明显模糊 | **NEEDS HI-RES** | Travel Notes cover (on green cloth) |
+| sprig-1 | 80×80 px（botanical-board-v1.png 1448×1086） | 44 pt | 不上线（清晰上限 26 pt） | 真机尺寸下明显模糊 | **NEEDS HI-RES** | Small sprig |
+| sprig-2 | 79×72 px（botanical-board-v1.png 1448×1086） | 44 pt | 不上线（清晰上限 26 pt） | 真机尺寸下明显模糊 | **NEEDS HI-RES** | Small sprig |
+| sprig-4 | 78×80 px（botanical-board-v1.png 1448×1086） | 44 pt | 不上线（清晰上限 26 pt） | 真机尺寸下明显模糊 | **NEEDS HI-RES** | Small sprig |
+| cover-captain | 155×182 px（botanical-board-v1.png 1448×1086） | 96 pt | 不上线（清晰上限 51 pt） | 低清，已被高清 captain-sit 取代 | **SUPERSEDED** | Old Captain cover crop — replaced by captain-sit |
+
+- **实现**：
+  - 所有资产统一为透明底 PNG（纸色 → 透明，颜色相对白色还原），放在任何层上都没有白框；不再依赖 `mix-blend-mode`（首页浮层 / 盖章提示条里 multiply 会被层叠上下文隔离、露出白底）。
+  - `Public/js/botanicals.mjs` 重写：删除全部 SVG 植物和 SVG 猫；`ASSETS` 登记每个资产的像素、清晰上限、状态；`botanical(kind, {variant, size, place, flip, tone})` / `captainVignette({pose})` / `coverArt(kind)` 都只输出 `<img>`，宽度用 `clearWidth()` 限制在清晰上限内（请求更大也不放大）；`NEEDS_HI_RES` 列出不上线的 4 个；插画只允许左右镜像，不再上下翻转。
+  - NEEDS HI-RES 与被取代的 cover-captain 只写到 `docs/visual/asset-audit/`（开发审查用），不进 `Public/`，所以不进在线链接和 iOS 外壳。
+- **页面**：首页日期旁 sprig-5（30 pt）；首页集章卡 berry-1（56 pt）；首页 Captain 邀请卡 captain-sit（92 pt）；首次盖章提示条 captain-stamp（66 pt）；月令集章页角落 corner-blossom（58 pt，quiet）；空月份 captain-sit（150 pt）；My Days 书封 cover-sprig（≤ 31 pt）；Captain / My Cat 书封 captain-sit（≤ 120 pt，避开小印章）；Travel Notes 书封只有布纹、标题、小印（白花等高清）。
+- **没有换的地方，及原因**：首页「趴在今天卡片上的 Captain」、Captain 面板、Playroom、书架上的 Captain 仍是已确认的 3D 柠檬帽形象——它们承载装扮（柠檬帽 / 毛线球）、表情和 Playroom 动画，插画版没有对应素材，直接替换会让用户选的装扮消失。记为 **NEEDS ASSET**（插画版的装扮 / 表情），等 Founder 决定。captain-sleep、captain-ready 已是 APPROVED，暂未放到页面（预留给首页 Captain 卡片）。
+- **测试**：v192 重写 43/43（registry 与 manifest 一致；4 个 NEEDS HI-RES 在 Public 返回 404；所有上线图片加载、alt=""、读屏隐藏；无 SVG 重画；尺寸请求被限制在清晰上限；页面上每张图实际宽度 ≤ 清晰上限；密度；不压字；Studio / 书架 / 数据里没有装饰；三个书封；主题）。单元 382/382。全量回归见下一条。
+- **需真机看**：插画在 iPhone 3x 屏上的清晰度（Chromium 3x 渲染不等于真机）、邀请卡与盖章提示条里 Captain 的大小。
+
 ### 2026-11-18 — V10.88 全量回归 run-all26（结果补记）
 
 - **run-all26**（V10.88 植物系统 + Captain 插画，运行期间换成了高清 Captain）：128 个文件，126 通过、2 失败：

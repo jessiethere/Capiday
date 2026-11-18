@@ -27078,10 +27078,11 @@ html[lang="en"] .keeper-perch .keeper-entry::before {
 
 /* =====================================================================
    V10.88 · Capiday Botanical Decorative System (js/botanicals.mjs).
-   Colors: --bot-* tokens only (design-tokens.json "botanical"). Plants are
-   decoration: hidden from VoiceOver, never tappable, never over words or
-   controls, sized by class, placed by class, mirrored by class. Storytelling
-   surfaces only (Home date, stamp card, stamp page, covers, empty states).
+   Approved watercolour illustrations only (Public/botanical/*.png, paper
+   transparent). Each picture's width is set inline and held at its clear
+   size on a 3x iPhone — never upscaled to fill space. Decoration only:
+   hidden from VoiceOver, never tappable, never over words or controls.
+   Storytelling surfaces only; interaction surfaces stay clean.
    ===================================================================== */
 .bot {
   position: absolute;
@@ -27089,68 +27090,26 @@ html[lang="en"] .keeper-perch .keeper-entry::before {
   display: block;
   height: auto;
   max-width: none;
-  overflow: visible;
   pointer-events: none;
-  fill: none;
-  stroke: none;
-  opacity: 0.92;
-}
-.bot-xs { width: 34px; }
-.bot-s { width: 56px; }
-.bot-m { width: 92px; }
-.bot-l { width: 140px; }
-.bot-corner { aspect-ratio: 160 / 120; }
-.bot-sprig { aspect-ratio: 1; }
-.bot-berry { aspect-ratio: 120 / 90; }
-.bot-blossom { aspect-ratio: 70 / 90; }
-/* Placement: every asset is drawn growing from the top-right corner. */
-.bot-at-tr { top: 0; right: 0; }
-.bot-at-tl { top: 0; left: 0; transform: scaleX(-1); }
-.bot-at-br { bottom: 0; right: 0; transform: scaleY(-1); }
-.bot-at-bl { bottom: 0; left: 0; transform: scale(-1, -1); }
-.bot-at-tl.bot-flip { transform: none; }
-.bot-at-tr.bot-flip { transform: scaleX(-1); }
-.bot-at-br.bot-flip { transform: scale(-1, -1); }
-.bot-at-bl.bot-flip { transform: scaleY(-1); }
-.bot-at-inline { position: relative; inset: auto; margin: 0 auto; }
-.bot-quiet { opacity: 0.62; }
-/* Line and wash: soft edges, low contrast, 3–4 colors per piece. */
-.bot .bb { fill: none; stroke: var(--bot-branch); stroke-linecap: round; stroke-linejoin: round; }
-.bot .bl { stroke-width: 0.5; stroke-opacity: 0.35; }
-.bot .bl-1 { fill: var(--bot-bamboo); fill-opacity: 0.66; stroke: var(--bot-bamboo); }
-.bot .bl-2 { fill: var(--bot-sage); fill-opacity: 0.74; stroke: var(--bot-sage); }
-.bot .bl-3 { fill: var(--bot-lightLeaf); fill-opacity: 0.82; stroke: var(--bot-lightLeaf); }
-.bot .bw { fill: var(--bot-paper); fill-opacity: 0.2; }
-.bot .bv { fill: none; stroke: var(--bot-paper); stroke-opacity: 0.45; stroke-width: 0.5; stroke-linecap: round; }
-.bot .bf { fill: var(--bot-fruit); fill-opacity: 0.85; }
-.bot .bh { fill: var(--bot-paper); fill-opacity: 0.5; }
-.bot .bp { fill: var(--bot-blossom); stroke: var(--bot-warmGray); stroke-opacity: 0.28; stroke-width: 0.45; }
-.bot .bc { fill: var(--bot-blossomCenter); }
-.bot .bd { fill: var(--bot-blossomCenter); fill-opacity: 0.9; }
-/* Captain scenes and cover art: pictures whose paper is white, multiplied
-   into the paper they sit on (no box, no halo). The travel blossom is a
-   cut-out on its own. In the dark theme a picture shows as a small print. */
-.bot-art,
-.bot-cutout {
-  height: auto;
-  -webkit-user-drag: none;
   user-select: none;
+  -webkit-user-drag: none;
 }
-.bot-art {
-  mix-blend-mode: multiply;
-}
-:root[data-theme="cool"] .bot-art {
-  mix-blend-mode: normal;
-  border-radius: 14px;
-}
+.bot-at-tr { top: 0; right: 0; }
+.bot-at-tl { top: 0; left: 0; }
+.bot-at-br { bottom: 0; right: 0; }
+.bot-at-bl { bottom: 0; left: 0; }
+/* Illustrations are only ever mirrored left↔right, never turned upside down. */
+.bot-flip { transform: scaleX(-1); }
+.bot-at-inline { position: relative; inset: auto; margin: 0 auto; }
+.bot-quiet { opacity: 0.72; }
 /* Paper texture: warm off-white, faint grain, no stains — a 160px tile. */
 .paper-grain {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .4 0 0 0 0 .33 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
   background-size: 160px 160px;
 }
-/* Themes: the dark theme quiets every plant; minimal keeps them pale. */
-:root[data-theme="cool"] .bot { opacity: 0.45; }
-:root[data-theme="minimal"] .bot { opacity: 0.6; filter: saturate(0.5); }
+/* Themes: the dark theme quiets the pictures; minimal keeps them pale. */
+:root[data-theme="cool"] .bot { opacity: 0.6; }
+:root[data-theme="minimal"] .bot { opacity: 0.8; filter: saturate(0.6); }
 @media print { .bot { display: none; } }
 
 /* ---- where they live ---- */
@@ -27172,47 +27131,42 @@ html[lang="en"] .keeper-perch .keeper-entry::before {
 }
 /* Home · one small sprig by the date (not when the screen is full of photos). */
 .v9-masthead > .bot-sprig {
-  top: -8px;
-  right: -6px;
+  top: -2px;
+  right: 2px;
 }
 /* The stamp card · its one corner: the seasonal berry branch, bottom left. */
 .stamp-strip.paper-grain {
   background-color: var(--paper);
 }
 .stamp-strip > .bot-berry {
-  left: 4px;
-  bottom: 2px;
-  width: 54px;
+  left: 6px;
+  bottom: 6px;
 }
 .stamp-strip .ss-go {
-  margin-left: 46px;
+  margin-left: 50px;
   white-space: nowrap;
 }
 /* The stamp page · one very subtle corner + paper grain; stamps lead. */
 .sp-card.paper-grain {
   background-color: var(--bot-paper);
 }
-.sp-card > .bot-corner {
-  right: 0;
-  bottom: 0;
-  width: 64px;
-}
-.sp-card > .bot-corner.bot-xs {
-  width: 44px;
+.sp-card > .bot-corner-blossom {
+  right: 4px;
+  bottom: 4px;
 }
 .sp-card .sp-note {
-  padding: 0 54px;
+  padding: 0 56px;
 }
-/* An empty month: Captain looking at a seal. */
+/* An empty month: Captain sitting by the books and the seal. */
 .sp-empty-art {
   display: block;
-  width: 210px;
-  margin: 4px auto 0;
+  margin: 8px auto 0;
+  text-align: center;
 }
 .sp-empty-art > .bot-vignette {
-  width: 100%;
+  max-width: 80%;
 }
-/* The branch tucks behind the backup note when that note shows. */
+/* The backup note stays above the date's sprig. */
 .home-mag .backup-nudge {
   position: relative;
   z-index: 2;
@@ -27221,34 +27175,49 @@ html[lang="en"] .keeper-perch .keeper-entry::before {
   .v9-masthead > .bot-sprig { display: none; }
 }
 
-/* ---- My Books · Capiday's three default covers (V10.88) ---- */
-.cover-capiday .bot.cv-art {
+/* ---- My Books · the three default covers (V10.88) ---- */
+.cover-capiday .bot {
   position: absolute;
   top: auto;
   left: auto;
   margin: 0;
-  transform: none;
 }
-.cover-capiday-travel .bot.cv-art {
-  right: 6%;
-  bottom: 5%;
-  width: 52%;
-  opacity: 1;
-}
+/* My Days: the faint sprig, never past its clear size (31pt). */
 .cover-capiday-everyday.paper-grain {
   background-color: var(--bot-paper);
 }
-.cover-capiday-everyday .bot.cv-art {
-  right: 8%;
-  bottom: 7%;
-  width: 34%;
-  opacity: 0.85;
+.cover-capiday-everyday .bot-cover-everyday {
+  right: 9%;
+  bottom: 8%;
+  max-width: 30%;
 }
+/* Captain / My Cat: Captain sitting by the books (approved hi-res asset). */
 .cover-capiday-captain.paper-grain {
   background-color: var(--bot-paper);
 }
-.cover-capiday-captain .bot.cv-art {
-  right: 3%;
-  bottom: 3%;
-  width: 80%;
+.cover-capiday-captain .bot-cover-captain {
+  /* clear of the little seal at the bottom left */
+  right: 4%;
+  bottom: 4%;
+  max-width: 74%;
+}
+/* Travel Notes: cloth + title + seal; its blossom waits for hi-res art. */
+
+/* ---- Captain in the interface (approved hi-res scenes) ---- */
+/* The invitation card: Captain sitting by the books. */
+.keeper-invite .bot-vignette {
+  position: relative;
+  flex: none;
+  max-width: 92px;
+}
+/* The first-stamp moment: Captain pressing the stamp. */
+.stamp-moment .sm-captain {
+  width: 66px;
+  height: auto;
+  margin-right: -2px;
+}
+.stamp-moment .sm-captain .bot {
+  position: relative;
+  width: 100% !important;
+  height: auto;
 }

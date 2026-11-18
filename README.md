@@ -197,6 +197,7 @@ npm run test:browser:v65
 - 自动测试 v192（41 项）通过；真机效果待看。
 - **素材清单**（同日续 2）：参考图里的水彩植物（角落枝 2、小枝 6、小果枝 2、白色小花 2）也裁成了素材，`Public/botanical/manifest.json` 记录来源和像素尺寸；5 个素材在 iPhone 3x 屏上不够清晰，标为 NEEDS HI-RES REPLACEMENT。等 Founder 确认后再接入页面。
 - **高清 Captain**（同日续 3）：Founder 给了 Captain 四场景高清图（`docs/visual/captain-scenes-v1.png`），四张 Captain 素材换成 540 px 宽的高清版，在 iPhone 上 180 pt 以内都清晰。
+- **资产规则**（同日续 4）：所有装饰都是已确认的水彩插画（透明底 PNG），每张只在 iPhone 上清晰的尺寸内显示；四个不够清晰的（Travel Notes 白花、三个小枝）标为 NEEDS HI-RES REPLACEMENT，不上线；旧的扁平 SVG 植物全部删除。Captain 插画用在邀请卡、第一次盖章提示、空月份和 Captain / My Cat 书封；首页趴在卡片上的 Captain 因为有装扮功能，暂时保留 3D 形象，等决定。
 
 ### 2026-11-18 — 树叶和梅花装饰（V10.87）
 
