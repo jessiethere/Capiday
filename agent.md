@@ -48,6 +48,41 @@
 
 ## 更新日志
 
+### 2026-11-18 — Captain Illustrated Asset Pack v1 收到：裁切 + 清晰度评估（STAGED，未接入页面）
+
+- **需求**：Founder 发来 4 张 Pack v1 插画（透明 PNG，无文字）：
+  - 趴着（醒着、前爪向前）；
+  - 素材板：正面头像、坐姿抬头、柠檬帽、毛线球；
+  - Playroom 毛线球 4 帧；
+  - 4 个表情：平静、开心、好奇、困。
+- **文件**：
+  - 原图存入 `docs/visual/captain-pack-v1/source-*.png`（插画，不是个人照片）。
+  - 新工具 `tools/cut_captain_pack.py`：只裁切、去边、缩小；alpha < 10 的杂点清零，这些点原本就看不见（预览里的黑底和红黄点只是透明区显示问题）；不重画、不改色。
+  - 输出 13 个素材到 `docs/visual/captain-pack-v1/cut/`，附 `manifest.json`（来源、框、像素、计划尺寸、对应审查行）。
+  - 预览：`preview.png`；`preview-checks-mockup.png`（柠檬帽叠加 MOCKUP、头像 28/44/64pt、新旧坐姿对比）。
+  - 新测试 `tests/test_captain_pack.py`。
+- **结果**：13 个素材在计划尺寸下全部 **APPROVED**（3x iPhone 不放大）：
+  - captain-lie 540×640，计划 120pt（最大清晰 180pt）；
+  - captain-face 360×386，计划 64pt（28pt 也能看清）；
+  - captain-sit-up 540×647，150pt；
+  - acc-lemon-hat 436×374，96pt；acc-yarn 300×276，80pt；
+  - play-watch / reach / bat / rolled 约 720×365，220pt；
+  - expr-calm / happy / curious / sleepy 360 宽，96pt。
+- **决定**：按「确认后再接入正式页面」，Pack v1 **STAGED**——不进 `Public/`、链接或 iOS 外壳（测试检查）；没有改 App 代码，没有删 3D 逻辑；在线链接不变（仍是 Version 134）。
+- **审查更新**（`docs/CAPTAIN_IDENTITY_MIGRATION.md` 第 2、2b、3 节）：
+  - #9 头像 → 确认后可迁移；
+  - #11–#16、#19 的素材已有，等 Founder 决定；
+  - #17 可用好奇表情代替；
+  - #18 每周回看（看手帐）仍缺；#20 还缺拥抱帧和戴帽帧。
+- **需 Founder 决定**：
+  - ① 素材用途对应表；
+  - ② 柠檬帽：叠加（每个姿势固定位置，见 MOCKUP）还是另画戴帽版本——默认 outfit 是 lemon，凡显示装扮的位置都卡在这里；
+  - ③ 首页 Captain 用 captain-lie 后，3D 的眼睛跟随会消失，是否接受；
+  - ④ Playroom 毛线球是画在帧里的，要改成「点一下播放 4 帧」，还是保留可拖动的单独毛线球；
+  - ⑤ 毛色：Pack v1 比场景 v1 略深、略暖（平均毛色约 (132–146,110–124,97–111) 对 (159,141,127)），两者都比真实照片的冷蓝灰暖。是否接受，未改色。
+- **运行 / 测试**：`python3 tools/cut_captain_pack.py`；`python3 -m unittest tests.test_captain_pack tests.test_native_shell` 8/8 通过。没有改 `Public/`，所以没有跑浏览器回归、没有发布链接。
+- **未完成 / 下一步**：等 Founder 回复上面 5 项 → 把确认的素材移入 `Public/botanical/`（或 `Public/captain/`）→ 先迁移 #6 #7 #8 #9 #10 → Phase 2 → Playroom 最后迁移。
+
 ### 2026-11-18 — V10.88 全量回归 run-all27 + 固定链接 Version 134
 
 - **run-all27**（V10.88 最终版：水彩资产 + Captain 插画接入）：128 个文件，125 通过、3 失败——`v119`（快速编辑样式按钮超时）、`v185`（键盘弹起时顶栏位置）、`v3`（视频加入后工具条超时），都是以前记录过的偶发项；逐个重跑 3/3 通过。合计 **128/128**（Chromium，**不是真机**）。

@@ -186,6 +186,12 @@ npm run test:browser:v65
 
 ## 更新日志
 
+### 2026-11-18 — Captain 插画素材包 v1（待确认，还没上线）
+
+- 收到 Founder 的 4 张 Captain 新插画，裁成 13 个素材：趴着、坐姿抬头、正面头像、4 个表情、柠檬帽、毛线球、Playroom 4 帧。在计划尺寸下全部清晰（APPROVED）。
+- 素材放在 `docs/visual/captain-pack-v1/`，还没放进 App 和在线链接，等 Founder 确认用途、柠檬帽戴法、眼睛跟随取舍、Playroom 玩法和毛色后再接入。
+- Captain is transitioning to one unified illustrated Little Keeper identity across Capiday.
+
 ### 2026-11-18 — V10.88 上线：在线链接 Version 134
 
 - 水彩植物与 Captain 插画已发布到在线链接（Version 134）。全量浏览器回归 128/128（3 个以前就有的偶发项重跑通过）；真机效果待看。

@@ -39,28 +39,50 @@ The Founder shared two real photos of Captain: a close-up of the face, and Capta
 
 ## 2. Captain Illustrated Asset Pack v1 (what exists / what is needed)
 
-| Group | Item | Asset now | Status |
-|---|---|---|---|
-| Base pose | sitting | `captain-sit` (540×371) | APPROVED |
-| Base pose | lying down (awake) | — | NEEDS CHARACTER ASSET |
-| Base pose | sleeping | `captain-sleep` (540×306), asleep on the books | APPROVED |
-| Base pose | looking at journal | — | NEEDS CHARACTER ASSET |
-| Base pose | preparing stamp | `captain-ready` (540×372) | APPROVED |
-| Base pose | pressing stamp | `captain-stamp` (540×342) | APPROVED |
-| Base pose | peeking over a card edge (Home today card) | — | NEEDS CHARACTER ASSET |
-| Expression | calm | — (no consistent expression set; `captain-sit` is calm / looking up, but it is a scene) | NEEDS CHARACTER ASSET |
-| Expression | happy | — | NEEDS CHARACTER ASSET |
-| Expression | curious | — | NEEDS CHARACTER ASSET |
-| Expression | sleepy | — (only the full sleeping scene) | NEEDS CHARACTER ASSET |
-| Small format | avatar / bust (panel header, guide, settings, small buttons; 28–64 pt) | — | NEEDS CHARACTER ASSET |
-| Accessory | lemon hat (for every pose and expression used) | — | NEEDS CHARACTER ASSET |
-| Accessory | yarn ball | — | NEEDS CHARACTER ASSET |
-| Interaction | greeting | — (stand-in until it exists: `captain-sit`) | NEEDS CHARACTER ASSET |
-| Interaction | gentle reminder | — | NEEDS CHARACTER ASSET |
-| Interaction | stamp moment | `captain-stamp` | APPROVED |
-| Interaction | weekly recap | — (looking at the journal) | NEEDS CHARACTER ASSET |
-| Interaction | idle | `captain-sit` / `captain-sleep` | APPROVED |
-| Playroom | idle, play and hug frames, yarn-ball play | — | NEEDS CHARACTER ASSET |
+Updated 2026-11-18 (evening): the Founder supplied four Pack v1 sheets (transparent PNGs). They are stored in `docs/visual/captain-pack-v1/source-*.png` and cut by `tools/cut_captain_pack.py` into `docs/visual/captain-pack-v1/cut/` with `manifest.json`.
+- They are **STAGED**: not in `Public/`, not in the link, not in the iOS shell, until the Founder confirms where each one goes. `tests/test_captain_pack.py` checks this.
+- The cut only crops, trims and scales down. Stray pixels with alpha < 10 are cleared; they were invisible anyway. Nothing is redrawn or recoloured.
+
+| Group | Item | Asset now | Pixels | Clear up to (3x) | Status |
+|---|---|---|---|---|---|
+| Base pose | sitting (with books and seal) | `captain-sit` (scenes v1) | 540×371 | 180 pt | APPROVED · shipped |
+| Base pose | sitting, looking up (no props) | `captain-sit-up` (Pack v1) | 540×647 | 180 pt | APPROVED · staged |
+| Base pose | lying down, awake, paws forward | `captain-lie` (Pack v1) | 540×640 | 180 pt | APPROVED · staged |
+| Base pose | sleeping | `captain-sleep` (scenes v1) | 540×306 | 180 pt | APPROVED · shipped |
+| Base pose | looking at journal | — | — | — | NEEDS CHARACTER ASSET |
+| Base pose | preparing stamp / pressing stamp | `captain-ready` / `captain-stamp` | 540×372 / 540×342 | 180 pt | APPROVED · shipped |
+| Base pose | peeking over a card edge | candidate: `captain-lie` (paws forward could rest on the card's top edge) | — | — | Founder to confirm |
+| Expression | calm / happy / curious / sleepy | `expr-calm` / `expr-happy` / `expr-curious` / `expr-sleepy` (busts) | 360×422–474 | 120 pt | APPROVED · staged |
+| Small format | avatar / bust (28–64 pt) | `captain-face` (front bust) | 360×386 | 120 pt | APPROVED · staged (readable at 28 pt) |
+| Accessory | lemon hat | `acc-lemon-hat` (separate piece) | 436×374 | 145 pt | APPROVED · staged; wearing it = layering, see 2b |
+| Accessory | yarn ball | `acc-yarn` | 300×276 | 100 pt | APPROVED · staged |
+| Interaction | greeting | stand-in: `captain-sit-up` | | | Founder to confirm |
+| Interaction | gentle reminder | stand-in: `expr-curious` | | | Founder to confirm |
+| Interaction | stamp moment | `captain-stamp` | | | APPROVED · shipped |
+| Interaction | weekly recap | — (looking at the journal) | | | NEEDS CHARACTER ASSET |
+| Interaction | idle | `captain-sit` / `captain-sleep` / `captain-lie` | | | APPROVED |
+| Playroom | yarn play, 4 frames (watch → paw up → paw on ball → ball rolled away) | `play-watch` / `play-reach` / `play-bat` / `play-rolled` | 708–720×362–368 | 236–240 pt | APPROVED · staged |
+| Playroom | hug frames; play frames wearing the lemon hat | — | | | NEEDS CHARACTER ASSET |
+
+## 2b. Pack v1 review notes (2026-11-18)
+
+- **Clarity**: all 13 cuts are APPROVED at their planned size, with no upscaling on a 3x iPhone:
+  - avatar 64 pt;
+  - busts 96 pt;
+  - poses 120–150 pt;
+  - Playroom 220 pt.
+- **Colour**: the coat is a little darker and slightly warmer than scenes v1. Average fur RGB:
+  - scenes v1 `captain-sit` ≈ (159, 141, 127);
+  - Pack v1 ≈ (132–146, 110–124, 97–111).
+  - Both are warmer than the real-photo spec in section 1b (cool blue-grey with a silver sheen).
+  - Not recoloured. Founder decides whether this is fine, or whether the art should be revised.
+  - Within one page only one set is used, so the slight difference never sits side by side.
+- **Lemon hat**: the hat is a separate piece. Two ways to show `outfit: lemon`:
+  - (a) layer `acc-lemon-hat` over each pose with a fixed position per asset; no redrawing, but it is a composition the Founder must approve (see the mockup preview);
+  - (b) the Founder supplies hatted variants.
+  - Until decided, places that show the outfit stay 3D.
+- **Playroom frames**: the yarn ball is painted into each frame. Today's Playroom lets you drag the ball, so with these frames the ball would follow a fixed sequence (tap → the 4 frames play), unless the free ball `acc-yarn` is placed beside a ball-less pose. Founder to choose.
+- **Lost capability**: the 3D Home Captain's eyes follow your finger (`data-keeper-follow`). A painted picture cannot do that. Per the rule "remove 3D rendering only when the illustrated set fully replaces each capability", the Founder must accept dropping eye-follow, or keep it 3D.
 
 **Asset specs** for new art:
 - Transparent PNG, or paper background (we cut it out).
@@ -83,21 +105,21 @@ Status values:
 | 3 | Botanical decorative vignettes (`botanicals.mjs` `captainVignette`) | Illustration | none | none | none | 1 | — | — | **MIGRATED** |
 | 4 | Home · Captain invitation card (`keeperInviteHTML`, Captain still off) | Illustration `captain-sit` | buttons only | none (Captain not chosen yet) | none | 1 | greeting (stand-in: sit) | — | **MIGRATED** |
 | 5 | First-stamp moment pill (`stampMoment` `.sm-captain`) | Illustration `captain-stamp` | none | 3D version showed the outfit; now no outfit (state kept) | `captain-press` CSS (works with the picture) | 2 | (lemon-hat variant later) | — | **MIGRATED** |
-| 6 | First-page card after the first page (`fp-art`, `keeperArt("happy")`) | 3D happy | close button only | shows outfit | none | 1 | happy expression or `captain-stamp` | yes, with `captain-stamp` (no happy expression yet) | **READY TO MIGRATE** |
-| 7 | Captain onboarding · intro (`openKeeperOnboarding` `.keeper-intro`, `keeperImage` idle) | 3D idle | none (static) | none (before choosing) | none | 1 | greeting / sitting | yes (`captain-sit`) | **READY TO MIGRATE** |
+| 6 | First-page card after the first page (`fp-art`, `keeperArt("happy")`) | 3D happy | close button only | shows outfit | none | 1 | `expr-happy` (staged) or `captain-stamp` | yes | **READY TO MIGRATE** |
+| 7 | Captain onboarding · intro (`openKeeperOnboarding` `.keeper-intro`, `keeperImage` idle) | 3D idle | none (static) | none (before choosing) | none | 1 | greeting / sitting | yes (`captain-sit` now, or `captain-sit-up` once confirmed) | **READY TO MIGRATE** |
 | 8 | Home guide (3-step tour) · Captain steps (`.hg-captain`, welcome / invite) | 3D idle / happy | none | shows outfit if chosen | none | 1 | greeting / happy (stand-in: sit) | yes for the large picture (`captain-sit`) | **READY TO MIGRATE** |
-| 9 | Home guide · small avatar (`.hg-avatar`, ~28 pt) | 3D idle | none | shows outfit | none | 1 | avatar / bust | no (a scene at 28 pt is unreadable) | **NEEDS CHARACTER ASSET** |
+| 9 | Home guide · small avatar (`.hg-avatar`, ~28 pt) | 3D idle | none | shows outfit | none | 1 | avatar / bust: `captain-face` (staged) | yes once confirmed (outfit not shown until the lemon-hat decision) | **READY AFTER CONFIRMATION** |
 | 10 | Page-save stamp burst (`keeperStamp`, happy + ✓) | 3D happy | none | shows outfit | pop-in CSS | 2 | stamp moment (`captain-stamp`) | yes, but outfit no longer shown (state kept) | **READY TO MIGRATE** (Phase 2) |
-| 11 | Home · Captain on the today card (`keeperPerchHTML`, peek) | 3D peek | tap → panel; speech bubble; Captain tag; growth line | shows lemon hat / yarn | `k-peek` entrance; eye follow (`data-keeper-follow`) | 2 | peek-over-card pose + calm / happy + lemon-hat variants | no | **NEEDS CHARACTER ASSET** · KEEP TEMPORARILY |
-| 12 | Captain panel header and notes (`kp-head`, `kp-note`: idle / happy) | 3D | panel navigation (Today / Organize / Memories / Looks / Play) | shows outfit | none | 2 | avatar / bust + calm / happy / curious | no | **NEEDS CHARACTER ASSET** · KEEP TEMPORARILY |
-| 13 | Feedback reply sheet (`keeper-sheet-head`, encouraging) | 3D | sheet | shows outfit | none | 2 | happy / encouraging bust | no | **NEEDS CHARACTER ASSET** |
-| 14 | Reader · "Ask Captain" button art (`keeper-ask-art`, encouraging) | 3D | button | shows outfit | none | 2 | small avatar | no | **NEEDS CHARACTER ASSET** |
-| 15 | Bookshelf Captain (`keeperShelfHTML`, idle / sleepy at night) | 3D | tap → line | shows outfit | none | 2 | sitting + sleeping with outfit variants | sit / sleep exist; outfits do not | **NEEDS CHARACTER ASSET** · KEEP TEMPORARILY |
-| 16 | Settings · Captain card preview and Captain management profile (`keeper-card`, `keeper-profile`) | 3D idle | opens management | shows the chosen outfit (preview) | none | 2 | avatar / bust with outfit variants | no | **NEEDS CHARACTER ASSET** · KEEP TEMPORARILY |
-| 17 | Reminders / guidance (Captain prompt bubble on Home; daily reminder notification) | Text only (bubble sits on the 3D perch) | — | — | — | 2 | gentle reminder | no | **NEEDS CHARACTER ASSET** |
+| 11 | Home · Captain on the today card (`keeperPerchHTML`, peek) | 3D peek | tap → panel; speech bubble; Captain tag; growth line | shows lemon hat / yarn | `k-peek` entrance; eye follow (`data-keeper-follow`) | 2 | peek-over-card pose + calm / happy + lemon-hat variants | not yet: needs the Founder to confirm `captain-lie` as the perch pose, the lemon-hat way (2b), and dropping eye-follow | **WAITING ON FOUNDER DECISIONS** · KEEP TEMPORARILY |
+| 12 | Captain panel header and notes (`kp-head`, `kp-note`: idle / happy) | 3D | panel navigation (Today / Organize / Memories / Looks / Play) | shows outfit | none | 2 | avatar / bust + calm / happy / curious | art exists (`captain-face`, `expr-*`); outfit display waits on the lemon-hat decision | **WAITING ON FOUNDER DECISIONS** · KEEP TEMPORARILY |
+| 13 | Feedback reply sheet (`keeper-sheet-head`, encouraging) | 3D | sheet | shows outfit | none | 2 | happy / encouraging bust | art exists (`expr-happy`); outfit waits on the lemon-hat decision | **WAITING ON FOUNDER DECISIONS** |
+| 14 | Reader · "Ask Captain" button art (`keeper-ask-art`, encouraging) | 3D | button | shows outfit | none | 2 | small avatar | art exists (`captain-face`); outfit waits on the lemon-hat decision | **WAITING ON FOUNDER DECISIONS** |
+| 15 | Bookshelf Captain (`keeperShelfHTML`, idle / sleepy at night) | 3D | tap → line | shows outfit | none | 2 | sitting + sleeping with outfit variants | sit / sleep / lie exist; outfit waits on the lemon-hat decision | **NEEDS CHARACTER ASSET** · KEEP TEMPORARILY |
+| 16 | Settings · Captain card preview and Captain management profile (`keeper-card`, `keeper-profile`) | 3D idle | opens management | shows the chosen outfit (preview) | none | 2 | avatar / bust with outfit variants | art exists (`captain-face`); preview must show the outfit → lemon-hat decision | **WAITING ON FOUNDER DECISIONS** · KEEP TEMPORARILY |
+| 17 | Reminders / guidance (Captain prompt bubble on Home; daily reminder notification) | Text only (bubble sits on the 3D perch) | — | — | — | 2 | gentle reminder | stand-in `expr-curious` if the Founder agrees | **NEEDS CHARACTER ASSET** (or stand-in) |
 | 18 | Weekly recap (week card / week page; Captain panel look-back row) | No Captain today | — | — | — | 2 | weekly recap / looking at journal | no | **NEEDS CHARACTER ASSET** |
-| 19 | Captain panel · Looks / dress-up chips (`keeperLooksHTML`) | 3D per outfit | choose outfit (writes `keeper.outfit`) | core | none | 3 | lemon hat + yarn for the chip pose | no | **BLOCKED** (accessory assets, then panel #12) |
-| 20 | Playroom (`keeperPlayHTML`: play idle, hug animation frames, yarn ball) | 3D photos / frames | drag / tap yarn ball, poke → happy | lemon / yarn sets (`keeperPlay`) | sprite frames, reduce-motion fallback | 3 | Playroom frames + yarn ball in the illustrated style | no | **BLOCKED** · KEEP TEMPORARILY (migrates last) |
+| 19 | Captain panel · Looks / dress-up chips (`keeperLooksHTML`) | 3D per outfit | choose outfit (writes `keeper.outfit`) | core | none | 3 | lemon hat + yarn for the chip pose | no | **BLOCKED** (accessories exist now; waits on the lemon-hat decision, then panel #12) |
+| 20 | Playroom (`keeperPlayHTML`: play idle, hug animation frames, yarn ball) | 3D photos / frames | drag / tap yarn ball, poke → happy | lemon / yarn sets (`keeperPlay`) | sprite frames, reduce-motion fallback | 3 | Playroom frames + yarn ball in the illustrated style | no | **BLOCKED** · KEEP TEMPORARILY (migrates last; 4 yarn frames + `acc-yarn` exist; hug frames and hatted frames missing) |
 | 21 | `keeperMiniHTML` (`.keeper-mini`) | 3D (defined, not rendered anywhere) | — | — | — | — | — | — | KEEP TEMPORARILY (dead code; remove once 3D rendering is retired) |
 
 **Mixing check today**:
@@ -107,7 +129,7 @@ Status values:
 
 ## 4. Migration order
 
-1. **Phase 1, static scenes.** Done: #1–#4. Ready now: #6, #7 and #8 (large picture). #9 needs an avatar.
+1. **Phase 1, static scenes.** Done: #1–#4. Ready now: #6, #7 and #8 (large picture). #9 is ready once Pack v1 is confirmed (`captain-face`).
 2. **Phase 2, light interaction.**
    - #5 is done; #10 is ready.
    - #11–#18 need peek / bust / expressions / reminder / recap art, plus lemon-hat variants for anything that shows the outfit today.

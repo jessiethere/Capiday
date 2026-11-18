@@ -236,3 +236,4 @@ Memory Wall v1.0：**V10.78 已实施，等真机验收**（Founder 2026-11-15 �
 | 2026-11-18 | Captain Canonical Visual Identity：插画版为唯一长期形象；审查 21 处 Captain 位置（5 已迁移、4 READY、多处 NEEDS CHARACTER ASSET、Looks / Playroom BLOCKED）；Asset Pack v1 需求清单；数据保留规则；未改代码 |
 | 2026-11-18 | Captain 真实照片收到 → 文字版身份规格（冷调蓝灰长毛、银色毛尖、琥珀浅金眼、楔形脸、三角立耳）；照片不入仓库；后续素材提示已记录 |
 | 2026-11-18 | 全量回归 run-all27（V10.88 最终版）：125/128，v119 / v185 / v3 偶发项重跑通过 → 128/128。固定链接 Version 134 |
+| 2026-11-18 | Captain Illustrated Asset Pack v1：4 张源图 → `tools/cut_captain_pack.py` → 13 个素材（lie / sit-up / face / 4 表情 / 柠檬帽 / 毛线球 / Playroom 4 帧），全部 APPROVED；STAGED 在 docs/visual/captain-pack-v1（不进 Public）；审查表更新；等 Founder 5 项决定。test_captain_pack 3/3 |
