@@ -10796,5 +10796,29 @@
   "photos.pickFailed": {
     "zh": "这几张照片没能读进来，再试一次吧",
     "en": "Those photos couldn't be read — try again"
+  },
+  "pageExport.savedPhotos": {
+    "zh": "已保存到照片",
+    "en": "Saved to Photos"
+  },
+  "pageExport.photosDenied": {
+    "zh": "没有保存：开铺手帐还不能往「照片」里添加图片。可以到 iPhone 设置 → 开铺手帐 → 照片，选「仅添加照片」，再回来存一次。",
+    "en": "Not saved: Capiday isn't allowed to add to Photos yet. In iPhone Settings → Capiday → Photos, choose Add Photos Only, then try again."
+  },
+  "pageExport.openSettings": {
+    "zh": "去设置",
+    "en": "Open Settings"
+  },
+  "pageExport.notNow": {
+    "zh": "先不用",
+    "en": "Not now"
+  },
+  "pageExport.photosRestricted": {
+    "zh": "没有保存：这台 iPhone 不允许添加照片（可能是屏幕使用时间的限制）。",
+    "en": "Not saved: this iPhone doesn't allow adding photos (perhaps a Screen Time restriction)."
+  },
+  "pageExport.photosFailed": {
+    "zh": "没能保存到照片，什么都没有存{why}。请再试一次。",
+    "en": "Couldn't save to Photos — nothing was saved{why}. Please try again."
   }
 }

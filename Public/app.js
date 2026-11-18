@@ -3457,6 +3457,17 @@ async function exportReaderPage(kind) {
       if (!png || png.size < 2000) throw Object.assign(new Error("blank"), { code: "blank" });
       file = new File([png], `${base}.png`, { type: "image/png" });
     }
+    // V10.82: in the iPhone app 存成图片 goes straight into the Photos app
+    // (LittleDaysPhotoSaver.swift) — the same PNG, no share sheet. 分享这一页
+    // keeps the share sheet. "已保存到照片" only once iOS has said it saved.
+    if (kind === "png" && nativePhotoSave()) {
+      const answer = await saveToPhotos(file);
+      logEvent("page_export", { kind, way: answer.ok ? "photos" : `photos-${answer.reason}` });
+      if (answer.ok) toast(t("pageExport.savedPhotos"));
+      else if (answer.reason === "denied") photosDenied();
+      else toast(answer.reason === "restricted" ? t("pageExport.photosRestricted") : t("pageExport.photosFailed", { why: answer.detail ? ` (${answer.detail})` : "" }));
+      return;
+    }
     let how = "saved";
     if (kind === "share" && navigator.canShare?.({ files: [file] })) {
       try {
@@ -3486,6 +3497,36 @@ async function exportReaderPage(kind) {
   } finally {
     busyMedia = false;
   }
+}
+// ---------- V10.82 · 存成图片 → 照片 ----------
+// The page's PNG, as it was drawn (bytes unchanged), to the iOS shell, which
+// saves it with Photos (add-only access). Answers come back through
+// window.capidayPhotoSaved; nothing here says "saved" before iOS has.
+const nativePhotoSave = () => Boolean(window.capidayFiles?.savePhoto && window.webkit?.messageHandlers?.littleDaysSavePhoto);
+const photoSaveWaits = new Map();
+window.capidayPhotoSaved = (answer) => {
+  const done = photoSaveWaits.get(answer?.id);
+  if (!done) return;
+  photoSaveWaits.delete(answer.id);
+  done(answer);
+};
+async function saveToPhotos(file) {
+  const data = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+  const id = `photo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  return new Promise((resolve) => {
+    photoSaveWaits.set(id, resolve);
+    window.webkit.messageHandlers.littleDaysSavePhoto.postMessage({ type: "save", id, name: file.name, data });
+  });
+}
+// No access to add photos: nothing was saved — say so, and offer iOS Settings.
+async function photosDenied() {
+  if (await askConfirm(t("pageExport.photosDenied"), { ok: t("pageExport.openSettings"), cancel: t("pageExport.notNow") }))
+    window.webkit?.messageHandlers?.littleDaysSavePhoto?.postMessage({ type: "settings" });
 }
 // A drawing that is one flat colour (nothing drawn) is not handed out.
 function canvasLooksBlank(canvas) {

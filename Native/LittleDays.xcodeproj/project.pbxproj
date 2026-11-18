@@ -188,6 +188,7 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "Capiday can use the camera to take photos for your journal.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Capiday uses Face ID to unlock your private journal.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Capiday uses the microphone to record voice notes.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Capiday saves the journal pages you choose to Photos.";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIFileSharingEnabled = YES;
@@ -217,6 +218,7 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "Capiday can use the camera to take photos for your journal.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Capiday uses Face ID to unlock your private journal.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Capiday uses the microphone to record voice notes.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Capiday saves the journal pages you choose to Photos.";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIFileSharingEnabled = YES;

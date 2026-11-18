@@ -187,7 +187,7 @@ struct LittleDaysWebView: UIViewRepresentable {
         configuration.mediaTypesRequiringUserActionForPlayback = []
         // Lets the shared CSS drop the "web preview" phone frame and use real safe areas.
         let marker = WKUserScript(
-            source: "window.littleDaysBiometry = '\(LittleDaysLockBridge.biometry())'; document.documentElement.dataset.shell = 'ios'; document.documentElement.dataset.biometric = window.littleDaysBiometry; window.capidayFiles = { saveBackup: 1, icloud: 1, photos: 1 };",
+            source: "window.littleDaysBiometry = '\(LittleDaysLockBridge.biometry())'; document.documentElement.dataset.shell = 'ios'; document.documentElement.dataset.biometric = window.littleDaysBiometry; window.capidayFiles = { saveBackup: 1, icloud: 1, photos: 1, savePhoto: 1 };",
             injectionTime: .atDocumentStart,
             forMainFrameOnly: true
         )
@@ -203,12 +203,15 @@ struct LittleDaysWebView: UIViewRepresentable {
         configuration.userContentController.add(LittleDaysICloudBackup.shared, name: LittleDaysICloudBackup.name)
         // 从相册选择: the system photo library, opened straight away (V10.81).
         configuration.userContentController.add(LittleDaysPhotoPicker.shared, name: LittleDaysPhotoPicker.name)
+        // 把这一页存成图片: straight into the Photos app (V10.82).
+        configuration.userContentController.add(LittleDaysPhotoSaver.shared, name: LittleDaysPhotoSaver.name)
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
         lockBridge.webView = webView
         LittleDaysReminders.shared.webView = webView
         LittleDaysICloudBackup.shared.webView = webView
         LittleDaysPhotoPicker.shared.webView = webView
+        LittleDaysPhotoSaver.shared.webView = webView
         context.coordinator.keyboard.start(webView)
         webView.uiDelegate = context.coordinator
         webView.navigationDelegate = context.coordinator

@@ -4,3 +4,4 @@
 "NSCameraUsageDescription" = "开铺手帐可以用相机拍摄放进手帐的照片。";
 "NSFaceIDUsageDescription" = "开铺手帐用面容 ID 解锁你的私人手帐。";
 "NSMicrophoneUsageDescription" = "开铺手帐需要麦克风来录制你的语音日记。";
+"NSPhotoLibraryAddUsageDescription" = "开铺手帐会把你选择保存的手帐页面存到「照片」。";
