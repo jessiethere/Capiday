@@ -197,6 +197,13 @@ final class CoreTests: XCTestCase {
         XCTAssertEqual(wall.hidden?["photo:m1:l1"]?.ref, "media:p1")
         XCTAssertEqual(wall.pages?.first?.key, "page:m2")
         XCTAssertEqual(try JSONDecoder().decode(MemoryWallSetting.self, from: JSONEncoder().encode(wall)), wall)
+        // V10.80: a page answering 每日一问, and a thought added later for one photo (both optional).
+        let asked = try JSONDecoder().decode(JournalMoment.self, from: Data(#"{"id":"m9","title":"今天的咖啡 really good","prompt":{"id":"quiet","text":"今天有没有一段安静的时间？"}}"#.utf8))
+        XCTAssertEqual(asked.prompt?.id, "quiet")
+        XCTAssertEqual(try JSONDecoder().decode(JournalMoment.self, from: JSONEncoder().encode(asked)).prompt, asked.prompt)
+        XCTAssertNil(try JSONDecoder().decode(JournalMoment.self, from: Data(#"{"id":"m10"}"#.utf8)).prompt)
+        let note = try JSONDecoder().decode(StickerLayer.self, from: Data(#"{"id":"t1","kind":"text","text":"补一句","x":50,"y":80,"scale":1,"rotation":0,"forPhoto":"p2"}"#.utf8))
+        XCTAssertEqual(note.forPhoto, "p2")
         // V10.58: when a photo was taken, where that time came from, and its place in the picked order.
         let timed = try JSONDecoder().decode(StickerLayer.self, from: Data(#"{"id":"p2","kind":"photo","text":"b.jpg","x":50,"y":40,"scale":1,"rotation":0,"mediaRef":"media:p2","capturedAt":"2026-11-09T08:10:00.000Z","captureTimeSource":"exif-original","photoOrder":2}"#.utf8))
         XCTAssertEqual(timed.capturedAt, "2026-11-09T08:10:00.000Z")

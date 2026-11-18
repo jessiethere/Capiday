@@ -76,6 +76,28 @@ function acceptBookPick() {
   if (document.documentElement) watch();
   else document.addEventListener("DOMContentLoaded", watch);
 }
+// V10.80: 自己写 (it was 只写几句) opens 快速记录 first. Older suites were
+// written when it opened the Journal Studio's note page straight away: they
+// go on with 到手帐工作室里继续, as a person would. tests/v184 tests 快速记录
+// itself and turns this off with localStorage "test.keepJot" = "1".
+function acceptJot() {
+  const keep = () => {
+    try {
+      return localStorage.getItem("test.keepJot") === "1";
+    } catch {
+      return false;
+    }
+  };
+  const watch = () =>
+    new MutationObserver(() => {
+      const jot = document.querySelector('.jot-page[data-from="free"]:not([data-accepted])');
+      if (!jot || keep()) return;
+      jot.dataset.accepted = "1";
+      setTimeout(() => jot.querySelector('[data-action="jot-studio"]')?.click(), 0);
+    }).observe(document.documentElement, { childList: true, subtree: true });
+  if (document.documentElement) watch();
+  else document.addEventListener("DOMContentLoaded", watch);
+}
 module.exports = function signedIn(chromium) {
   const launch = chromium.launch.bind(chromium);
   chromium.launch = async (options) => {
@@ -86,6 +108,7 @@ module.exports = function signedIn(chromium) {
       await context.addInitScript(seedAccount);
       await context.addInitScript(acceptGroups);
       await context.addInitScript(acceptBookPick);
+      await context.addInitScript(acceptJot);
       return context;
     };
     browser.newPage = async (pageOptions) => (await browser.newContext(pageOptions)).newPage();
@@ -111,6 +134,7 @@ module.exports.leaveStudio = leaveStudio;
 module.exports.seed = seedAccount; // for persistent profiles (launchPersistentContext)
 module.exports.acceptGroups = acceptGroups;
 module.exports.acceptBookPick = acceptBookPick;
+module.exports.acceptJot = acceptJot;
 // V10.79: 自定义 in 今天的故事 is a small menu (页面背景 / 更多编辑); older
 // suites open the Journal Studio from it, as 自定义 did before.
 module.exports.storyStudio = async (page) => {

@@ -40,6 +40,8 @@ import {
 import { loadImage, exportJournalImage, exportJournalVideo, shareStory, renderJournalCanvas, renderBookTitleCanvas } from "./js/export.mjs";
 import { bookSharePages, limitPages, dateRange, buildPdf } from "./js/book-share.mjs";
 import * as Capiday from "./js/capiday-format.mjs";
+import * as Prompts from "./js/daily-prompts.mjs";
+import * as PhotoNotes from "./js/photo-notes.mjs";
 import { photoTime, reliableTime } from "./js/exif.mjs";
 import * as AppLock from "./js/app-lock.mjs";
 import { MetaStore } from "./js/meta-store.mjs";
@@ -135,6 +137,7 @@ import {
   addDays,
   localDayOf,
   setPageBook,
+  addPageToDay,
   weekStart,
   weeklyCount,
   toggleCheck,
@@ -317,6 +320,8 @@ const ctx = () => ({
   language: languageCode(),
   locale: locale(),
   mediaReady: () => readyScopes.has(page),
+  // V10.80: the small 每日一问 line on a page that answered one.
+  promptText: (pageObj) => Prompts.pagePromptText(pageObj, languageCode()),
 });
 let store, features, tokens;
 let page = "home",
@@ -932,7 +937,7 @@ function home() {
   const day = now.toLocaleDateString(locale(), { month: "long", day: "numeric" });
   const books = homeLibraryHTML();
   return `<div class="home-mag"><header class="home-top"><div class="masthead"><div class="brand-title${languageCode() === "en" ? "" : " brand-zh"}" lang="${languageCode() === "en" ? "en" : "zh-Hans"}">${t("brand.wordmark")}${BRAND_SPROUT}</div></div><span class="home-actions"><button class="icon-button" data-action="open-search" aria-label="${t("search.open")}">${icon("search")}</button>${bell()}<button class="icon-button settings-gear" data-action="nav" data-page="settings" aria-label="${hasUnseen() ? t("news.dotLabel", { version: LATEST }) : t("settings")}">${icon("gear")}${hasUnseen() ? `<i class="news-dot" aria-hidden="true"></i>` : ""}</button></span></header>
- ${backupNudgeHTML()}<section class="hero today-card v9-home"><div class="story-start-card"><div class="v9-masthead"><span class="v9-daynum" aria-hidden="true">${now.getDate()}</span><div class="v9-greet"><small class="v9-kicker">${esc(now.toLocaleDateString(locale(), { month: "long" }))} · ${now.getFullYear()}</small>${greetingHTML(weekday, day)}<h1 class="today-prompt">${t("story.prompt")}</h1></div></div><div class="v9-hero-wrap">${keeperPerchHTML()}<div class="v9-hero"><div class="v9-hero-copy"><small class="v9-kicker v9-sage">Photo Journal</small><h2>${t("tile.photo")}</h2><p>${t("story.promptHint")}</p></div><div class="v9-polaroids" aria-hidden="true"><i class="v9-pol v9-pol-back" style="background-image:url('${esc(safePhoto("photo:brunch"))}')"></i><i class="v9-pol v9-pol-front" style="background-image:url('${esc(safePhoto("photo:latte-art"))}')"><em>${esc(now.toLocaleDateString(locale(), { month: "short", day: "numeric" }))}</em></i><i class="v9-tape"></i></div><button class="story-photos v9-cta" data-action="today-photos">${t("v9.pickPhotos")}<span aria-hidden="true">→</span></button></div></div><div class="story-start-row today-tiles v9-secondary"><button class="today-tile" data-action="today-write" title="${t("story.justWriteHint")}">${v9Icon("write")}<b>${t("story.justWrite")}</b><small>${t("v9.writeHint")}</small></button><button class="today-tile" data-action="today-draw">${v9Icon("draw")}<b>${t("tile.draw")}</b><small>${t("v9.drawHint")}</small></button><button class="today-tile moment-cta" data-action="quick-open" data-photo="">${v9Icon("more")}<b>${t("tile.more")}</b><small>${t("v9.moreHint")}</small></button></div><button class="text-button backfill-link" data-action="backfill" data-date="${addDays(dateKey(), -1)}">${t("story.backfill")} ›</button></div>${keeperInviteHTML()}${todayListHTML()}${todayStoryHTML()}</section>${memoryHTML()}
+ ${backupNudgeHTML()}<section class="hero today-card v9-home"><div class="story-start-card"><div class="v9-masthead"><span class="v9-daynum" aria-hidden="true">${now.getDate()}</span><div class="v9-greet"><small class="v9-kicker">${esc(now.toLocaleDateString(locale(), { month: "long" }))} · ${now.getFullYear()}</small>${greetingHTML(weekday, day)}<h1 class="today-prompt">${t("story.prompt")}</h1></div></div><div class="v9-hero-wrap">${keeperPerchHTML()}<div class="v9-hero"><div class="v9-hero-copy"><small class="v9-kicker v9-sage">Photo Journal</small><h2>${t("tile.photo")}</h2><p>${t("story.promptHint")}</p></div><div class="v9-polaroids" aria-hidden="true"><i class="v9-pol v9-pol-back" style="background-image:url('${esc(safePhoto("photo:brunch"))}')"></i><i class="v9-pol v9-pol-front" style="background-image:url('${esc(safePhoto("photo:latte-art"))}')"><em>${esc(now.toLocaleDateString(locale(), { month: "short", day: "numeric" }))}</em></i><i class="v9-tape"></i></div><button class="story-photos v9-cta" data-action="today-photos">${t("v9.pickPhotos")}<span aria-hidden="true">→</span></button></div></div><div class="story-start-row today-tiles v9-secondary"><button class="today-tile" data-action="today-write" title="${t("story.justWriteHint")}">${v9Icon("write")}<b>${t("story.justWrite")}</b><small>${t("v9.writeHint")}</small></button><button class="today-tile" data-action="today-draw">${v9Icon("draw")}<b>${t("tile.draw")}</b><small>${t("v9.drawHint")}</small></button><button class="today-tile moment-cta" data-action="quick-open" data-photo="">${v9Icon("more")}<b>${t("tile.more")}</b><small>${t("v9.moreHint")}</small></button></div>${dailyPromptHTML()}<button class="text-button backfill-link" data-action="backfill" data-date="${addDays(dateKey(), -1)}">${t("story.backfill")} ›</button></div>${keeperInviteHTML()}${todayListHTML()}${todayStoryHTML()}</section>${memoryHTML()}
  ${books}<p class="home-quote hs-colophon">Collect moments, grow gently.</p></div>`;
 }
 // ---------- Today: habits and (Labs) things to do, on Home ----------
@@ -1297,7 +1302,13 @@ function wallViewer() {
     dialog.id = "wall-viewer";
     dialog.className = "wall-viewer";
     document.body.append(dialog);
-    dialog.addEventListener("close", () => (dialog.innerHTML = ""));
+    dialog.addEventListener("close", () => {
+      dialog.innerHTML = "";
+      // V10.80: a take not kept is dropped; this photo's sounds are let go.
+      dropTake();
+      wallNote = null;
+      media.release("wall");
+    });
     let start = null;
     dialog.addEventListener("pointerdown", (event) => {
       if (event.target.closest(".wv-stage")) start = { x: event.clientX, y: event.clientY };
@@ -1316,6 +1327,10 @@ function wallViewer() {
   return dialog;
 }
 function openWallViewer(ref) {
+  if (wallNote && wallNote.ref !== ref) {
+    dropTake();
+    wallNote = null;
+  }
   const index = wallItems.findIndex((item) => item.ref === ref);
   const item = wallItems[index];
   if (!item) return;
@@ -1325,8 +1340,99 @@ function openWallViewer(ref) {
   const when = new Date(`${item.date}T12:00:00`).toLocaleDateString(locale(), { year: "numeric", month: "long", day: "numeric", weekday: "short" });
   const strip = day.length > 1 ? `<div class="wv-day"><small>${t("wall.sameDay", { count: day.length })}</small><div class="wv-strip">${day.map((other) => `<button data-action="wall-photo" data-ref="${esc(other.ref)}" class="${other.ref === item.ref ? "selected" : ""}" aria-label="${esc(t("wall.photoOf", { date: shortDate(other.date) }))}" aria-current="${other.ref === item.ref}"><img src="${esc(wallThumbs.get(other.ref) || media.resolve(other.ref))}" alt=""></button>`).join("")}</div></div>` : "";
   dialog.dataset.ref = item.ref;
-  dialog.innerHTML = `<div class="wv-top"><button class="wv-x" data-action="wall-close" aria-label="${t("close")}">×</button><div class="wv-when"><b>${esc(when)}</b>${book ? `<small>${esc(book.title)}</small>` : ""}</div><span class="wv-n">${index + 1} / ${wallItems.length}</span></div><div class="wv-stage"><button class="wv-step prev" data-action="wall-step" data-dir="-1" aria-label="${t("wall.prev")}" ${index === 0 ? "disabled" : ""}>‹</button><img class="wv-img" src="${esc(media.resolve(item.ref))}" alt="${esc(t("wall.photoOf", { date: shortDate(item.date) }))}"><button class="wv-step next" data-action="wall-step" data-dir="1" aria-label="${t("wall.next")}" ${index === wallItems.length - 1 ? "disabled" : ""}>›</button></div>${strip}<button class="primary wv-open" data-action="wall-open-page">${t("wall.openPage")} →</button>`;
+  dialog.innerHTML = `<div class="wv-top"><button class="wv-x" data-action="wall-close" aria-label="${t("close")}">×</button><div class="wv-when"><b>${esc(when)}</b>${book ? `<small>${esc(book.title)}</small>` : ""}</div><span class="wv-n">${index + 1} / ${wallItems.length}</span></div><div class="wv-stage"><button class="wv-step prev" data-action="wall-step" data-dir="-1" aria-label="${t("wall.prev")}" ${index === 0 ? "disabled" : ""}>‹</button><img class="wv-img" src="${esc(media.resolve(item.ref))}" alt="${esc(t("wall.photoOf", { date: shortDate(item.date) }))}"><button class="wv-step next" data-action="wall-step" data-dir="1" aria-label="${t("wall.next")}" ${index === wallItems.length - 1 ? "disabled" : ""}>›</button></div>${strip}<section class="wv-notes" id="wv-notes" aria-live="polite">${wallNotesHTML(item)}</section><button class="primary wv-open" data-action="wall-open-page">${t("wall.openPage")} →</button>`;
   if (!dialog.open) dialog.showModal();
+  // The voice notes of this photo, ready to play right here.
+  const clips = PhotoNotes.photoNotes(wallPageOf(item), item.layerId).clips;
+  const ids = clips.map((c) => c.source).filter((r) => typeof r === "string" && r.startsWith("media:")).map((r) => r.slice(6));
+  if (ids.length) media.acquire(ids, "wall").then(() => paintWallNotes()).catch(() => {});
+}
+// ---------- V10.80 · 翻照片时能听，也能补一句 ----------
+// The page a wall photo comes from (the saved day; a day photo is the day page).
+let wallNote = null; // { ref, mode: "text" | "voice" }
+function wallPageOf(item) {
+  const day = state().entries.find((e) => e.date === item?.date && e.isDemo !== true);
+  if (!day) return null;
+  return item.momentId ? (day.moments || []).find((m) => m.id === item.momentId) || null : day;
+}
+function wallItemNow() {
+  const ref = $("#wall-viewer")?.dataset.ref;
+  return wallItems.find((x) => x.ref === ref) || null;
+}
+function wallNotesHTML(item) {
+  const pageObj = wallPageOf(item);
+  if (!pageObj) return "";
+  const { words, clips } = PhotoNotes.photoNotes(pageObj, item.layerId);
+  const said = words.map((w) => `<p class="wv-word ${w.kind}">${w.kind === "note" ? `<small>${t("wallnote.added")}</small>` : ""}${esc(w.text)}</p>`).join("");
+  const players = clips
+    .map((clip) => {
+      const src = media.resolve(clip.source);
+      return `<div class="wv-voice">${voicePlayerHTML(src, clip.duration)}<small>${esc(clip.name || t("media.kindVoice"))}${src ? "" : ` · ${t("media.loading")}`}</small></div>`;
+    })
+    .join("");
+  const empty = !said && !players ? `<p class="wv-empty">${t("wallnote.empty")}</p>` : "";
+  const mine = wallNote?.ref === item.ref ? wallNote : null;
+  let add;
+  if (mine?.mode === "text")
+    add = `<div class="wv-add-text"><textarea id="wv-note-text" rows="3" maxlength="2000" placeholder="${esc(t("wallnote.textHint"))}"></textarea><div class="wv-add-row"><button class="text-button" data-action="wallnote-cancel">${t("cancel")}</button><button class="primary" data-action="wallnote-save">${t("save")}</button></div></div>`;
+  else if (mine?.mode === "voice") add = `<div class="wv-add-voice">${takeHTML("wall")}<button class="text-button" data-action="wallnote-cancel">${t("cancel")}</button></div>`;
+  else add = `<div class="wv-add"><button data-action="wallnote-text">✎ ${t("wallnote.text")}</button><button data-action="wallnote-voice">🎙 ${t("wallnote.voice")}</button></div>`;
+  return `${said}${players}${empty}${add}`;
+}
+function paintWallNotes() {
+  const box = $("#wv-notes");
+  const item = wallItemNow();
+  if (!box || !item) return;
+  const typed = $("#wv-note-text")?.value;
+  box.innerHTML = wallNotesHTML(item);
+  if (typed != null && $("#wv-note-text")) $("#wv-note-text").value = typed;
+}
+// Written into the page the photo is on — the saved day, and its unsaved
+// draft too when there is one (same ids), so neither copy loses it.
+async function addWallNote(item, make) {
+  const pageNow = wallPageOf(item);
+  if (!pageNow) return false;
+  const made = make(pageNow);
+  try {
+    store.update((s) => {
+      for (const day of [s.entries.find((e) => e.date === item.date && e.isDemo !== true), s.drafts?.[item.date]]) {
+        if (!day) continue;
+        const target = item.momentId ? (day.moments || []).find((m) => m.id === item.momentId) : day;
+        if (!target) continue;
+        target.layers = [...(target.layers || []), structuredClone(made.layer)];
+        if (made.clip) target.media = [...(target.media || []), structuredClone(made.clip)];
+        target.updatedAt = new Date().toISOString();
+      }
+    });
+    if (!(await store.stored())) throw new Error("store");
+  } catch (error) {
+    logEvent("wallnote_failed", { err: String(error?.code || error?.message || "save").slice(0, 16) });
+    toast(t("exit.saveFailed"));
+    return false;
+  }
+  logEvent("wallnote_saved", { kind: made.clip ? "voice" : "text" });
+  toast(t("wallnote.saved"));
+  return true;
+}
+async function saveWallText() {
+  const item = wallItemNow();
+  const text = $("#wv-note-text")?.value || "";
+  if (!item || !text.trim()) return toast(t("wallnote.empty"));
+  if (await addWallNote(item, (pg) => ({ layer: PhotoNotes.noteTextLayer(pg, item.layerId, text, id) }))) {
+    wallNote = null;
+    paintWallNotes();
+  }
+}
+async function keepWallVoice() {
+  const item = wallItemNow();
+  if (!item) return;
+  const kept = await keepTake();
+  if (!kept) return;
+  const clip = { id: id(), kind: "audio", name: kept.name, mime: kept.mime, size: kept.size, duration: kept.duration, source: `media:${kept.mediaId}`, poster: "", origin: "recording" };
+  if (await addWallNote(item, (pg) => PhotoNotes.noteAudio(pg, item.layerId, clip, id))) {
+    wallNote = null;
+    paintWallNotes();
+  }
 }
 function stepWallViewer(dir) {
   const dialog = $("#wall-viewer");
@@ -2448,6 +2554,12 @@ function saveReminder(next) {
   writeKey(REMINDER_KEY, JSON.stringify(next));
   syncReminder();
 }
+// V10.80: the reminder rests only once a page for today is really saved (a
+// draft still being written does not count).
+function savedToday() {
+  const day = state().entries.find((e) => e.date === dateKey());
+  return Boolean(day && !isSampleDay(day) && (hasDayPageContent(day) || day.moments?.length));
+}
 function keptToday() {
   const today = state().entries.find((e) => e.date === dateKey()) || state().drafts[dateKey()];
   return Boolean(today && !isSampleDay(today) && (hasDayPageContent(today) || today.moments?.length));
@@ -2459,18 +2571,26 @@ function syncReminder() {
   const { on, time } = readReminder();
   const [hour, minute] = time.split(":").map(Number);
   try {
-    bridge.postMessage({ type: "schedule", on, hour, minute, skipToday: keptToday(), title: t("app.name"), body: t("reminder.body"), offTitle: t("reminder.offAction") });
+    // Words of the app only — never anything from the journal.
+    bridge.postMessage({ type: "schedule", on, hour, minute, skipToday: savedToday(), title: t("app.name"), body: t("reminder.body"), offTitle: t("reminder.offAction") });
   } catch {}
 }
 // From the iPhone app: scheduling result, a tap on a reminder, or "turn off".
 window.littleDaysReminderResult = (result) => {
   reminderNote = result?.ok === false ? t(result.reason === "denied" ? "reminder.denied" : "reminder.failed") : "";
+  // V10.80: notifications not allowed → the switch goes back off (writing works as always).
+  if (result?.ok === false && result.reason === "denied" && readReminder().on) writeKey(REMINDER_KEY, JSON.stringify({ ...readReminder(), on: false }));
   if (page === "settings") render();
 };
 window.littleDaysFromReminder = () => {
   if (isLocked()) return; // after unlocking, the sheet is one tap away
-  if (page === "studio" || page === "story") return;
-  openQuickRecord({});
+  if (page === "studio" || page === "story" || page === "jot") return;
+  openJot({ from: "reminder" });
+};
+// V10.80: the iPhone app's answer to { type: "pending" } — what is scheduled
+// now (read only; used by the Simulator check, nothing in the journal).
+window.littleDaysReminderPending = (info) => {
+  window.__capidayReminders = info;
 };
 window.littleDaysReminderTurnedOff = () => {
   saveReminder({ ...readReminder(), on: false });
@@ -2485,6 +2605,11 @@ document.addEventListener("change", (event) => {
     toast(t("reminder.setAt", { time }));
   }
 });
+function openReminderSheet() {
+  const dialog = $("#choose-dialog");
+  dialog.innerHTML = `<div class="choose-sheet reminder-sheet" role="document"><div class="choose-grabber" aria-hidden="true"></div><div class="kp-title"><span></span><b>${t("reminder.title")}</b><button class="kp-x" data-action="choose-close" aria-label="${t("close")}">×</button></div><p class="rm-note">${t("reminder.askTime")}</p><label class="reminder-time s2-row">${t("reminder.at")}<input type="time" id="reminder-pick" value="${esc(readReminder().time)}"></label><p class="rm-preview">${esc(t("reminder.preview", { body: t("reminder.body") }))}</p><p class="rm-note small">${t("reminder.rules")}</p><button class="primary full-width" data-action="reminder-confirm">${t("reminder.confirm")}</button><button class="choose-cancel" data-action="choose-close">${t("cancel")}</button></div>`;
+  if (!dialog.open) dialog.showModal();
+}
 // ---------- Backup reminder (V7.5) ----------
 // Everything lives only on this device, so a backup is the only copy that
 // survives a lost phone or a deleted app. A quiet nudge on Home once there is
@@ -5811,7 +5936,7 @@ function fontsArrived() {
 }
 // Lay out one page in the story's style (its own variant), replacing only
 // what the engine made before; the user's own stickers / text stay.
-function layoutStoryPage(target, isCover) {
+function layoutStoryPage(target, isCover, date = null) {
   const style = styleOf(target.layoutStyle || story?.style);
   const variant = Number(target.layoutVariant) || 0;
   const look = STYLE_LOOK[style];
@@ -5845,11 +5970,11 @@ function layoutStoryPage(target, isCover) {
     const rank = (l, i) => (seq.includes(l.id) ? seq.indexOf(l.id) : i);
     const visuals = visualLayers(target).map((l, i) => ({ l, r: rank(l, i), i })).sort((a, b) => a.r - b.r || a.i - b.i).map(({ l }) => l);
     const audio = target.layers.filter((l) => l.kind === "audio");
-    const day = new Date(`${story?.date || editor?.date || dateKey()}T12:00:00`);
+    const day = new Date(`${date || story?.date || editor?.date || dateKey()}T12:00:00`);
     const folio = `CAPIDAY · NO. ${String(day.getDate()).padStart(2, "0")}`;
     // V10.19: each photo's own words (on the photo layer, by its id) are laid
     // out right by that photo; the page's quick type comes along.
-    result = layoutMoment({ visuals: visuals.map((l) => ({ id: l.id, aspect: layerAspect(l), caption: l.kind === "photo" ? l.caption || "" : "" })), audio: audio.map((l) => ({ id: l.id })), title: target.title, time: target.time, folio, type: target.typeStyle, measure: measureWords }, style, variant);
+    result = layoutMoment({ visuals: visuals.map((l) => ({ id: l.id, aspect: layerAspect(l), caption: l.kind === "photo" ? l.caption || "" : "" })), audio: audio.map((l) => ({ id: l.id })), title: target.title, time: target.prompt ? "" : target.time, folio, type: target.typeStyle, measure: measureWords }, style, variant);
     target.layers = target.layers.filter((l) => !l.gen && !l.deco);
     for (const layer of target.layers) if (result.place[layer.id]) Object.assign(layer, result.place[layer.id]);
     target.layers.push(...result.layers.map((l) => ({ id: id(), ...l })));
@@ -7091,6 +7216,420 @@ async function storyAction(actionName, target) {
   render();
 }
 
+// ---------- V10.80 · 快速记录 / Quick record ----------
+// One light page for a few words, a little sound, a photo or three — from
+// 自己写 on Today, from 每日一问 (写一句 / 说一句), and from a daily reminder.
+// The words and the voice are kept exactly as they are (any language, mixed
+// or not). It saves into the chosen day, in the journal the person chose
+// (asked on 保存 when there are several); 每日一问 is shown as a small line on
+// the page. What is typed / kept is a draft on this device until 保存, and
+// comes back when the page is opened again (also from a reminder).
+// A recording is first only a "take" in memory: listen, record again, or 用这段
+// (then its file is written to this device and kept in the draft).
+const JOT_KEY = "little-days.jot";
+const PROMPT_SKIP_KEY = "little-days.prompt-skip";
+let jot = null; // { from, date, prompt, text, voice, photos, book, takeNow }
+let jotSaving = false;
+function readJotDraft() {
+  try {
+    const d = JSON.parse(localStorage.getItem(JOT_KEY) || "null");
+    if (!d || typeof d !== "object") return null;
+    return { from: d.from || "free", date: /^\d{4}-\d{2}-\d{2}$/.test(d.date || "") ? d.date : dateKey(), prompt: d.prompt && d.prompt.id ? { id: String(d.prompt.id), text: String(d.prompt.text || "") } : null, text: String(d.text || ""), voice: d.voice && d.voice.mediaId ? d.voice : null, photos: Array.isArray(d.photos) ? d.photos.filter((p) => p && typeof p.reference === "string") : [], book: String(d.book || "") };
+  } catch {
+    return null;
+  }
+}
+function jotHasContent(j = jot) {
+  return Boolean(j && (String(j.text || "").trim() || j.voice || j.photos?.length));
+}
+function keepJotDraft() {
+  if (!jot) return;
+  try {
+    if (jotHasContent()) localStorage.setItem(JOT_KEY, JSON.stringify({ from: jot.from, date: jot.date, prompt: jot.prompt, text: jot.text, voice: jot.voice, photos: jot.photos, book: jot.book, at: new Date().toISOString() }));
+    else localStorage.removeItem(JOT_KEY);
+  } catch {}
+}
+function clearJotDraft() {
+  try {
+    localStorage.removeItem(JOT_KEY);
+  } catch {}
+}
+// Today's question (换一题 moves on; the same day keeps its place).
+function promptSkip(date = dateKey()) {
+  try {
+    const s = JSON.parse(localStorage.getItem(PROMPT_SKIP_KEY) || "null");
+    return s?.date === date ? Number(s.n) || 0 : 0;
+  } catch {
+    return 0;
+  }
+}
+function todayPromptItem() {
+  return Prompts.promptFor(dateKey(), promptSkip());
+}
+function promptLine(item) {
+  return item ? Prompts.promptText(item.id, languageCode()) : "";
+}
+function dailyPromptHTML() {
+  const item = todayPromptItem();
+  if (!item) return "";
+  return `<div class="daily-prompt" data-prompt="${esc(item.id)}"><small class="v9-kicker">${t("prompt.kicker")}</small><p class="dp-q">${esc(promptLine(item))}</p><div class="dp-acts"><button class="dp-write" data-action="prompt-write">${t("prompt.write")}</button><button class="dp-say" data-action="prompt-say">${t("prompt.say")}</button><button class="text-button dp-next" data-action="prompt-next">${t("prompt.next")}</button></div></div>`;
+}
+// from: "free" (自己写) / "prompt" (写一句) / "say" (说一句) / "reminder".
+function openJot({ from = "free" } = {}) {
+  const draft = readJotDraft();
+  const asked = from === "prompt" || from === "say" ? todayPromptItem() : null;
+  if (draft && jotHasContent(draft)) {
+    jot = { ...draft, from };
+    // A question asked now goes with what was written before, when it had none.
+    if (asked && !jot.prompt) jot.prompt = { id: asked.id, text: promptLine(asked) };
+    toast(t("jot.draftBack"));
+  } else jot = { from, date: dateKey(), prompt: asked ? { id: asked.id, text: promptLine(asked) } : null, text: "", voice: null, photos: [], book: "" };
+  if (writableBooks().length === 1) jot.book = writableBooks()[0].id;
+  if (jot.book && !state().books.some((b) => b.id === jot.book)) jot.book = "";
+  if ($("#choose-dialog")?.open) $("#choose-dialog").close();
+  page = "jot";
+  logEvent("jot_open", { way: from });
+  render();
+  $("#app-scroll").scrollTop = 0;
+  if (from === "say") startTake("jot");
+  else if (from !== "reminder" || !jotHasContent()) setTimeout(() => $("#jot-text")?.focus({ preventScroll: true }), 60);
+}
+function jotBookName() {
+  return state().books.find((b) => b.id === jot?.book)?.title || "";
+}
+// The page this record would make (also what 保存 keeps): words as the page's
+// own line, photos in the order chosen, the voice as a player; laid out like a
+// story page. The question is the small line at the top.
+function buildJotMoment(j = jot, { book = j.book } = {}) {
+  const moment = { id: id(), title: String(j.text || ""), body: "", time: clockLabel(Date.now()), layers: [], media: [], layoutTemplate: "scrapbook", layoutStyle: "editorial", layoutVariant: 0 };
+  if (book) moment.bookId = book;
+  if (j.prompt) moment.prompt = { id: j.prompt.id, text: j.prompt.text };
+  j.photos.forEach((p, order) => moment.layers.push(photoLayer(p.reference, p.name, { ...photoTimeFields(p, order), ...(p.aspect ? { aspect: Math.round(p.aspect * 1000) / 1000 } : {}) })));
+  if (j.voice) {
+    const clip = { id: id(), kind: "audio", name: j.voice.name || t("media.voiceName"), mime: j.voice.mime || "", size: j.voice.size || 0, duration: j.voice.duration || 0, source: `media:${j.voice.mediaId}`, poster: "", origin: "recording" };
+    moment.media.push(clip);
+    moment.layers.push(mediaLayer(clip, {}));
+  }
+  layoutStoryPage(moment, false, j.date);
+  return moment;
+}
+function jotPage() {
+  if (!jot) return "";
+  const back = `<button class="studio-back story-back" data-action="jot-back" aria-label="${t("studio.back")}">${icon("back")}</button>`;
+  const title = jot.prompt ? t("prompt.kicker") : t("jot.title");
+  const asked = jot.prompt
+    ? `<div class="jot-prompt"><small>${t("prompt.kicker")}</small><p>${esc(Prompts.pagePromptText(jot, languageCode()))}</p><button class="text-button" data-action="jot-prompt-off">${t("jot.promptOff")}</button></div>`
+    : `<button class="jot-suggest" data-action="jot-prompt-on"><small>${t("jot.tryPrompt")}</small><span>${esc(promptLine(todayPromptItem()))}</span></button>`;
+  const words = `<label class="jot-words"><span class="visually-hidden">${t("jot.words")}</span><textarea id="jot-text" data-jot-text rows="4" maxlength="4000" placeholder="${esc(t(jot.prompt ? "jot.answerHint" : "jot.wordsHint"))}" lang="">${esc(jot.text)}</textarea></label>`;
+  const photos = `<div class="jot-photos" role="group" aria-label="${t("jot.photos")}">${jot.photos.map((p, i) => `<span class="jot-thumb"><img src="${esc(safePhoto(p.reference))}" alt=""><button data-action="jot-photo-remove" data-at="${i}" aria-label="${t("jot.photoRemove")}">×</button></span>`).join("")}<button class="jot-add-photo" data-action="jot-photo">${icon("photo")}<span>${t(jot.photos.length ? "jot.morePhotos" : "jot.addPhoto")}</span></button></div>`;
+  const where = `<div class="story-where jot-where"><button class="story-book-btn" data-action="jot-book" aria-haspopup="dialog" aria-label="${esc(jot.book ? t("pick.intoLabel", { name: jotBookName() }) : t("jot.chooseBook"))}"><span class="sb-into">${t("story.into")}</span><b class="sb-name">${esc(jot.book ? jotBookName() : t("jot.chooseBook"))}</b><svg class="sb-caret" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><label class="story-day"><span>${t("story.day")}</span><input type="date" data-jot-date value="${esc(jot.date)}" max="${dateKey()}" aria-label="${t("story.day")}"></label></div>`;
+  const ready = jotHasContent();
+  return `<header class="story-bar jot-bar">${back}<h1>${esc(title)}</h1><span class="jot-bar-end"></span></header><section class="jot-page" data-from="${esc(jot.from)}">${asked}${words}${takeHTML("jot")}${photos}${where}<div class="jot-preview-wrap"><small class="jot-preview-label">${t("jot.preview")}</small><div class="jot-preview" aria-live="polite">${jotPreviewHTML()}</div></div><div class="jot-actions"><button class="text-button jot-studio" data-action="jot-studio">${t("jot.toStudio")}</button>${ready ? `<button class="text-button jot-discard" data-action="jot-discard">${t("jot.discard")}</button>` : ""}<button class="primary jot-save" data-action="jot-save" ${ready && !jotSaving ? "" : "disabled"}>${t(jotSaving ? "draft.saving" : "save")}</button></div></section>`;
+}
+function jotPreviewHTML() {
+  if (!jotHasContent()) return `<p class="jot-preview-empty">${t("jot.previewEmpty")}</p>`;
+  try {
+    return `<span class="reader-thumb-paper jot-paper">${sharedCanvasHTML(buildJotMoment(jot), ctx(), { readOnly: true })}</span>`;
+  } catch (error) {
+    console.warn("Preview", error?.name);
+    return "";
+  }
+}
+let jotPreviewTimer = 0;
+function refreshJotPreview(now = false) {
+  clearTimeout(jotPreviewTimer);
+  const paint = () => {
+    const box = $(".jot-preview");
+    if (box && page === "jot") box.innerHTML = jotPreviewHTML();
+    const save = $(".jot-save");
+    if (save) save.disabled = !jotHasContent() || jotSaving;
+  };
+  if (now) paint();
+  else jotPreviewTimer = setTimeout(paint, 280);
+}
+document.addEventListener("input", (event) => {
+  if (!jot || !event.target.matches?.("[data-jot-text]")) return;
+  jot.text = event.target.value;
+  keepJotDraft();
+  refreshJotPreview();
+});
+document.addEventListener("change", (event) => {
+  if (!jot || !event.target.matches?.("[data-jot-date]")) return;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(event.target.value) && event.target.value <= dateKey()) {
+    jot.date = event.target.value;
+    keepJotDraft();
+    refreshJotPreview(true);
+  }
+});
+function leaveJot() {
+  stopTake(true);
+  keepJotDraft();
+  const kept = jotHasContent();
+  jot = null;
+  navigate("home");
+  if (kept) toast(t("jot.draftKept"));
+}
+// 保存: into the chosen day and journal (asked first when there are several).
+async function saveJot() {
+  if (!jot || jotSaving || !jotHasContent()) return;
+  if (take?.phase === "recording") return toast(t("take.stopFirst"));
+  if (take?.phase === "take") return toast(t("take.keepFirst"));
+  if (!jot.book || !state().books.some((b) => b.id === jot.book)) {
+    if (!writableBooks().length) return toast(t("jot.noBook"));
+    return openBookPicker({ title: t("pick.title"), current: "", kind: "jot", onPick: (bookId) => {
+      rememberPickedBook(bookId);
+      jot.book = bookId;
+      keepJotDraft();
+      saveJot();
+    } });
+  }
+  jotSaving = true;
+  refreshJotPreview(true);
+  const { date, book } = jot;
+  let moment;
+  try {
+    moment = buildJotMoment(jot, { book });
+    store.update((s) => addPageToDay(s, date, moment, { id: id(), bookId: book }));
+    const ids = [...mediaReferences({ entries: [], books: [], checks: [], drafts: { day: { moments: [moment], layers: [], media: [] } } })];
+    const [stored, missing] = await Promise.all([store.stored(), ids.length ? media.missing(ids).catch(() => ids) : []]);
+    if (!stored || missing.length) throw Object.assign(new Error("save"), { code: missing.length ? "media" : "store" });
+  } catch (error) {
+    jotSaving = false;
+    logEvent("jot_save_failed", { err: String(error?.code || "save").slice(0, 16) });
+    refreshJotPreview(true);
+    // Nothing is lost: the draft is still here.
+    if (await askConfirm(t(error?.code === "stale-state" ? "error.conflict" : "exit.saveFailed"), { ok: t("exit.retry") })) return saveJot();
+    return;
+  }
+  jotSaving = false;
+  logEvent("jot_saved", { prompt: Boolean(jot.prompt), photos: jot.photos.length, voice: Boolean(jot.voice), words: Boolean(String(jot.text).trim()) });
+  clearJotDraft();
+  jot = null;
+  syncReminder();
+  const pagesNow = flipPages(book);
+  const at = pagesNow.find((p) => p.date === date && p.moment?.id === moment.id);
+  openReader(book, at ? Reader.keyOf(at) : Reader.COVER);
+  toast(t("story.saved", { name: state().books.find((b) => b.id === book)?.title || "" }));
+}
+async function jotAction(actionName, target) {
+  if (actionName === "take-start") return startTake(target.dataset.where || "jot");
+  if (actionName === "take-stop") return stopTake();
+  if (actionName === "take-again") {
+    const where = target.dataset.where || "jot";
+    if (where === "jot" && jot?.voice && !take) jot.voice = null; // recording again replaces the kept one (its file stays until a new one is kept)
+    dropTake();
+    return startTake(where);
+  }
+  if (actionName === "take-keep") {
+    if (take?.where === "wall") return keepWallVoice();
+    const kept = await keepTake();
+    if (kept && jot) {
+      jot.voice = kept;
+      keepJotDraft();
+      logEvent("jot_voice", { s: kept.duration });
+    }
+    return render();
+  }
+  if (!jot) return;
+  if (actionName === "jot-back") return leaveJot();
+  if (actionName === "jot-save") return saveJot();
+  if (actionName === "jot-studio") return jotToStudio();
+  if (actionName === "jot-discard") {
+    if (!(await askConfirm(t("jot.discardAsk"), { ok: t("jot.discard") }))) return;
+    dropTake();
+    clearJotDraft();
+    jot = null;
+    navigate("home");
+    return;
+  }
+  if (actionName === "jot-book")
+    return openBookPicker({ title: t("pick.title"), current: jot.book, kind: "jot", onPick: (bookId) => {
+      rememberPickedBook(bookId);
+      if (!jot) return;
+      jot.book = bookId;
+      keepJotDraft();
+      render();
+    } });
+  if (actionName === "jot-photo") return chooseAttachment({ kind: "jot" });
+  if (actionName === "jot-photo-remove") {
+    jot.photos.splice(Number(target.dataset.at), 1);
+    keepJotDraft();
+    return render();
+  }
+  if (actionName === "jot-voice-remove") {
+    jot.voice = null;
+    keepJotDraft();
+    return render();
+  }
+  if (actionName === "jot-prompt-off") {
+    jot.prompt = null;
+    keepJotDraft();
+    return render();
+  }
+  if (actionName === "jot-prompt-on") {
+    const item = todayPromptItem();
+    if (item) jot.prompt = { id: item.id, text: promptLine(item) };
+    keepJotDraft();
+    render();
+    return $("#jot-text")?.focus({ preventScroll: true });
+  }
+}
+// 更多编辑: the same words, photos and voice, as a page in the Journal Studio.
+function jotToStudio() {
+  const j = jot;
+  stopTake(true);
+  const book = (j?.book && state().books.some((b) => b.id === j.book) && j.book) || lastQuickBook() || todayEntry()?.bookId || state().books[0]?.id || "daily";
+  const date = j?.date || dateKey();
+  jot = null;
+  page = "home";
+  if (!jotHasContent(j)) {
+    clearJotDraft();
+    quick = { date, book, way: "write", photo: "mine", fromHome: true };
+    quickSession = { started: Date.now(), taps: 1, shuffles: 0 };
+    return startQuickRecord();
+  }
+  const name = startPage(book, date);
+  const built = buildJotMoment(j, { book });
+  changeTarget((m) => {
+    if (m === editor) return;
+    Object.assign(m, { title: built.title, layers: built.layers, media: built.media, layoutTemplate: built.layoutTemplate, layoutStyle: built.layoutStyle, layoutVariant: 0, template: built.template });
+    if (built.prompt) m.prompt = built.prompt;
+    if (built.backdrop) m.backdrop = built.backdrop;
+  });
+  flushDraft();
+  clearJotDraft();
+  resetHistory();
+  render();
+  toast(t("book.writingIn", { name }));
+}
+
+// ---------- A voice "take": record → listen → again / keep ----------
+// Used by 快速记录 and by 补段声音 on the photo wall. Nothing is written until
+// 用这段; leaving drops the take (the microphone stops at once).
+let take = null; // { where, phase: "recording" | "take" | "saving", seconds, blob, url, mime, rec, stream, started }
+// The usual player (play, progress, time) for a sound kept here or a take.
+function voicePlayerHTML(src, duration, label = t("media.play")) {
+  return `<div class="ld-player take-player" data-player data-duration="${Number(duration) || 0}"><button type="button" class="ld-play" data-action="player-toggle" aria-label="${esc(label)}" data-label-play="${esc(label)}" data-label-pause="${t("media.pause")}" ${src ? "" : "disabled"}><span class="ld-play-icon" aria-hidden="true"></span></button><div class="ld-player-track"><input type="range" class="ld-seek" data-player-seek min="0" max="1000" step="1" value="0" aria-label="${t("media.progress")}"><div class="ld-time"><span class="ld-current">0:00</span><span class="media-duration">${clockText(Number(duration) || 0)}</span></div></div>${src ? `<audio preload="auto" src="${esc(src)}"></audio>` : ""}</div>`;
+}
+function takeHTML(where) {
+  const mine = take?.where === where ? take : null;
+  const denied = voice?.mic === "denied";
+  if (where === "jot" && jot?.voice && !mine) {
+    const src = media.resolve(`media:${jot.voice.mediaId}`);
+    return `<div class="take kept">${voicePlayerHTML(src, jot.voice.duration)}<button class="text-button" data-action="take-again" data-where="jot">${t("take.again")}</button><button class="text-button danger" data-action="jot-voice-remove">${t("take.remove")}</button></div>`;
+  }
+  if (!mine) return `<div class="take idle"><button class="take-start" data-action="take-start" data-where="${where}"><span aria-hidden="true">🎙</span>${t(where === "jot" ? "prompt.say" : "wallnote.voice")}</button>${denied ? `<small class="take-note" role="status">${t("take.denied")}</small>` : ""}</div>`;
+  if (mine.phase === "recording")
+    return `<div class="take recording" role="status"><span class="take-dot" aria-hidden="true"></span><span id="take-time" class="take-len">${clockText(mine.seconds || 0)}</span><canvas id="vr-wave" class="take-wave" width="160" height="28" aria-hidden="true"></canvas><button class="primary take-stop" data-action="take-stop">${t("take.stop")}</button></div>`;
+  if (mine.phase === "saving") return `<div class="take saving" role="status">${t("draft.saving")}</div>`;
+  return `<div class="take review">${voicePlayerHTML(mine.url, mine.seconds, t("take.listen"))}<button class="text-button" data-action="take-again" data-where="${where}">${t("take.again")}</button><button class="primary take-keep" data-action="take-keep">${t("take.keep")}</button></div>`;
+}
+function paintTake() {
+  if (page === "jot") return render();
+  if ($("#wall-viewer")?.open) paintWallNotes();
+}
+async function startTake(where) {
+  if (!navigator.mediaDevices?.getUserMedia || !globalThis.MediaRecorder) return toast(t("media.recordUnsupported"));
+  if (recorder || take?.phase === "recording") return;
+  dropTake();
+  take = { where, phase: "recording", seconds: 0, started: Date.now() };
+  paintTake();
+  let stream;
+  try {
+    setAudioSession("play-and-record");
+    // The first 说一句 asks for the microphone (the system asks once).
+    stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false } });
+  } catch (error) {
+    setAudioSession("playback");
+    take = null;
+    if (error?.name === "NotAllowedError") voice.mic = "denied";
+    logEvent("take_failed", { err: playErr(error) });
+    paintTake();
+    toast(t(error?.name === "NotAllowedError" ? "take.denied" : "media.failed"));
+    return;
+  }
+  if (!take || take.where !== where) {
+    stream.getTracks().forEach((track) => track.stop());
+    setAudioSession("playback");
+    return;
+  }
+  voice.mic = "granted";
+  const mime = Voice.recordingMime(navigator.userAgent, (type) => MediaRecorder.isTypeSupported(type));
+  const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : {});
+  const chunks = [];
+  rec.ondataavailable = (event) => event.data.size && chunks.push(event.data);
+  rec.onstop = () => {
+    clearInterval(take?.timer);
+    stopWave();
+    stream.getTracks().forEach((track) => track.stop());
+    setAudioSession("playback");
+    if (!take || take.rec !== rec) return;
+    if (take.dropping) {
+      take = null;
+      return;
+    }
+    const blob = new Blob(chunks, { type: rec.mimeType });
+    if (!blob.size) {
+      take = null;
+      toast(t("media.failed"));
+      return paintTake();
+    }
+    take = { ...take, phase: "take", blob, url: URL.createObjectURL(blob), mime: rec.mimeType, seconds: Math.max(1, Math.round((Date.now() - take.started) / 1000)) };
+    paintTake();
+  };
+  Object.assign(take, { rec, stream, started: Date.now() });
+  take.timer = setInterval(() => {
+    if (!take) return;
+    take.seconds = Math.floor((Date.now() - take.started) / 1000);
+    const el = document.getElementById("take-time");
+    if (el) el.textContent = clockText(take.seconds);
+    if (take.seconds >= 300 && rec.state === "recording") rec.stop();
+  }, 250);
+  rec.start(250);
+  paintTake();
+  startWave(stream);
+}
+function stopTake(drop = false) {
+  if (!take) return;
+  if (take.phase === "recording" && take.rec?.state === "recording") {
+    if (drop) take.dropping = true;
+    take.rec.stop();
+    return;
+  }
+  if (drop) dropTake();
+}
+function dropTake() {
+  if (take?.url) URL.revokeObjectURL(take.url);
+  if (take?.phase === "recording" && take.rec?.state === "recording") {
+    take.dropping = true;
+    take.rec.stop();
+  }
+  take = null;
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden" && take?.phase === "recording") stopTake();
+});
+// 用这段: the take's file is written to this device (read back to check).
+async function keepTake() {
+  if (take?.phase !== "take") return null;
+  const kept = take;
+  kept.phase = "saving";
+  paintTake();
+  try {
+    if (kept.blob.size > 20 * 1024 * 1024) throw new Error("size");
+    const name = `${t("media.voiceName")} · ${shortDate(jot?.date || dateKey())}`;
+    const mediaId = await media.put(kept.blob, { kind: "audio", name, duration: kept.seconds });
+    URL.revokeObjectURL(kept.url);
+    if (take === kept) take = null;
+    return { mediaId, name, mime: kept.blob.type, size: kept.blob.size, duration: kept.seconds };
+  } catch (error) {
+    logEvent("take_keep_failed", { err: String(error?.code || error?.message || "save").slice(0, 16) });
+    kept.phase = "take";
+    paintTake();
+    toast(t("take.keepFailed"));
+    return null;
+  }
+}
 // ---------- V10.79 · 自定义 · 页面背景 ----------
 // 自定义 in 今天的故事 is a small menu: 页面背景 (this page's background, right
 // here) and 更多编辑 (the Journal Studio, as before). 页面背景 is one sheet —
@@ -7632,7 +8171,7 @@ function render() {
   const signedIn = Account.isSignedIn(account);
   $("#phone").classList.toggle("signed-out", !signedIn);
   // Studio is full-screen (its own ‹ back); the tool row keeps its scroll.
-  $("#phone").classList.toggle("in-studio", signedIn && (page === "studio" || page === "story"));
+  $("#phone").classList.toggle("in-studio", signedIn && (page === "studio" || page === "story" || page === "jot"));
   // The reader is full-screen too: no bottom menu.
   $("#phone").classList.toggle("in-reader", signedIn && page === "reader");
   // The Studio shell sizes the paper from the room it really has.
@@ -7661,6 +8200,7 @@ function render() {
     reader: readerHTML,
     studio: studioPage,
     story: storyPage,
+    jot: jotPage,
     day: () => dayDetailHTML(selectedDate, ctx(), { icon, friendlyDate }),
     journey: () =>
       habitJourneyHTML(journeyHabit, journeyPage, ctx(), journeyHelpers()),
@@ -9142,6 +9682,7 @@ async function saveAndLeave() {
     rememberDraftPage();
     logEvent("studio_saved_leave", { stage: status, pages: editor.moments.length });
     leaveStudio();
+    syncReminder(); // V10.80: a page saved for today rests today's reminder
     toast(t(status === "draft" ? "exit.savedDraft" : "exit.savedChanges"));
   } catch (error) {
     setDraftState("failed");
@@ -9519,6 +10060,20 @@ async function action(target) {
   }
   if (actionName === "wall-photo") openWallViewer(target.dataset.ref);
   if (actionName === "wall-step") stepWallViewer(Number(target.dataset.dir) || 1);
+  if (actionName === "wallnote-text" || actionName === "wallnote-voice") {
+    dropTake();
+    wallNote = { ref: $("#wall-viewer")?.dataset.ref, mode: actionName === "wallnote-text" ? "text" : "voice" };
+    paintWallNotes();
+    if (wallNote.mode === "text") $("#wv-note-text")?.focus();
+    else startTake("wall");
+    return;
+  }
+  if (actionName === "wallnote-cancel") {
+    dropTake();
+    wallNote = null;
+    return paintWallNotes();
+  }
+  if (actionName === "wallnote-save") return saveWallText();
   if (actionName === "wall-close") $("#wall-viewer")?.close();
   if (actionName === "wall-open-page") openWallPage();
   if (actionName === "select-date") {
@@ -10003,9 +10558,21 @@ async function action(target) {
   }
   if (actionName === "reminder-toggle") {
     const r = readReminder();
-    saveReminder({ ...r, on: !r.on });
-    logEvent("reminder_toggle", { kind: r.on ? "off" : "on" });
-    toast(t(r.on ? "reminder.turnedOff" : "reminder.turnedOn", { time: r.time }));
+    // V10.80: turning it on first asks for the time (then iPhone asks about notifications).
+    if (!r.on) return openReminderSheet();
+    saveReminder({ ...r, on: false });
+    logEvent("reminder_toggle", { kind: "off" });
+    toast(t("reminder.turnedOff"));
+    return render();
+  }
+  if (actionName === "reminder-confirm") {
+    const time = $("#reminder-pick")?.value || readReminder().time;
+    if (!/^\d{2}:\d{2}$/.test(time)) return;
+    reminderNote = "";
+    saveReminder({ on: true, time });
+    logEvent("reminder_toggle", { kind: "on" });
+    $("#choose-dialog").close();
+    toast(t("reminder.turnedOn", { time }));
     return render();
   }
   if (actionName === "shelf-tags-more") {
@@ -10242,6 +10809,18 @@ async function action(target) {
     const left = plansOf(addDays(dateKey(), -1)).filter((p) => !p.done);
     return savePlans(dateKey(), (list) => left.forEach((p) => list.length < MAX_PLANS && list.push({ id: id(), text: p.text, done: false })));
   }
+  // V10.80 · 自己写 and 每日一问 open 快速记录.
+  if (actionName === "today-write") return openJot({ from: "free" });
+  if (actionName === "prompt-write") return openJot({ from: "prompt" });
+  if (actionName === "prompt-say") return openJot({ from: "say" });
+  if (actionName === "prompt-next") {
+    writeKey(PROMPT_SKIP_KEY, JSON.stringify({ date: dateKey(), n: promptSkip() + 1 }));
+    logEvent("prompt_next", {});
+    const card = $(".daily-prompt");
+    if (card) card.outerHTML = dailyPromptHTML();
+    return;
+  }
+  if (actionName.startsWith("jot-") || actionName.startsWith("take-")) return jotAction(actionName, target);
   if (actionName === "today-photos" || actionName === "today-write" || actionName === "today-draw") {
     // Home's "what's worth keeping today?": start straight away, no sheet.
     quickOpenedAt = Date.now();
@@ -12245,7 +12824,7 @@ function studioReplacePhoto(layerId, item) {
 }
 function chooseAttachment(target) {
   attachmentTarget = target;
-  $("#attachment-image-input").multiple = ["collage", "quick"].includes(target.kind);
+  $("#attachment-image-input").multiple = ["collage", "quick", "jot"].includes(target.kind);
   $("#attachment-image-input").click();
 }
 function afterHistoryStep() {
@@ -13929,7 +14508,7 @@ async function handleImageUpload(event, target) {
     return;
   }
   busyMedia = true;
-  const multiple = ["photos", "collage", "quick"].includes(target?.kind);
+  const multiple = ["photos", "collage", "quick", "jot"].includes(target?.kind);
   let failed = 0;
   try {
     let saved = [];
@@ -13953,7 +14532,14 @@ async function handleImageUpload(event, target) {
     // New photos for the page open in the photo editor first (skip = as is).
     if (["photos", "replace"].includes(target?.kind)) saved = (await editPhotos(saved, "add")) || saved;
     const [{ reference }] = saved;
-    if (target?.kind === "quick" && target.home && !target.book) {
+    if (target?.kind === "jot") {
+      // V10.80 · 快速记录: the photos join the record (nothing is saved yet).
+      if (jot) {
+        jot.photos.push(...saved.map((p) => ({ reference: p.reference, name: p.name, aspect: p.aspect, time: p.time, timeSource: p.timeSource })));
+        keepJotDraft();
+        render();
+      }
+    } else if (target?.kind === "quick" && target.home && !target.book) {
       // V10.79 · Home's 照片手帐: which journal, asked now — before any page
       // is made (see choosePhotoBook).
       pendingPhotos = { saved, date: target.date || dateKey() };
@@ -14020,7 +14606,7 @@ async function handleImageUpload(event, target) {
     }
     // V10.24: photos added to the page in Studio need no "added" message — they are
     // right there on the paper (the message also covered its top); failures still say so.
-    if (failed || !(["quick", "story-replace", "story-cover"].includes(target?.kind) || (page === "studio" && ["photos", "replace"].includes(target?.kind)))) toast(
+    if (failed || !(["quick", "jot", "story-replace", "story-cover"].includes(target?.kind) || (page === "studio" && ["photos", "replace"].includes(target?.kind)))) toast(
       failed
         ? t("photo.partial", { saved: saved.length, failed })
         : multiple && saved.length > 1

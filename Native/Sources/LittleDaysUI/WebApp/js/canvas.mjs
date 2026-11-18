@@ -257,7 +257,10 @@ export function canvasHTML(page, ctx, options = {}) {
   // cut off) over a soft, blurred copy of itself.
   const own = backdrop?.kind === "media";
   const ownPhoto = own ? `<div class="backdrop-fill" aria-hidden="true" style="background-image:url('${esc(backdrop.src)}')"></div><img class="backdrop-whole" src="${esc(backdrop.src)}" alt="">` : "";
-  return `<div class="${classes}${own ? " own-backdrop" : ""}" ${readOnly ? "" : 'id="journal-canvas"'} style="font-family:${esc(fontFamily(font, catalog))}${backdrop && !own ? `;background-image:url('${esc(backdrop.src)}')` : ""}">${ownPhoto}${fixed}${(page.layers || []).map((layer) => layerHTML(layer, ctx, { ...options, page, defaultFont: font })).join("")}</div>`;
+  // V10.80: a page answering 每日一问 shows the question as a small line at the top.
+  const askedText = typeof ctx.promptText === "function" ? ctx.promptText(page) : "";
+  const asked = askedText ? `<div class="canvas-prompt">${esc(askedText)}</div>` : "";
+  return `<div class="${classes}${own ? " own-backdrop" : ""}" ${readOnly ? "" : 'id="journal-canvas"'} style="font-family:${esc(fontFamily(font, catalog))}${backdrop && !own ? `;background-image:url('${esc(backdrop.src)}')` : ""}">${ownPhoto}${asked}${fixed}${(page.layers || []).map((layer) => layerHTML(layer, ctx, { ...options, page, defaultFont: font })).join("")}</div>`;
 }
 
 // One media card for edit and read modes. Audio uses a designed player that

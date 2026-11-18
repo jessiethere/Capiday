@@ -4,6 +4,30 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.80",
+    date: "2026-11-18",
+    zh: {
+      title: "写一句、说一句，翻照片时也能听",
+      items: [
+        "首页「自己写」：打开就能写，也能录一段声音、加几张照片，下面直接出现这一页的样子，保存到你选的日期。",
+        "首页每天有一个「每日一问」：可以「写一句」或「说一句」，不喜欢就「换一题」。题目会作为小字放在页面上，你写的和说的是主角，原样保存，中英文混着写也没问题。",
+        "录音先试听：录完可以听一遍、重录，满意了再「用这段」。第一次点「说一句」时 iPhone 才会问麦克风；不允许也照样可以写字、放照片。",
+        "照片墙里点开一张照片，能看到它当时的那句话，录音可以直接点播；还可以「补一句」或「补段声音」，会写回原来那一页、就在这张照片下面。一页有几张照片时，补记只跟着你正在看的那张。",
+        "每日提醒：在设置里打开时先选时间，iPhone 再问能不能发通知。每天最多一条；当天已经保存了一篇就不再提醒；点通知直接进入快速记录，没写完的草稿还在。通知里只有一句固定的话，不会出现你的手帐内容。",
+      ],
+    },
+    en: {
+      title: "Write a line, say it — and listen while looking back",
+      items: [
+        "Write freely on Today: start typing right away, or add a voice note and a few photos; the page appears below as you go and saves to the date you choose.",
+        "A Daily prompt on Today each day: Write a line or Say it, or tap Another one. The question sits on the page in small type; your words and voice are the page, kept exactly as they are — mixing languages is fine.",
+        "Listen before keeping: after recording, play it back or record again, then Use this. iPhone asks for the microphone the first time you tap Say it; without it, words and photos work as usual.",
+        "On the photo wall, open a photo to see the line written with it and play its voice note right there; Add a thought or Add a voice note goes back to the same page, under that photo. With several photos on a page, it stays with the one you're looking at.",
+        "Daily reminder: turning it on in Settings first asks for a time, then iPhone asks about notifications. At most one a day, none once you've saved a page that day; tapping it opens a quick record with any unsaved draft still there. The notification is one fixed line — never anything from your journal.",
+      ],
+    },
+  },
+  {
     version: "10.79",
     date: "2026-11-18",
     zh: {

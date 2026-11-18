@@ -26,6 +26,7 @@ if (require.main === module) (async () => {
       // V10.58: the grouping preview — accept the suggestion with one tap (tests/v155 covers the preview).
       await context.addInitScript(SS.acceptGroups);
       await context.addInitScript(SS.acceptBookPick);
+      await context.addInitScript(SS.acceptJot);
       await context.addInitScript(SS.seenOnboarding); // V10.62: the Home guide is tested in v158
       const page = await context.newPage();
       const errors = [];

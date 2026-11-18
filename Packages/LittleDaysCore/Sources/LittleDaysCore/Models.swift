@@ -275,6 +275,9 @@ public struct StickerLayer: Codable, Identifiable, Equatable {
     // V10.63 (kind == "audio"): the player's look on the paper —
     // "minimal" (nil = minimal), "recorder" or "vinyl". Only the look.
     public var skin: String?
+    // V10.80 (kind == "text" / "audio"): a thought or voice note added later
+    // for one photo on the page — that photo layer's id. Nil = the page's own.
+    public var forPhoto: String?
 
     public init(text: String, x: Double = 80, y: Double = 60) {
         self.id = UUID().uuidString
@@ -371,6 +374,15 @@ public struct JournalMoment: Codable, Identifiable, Equatable {
     public var visibility: String?
     public var updatedAt: String?
     public var savedAt: String?
+    /// V10.80: the 每日一问 this page answers (shown as a small line); nil = none.
+    public var prompt: JournalPrompt?
+}
+
+/// V10.80 · 每日一问 / Daily prompt: the question's id in the app's question
+/// list and its words as they were shown when the page was written.
+public struct JournalPrompt: Codable, Equatable {
+    public var id: String
+    public var text: String?
 }
 
 public struct JournalEntry: Codable, Identifiable, Equatable {

@@ -968,8 +968,8 @@
     "en": "Remind me every day"
   },
   "reminder.body": {
-    "zh": "今天有什么值得记的？",
-    "en": "Anything worth keeping today?"
+    "zh": "今天有什么想留下的？写一句，或说一句就好。",
+    "en": "Anything you’d like to remember from today? Write a line or leave a quick voice note."
   },
   "reminder.preview": {
     "zh": "通知会说：「{body}」",
@@ -5848,8 +5848,8 @@
     "en": "Pick today's photos"
   },
   "story.justWrite": {
-    "zh": "只写几句",
-    "en": "Just write"
+    "zh": "自己写",
+    "en": "Write freely"
   },
   "story.justWriteHint": {
     "zh": "不放照片，在纸上写一页",
@@ -6192,8 +6192,8 @@
     "en": "Choose today's photos"
   },
   "v9.writeHint": {
-    "zh": "一句话也算一页",
-    "en": "One line is a page"
+    "zh": "写一句、说一句或放张照片",
+    "en": "A line, a voice note or a photo"
   },
   "v9.drawHint": {
     "zh": "画下今天的颜色",
@@ -10596,5 +10596,169 @@
   "bg.removed": {
     "zh": "这一页不用背景了",
     "en": "This page has no background now"
+  },
+  "prompt.kicker": {
+    "zh": "每日一问",
+    "en": "Daily prompt"
+  },
+  "prompt.write": {
+    "zh": "写一句",
+    "en": "Write a line"
+  },
+  "prompt.say": {
+    "zh": "说一句",
+    "en": "Say it"
+  },
+  "prompt.next": {
+    "zh": "换一题",
+    "en": "Another one"
+  },
+  "jot.title": {
+    "zh": "自己写",
+    "en": "Write freely"
+  },
+  "jot.words": {
+    "zh": "想说的话",
+    "en": "Your words"
+  },
+  "jot.wordsHint": {
+    "zh": "写一句就好，中文、English 都可以…",
+    "en": "Just a line — any language is fine…"
+  },
+  "jot.answerHint": {
+    "zh": "想到什么就写什么…",
+    "en": "Whatever comes to mind…"
+  },
+  "jot.promptOff": {
+    "zh": "不用这个问题",
+    "en": "Skip the question"
+  },
+  "jot.tryPrompt": {
+    "zh": "没想好写什么？试试今天的每日一问",
+    "en": "Not sure what to write? Try today's prompt"
+  },
+  "jot.photos": {
+    "zh": "这一篇的照片",
+    "en": "Photos for this page"
+  },
+  "jot.addPhoto": {
+    "zh": "加照片",
+    "en": "Add photos"
+  },
+  "jot.morePhotos": {
+    "zh": "再加",
+    "en": "More"
+  },
+  "jot.photoRemove": {
+    "zh": "拿掉这张照片",
+    "en": "Remove this photo"
+  },
+  "jot.chooseBook": {
+    "zh": "选一本手帐",
+    "en": "Choose a journal"
+  },
+  "jot.preview": {
+    "zh": "手帐预览",
+    "en": "Page preview"
+  },
+  "jot.previewEmpty": {
+    "zh": "写一句、说一句或放一张照片，这里就会出现这一页。",
+    "en": "Write a line, say something or add a photo, and the page appears here."
+  },
+  "jot.toStudio": {
+    "zh": "到手帐工作室里继续",
+    "en": "Continue in the Journal Studio"
+  },
+  "jot.discard": {
+    "zh": "不要了",
+    "en": "Discard"
+  },
+  "jot.discardAsk": {
+    "zh": "不要这一篇了吗？写的字和录的声音都会清掉（已经保存的手帐不受影响）。",
+    "en": "Discard this? The words and the voice note here will be cleared (saved pages stay as they are)."
+  },
+  "jot.draftBack": {
+    "zh": "上次没保存的还在，接着写吧。",
+    "en": "What you started last time is still here."
+  },
+  "jot.draftKept": {
+    "zh": "草稿留着了，下次打开接着写。",
+    "en": "Kept as a draft — carry on next time."
+  },
+  "jot.noBook": {
+    "zh": "还没有手帐本：先在书架上建一本吧。",
+    "en": "No journal yet — make one on the shelf first."
+  },
+  "take.stop": {
+    "zh": "停止",
+    "en": "Stop"
+  },
+  "take.listen": {
+    "zh": "试听",
+    "en": "Listen"
+  },
+  "take.again": {
+    "zh": "重录",
+    "en": "Record again"
+  },
+  "take.keep": {
+    "zh": "用这段",
+    "en": "Use this"
+  },
+  "take.remove": {
+    "zh": "删掉",
+    "en": "Remove"
+  },
+  "take.stopFirst": {
+    "zh": "先停止录音，再保存。",
+    "en": "Stop recording first, then save."
+  },
+  "take.keepFirst": {
+    "zh": "这段录音还没用上：点「用这段」或「重录」。",
+    "en": "This recording isn't added yet — tap Use this or Record again."
+  },
+  "take.keepFailed": {
+    "zh": "录音没能存到这台设备上，请再试一次。录音还在，没有丢。",
+    "en": "The recording couldn't be saved on this device — try again; it isn't lost."
+  },
+  "take.denied": {
+    "zh": "麦克风没有打开：可以在 iPhone「设置」里允许开铺手帐使用麦克风。写字和照片照常可以保存。",
+    "en": "The microphone isn't allowed — you can allow it for Capiday in iPhone Settings. Words and photos still save as usual."
+  },
+  "wallnote.text": {
+    "zh": "补一句",
+    "en": "Add a thought"
+  },
+  "wallnote.voice": {
+    "zh": "补段声音",
+    "en": "Add a voice note"
+  },
+  "wallnote.textHint": {
+    "zh": "现在想起来的，写在这张照片下面…",
+    "en": "What you remember now, under this photo…"
+  },
+  "wallnote.added": {
+    "zh": "补记",
+    "en": "Added later"
+  },
+  "wallnote.empty": {
+    "zh": "这张照片还没有话和声音。",
+    "en": "No words or voice for this photo yet."
+  },
+  "wallnote.saved": {
+    "zh": "补好了，在原来那一页、这张照片下面。",
+    "en": "Added — on the same page, under this photo."
+  },
+  "reminder.askTime": {
+    "zh": "每天几点提醒你？选好时间再开启。开启时 iPhone 会问一次能不能发通知。",
+    "en": "What time each day? Choose it, then turn it on — iPhone will ask once about notifications."
+  },
+  "reminder.rules": {
+    "zh": "每天最多一条；当天已经保存了一篇，就不再提醒。通知里只有这句话，不会出现你的手帐内容。",
+    "en": "At most one a day; none once you've saved a page that day. The notification only says this line — never anything from your journal."
+  },
+  "reminder.confirm": {
+    "zh": "开启每日提醒",
+    "en": "Turn on daily reminder"
   }
 }

@@ -33,6 +33,48 @@ export function setPageBook(entry, pageId, bookId) {
   moment.bookId = bookId;
   return true;
 }
+// V10.80 · A page kept from 快速记录 (自己写 / 每日一问 / a reminder): it goes
+// into the saved day on its date — the day is made when there is none yet (a
+// sample day on that date is replaced, like saving a page there). When the
+// day also has an unsaved draft (the Studio), the same page is added to it
+// as well, so the draft is neither lost nor saved for the person.
+// `newDay` is the day to start from when there is none (date, journal…).
+export function addPageToDay(state, date, moment, newDay = {}) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date || "")) throw new Error("日期格式不正确");
+  const now = new Date().toISOString();
+  const page = { ...structuredClone(moment), visibility: "private" };
+  const at = state.entries.findIndex((e) => e.date === date);
+  const existing = at >= 0 && state.entries[at].isDemo !== true ? state.entries[at] : null;
+  if (existing) {
+    existing.moments = [...(existing.moments || []), page];
+    existing.updatedAt = now;
+  } else {
+    const day = {
+      id: newDay.id || page.id + "-day",
+      title: "",
+      body: "",
+      mood: "",
+      photo: "",
+      template: "cute",
+      font: "serif",
+      layers: [],
+      media: [],
+      fieldValues: {},
+      ...newDay,
+      date,
+      moments: [page],
+      isDemo: false,
+      visibility: "private",
+      status: "completed",
+      updatedAt: now,
+    };
+    if (at >= 0) state.entries[at] = day;
+    else state.entries.push(day);
+  }
+  const draft = state.drafts?.[date];
+  if (draft && !(draft.moments || []).some((m) => m.id === page.id)) draft.moments = [...(draft.moments || []), structuredClone(page)];
+  return page;
+}
 export function addDays(key, amount) {
   const date = new Date(`${key}T12:00:00`);
   date.setDate(date.getDate() + amount);

@@ -29,6 +29,7 @@ public final class LittleDaysReminders: NSObject, WKScriptMessageHandler, UNUser
         guard message.name == Self.name, let body = message.body as? [String: Any], let type = body["type"] as? String else { return }
         if type == "ready" { deliverPending() }
         if type == "schedule" { schedule(body) }
+        if type == "pending" { listPending() }
     }
 
     private func schedule(_ body: [String: Any]) {
@@ -66,6 +67,30 @@ public final class LittleDaysReminders: NSObject, WKScriptMessageHandler, UNUser
                     center.add(UNNotificationRequest(identifier: Self.ids[day], content: content, trigger: trigger))
                 }
                 self.reply(ok: true, reason: "")
+            }
+        }
+    }
+
+    /// V10.80 · Read-only: what is scheduled right now (ids, when, the words
+    /// shown) and whether notifications are allowed — for Settings and for the
+    /// Simulator check (tools/mac/uitest/reminder-check.js). Changes nothing.
+    private func listPending() {
+        let center = UNUserNotificationCenter.current()
+        let ours = Set(Self.ids)
+        center.getNotificationSettings { settings in
+            let status = settings.authorizationStatus.rawValue
+            center.getPendingNotificationRequests { requests in
+                let format = DateFormatter()
+                format.dateFormat = "yyyy-MM-dd HH:mm"
+                let items: [[String: Any]] = requests.filter { ours.contains($0.identifier) }.map { request in
+                    let next = (request.trigger as? UNCalendarNotificationTrigger)?.nextTriggerDate()
+                    return ["id": request.identifier, "at": next.map { format.string(from: $0) } ?? "", "title": request.content.title, "body": request.content.body]
+                }.sorted { ($0["at"] as? String ?? "") < ($1["at"] as? String ?? "") }
+                let payload: [String: Any] = ["authorization": status, "pending": items]
+                guard let data = try? JSONSerialization.data(withJSONObject: payload), let json = String(data: data, encoding: .utf8) else { return }
+                Task { @MainActor in
+                    self.webView?.evaluateJavaScript("window.littleDaysReminderPending && window.littleDaysReminderPending(\(json))", completionHandler: nil)
+                }
             }
         }
     }

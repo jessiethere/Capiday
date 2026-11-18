@@ -30,6 +30,7 @@ const PHOTOS = ["latte-art", "corner-cafe", "home-dinner", "coffee-cheers", "mor
     await c.addInitScript(SS.seed);
     await c.addInitScript(SS.acceptGroups);
     await c.addInitScript(SS.acceptBookPick);
+    await c.addInitScript(SS.acceptJot);
     return c;
   };
   let ctx = await launch();
@@ -268,6 +269,7 @@ const PHOTOS = ["latte-art", "corner-cafe", "home-dinner", "coffee-cheers", "mor
     await ctx.addInitScript(SS.seed);
     await ctx.addInitScript(SS.acceptGroups);
     await ctx.addInitScript(SS.acceptBookPick);
+    await ctx.addInitScript(SS.acceptJot);
     page = ctx.pages()[0] || (await ctx.newPage());
     watch(page);
     await page.goto(base);
@@ -290,6 +292,7 @@ const PHOTOS = ["latte-art", "corner-cafe", "home-dinner", "coffee-cheers", "mor
     await ctx.addInitScript(SS.seed);
     await ctx.addInitScript(SS.acceptGroups);
     await ctx.addInitScript(SS.acceptBookPick);
+    await ctx.addInitScript(SS.acceptJot);
     page = ctx.pages()[0] || (await ctx.newPage());
     watch(page);
     await page.goto(base);

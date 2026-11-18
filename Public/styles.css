@@ -25564,3 +25564,372 @@ dialog .primary {
 .phone.sv .sv-where .story-book-btn {
   min-height: 32px;
 }
+
+/* =====================================================================
+   V10.80 · 每日一问 · 快速记录 · 翻照片补一句
+   ===================================================================== */
+/* Today: one question a day, under the three ways to start. */
+.daily-prompt {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 2px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: var(--c-fffdf8, #fffdf8);
+  box-shadow: 0 0 0 1px var(--c-e3dccf, #e3dccf);
+}
+.daily-prompt .dp-q {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.45;
+  color: var(--t-2b2622, #2b2622);
+}
+.daily-prompt .dp-acts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.daily-prompt .dp-write,
+.daily-prompt .dp-say {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--c-5f6f52, #5F6F52);
+  background: var(--c-ffffff, #ffffff);
+  color: var(--c-5f6f52, #5F6F52);
+  font-size: 15px;
+  font-weight: 600;
+}
+.daily-prompt .dp-say {
+  background: var(--c-5f6f52, #5F6F52);
+  color: var(--c-ffffff, #ffffff);
+}
+.daily-prompt .dp-next {
+  margin-left: auto;
+  font-size: 14px;
+}
+/* The small question line on a page that answered one. */
+.journal-canvas .canvas-prompt {
+  position: absolute;
+  z-index: 3;
+  top: 2.6%;
+  left: 7%;
+  right: 7%;
+  font-size: 2.7cqw;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  color: var(--t-6f675d, #6F675D);
+  pointer-events: none;
+}
+/* 快速记录 */
+.jot-bar .jot-bar-end {
+  width: 44px;
+}
+.jot-page {
+  display: grid;
+  gap: 12px;
+  padding: 0 16px calc(24px + env(safe-area-inset-bottom, 0px));
+}
+.jot-prompt {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--c-f1eadf, #f1eadf);
+}
+.jot-prompt small,
+.jot-suggest small,
+.jot-preview-label {
+  font-size: 12px;
+  color: var(--t-6f675d, #6F675D);
+}
+.jot-prompt p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.45;
+}
+.jot-prompt .text-button {
+  justify-self: start;
+  font-size: 13px;
+}
+.jot-suggest {
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px;
+  border: 1px dashed var(--c-b9ad9c, #b9ad9c);
+  border-radius: 14px;
+  background: none;
+  text-align: left;
+  font-size: 14px;
+  color: var(--t-4a433c, #4a433c);
+}
+.jot-words textarea {
+  width: 100%;
+  min-height: 110px;
+  padding: 12px 14px;
+  border: 1px solid var(--c-e3dccf, #e3dccf);
+  border-radius: 14px;
+  background: var(--c-ffffff, #ffffff);
+  font-size: 17px;
+  line-height: 1.55;
+  resize: vertical;
+  scroll-margin-bottom: 14px;
+}
+.take {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.take-start {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid var(--c-5f6f52, #5F6F52);
+  background: var(--c-ffffff, #ffffff);
+  color: var(--c-5f6f52, #5F6F52);
+  font-size: 15px;
+  font-weight: 600;
+}
+.take-start span {
+  margin-right: 6px;
+}
+.take-note {
+  flex-basis: 100%;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--t-a0504f, #A0504F);
+}
+.take.recording {
+  padding: 8px 10px 8px 14px;
+  border-radius: 999px;
+  background: var(--c-f1eadf, #f1eadf);
+}
+.take-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--c-c8554b, #c8554b);
+  animation: take-blink 1.2s ease-in-out infinite;
+}
+@keyframes take-blink {
+  50% { opacity: 0.35; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .take-dot { animation: none; }
+}
+.take-len {
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  min-width: 42px;
+}
+.take-wave {
+  flex: 1;
+  min-width: 60px;
+  height: 28px;
+  color: var(--c-5f6f52, #5F6F52);
+}
+.take-stop,
+.take-keep {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+}
+.take .take-player {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+/* 保存 stays in reach at the foot of 快速记录. */
+.jot-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  padding: 10px 0 calc(6px + env(safe-area-inset-bottom, 0px));
+  background: var(--cream, #f6f1e8);
+}
+.take .text-button.danger {
+  color: var(--t-a0504f, #A0504F);
+}
+.jot-photos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.jot-thumb {
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+.jot-thumb img {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+}
+.jot-thumb button {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 24px;
+  height: 24px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--c-2b2622, #2b2622);
+  color: var(--c-ffffff, #ffffff);
+  font-size: 15px;
+  line-height: 24px;
+}
+.jot-add-photo {
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  width: 64px;
+  height: 64px;
+  min-height: 0;
+  padding: 0;
+  border: 1px dashed var(--c-b9ad9c, #b9ad9c);
+  border-radius: 12px;
+  background: none;
+  font-size: 11px;
+  color: var(--t-4a433c, #4a433c);
+}
+.jot-where {
+  margin: 0;
+}
+.jot-preview-wrap {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+}
+.jot-preview-wrap .jot-preview-label {
+  justify-self: start;
+}
+.jot-paper {
+  width: min(66vw, 280px);
+}
+.jot-preview-empty {
+  margin: 0;
+  padding: 18px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--t-6f675d, #6F675D);
+}
+.jot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.jot-actions .jot-save {
+  margin-left: auto;
+  min-height: 48px;
+  min-width: 120px;
+  border-radius: 14px;
+}
+.jot-actions .text-button {
+  font-size: 14px;
+}
+/* The photo wall viewer: this photo's words and voice notes. */
+.wv-notes {
+  display: grid;
+  gap: 8px;
+  max-height: 36dvh;
+  overflow-y: auto;
+  margin: 0 14px;
+  overscroll-behavior: contain;
+}
+.wv-word {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+.wv-word small {
+  display: block;
+  font-size: 11px;
+  color: var(--t-fffdf8b3, #fffdf8b3);
+}
+.wv-empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--t-fffdf8b3, #fffdf8b3);
+}
+.wv-voice {
+  display: grid;
+  gap: 2px;
+}
+.wv-voice small {
+  font-size: 11px;
+  color: var(--t-fffdf8b3, #fffdf8b3);
+}
+.wv-add,
+.wv-add-row {
+  display: flex;
+  gap: 8px;
+}
+.wv-add button {
+  flex: 1;
+  min-height: 42px;
+  border-radius: 999px;
+  border: 1px solid var(--c-ffffff33, #ffffff33);
+  background: var(--c-ffffff26, #ffffff26);
+  color: var(--t-fffdf8, #fffdf8);
+  font-size: 14px;
+}
+.wv-add-text textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.wv-add-row {
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+.wv-add-row .text-button,
+.wv-add-voice .text-button {
+  color: var(--t-fffdf8, #fffdf8);
+}
+.wv-add-voice {
+  display: grid;
+  gap: 6px;
+}
+.wall-viewer .take-start {
+  background: none;
+  border-color: var(--c-ffffff33, #ffffff33);
+  color: var(--t-fffdf8, #fffdf8);
+}
+.wall-viewer .take.recording,
+.wall-viewer .take .take-player {
+  background: var(--c-ffffff26, #ffffff26);
+  color: var(--t-fffdf8, #fffdf8);
+}
+.wall-viewer .take .text-button {
+  color: var(--t-fffdf8, #fffdf8);
+}
+/* 每日提醒: choose the time before turning it on. */
+.reminder-sheet .rm-note,
+.reminder-sheet .rm-preview {
+  margin: 0 4px 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--t-4a433c, #4a433c);
+}
+.reminder-sheet .rm-note.small {
+  font-size: 12px;
+  color: var(--t-6f675d, #6F675D);
+}
+.reminder-sheet .rm-preview {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--c-f1eadf, #f1eadf);
+}
+.reminder-sheet .reminder-time {
+  margin-bottom: 10px;
+}
