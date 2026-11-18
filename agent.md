@@ -48,6 +48,45 @@
 
 ## 更新日志
 
+### 2026-11-18 — V10.84（续）：首次盖章的轻仪式感（中英文）、首页去掉「今天的小计划 / 我的习惯」
+
+- **需求**（Founder）：① 某个手帐日期**第一次**真正有了章时，轻轻盖一下章（中文「今天被留下来了」的感觉），温柔克制、不是完成任务；必须在保存真正成功之后；中英文文案进 i18n；能用现成的轻触感就用，Reduce Motion 要有替代；S1–S14 验收。② 首页整块去掉「今天的小计划」（标题、「写一件今天想做的小事」、「加上」、我的习惯和相关入口），不拿别的东西填，不删旧数据，不重新引入 Growth，中英文同步，更新测试。
+- **触发条件（数据事件，不是画面事件）**：
+  - `Store.update`（`model.mjs`）在修改**之前**先把已有内容的日期写进集章记录（历史 / 老数据，静默），修改**之后**再同步一次——这一次新加进记录的日期（`syncRecordedDays` 现在返回新增的日期列表）才是「这次修改第一次盖章的日期」。
+  - 写入顺序：先写 LocalStorage → 再写 IndexedDB（`persist`）→ `stored()` 结果为 true（真正写好了）→ 才调用 `onNewDays(dates)`。LocalStorage 写入失败且没有 IndexedDB、校验失败、IndexedDB 写入失败（`stored()` 为 false）都**不**通知。
+  - `update(change, { quiet: true })`：恢复备份和撤销恢复（`switchJournal`）走这个，恢复出来的日期有章但不通知。
+  - 不触发的情况全部来自数据本身：同一天第二页、修改已有页面、补记已有章的日期、删完变成空章、空章之后再写（日期早已在记录里，不会再「新增」）、重启、首页重新渲染、翻月份。
+- **怎么避免重复播放**：通知只在数据里「新增日期」那一刻发生一次，没有任何「已播放」标记要存；首页集章条上那枚章的 `ink-in` 动画用内存里的 `justStamped` 集合，首页第一次画出来之后立刻清空，再画不再有（重启后也没有）。
+- **画面**（`app.js` `stampMoment`）：屏幕下方居中一个纸色小胶囊：一枚 44 px 朱红章（和集章卡同一个章面：照片 / 第一个字 / 日期）+ 一行字；`pointer-events: none`、不是弹窗、不用点，2.6 秒后 0.5 秒淡出；章「按下去」：从 1.18 倍、−14° 落到 1 倍、−8°（约 0.5 秒，轻微回弹到 0.97），随后一圈墨迹向外淡开（0.6 秒）；没有彩带、没有声音、没有「+1」。首页回来时这枚章在集章条上再轻轻落一次（只一次）。
+- **文案（i18n.json，没有写死在组件里）**：
+  - `stamp.firstToday`：「今天，也留下来了。」/ "Another little day, kept."
+  - `stamp.firstDay`（补记过去的日期）：「{date}，也留下来了。」/ "{date}, kept."
+  - `stamp.thisMonth`：「这个月」/ "This month"（集章条的小标题「这个月 · 集章卡」）
+  - `week.kicker`：「这一周」/ "This week"；`week.line`：「这一周，你留下了 {count} 个小日子。」/ "You kept {count} little days this week."（单数 `week.lineOne` "…1 little day this week."；上一周 `week.lineLast*`）
+  - `home.doneTitle`：「今天已经记下来了」/ "You’ve already captured today."
+  - `home.addPage`：「再加一页」/ "Add another page"
+  - 英文选择理由：Founder 推荐的 "Another little day, kept." 和集章卡 / 这一周的「小日子」说法一致，读起来像手帐上的一句话；没有用 "Today became part of your story."（放在保存后的小胶囊里偏长、偏文学）。
+- **触感**：复用已有的 `littleDaysHaptics` 桥（Swift `UIImpactFeedbackGenerator(style: .light)`，V10.63 起用于语音播放器），盖章时调用一次 `prHaptic()`；没有新增原生代码。网页 / 固定链接里没有触感。
+- **Reduce Motion**：`prefers-reduced-motion: reduce` 时章和胶囊只做 0.24 秒淡入、0.5 秒淡出，没有缩放、旋转、移动和墨迹扩散；章面和文字照样清楚出现（WKWebView 跟随 iOS「减弱动态效果」）。
+- **首页去掉「今天的小计划」**：`home()` 不再调用 `todayListHTML()`（小计划标题、输入框、「加上」、「我的习惯」一行和去成长页的入口都一起没有了）。首页现在是：今天（主按钮或今天这一页）→ 小按钮行 → 集章卡 → 这一周 → Little Keeper 邀请 → 那年今日 → 我的手帐 → 品牌页脚，没有补别的模块。旧的 `state.plans` / 习惯打卡**原样保留**（没有清理代码）；日历里那天的「今日清单」照旧显示以前完成的计划；Growth 仍然冻结在 Labs 里，没有重新引入。小计划的代码（`todayListHTML`、`plan-*` 动作）保留没删，只是首页不再显示。
+- **文件**：`Public/js/recorded-days.mjs`（返回新增日期）、`Public/js/model.mjs`（`onNewDays`、`quiet`）、`Public/app.js`（`stampMoment`、`justStamped`、`switchJournal` quiet、首页去掉小计划、集章条小标题）、`Public/styles.css`（盖章动画、Reduce Motion）、`Public/js/whats-new.mjs`（10.84 加两条）、i18n.json、`Native/…/WebApp/`（同步）；测试 `tests/v189-browser.cjs`（新）、`tests/v188-stamps.test.mjs`（+3）、`tests/v188-browser.cjs`、`tests/signed-in.cjs`（`touchStore` / `openHabits` / `goTab("growth")` 不再经过首页小计划，改为点一个隐藏的同名按钮）、`tests/v63`、`v65`、`v102`、`v153`、`v164`、`v165`（按新首页更新：断言首页没有小计划、旧计划数据保留）。
+- **S1–S14 结果**（`tests/v189-browser.cjs` **40/40**，Chromium；单元 `v188-stamps` 3 项覆盖同样的规则）：
+  - S1 ✅ 中文第一次记录：出现一次「今天，也留下来了。」、一次 light 触感、不挡操作、几秒后消失
+  - S2 ✅ 英文："Another little day, kept."
+  - S3 ✅ 同一天第二页不出现
+  - S4 ✅ 修改 / 再保存已有的一天不出现
+  - S5 ✅ 补记从没记过的 11 月 12 日：「11月12日，也留下来了。」
+  - S6 ✅ 补记已有章的日期不出现
+  - S7 ✅ LocalStorage 和 IndexedDB 都写不进去：没有盖章、没有成功文案；重新打开今天没有章、没有页面（单元：IndexedDB 写入失败、校验失败都不通知）
+  - S8 ✅ 重启不出现
+  - S9 ✅ 首页再画、集章卡翻月份不出现；首页那枚章只落一次
+  - S10 ✅ 在新装上恢复备份：恢复出来的日期有章、不出现；之后第一次记今天照常出现
+  - S11 ✅ 删掉那天最后一页 → 空章，不出现
+  - S12 ✅ 空章之后再写那天 → 不出现，章变回完整
+  - S13 ✅ 减弱动态效果：只淡入（`stamp-fade`），没有墨迹，章和文字照样出现
+  - S14 ✅ 中英文切换都对；新增界面代码里没有写死的中文；新文案都有中英文；没有游戏化字样
+  - **以上都是浏览器自动测试，不是真机**；触感只验证了「调用了一次 light」，真实手感要 iPhone 上看。
+
 ### 2026-11-18 — V10.84：集章卡（只增不减）、这一周、首页一个主要动作（构建号改为 0.2.0 (7)，未构建、未上传）
 
 - **需求**（Founder，夜间任务，明早出 TestFlight QA 构建）：按设计轮 V10.84 实施 A 集章卡 + 这一周 + 首页整合；温和、不游戏化（不做 streak / 连续打卡 / 断签 / 补签 / 积分 / 等级 / 排行榜 / 勋章商店 / 强制任务 / 推送 / Growth）；验收 A–R；不破坏用户数据、不改页面 ID / 媒体 ID / 备份格式 / 恢复安全机制；TestFlight 只走现有安全流程，要 Apple 登录 / 2FA / 授权就停下说明。

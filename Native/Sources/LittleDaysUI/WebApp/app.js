@@ -931,11 +931,15 @@ function stampStripHTML() {
   const photos = !privacyOn("hideToday");
   const cells = card.days.map((cell) => {
     const face = stampFaceHTML(cell, { today, photos });
-    return `<i class="stamp ${face.cls}" data-date="${cell.date}">${face.inner}</i>`;
+    // The stamp just made (the stamp moment) settles in once, here too.
+    const inked = justStamped.has(cell.date) ? " ink-in" : "";
+    return `<i class="stamp ${face.cls}${inked}" data-date="${cell.date}">${face.inner}</i>`;
   });
+  // Shown once: drawing Home again never plays it again.
+  if (justStamped.size) setTimeout(() => justStamped.clear(), 0);
   const lead = Array.from({ length: card.lead }, () => '<i class="stamp-gap"></i>').join("");
   const count = card.count ? stampCount("stamp.monthCount", card.count) : t("stamp.monthNone");
-  return `<button class="stamp-strip" data-action="stamps-open" aria-label="${esc(t("stamp.openCard"))} · ${esc(monthLabel(year, month))} · ${esc(count)}"><span class="ss-copy"><small class="v9-kicker">${t("stamp.kicker")}</small><b class="ss-month">${esc(monthLabel(year, month))}</b><span class="ss-count">${esc(count)}</span><small class="ss-note">${t("stamp.note")}</small><span class="ss-go">${t("stamp.openCard")} ›</span></span><span class="ss-grid" aria-hidden="true">${lead}${cells.join("")}</span></button>`;
+  return `<button class="stamp-strip" data-action="stamps-open" aria-label="${esc(t("stamp.openCard"))} · ${esc(monthLabel(year, month))} · ${esc(count)}"><span class="ss-copy"><small class="v9-kicker">${t("stamp.thisMonth")} · ${t("stamp.kicker")}</small><b class="ss-month">${esc(monthLabel(year, month))}</b><span class="ss-count">${esc(count)}</span><small class="ss-note">${t("stamp.note")}</small><span class="ss-go">${t("stamp.openCard")} ›</span></span><span class="ss-grid" aria-hidden="true">${lead}${cells.join("")}</span></button>`;
 }
 // Home: 这一周 — this week once it has a stamp; early in the week (Mon–Wed)
 // with nothing yet, last week's (if it had any). Never a "4/7".
@@ -1034,6 +1038,40 @@ function weekPage() {
   const canNext = next <= today;
   const body = shown.recorded ? `${collage}${quote}<p class="wp-meta">${esc(meta)}</p>` : `<p class="wp-none">${t("week.none")}</p>`;
   return `<section class="week-page"><header class="sp-top"><button class="back-button" data-action="nav" data-page="home">${icon("back")} ${t("back")}</button></header><div class="wp-card"><div class="sp-head"><button class="sp-arrow" data-action="week-open" data-week="${prev}" aria-label="${t("week.prev")}">‹</button><div><small class="v9-kicker">${t(thisWeek ? "week.kicker" : "week.kickerPast")}</small><h1>${esc(range)}</h1>${shown.recorded ? `<p class="sp-count">${esc(weekLine(shown, !thisWeek))}</p>` : ""}</div><button class="sp-arrow" data-action="week-open" data-week="${next}" aria-label="${t("week.next")}" ${canNext ? "" : "disabled"}>›</button></div>${body}<ul class="wp-days">${dayRows}</ul></div></section>`;
+}
+// V10.84 · 首次盖章: the first time a date gets its stamp (a new kept day —
+// never a second page, an edit, history, a restore, or a date that had a
+// stamp before), a small seal is pressed on in the corner of the screen with
+// one line: no sheet to close, nothing to tap, no sound; one light tap on the
+// iPhone. The Store calls this only after the change is stored.
+const justStamped = new Set();
+let stampMomentTimer = null;
+function stampMoment(dates) {
+  const list = (dates || []).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d));
+  if (!list.length) return;
+  // Today first; else the latest date just kept.
+  const date = list.includes(dateKey()) ? dateKey() : list[list.length - 1];
+  for (const d of list) justStamped.add(d);
+  const stamp = Stamps.stampsByDate(state())[date];
+  if (!stamp) return;
+  const face = stampFaceHTML({ date, stamp }, { today: dateKey(), photos: !privacyOn("hideToday"), big: true });
+  const when = new Date(`${date}T12:00:00`).toLocaleDateString(locale(), { month: "long", day: "numeric" });
+  const line = date === dateKey() ? t("stamp.firstToday") : t("stamp.firstDay", { date: when });
+  $("#stamp-moment")?.remove();
+  clearTimeout(stampMomentTimer);
+  const box = document.createElement("div");
+  box.id = "stamp-moment";
+  box.className = "stamp-moment";
+  box.setAttribute("role", "status");
+  box.dataset.date = date;
+  box.innerHTML = `<i class="stamp ${face.cls}" aria-hidden="true">${face.inner}</i><span>${esc(line)}</span>`;
+  $("#phone").append(box);
+  prHaptic();
+  logEvent("stamp_first", { today: date === dateKey() });
+  stampMomentTimer = setTimeout(() => {
+    box.classList.add("leaving");
+    setTimeout(() => box.remove(), 600);
+  }, 2600);
 }
 async function stampsAction(actionName, target) {
   if (actionName === "stamps-open") {
@@ -1136,7 +1174,7 @@ function home() {
   // today is kept (its page first, then 再加一页).
   const done = hasTodayContent();
   return `<div class="home-mag"><header class="home-top"><div class="masthead"><div class="brand-title${languageCode() === "en" ? "" : " brand-zh"}" lang="${languageCode() === "en" ? "en" : "zh-Hans"}">${t("brand.wordmark")}${BRAND_SPROUT}</div></div><span class="home-actions"><button class="icon-button" data-action="open-search" aria-label="${t("search.open")}">${icon("search")}</button>${bell()}<button class="icon-button settings-gear" data-action="nav" data-page="settings" aria-label="${hasUnseen() ? t("news.dotLabel", { version: LATEST }) : t("settings")}">${icon("gear")}${hasUnseen() ? `<i class="news-dot" aria-hidden="true"></i>` : ""}</button></span></header>
- ${backupNudgeHTML()}<section class="hero today-card v9-home"><div class="story-start-card"><div class="v9-masthead"><span class="v9-daynum" aria-hidden="true">${now.getDate()}</span><div class="v9-greet"><small class="v9-kicker">${esc(now.toLocaleDateString(locale(), { month: "long" }))} · ${now.getFullYear()}</small>${greetingHTML(weekday, day)}<h1 class="today-prompt">${t(done ? "home.doneTitle" : "story.prompt")}</h1></div></div>${done ? `<div class="v9-hero-wrap v84-done">${keeperPerchHTML()}${todayStoryHTML()}</div><div class="home-done-acts"><button class="primary home-more" data-action="today-photos">＋ ${t("home.addPage")}</button></div>` : `<div class="v9-hero-wrap">${keeperPerchHTML()}<div class="v9-hero"><div class="v9-hero-copy"><small class="v9-kicker v9-sage">Photo Journal</small><h2>${t("tile.photo")}</h2><p>${t("story.promptHint")}</p></div>${heroPolaroidsHTML(now)}<button class="story-photos v9-cta" data-action="today-photos">${t("v9.pickPhotos")}<span aria-hidden="true">→</span></button></div></div>`}${homeSmallActionsHTML(done)}${done ? "" : dailyPromptHTML()}</div>${stampStripHTML()}${weekCardHTML()}${keeperInviteHTML()}${todayListHTML()}</section>${memoryHTML()}
+ ${backupNudgeHTML()}<section class="hero today-card v9-home"><div class="story-start-card"><div class="v9-masthead"><span class="v9-daynum" aria-hidden="true">${now.getDate()}</span><div class="v9-greet"><small class="v9-kicker">${esc(now.toLocaleDateString(locale(), { month: "long" }))} · ${now.getFullYear()}</small>${greetingHTML(weekday, day)}<h1 class="today-prompt">${t(done ? "home.doneTitle" : "story.prompt")}</h1></div></div>${done ? `<div class="v9-hero-wrap v84-done">${keeperPerchHTML()}${todayStoryHTML()}</div><div class="home-done-acts"><button class="primary home-more" data-action="today-photos">＋ ${t("home.addPage")}</button></div>` : `<div class="v9-hero-wrap">${keeperPerchHTML()}<div class="v9-hero"><div class="v9-hero-copy"><small class="v9-kicker v9-sage">Photo Journal</small><h2>${t("tile.photo")}</h2><p>${t("story.promptHint")}</p></div>${heroPolaroidsHTML(now)}<button class="story-photos v9-cta" data-action="today-photos">${t("v9.pickPhotos")}<span aria-hidden="true">→</span></button></div></div>`}${homeSmallActionsHTML(done)}${done ? "" : dailyPromptHTML()}</div>${stampStripHTML()}${weekCardHTML()}${keeperInviteHTML()}</section>${memoryHTML()}
  ${books}<p class="home-quote hs-colophon">Collect moments, grow gently.</p></div>`;
 }
 // ---------- Today: habits and (Labs) things to do, on Home ----------
@@ -12557,10 +12595,15 @@ function leaveEditorAfterSwap() {
   if (page === "studio") page = "home";
 }
 async function switchJournal(next) {
-  store.update((draft) => {
-    for (const key of Object.keys(draft)) delete draft[key];
-    Object.assign(draft, structuredClone(next));
-  });
+  // A restore (or its undo) is not someone keeping a day now: the stamps it
+  // brings back appear without the stamp moment.
+  store.update(
+    (draft) => {
+      for (const key of Object.keys(draft)) delete draft[key];
+      Object.assign(draft, structuredClone(next));
+    },
+    { quiet: true },
+  );
 }
 async function pruneBeforeRestore() {
   try {
@@ -15876,6 +15919,8 @@ async function start() {
     // IndexedDB could not open on a first start: keep LocalStorage only, so a
     // later start that can read IndexedDB never meets a blank copy there.
     persist: volatile ? null : (raw) => meta.write(raw),
+    // V10.84 · 首次盖章: a date's first stamp, after the save is stored.
+    onNewDays: (dates) => stampMoment(dates),
     onPersistError: () => {
       toast(t("storage.saveFailed"));
       // The editor says so too, and offers to try again.

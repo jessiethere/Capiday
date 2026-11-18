@@ -170,8 +170,7 @@ module.exports.goTab = async (page, tab) => {
   // Growth has no tab since V6.6: open "My habits" from Home's today card.
   if (tab === "growth") {
     await page.locator('#navigation [data-page="home"]').click();
-    await module.exports.openPlans(page);
-    await page.locator('.today-list [data-action="nav"][data-page="growth"]').click();
+    await tapHidden(page, { action: "nav", page: "growth" });
     return;
   }
   await page.locator(`#navigation [data-page="${tab}"]`).click();
@@ -208,8 +207,7 @@ module.exports.menu = async (page, tab) => {
   await leaveReader(page);
   if (tab === "growth") {
     await page.locator('#navigation [data-page="home"]').click();
-    await module.exports.openPlans(page);
-    await page.locator('.today-list [data-action="nav"][data-page="growth"]').click();
+    await tapHidden(page, { action: "nav", page: "growth" });
     return;
   }
   await page.locator(`#navigation [data-page="${tab}"]`).click();
@@ -238,16 +236,28 @@ module.exports.openBookPage = async (page, id) => {
   if (!(await open.count())) await page.locator(`[data-action="pull-book"][data-book="${id}"]`).first().tap();
   await open.tap();
 };
+// One harmless change through the app's own store (so the journal is written
+// to LocalStorage). V10.84: Home no longer shows 今天的小计划; the plan
+// actions still exist (old plan data is kept), so a hidden tap on one that
+// matches nothing makes the change.
+const tapHidden = (page, attrs) =>
+  page.evaluate((attrs) => {
+    const b = document.createElement("button");
+    Object.assign(b.dataset, attrs);
+    b.hidden = true;
+    b.id = "test-hidden-tap";
+    document.querySelector("#app").append(b);
+    b.click();
+    b.remove();
+  }, attrs);
+module.exports.tapHidden = tapHidden;
 module.exports.touchStore = async (page) => {
-  await module.exports.openPlans(page);
-  await page.locator("[data-plan-input]").fill("·");
-  await page.locator('[data-action="plan-add"]').click();
-  await page.locator('[data-action="plan-remove"]').first().click();
+  await tapHidden(page, { action: "plan-toggle", plan: "__none__" });
   await page.waitForFunction(() => localStorage.getItem("little-days.v1"));
 };
+// Habits (Labs, frozen with Growth) have no entry on Home since V10.84.
 module.exports.openHabits = async (page) => {
-  await module.exports.openPlans(page);
-  await page.locator('.today-list [data-action="nav"][data-page="growth"]').click();
+  await tapHidden(page, { action: "nav", page: "growth" });
   await page.waitForSelector(".growth-habit");
 };
 

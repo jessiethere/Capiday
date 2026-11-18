@@ -158,19 +158,9 @@ const layerTop = (page) => page.evaluate(() => document.querySelector("#journal-
       await page.waitForTimeout(150);
       check("起完名字按回车，键盘收起", await page.evaluate(() => !document.activeElement?.matches?.("[data-keeper-name]")));
       check("名字还在、面板没有关", (await name.inputValue()) === "小橘" && (await page.locator("#choose-dialog[open] .keeper-onboard").count()) === 1);
-      // A plan still adds on Return and keeps the keyboard for the next one.
+      // (V10.84: 今天的计划 is no longer on Home, so its Return test is gone.)
       await page.keyboard.press("Escape");
       await context.close();
-      const c2 = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: "zh-CN" });
-      const p2 = await c2.newPage();
-      await p2.goto(base);
-      await p2.waitForSelector(".hero");
-      await SS.openPlans(p2);
-      await p2.locator("[data-plan-input]").fill("买牛奶");
-      await p2.keyboard.press("Enter");
-      await p2.waitForTimeout(200);
-      check("今天的计划：回车添加后还能接着写", await p2.evaluate(() => document.activeElement?.matches?.("[data-plan-input]")));
-      await c2.close();
     }
     // ---------- 4: the type bar above the keyboard in the pinned link ----------
     for (const embedded of [true, false]) {

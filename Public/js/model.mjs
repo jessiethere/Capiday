@@ -514,6 +514,9 @@ export class Store {
     this.storage = storage;
     this.persist = options.persist || null;
     this.onPersistError = options.onPersistError || (() => {});
+    // V10.84 · 首次盖章: called with the dates that got their first stamp in
+    // a change, only once that change is really stored (see update).
+    this.onNewDays = options.onNewDays || null;
     this.mirror = storage.getItem(MIRROR_OFF_KEY) !== "off";
     const local = this.mirror ? storage.getItem("little-days.v1") : null;
     // LocalStorage is written first on every save, so while it has a copy it
@@ -564,7 +567,9 @@ export class Store {
   stored() {
     return this.lastWrite || Promise.resolve(true);
   }
-  update(change) {
+  // options.quiet: a change that is not someone keeping a day now (a restore,
+  // an undo of a restore): its new stamps appear silently.
+  update(change, options = {}) {
     if (this.mirror && this.storage.getItem("little-days.v1") !== this.baselineRaw) {
       const error = new Error("error.conflict");
       error.code = "stale-state";
@@ -575,9 +580,11 @@ export class Store {
     // change (so a page deleted or moved now was already counted) and after it
     // (new pages). See recorded-days.mjs.
     const now = new Date().toISOString();
+    // Dates found before the change are history (an older journal, written
+    // into the record the first time): they never count as new.
     syncRecordedDays(next, now);
     change(next);
-    syncRecordedDays(next, now);
+    const firstStamps = syncRecordedDays(next, now);
     validateStateSnapshot(next);
     // Write first: a storage failure must not be reported as a successful save.
     const encoded = JSON.stringify(next);
@@ -598,5 +605,13 @@ export class Store {
     }
     this.save(encoded);
     this.state = next;
+    // The first stamp of a date is announced only after this change is in
+    // the durable store (false = the write failed: no stamp moment).
+    if (firstStamps.length && !options.quiet && this.onNewDays) {
+      const announce = this.onNewDays;
+      this.stored().then((ok) => {
+        if (ok) announce(firstStamps);
+      });
+    }
   }
 }

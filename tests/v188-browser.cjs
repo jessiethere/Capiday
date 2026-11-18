@@ -69,7 +69,7 @@ const strip = (page) =>
   page.evaluate(() => {
     const el = document.querySelector(".stamp-strip");
     const stamps = {};
-    for (const s of el.querySelectorAll(".stamp[data-date]")) stamps[s.dataset.date] = { cls: s.className.replace(/^stamp\s*/, ""), img: Boolean(s.querySelector("img")), text: s.textContent };
+    for (const s of el.querySelectorAll(".stamp[data-date]")) stamps[s.dataset.date] = { cls: s.className.replace(/^stamp\s*/, "").replace(/\s*ink-in/, ""), img: Boolean(s.querySelector("img")), text: s.textContent };
     return { count: el.querySelector(".ss-count").textContent, text: el.textContent, stamps };
   });
 const h1 = (page) => page.locator(".today-prompt").innerText();
@@ -395,7 +395,7 @@ async function writeJot(page, text) {
       const s = await strip(page);
       check("English: the stamp card reads 1 stamp", s.count === "1 stamp", s.count);
       const wk = await page.locator(".week-card").innerText();
-      check("English: This week, you kept 1 little day", wk.includes("This week, you kept 1 little day"), wk);
+      check("English: You kept 1 little day this week.", wk.includes("You kept 1 little day this week."), wk);
       const width = await page.evaluate(() => document.documentElement.scrollWidth);
       check("English: no sideways scroll at 390", width <= 390, String(width));
       check("English · no page errors", errors.length === 0, errors.join(" | "));

@@ -61,23 +61,25 @@ function firstSeen(entry, now) {
   return times[0] || now;
 }
 
-// Adds every date that has a kept page now. Returns true when something was added.
+// Adds every date that has a kept page now. Returns the dates that were
+// added (newest stamps), [] when nothing changed.
 export function syncRecordedDays(state, now = new Date().toISOString()) {
-  if (!state || typeof state !== "object") return false;
+  if (!state || typeof state !== "object") return [];
   const current = ledger(state);
-  let added = false;
+  const fresh = [];
   for (const [date, entry] of contentDays(state)) {
     if (current[date]) continue;
     current[date] = { at: firstSeen(entry, now) };
-    added = true;
+    fresh.push(date);
   }
+  const added = fresh.length > 0;
   const before = state.recordedDays;
   const shapeChanged = !before || typeof before !== "object" || Array.isArray(before) || Object.keys(before).length !== Object.keys(current).length;
   if (added || shapeChanged) {
     // Sorted by date: the same journal always writes the same text.
     state.recordedDays = Object.fromEntries(Object.keys(current).sort().map((d) => [d, current[d]]));
   }
-  return added;
+  return fresh.sort();
 }
 
 // Every stamped date (remembered or with a page now), sorted.

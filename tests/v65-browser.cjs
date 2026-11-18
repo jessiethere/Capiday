@@ -35,8 +35,7 @@ const lib = path.join(__dirname, "../Packages/LittleDaysCore/Sources/LittleDaysC
     await page.evaluate(() => localStorage.setItem("little-days.labs", "1"));
     await page.reload();
     await page.waitForSelector(".hero");
-    await require("./signed-in.cjs").openPlans(page);
-    await page.locator('.today-list [data-action="nav"][data-page="growth"]').tap();
+    await require("./signed-in.cjs").openHabits(page); // V10.84: no habits entry on Home
     await page.locator('[data-action="check"][data-habit="move"]').first().tap();
     await page.waitForFunction(() => JSON.parse(localStorage.getItem("little-days.v1")).checks.some((c) => c.habitId === "move"));
     // V7.3: a labelled "Edit" button on each habit opens a small menu: change it, or delete it.

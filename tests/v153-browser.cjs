@@ -21,22 +21,13 @@ const base = process.env.PREVIEW_URL || "http://127.0.0.1:8080";
       await page.waitForSelector(".hero");
       const order = await page.evaluate(() => {
         const at = (sel) => { const el = document.querySelector(sel); return el ? el.getBoundingClientRect().top + document.querySelector("#app-scroll").scrollTop : -1; };
-        return { hero: at(".v9-hero"), quick: at(".today-tiles"), plans: at(".today-planner"), stamps: at(".stamp-strip"), books: at(".hs-collect") };
+        return { hero: at(".v9-hero"), quick: at(".today-tiles"), plans: at(".today-planner"), stamps: at(".stamp-strip"), week: at(".week-card"), books: at(".hs-collect") };
       });
-      assert.ok(order.hero >= 0 && order.hero < order.quick && order.quick < order.stamps && order.stamps < order.plans && order.plans < order.books, `${where}: order ${JSON.stringify(order)}`);
-      passed.push(`${where}: Hero → quick ways → 集章卡 → 今天的小计划 → 我的手帐`);
-      // Add two plans, delete one; reload keeps exactly the other.
-      const words = run.lang === "zh" ? ["寄明信片", "买牛奶"] : ["Post a card", "Buy milk"];
-      for (const w of words) { await page.locator("[data-plan-input]").fill(w); await page.locator('[data-action="plan-add"]').click(); }
-      await page.evaluate(() => document.activeElement?.blur());
-      assert.equal(await page.locator(".qu .today-plans li").count(), 2);
-      await page.locator(".qu .today-plans li", { hasText: words[0] }).locator('[data-action="plan-remove"]').click();
-      await page.reload();
-      await page.waitForSelector(".hero");
-      const left = await page.locator(".qu .today-plans li").allInnerTexts();
-      assert.equal(left.length, 1);
-      assert.match(left[0], new RegExp(words[1]));
-      passed.push(`${where}: add two plans, delete one — kept after a reload`);
+      assert.ok(order.hero >= 0 && order.hero < order.quick && order.plans === -1 && order.quick < order.stamps && order.stamps < order.books, `${where}: order ${JSON.stringify(order)}`);
+      passed.push(`${where}: Hero → quick ways → 集章卡 → 我的手帐 (no 今天的小计划, V10.84)`);
+      // V10.84: no planner on Home in either language (nothing to add plans with).
+      assert.equal(await page.locator("[data-plan-input], .today-planner, .today-habits-link").count(), 0, `${where}: no planner`);
+      passed.push(`${where}: no 今天的小计划 / My habits on Home`);
       const fit = await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth && document.querySelector(".app-scroll").scrollWidth <= document.querySelector(".app-scroll").clientWidth);
       assert.ok(fit, `${where}: no sideways scroll`);
       assert.deepEqual(errors, [], where);

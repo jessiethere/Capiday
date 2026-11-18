@@ -4,7 +4,7 @@
 // that remembers its state, My Library, and both languages. Synthetic data.
 const { chromium, devices } = require("playwright");
 require("./signed-in.cjs")(chromium);
-const { touchStore, openPlans } = require("./signed-in.cjs");
+const { touchStore } = require("./signed-in.cjs");
 const assert = require("node:assert/strict");
 const base = process.env.PREVIEW_URL || "http://127.0.0.1:8080";
 const shots = process.env.SHOTS || "";
@@ -23,10 +23,8 @@ const shots = process.env.SHOTS || "";
     const today = await key(0), earlier = await key(3);
     const stored = () => page.evaluate(() => JSON.parse(localStorage.getItem("little-days.v1")));
     const shot = async (name) => { if (shots) await page.screenshot({ path: `${shots}/${name}.png` }); };
-    // V10.56: the plans are in sight (with nothing yet, one quiet line to add).
-    assert.equal(await page.locator('.today-planner.qu[data-state="empty"]').count(), 1);
-    assert.equal(await page.locator(".qu-body").isVisible(), true);
-    assert.ok((await page.evaluate(() => document.querySelector(".today-planner.qu").getBoundingClientRect().height)) <= 180, "no big empty block: a title, one line to add, my habits");
+    // V10.84: Home has no planner (今天的小计划) any more.
+    assert.equal(await page.locator(".today-planner, [data-plan-input]").count(), 0);
     // Write the journal once (so it is in LocalStorage), then set the days directly.
     await touchStore(page);
     const photo = (id, ref) => ({ id, kind: "photo", text: "", mediaRef: ref, x: 50, y: 50, w: 40, h: 30, rotation: 0, scale: 1 });
@@ -125,34 +123,13 @@ const shots = process.env.SHOTS || "";
     assert.equal(await page.locator(".ts-recent-head, .ts-card").count(), 0, "no made-up latest story");
     passed.push("no record today: one main way to start (no second invitation); my kept days are stamps, samples never are");
 
-    // 4. V10.56 plans: in sight, three at most (what is left first), the rest one tap away;
-    // ticking the last one folds the list to one line; nothing is lost.
-    await openPlans(page);
-    for (const text of ["买咖啡豆", "给妈妈打个电话", "浇花", "散步"]) { await page.locator("[data-plan-input]").fill(text); await page.locator('[data-action="plan-add"]').tap(); }
-    await page.evaluate(() => document.activeElement?.blur());
-    assert.equal(await page.locator(".qu .today-plans li").count(), 3, "three in sight");
-    assert.match(await page.locator(".qu-more").innerText(), /还有 1 项/);
-    await page.locator(".qu-more").tap();
-    assert.equal(await page.locator(".qu .today-plans li").count(), 4);
-    await page.reload();
-    await page.waitForSelector(".hero");
-    assert.equal(await page.locator(".qu .today-plans li").count(), 4, "show-all is remembered");
-    await page.locator(".qu-more").tap();
-    assert.equal(await page.locator(".qu .today-plans li").count(), 3);
-    for (let i = 0; i < 4; i++) {
-      await page.locator('.qu .plan-check[aria-pressed="false"]').first().tap();
-      await page.waitForFunction(([d, n]) => (JSON.parse(localStorage.getItem("little-days.v1")).plans?.[d] || []).filter((p) => p.done).length === n, [today, i + 1]);
-    }
-    await page.waitForSelector('.today-planner.qu[data-state="done"]');
-    assert.equal(await page.locator(".qu .today-plans li").count(), 0, "all done folds by itself");
-    assert.match(await page.locator(".qu-done").innerText(), /4 件小事都完成啦/);
-    const quiet = await page.evaluate(() => document.querySelector(".today-planner.qu").getBoundingClientRect().height);
-    assert.ok(quiet <= 150, `the done state is small (title, one done line, my habits) (${quiet}px)`);
-    assert.equal(((await stored()).plans[today] || []).filter((p) => p.done).length, 4, "folding loses nothing");
-    await page.locator(".qu-more").tap();
-    assert.equal(await page.locator(".qu .today-plans li.done").count(), 4, "the done list is one tap away");
-    await page.locator(".qu-more").tap();
-    passed.push("plans: in sight with three at most and 还有 N 项, show-all remembered, ticking the last folds to one done line, data intact");
+    // 4. V10.84: plans are not on Home; plans kept by an earlier version stay in the journal.
+    await setDays((s, today) => { s.plans = { [today]: [{ id: "p1", text: "买咖啡豆", done: true }, { id: "p2", text: "浇花", done: false }] }; });
+    await page.waitForSelector(".hero .stamp-strip");
+    assert.equal(await page.locator(".today-planner, .qu .today-plans li").count(), 0, "not shown on Home");
+    await touchStore(page);
+    assert.equal(((await stored()).plans[today] || []).length, 2, "kept, nothing cleaned up");
+    passed.push("plans: not on Home; plans from before stay in the journal");
 
     // 5. My Library: the shelf's first journal leads (V10.77 · CAP-021, the Founder: not the one written in most recently); one write link; covers open the real journal; no My / Shared switch on Home.
     await setDays((s, today, earlier, photo) => {
@@ -200,7 +177,7 @@ const shots = process.env.SHOTS || "";
     assert.match(await page.locator(".hs-remember .hs-title").evaluate((el) => getComputedStyle(el).fontFamily), /LD-elegant/);
     assert.match(await page.locator(".ts-card .ts-title").innerText(), /午饭/, "the page's own words are not translated");
     assert.match(await page.locator(".ts-card .ts-book").innerText(), /In[\s\S]*好好吃饭，好好生活/);
-    assert.match(await page.locator(".qu-row").innerText(), /Today's little plans[\s\S]*All done/);
+    assert.equal(await page.locator(".qu-row, .today-planner").count(), 0, "no Today's little plans on Home (V10.84)");
     for (const [w, h] of [[375, 667], [430, 932]]) {
       await page.setViewportSize({ width: w, height: h });
       await page.waitForTimeout(200);

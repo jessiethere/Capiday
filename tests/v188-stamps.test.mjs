@@ -234,3 +234,68 @@ test("contentDays and the app's own content rules agree (day.mjs)", async () => 
   for (const e of samples) assert.equal(R.entryHasContent(e), D.hasDayPageContent(e) || e.moments.some(D.hasMomentContent), e.date);
   assert.ok(contentDays({ entries: samples }).size === 3);
 });
+
+// ---------- V10.84 · 首次盖章: the data event behind the stamp moment ----------
+const watched = (options = {}) => {
+  const heard = [];
+  const store = new Store(memory(), { ...seed, sampleDays: [] }, "2026-11-17", { ...options, onNewDays: (dates) => heard.push(dates) });
+  return { store, heard };
+};
+const tick = () => new Promise((r) => setTimeout(r, 0));
+
+test("first stamp: announced once per new date, after the save is stored", async () => {
+  const { store, heard } = watched();
+  add(store, "2026-11-17", page("a", { title: "第一页" }));
+  await tick();
+  assert.deepEqual(heard, [["2026-11-17"]], "S1/S2 the first kept page of the day");
+  add(store, "2026-11-17", page("b", { title: "第二页" }));
+  store.update((s) => (s.entries.find((e) => e.date === "2026-11-17" && !e.isDemo).moments[0].title = "改过"));
+  await tick();
+  assert.equal(heard.length, 1, "S3/S4 a second page, an edit: nothing");
+  add(store, "2026-11-02", page("c", { title: "补记" }));
+  await tick();
+  assert.deepEqual(heard[1], ["2026-11-02"], "S5 a past date kept for the first time");
+  add(store, "2026-11-02", page("d", { title: "再补" }));
+  remove(store, "2026-11-02", "c");
+  remove(store, "2026-11-02", "d");
+  add(store, "2026-11-02", page("e", { title: "又写" }));
+  await tick();
+  assert.equal(heard.length, 2, "S6/S11/S12 a stamped date, emptied, written again: never new");
+});
+
+test("first stamp: history and restores stay silent", async () => {
+  const storage = memory();
+  const old = new Store(storage, { ...seed, sampleDays: [] }, "2026-11-17");
+  old.update((s) => s.entries.push(day("2026-10-01", [page("h", { title: "旧" })])));
+  // An older journal: the page is there, the record is not.
+  const raw = JSON.parse(storage.getItem("little-days.v1"));
+  delete raw.recordedDays;
+  storage.setItem("little-days.v1", JSON.stringify(raw));
+  const heard = [];
+  const store = new Store(storage, { ...seed, sampleDays: [] }, "2026-11-17", { onNewDays: (d) => heard.push(d) });
+  store.update((s) => (s.plans = {}));
+  await tick();
+  assert.deepEqual(heard, [], "history written into the record is silent (S8 too)");
+  assert.ok(store.state.recordedDays["2026-10-01"]);
+  store.update(
+    (s) => {
+      s.entries.push(day("2026-09-09", [page("r", { title: "恢复来的" })]));
+    },
+    { quiet: true },
+  );
+  await tick();
+  assert.deepEqual(heard, [], "S10 a restore (quiet) never announces");
+  assert.ok(store.state.recordedDays["2026-09-09"], "…but its stamp is there");
+});
+
+test("first stamp: a failed save announces nothing", async () => {
+  const fail = watched({ persist: () => Promise.reject(new Error("full")), onPersistError: () => {} });
+  add(fail.store, "2026-11-17", page("x", { title: "存不进去" }));
+  await tick();
+  await tick();
+  assert.deepEqual(fail.heard, [], "S7 the durable write failed: no stamp moment");
+  const thrown = watched();
+  assert.throws(() => thrown.store.update((s) => s.entries.push({ id: 1 })));
+  await tick();
+  assert.deepEqual(thrown.heard, [], "S7 a change that cannot be saved: nothing");
+});

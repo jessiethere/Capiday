@@ -26541,3 +26541,106 @@ dialog.scene-dialog {
 .home-mag .v9-home .v9-hero-wrap.v84-done:has(.keeper-perch) {
   margin-top: 84px;
 }
+/* V10.84 · 首次盖章: a seal pressed on, once, in the corner of the screen.
+   Never in the way: no tap needed, it fades by itself. */
+.stamp-moment {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--sab, 0px) + 96px);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100% - 48px);
+  padding: 10px 18px 10px 10px;
+  border-radius: 999px;
+  background: var(--paper);
+  box-shadow: 0 0 0 1px rgba(120, 95, 60, 0.08), 0 14px 30px -16px rgba(70, 50, 30, 0.55);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+  transform: translateX(-50%);
+  pointer-events: none;
+  animation: stamp-moment-in 260ms ease-out both;
+}
+.stamp-moment .stamp {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  font-size: 18px;
+  transform: rotate(-8deg);
+  animation: stamp-press 520ms cubic-bezier(0.2, 0.7, 0.3, 1) 80ms both;
+}
+.stamp-moment .stamp.empty,
+.stamp-moment .stamp.none {
+  font-size: 14px;
+}
+.stamp-moment .stamp::after {
+  /* the ink settling into the paper */
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid var(--c-a9483a, #a9483a);
+  opacity: 0;
+  animation: stamp-ink 620ms ease-out 260ms both;
+}
+.stamp-moment .stamp {
+  overflow: visible;
+}
+.stamp-moment .stamp img {
+  border-radius: 50%;
+}
+.stamp-moment.leaving {
+  animation: stamp-moment-out 500ms ease-in both;
+}
+@keyframes stamp-moment-in {
+  from { opacity: 0; transform: translate(-50%, 6px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+@keyframes stamp-moment-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes stamp-press {
+  0% { opacity: 0; transform: scale(1.18) rotate(-14deg); }
+  60% { opacity: 1; transform: scale(0.97) rotate(-7deg); }
+  100% { opacity: 1; transform: scale(1) rotate(-8deg); }
+}
+@keyframes stamp-ink {
+  0% { opacity: 0.45; transform: scale(0.9); }
+  100% { opacity: 0; transform: scale(1.18); }
+}
+/* The same stamp on Home's card, the first time Home shows it. */
+.stamp-strip .stamp.ink-in {
+  animation: stamp-press 520ms cubic-bezier(0.2, 0.7, 0.3, 1) 200ms both;
+}
+@media (prefers-reduced-motion: reduce) {
+  /* No movement: the seal and the line simply appear and fade. */
+  .stamp-moment,
+  .stamp-moment.leaving,
+  .stamp-moment .stamp,
+  .stamp-strip .stamp.ink-in {
+    animation-name: stamp-fade;
+    animation-duration: 240ms;
+    animation-delay: 0ms;
+  }
+  .stamp-moment.leaving {
+    animation-name: stamp-moment-out;
+  }
+  .stamp-moment .stamp::after {
+    display: none;
+  }
+}
+@keyframes stamp-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.stamp-moment {
+  width: max-content;
+}
+.stamp-moment span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

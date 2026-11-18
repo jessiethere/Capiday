@@ -57,7 +57,7 @@ async function photoPage(p) {
   await SS.studioDetails(p);
 }
 const PLACES = [
-  { name: "首页 · 今天的计划", open: async (p) => SS.openPlans(p), field: "[data-plan-input]" },
+  // V10.84: 今天的计划 is no longer on Home.
   { name: "首页 · 我的称呼", open: async (p) => p.locator('[data-action="greeting-name"]').first().click(), field: "[data-greeting-name]" },
   { name: "搜索", open: async (p) => p.locator('[data-action="open-search"]').first().click(), field: "[data-search-input]" },
   { name: "Captain · 聊天", open: async (p) => { await withCaptain(p); await p.locator('[data-action="keeper-tap"]').first().click(); }, field: "[data-keeper-say]" },

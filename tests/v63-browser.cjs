@@ -31,26 +31,18 @@ const shots = process.env.SHOTS_DIR || "";
     const tabs = await page.$$eval("#navigation [data-page]", (els) => els.map((el) => el.dataset.page));
     assert.ok(!tabs.includes("growth"), "no Growth tab");
     assert.deepEqual(tabs.filter((t) => t !== "community"), ["home", "calendar", "studio", "books"]);
-    // V6.8: Home's today card is the day's planner; habits are one line to "My habits".
-    // V10.56: the plans are in sight on Home (a quiet line to add the first one).
-    assert.match(await page.locator(".today-list .qu-row").innerText(), /今天的小计划[\s\S]*习惯 0\/\d+/);
-    assert.equal(await page.locator('.today-planner.qu[data-state="empty"]').count(), 1, "nothing planned yet");
-    assert.ok(await page.locator(".today-planner [data-plan-input]").isVisible(), "add the first thing right there");
-    await require("./signed-in.cjs").openPlans(page);
-    assert.equal(await page.locator(".today-list .habit-row").count(), 0, "no habit rows on Home");
-    assert.match(await page.locator(".today-habits-link").innerText(), /我的习惯[\s\S]*0\/\d+ 已完成/);
-    await page.locator(".today-habits-link").tap();
+    // V10.84: Home no longer shows 今天的小计划 or 我的习惯 (no planner, no habit
+    // line, no way into Growth from Home). Plans and habit checks already kept
+    // stay in the journal and still show on that day (below).
+    assert.equal(await page.locator(".today-planner, .today-list, [data-plan-input], .today-habits-link").count(), 0, "no planner or habits on Home");
+    assert.equal(await page.locator('.hero [data-action="nav"][data-page="growth"]').count(), 0, "no way into Growth from Home");
+    if (shots) await page.screenshot({ path: `${shots}/v63-home.png` });
+    passed.push("4 tabs (no Growth tab); Home has no planner and no habits line (V10.84)");
+
+    // 2. "My habits" (Labs): still a book on the shelf; back to the shelf.
+    await require("./signed-in.cjs").openHabits(page);
     await page.locator('[data-action="check"][data-habit="move"]').first().tap();
     await page.waitForFunction((d) => JSON.parse(localStorage.getItem("little-days.v1")).checks.some((c) => c.date === d && c.habitId === "move"), today);
-    await menu(page, "home");
-    assert.match(await page.locator(".today-habits-link").innerText(), /1\/\d+ 已完成/);
-    assert.match(await page.locator(".today-list .qu-row").innerText(), /习惯 1\/\d+/);
-    if (shots) await page.screenshot({ path: `${shots}/v63-home.png` });
-    passed.push("4 tabs (no Growth tab); Home shows the planner and one line to My habits (with today's count)");
-
-    // 2. "My habits": from Home, and as a book on the shelf; back to the shelf.
-    await page.locator('.today-list [data-action="nav"][data-page="growth"]').tap();
-    await page.waitForSelector(".habit-card, .growth-summary, .page-title");
     assert.match(await page.locator(".page-title").innerText(), /我的习惯/);
     assert.equal(await page.locator('#navigation .nav-item.books[aria-current="page"]').count(), 1, "it belongs to My Books");
     await page.locator('.page-top [data-action="nav"][data-page="books"]').tap();
@@ -58,26 +50,20 @@ const shots = process.env.SHOTS_DIR || "";
     assert.match(await page.locator(".shelf-habit-book").innerText(), /我的习惯[\s\S]*个习惯/);
     await page.locator(".shelf-habit-book").tap();
     await page.waitForFunction(() => /我的习惯/.test(document.querySelector(".page-title")?.textContent || ""));
-    passed.push("“My habits” opens from Home and from the shelf, and goes back to the shelf");
+    passed.push("“My habits” (Labs) opens from the shelf, and goes back to the shelf");
 
-    // 3. Things to do today (≤ 5, for everyone since V6.8); done ones go on the day's list.
-    await menu(page, "home");
-    await page.locator("[data-plan-input]").fill("给妈妈打电话");
-    await page.locator('[data-action="plan-add"]').tap();
-    await page.locator("[data-plan-input]").fill("买花");
-    await page.locator("[data-plan-input]").press("Enter");
-    await page.waitForFunction((d) => (JSON.parse(localStorage.getItem("little-days.v1")).plans?.[d] || []).length === 2, today);
-    await page.locator('.today-plans [data-action="plan-toggle"]').first().tap();
-    await page.waitForFunction((d) => JSON.parse(localStorage.getItem("little-days.v1")).plans[d][0].done === true, today);
-    for (const x of ["读书", "跑步", "洗衣服", "交水费", "整理照片", "早点睡"]) {
-      await page.locator("[data-plan-input]").fill(x);
-      await page.locator('[data-action="plan-add"]').tap();
-    }
-    await page.waitForFunction((d) => JSON.parse(localStorage.getItem("little-days.v1")).plans[d].length === 8, today);
-    assert.equal(await page.locator("[data-plan-input]").count(), 0, "eight at most");
-    await page.locator('.today-plans [data-action="plan-remove"]').last().tap();
-    await page.waitForFunction((d) => JSON.parse(localStorage.getItem("little-days.v1")).plans[d].length === 7, today);
-    passed.push("planner: up to 8 things to do today — add (button / Enter), check, remove");
+    // 3. Plans kept by an earlier version: untouched (nothing cleaned up), and
+    // the done ones still on the day's list.
+    await page.evaluate((d) => {
+      const s = JSON.parse(localStorage.getItem("little-days.v1"));
+      s.plans = { ...(s.plans || {}), [d]: [{ id: "p1", text: "给妈妈打电话", done: true }, { id: "p2", text: "买花", done: false }] };
+      localStorage.setItem("little-days.v1", JSON.stringify(s));
+    }, today);
+    await page.reload();
+    await page.waitForSelector(".hero");
+    await require("./signed-in.cjs").touchStore(page);
+    assert.equal((await store()).plans[today].length, 2, "earlier plans are kept after a change");
+    passed.push("plans from an earlier version are kept (no clean-up)");
 
     // 4. The day's list: on the day in the calendar.
     await menu(page, "calendar");
@@ -180,7 +166,8 @@ const shots = process.env.SHOTS_DIR || "";
     await page.locator('[data-action="privacy-toggle"][data-privacy="hideToday"]').tap();
     passed.push("privacy: Home can hide today's photos and words (and still open the day)");
 
-    // 6. Yesterday's unfinished things move only when asked.
+    // 6. Yesterday's unfinished things never move by themselves (V10.84: and
+    // Home no longer offers to carry them over; nothing is changed or deleted).
     await page.evaluate(([t, y]) => {
       const s = JSON.parse(localStorage.getItem("little-days.v1"));
       s.plans = { [y]: [{ id: "y1", text: "回邮件", done: false }, { id: "y2", text: "交房租", done: true }] };
@@ -189,11 +176,10 @@ const shots = process.env.SHOTS_DIR || "";
     await page.reload();
     await page.waitForSelector(".hero");
     assert.equal((await store()).plans[today], undefined, "nothing moved by itself");
-    assert.match(await page.locator('[data-action="plan-carry"]').innerText(), /1 件/);
-    await page.locator('[data-action="plan-carry"]').tap();
-    await page.waitForFunction((d) => (JSON.parse(localStorage.getItem("little-days.v1")).plans?.[d] || []).some((p) => p.text === "回邮件" && !p.done), today);
+    assert.equal(await page.locator('[data-action="plan-carry"]').count(), 0, "no carry-over on Home");
+    await require("./signed-in.cjs").touchStore(page);
     assert.equal((await store()).plans[yesterday].length, 2, "yesterday is left as it was");
-    passed.push("yesterday's unfinished things come over only when asked; yesterday is unchanged");
+    passed.push("yesterday's plans are kept as they were; nothing moves by itself");
 
     assert.deepEqual(errors, []);
     console.log(`V6.6 E2E passed (${passed.length} groups):\n - ${passed.join("\n - ")}\nNo page errors.`);
