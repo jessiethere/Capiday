@@ -5,6 +5,12 @@
 // data only (a page made of the app's library photos, a sticker and words).
 // MODE is put in by the script: seed | page | save | denied | share | ask.
 const MODE = "__MODE__";
+// The result also goes to console.warn: the Debug shell copies warnings to the
+// system log (LittleDaysDebugConsole), read with `log show` (stdout is buffered).
+const done = (value) => {
+  console.warn(`LDRESULT ${MODE} ${value}`);
+  return value;
+};
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const until = async (fn, ms = 20000) => {
   const end = Date.now() + ms;
@@ -26,7 +32,7 @@ if (MODE === "seed") {
   localStorage.setItem("little-days.onboarding", JSON.stringify({ v: 1, home: "skipped", firstPage: "done", at: "2026-11-18T00:00:00.000Z" }));
   localStorage.setItem("little-days.studio-guide", JSON.stringify({ tour: "skipped", tips: { dblTap: true } }));
   localStorage.setItem("little-days.language", "zh-CN");
-  return "seeded";
+  return done("seeded");
 }
 await until(() => document.querySelector(".hero"), 60000);
 await wait(1500);
@@ -59,7 +65,7 @@ if (MODE === "page") {
     }],
   });
   localStorage.setItem("little-days.v1", JSON.stringify(s));
-  return "page";
+  return done("page");
 }
 const steps = [];
 const before = localStorage.getItem("little-days.v1");
@@ -109,4 +115,4 @@ if (MODE === "share") {
 }
 await wait(500);
 steps.push({ unchanged: localStorage.getItem("little-days.v1") === before, stillOnPage: Boolean(document.querySelector(".reader-page") && document.querySelector('[data-action="read-edit"]')) });
-return JSON.stringify(steps);
+return done(JSON.stringify(steps));
