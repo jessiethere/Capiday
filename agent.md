@@ -48,6 +48,20 @@
 
 ## 更新日志
 
+### 2026-11-18 — V10.85 + V10.86 全量回归 run-all23、4 个旧断言按新设计更新、固定链接 Version 132
+
+- **需求**：V10.85（Visual Direction Phase 1）与 V10.86（Typography v2）合并跑全量浏览器回归，修复回归中的问题后一起发布到固定链接。
+- **run-all23 结果**：127 个文件，122 通过、5 失败。逐个分析：
+  - `v102`、`v47`：断言「中文标题必须是苹方（PingFang SC）」——V10.86 按 Founder 确认的方向把这些标题改成了宋体（Songti SC），是**有意改动**。改为断言首个字体是 Songti SC（有中文字形）且不是毛笔字 `LD-chinese`；字体栈后备里的站酷小薇（`LD-zh-xiaowei`，宋体风格，不是毛笔字）允许。
+  - `v151`：封面浏览器「22 个模板」→ V10.85 新增 3 个 Capiday 封面后是 **25 个**，有意改动。
+  - `v171`：选中「毛孩子名牌」后再选「植物标本」超时——V10.85 让 3 个 Capiday 封面排在精选行最前，当前封面又固定在第一格，「植物标本」被挤出精选行，只能在「查看更多封面」里选。这是**有意的排序**，不是 App 坏了；测试的 `pick` 改为：精选行里没有就去「查看更多封面」里选。
+  - `v119`：Quick Edit 文字样式按钮 tap 超时（`tests/v119-browser.cjs:129`）。在 V10.84 代码（V10.85 之前的提交）的独立 worktree 上重跑，**同一行同样失败**，与本次改动无关；和 run-all21 记录的旧偶发问题一致，仍未修。
+- **重跑**：v102 ✅、v151 ✅、v47 ✅、v171 ✅（21/21）；v119 仍失败（旧问题）。合计 126/127，唯一失败为旧问题。
+- **固定链接**：Version 132（V10.86 · 字体系统 v2，含 V10.85）。只上传有变化的文件：`app.js`、`styles.css`、`themes.css`、`tokens.css`、`js/captain-stamp.mjs`（新）、`js/personal-ui.mjs`、`js/whats-new.mjs`、`shared/design-tokens.json`、`shared/i18n.json`、`shared/library.json`。发布前读回线上 5 个文件，与 Version 131 基线逐字节一致（没有他人修改）。
+- **文件**：`tests/v47-browser.cjs`、`tests/v102-browser.cjs`、`tests/v151-browser.cjs`、`tests/v171-browser.cjs`、`agent.md`、`README.md`、`docs/DEVELOPMENT_TRACKER.md`。App 代码没有改。
+- **环境限制**：全部是 Linux + Chromium 的浏览器测试，**不是真机 / 模拟器**；Mac 当前未配对，iOS 构建、TestFlight 0.2.0 (7) 都没做。
+- **未完成 / 下一步**：真机看宋体清晰度、印章描边、竹青卡片、Captain 盖章；v119 偶发问题单独排查；Mac 重新配对后 ff 同步并构建。
+
 ### 2026-11-18 — V10.86：Typography System v2 —— Editorial Serif（讲故事）+ Functional Sans（操作）
 
 - **需求**（Founder，对比参考概念图）：不全局换字体，建立双层体系：品牌 / 阅读层用优雅的 Serif / 宋体气质（大日期、首页主标题、Section、月份、集章详情、书封标题、阅读器标题、章节标题、品牌短句），操作层继续 Sans（按钮、Tab、导航、设置、编辑工具、照片 / 视频 / 音频控件、表单、小字、状态、菜单、输入框）；层级靠字号、行距、留白，不靠粗体；用户内容不改；先 Audit → Tokens → 应用到 Home / 集章 / 书封 / 阅读器；不大改编辑器；验收 A–J。
@@ -85,7 +99,7 @@
   - 中文宋体 500 在低亮度下比苹方稍淡，需要真机看「今天已经记下来了」「十一月」的清晰度。
 - **文件**：`design-tokens.json`、`tools/sync_tokens.py`、`Public/tokens.css`（生成）、`Public/styles.css`（V10.86 一节 + 集章卡换行）、`Public/app.js`（这一周卡片短日期）、`Public/js/whats-new.mjs`（10.86）、`Native/…/WebApp/`、`docs/DESIGN_SYSTEM.md`、`tests/v191-browser.cjs`（新，26 项）。
 - **验收 A–J**（`tests/v191-browser.cjs` 26/26，Chromium，**不是真机**）：A 首页主标题 / Section / 月份 / 这一周 / 阅读器书名都是 editorial serif 且字重 ≤ 500 ✅；B 大日期是 Cormorant、字号 ≥ 主标题 2.5 倍 ✅；C 中文宋体 ≥ 22 px、字重 500 ✅；D 英文标题是正体 Cormorant ✅；E 按钮 / 底部栏 / 小字 / 数量 / Captain 标签仍是 Sans ✅；F Journal Studio 工具没有变 Serif ✅；G 页面上的手写字体、今天卡片上的页面标题字体都没变 ✅；H 界面里没有毛笔字后备、Cormorant 已加载 ✅；I 320 宽 + 130% 文字：不重叠、不截断、无横向滚动 ✅（真机 Dynamic Type 见风险）；J 每个角色的字体都等于对应 token ✅。
-- **全量回归 run-all23**（V10.85 + V10.86 一起）：进行中，结果补记。
+- **全量回归 run-all23**（V10.85 + V10.86 一起）：进行中，结果补记。→ 已补记在上一条（126/127，唯一失败 v119 为旧问题）。
 
 ### 2026-11-18 — V10.85：Visual Direction v1 Phase 1（颜色 · 字体 · 印章 · 竹青这一周 · Captain 守册猫 · 3 个默认书封）
 

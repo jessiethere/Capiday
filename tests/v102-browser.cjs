@@ -54,7 +54,8 @@ const shots = process.env.SHOTS || "";
     await page.waitForSelector(".hs-remember .ts-card");
     assert.match(await page.locator(".hs-remember .hs-title").innerText(), /今天的故事[\s\S]*今天留下的 3 页/);
     const zhFont = await page.locator(".hs-remember .hs-title").evaluate((el) => getComputedStyle(el).fontFamily);
-    assert.ok(/PingFang SC/.test(zhFont) && !/LD-elegant/.test(zhFont), `the Chinese title uses a face that has Chinese glyphs (${zhFont})`);
+    // V10.86 Typography v2: Chinese section titles are the Song face (Songti SC), which has Chinese glyphs.
+    assert.ok(/^"?Songti SC/.test(zhFont), `the Chinese title uses a face that has Chinese glyphs (${zhFont})`);
     // The page with the most to show leads; photos come from across the day.
     assert.match(await page.locator(".ts-card .ts-title").innerText(), /下午的咖啡好治愈/);
     assert.match(await page.locator(".ts-card .ts-words").innerText(), /和小林在街角那家店/);

@@ -79,7 +79,7 @@ const NEW = ["botanical-herbarium", "cafe-receipt", "food-recipe", "travel-postc
       assert.ok(await page.locator(".book-main").isHidden(), `${where}: the first view steps aside`);
       assert.ok(await page.locator(".book-actions").isHidden(), `${where}: 创建 waits while browsing`);
       const all = await page.locator("#cover-browser-grid .cover-option").count();
-      assert.equal(all, 22, `${where}: 22 templates`);
+      assert.equal(all, 25, `${where}: 25 templates (V10.85: + 3 Capiday covers)`);
       for (const id of NEW) assert.equal(await page.locator(`#cover-browser-grid [data-template="${id}"] .cover-theme.cover-${id}`).count(), 1, `${where}: ${id}`);
       await page.locator('[data-action="cover-group"][data-group="life"]').tap();
       const life = await page.locator("#cover-browser-grid .cover-option").evaluateAll((els) => els.map((e) => e.dataset.template));
@@ -110,7 +110,7 @@ const NEW = ["botanical-herbarium", "cafe-receipt", "food-recipe", "travel-postc
       assert.equal(back.tpl, "pet-tag");
       assert.match(back.cls, /cover-pet-tag/);
       assert.equal(back.featured, "pet-tag", `${where}: the chosen cover shows in the short row`);
-      passed.push(`${where}: cover browser — 22 templates in groups, 10 new themed covers with loading photos, a library photo, back keeps the name and choices`);
+      passed.push(`${where}: cover browser — 25 templates in groups, 10 new themed covers with loading photos, a library photo, back keeps the name and choices`);
 
       // 3 · Folded values stay, with a summary.
       await page.locator('details[data-book-section="basics"] > summary').tap();

@@ -40,7 +40,17 @@ const thumb = (tpl) => `#dialog-form .cover-option[data-template="${tpl}"] .book
 const BIG = "#book-cover-preview .book-cover";
 const BROWSER_BIG = "#cover-browser-preview .book-cover";
 const pick = async (page, tpl) => {
-  await page.locator(`#dialog-form .cover-option[data-template="${tpl}"]`).first().click();
+  // V10.85: Capiday's own covers lead the short row, so a style may only be in
+  // 查看更多封面 when another cover is chosen — pick it there then.
+  const row = page.locator(`#dialog-form .cover-featured .cover-option[data-template="${tpl}"]`);
+  if (await row.count()) await row.first().click();
+  else {
+    await page.locator('[data-action="cover-browse"]').first().click();
+    await page.waitForSelector("#cover-browser:not([hidden]) #cover-browser-grid .cover-option");
+    await page.locator(`#cover-browser-grid [data-template="${tpl}"]`).click();
+    await page.waitForTimeout(250);
+    await page.locator(".cb-done").click();
+  }
   await page.waitForTimeout(250);
 };
 const typeName = async (page, name) => {

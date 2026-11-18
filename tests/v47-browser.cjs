@@ -27,9 +27,10 @@ const base = process.env.PREVIEW_URL || "http://127.0.0.1:8080";
     assert.equal(await page.locator(".home-book .cover-magazine-west").count(), 1);
     await page.waitForFunction(() => [...document.querySelectorAll(".home-book .mag-photo")].every((img) => img.complete && img.naturalWidth > 0));
     const family = await page.locator(".home-mag .today-prompt").evaluate((el) => getComputedStyle(el).fontFamily);
-    assert.match(family, /PingFang SC/);
-    assert.doesNotMatch(family, /xiaowei|LD-zh|Songti|(^|, )serif/i);
-    passed.push("Home: journals in shelf order as magazine covers; system-sans headings");
+    // V10.86 Typography v2: the Chinese Home title is the editorial Song face, never a brush face.
+    assert.match(family, /^"?Songti SC/);
+    assert.doesNotMatch(family, /LD-chinese/i); // no brush face (XiaoWei is a bundled Song-style fallback)
+    passed.push("Home: journals in shelf order as magazine covers; editorial Song headings (Typography v2)");
 
     // 2. 记一页 writes a page straight into that journal (typed on the paper).
     // V10.2: Home has one "write the next page" link, on the journal in front;
