@@ -24,6 +24,8 @@ const ACCOUNT = JSON.stringify({ version: 1, method: "local", name: "", avatar: 
   const passed = [];
   const open = async ({ locale, w, h, ls = null }) => {
     const context = await browser.newContext({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true, locale });
+    // V10.80: 自己写 opens 快速记录 first; this test goes on to the Studio page (tests/v184 covers 快速记录).
+    await context.addInitScript(require("./signed-in.cjs").acceptJot);
     if (ls) await context.addInitScript((ls) => { if (!sessionStorage.getItem("seeded")) { for (const [k, v] of Object.entries(ls)) localStorage.setItem(k, v); sessionStorage.setItem("seeded", "1"); } }, ls);
     const page = await context.newPage();
     const errors = [];

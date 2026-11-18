@@ -159,6 +159,17 @@ Memory Wall v1.0：**V10.78 已实施，等真机验收**（Founder 2026-11-15 �
 | MW-04 | 自定义排序 +「恢复时间排序」 | P1 | Testing | V10.78 | `photo-wall.mjs`；`app.js` 拖动 | Founder 回答计划第 6 节问题 1～4 | v181 浏览器 6 项 ✅（按钮排序，长按拖动留到 v1.1）；真机 ⏳ | — |
 | MW-05 | 数据安全与恢复（来源 ID 不含日期和 media id；坏配置只被忽略；备份恢复包含设置；旧备份兼容；Swift 可选字段） | P0 | Testing | V10.78 | `model.mjs`；`restore-safety.mjs`；`Models.swift` | 计划第 4 节 13 个边界情况的测试 | v181 单元 9 项 + 浏览器「手帐不变」4 项 ✅；Swift 模型待 Mac 编译 | — |
 
+
+### 4.4b 写一句、说一句（V10.80，Founder 2026-11-18）
+
+| ID | 标题 | 优先级 | 状态 | 目标 | 涉及 | 验收 | 结果 | 依赖 |
+|---|---|---|---|---|---|---|---|---|
+| QR-01 | 首页「自己写」→ 快速记录（写一句 / 录一段 / 加照片，实时预览，选日期，明确选手帐，草稿保留） | P1 | Testing | V10.80 | `app.js` openJot / jotPage / buildJotMoment / saveJot；`model.mjs` addPageToDay | BETA_RELEASE_PLAN「V10.80 真机复测」1、2、5 | v184 浏览器 ✅；真机 ⏳ | — |
+| QR-02 | 每日一问（中英题库、写一句 / 说一句 / 换一题；题目作为页面小字） | P1 | Testing | V10.80 | `daily-prompts.mjs`；`canvas.mjs` canvas-prompt；`Models.swift` JournalPrompt | 同上 1、2 | v184 + 单元 ✅；真机 ⏳ | — |
+| QR-03 | 录音先试听 / 重录 / 用这段；麦克风第一次「说一句」才申请，被拒绝时写字照常 | P1 | Testing | V10.80 | `app.js` startTake / keepTake | 同上 2、6 | v184（Chromium 假麦克风）✅；iPhone 麦克风 ⏳ | — |
+| QR-04 | 照片墙：看这张照片的原话、直接点播录音；补一句 / 补段声音写回原页、只跟着这张照片 | P1 | Testing | V10.80 | `photo-notes.mjs`；`app.js` wallNotesHTML / addWallNote；`Models.swift` forPhoto | 同上 3、4 | v184 + 单元 ✅；真机 ⏳ | — |
+| QR-05 | 每日提醒：开启先选时间、被拒绝回到关闭、当天保存后不再提醒（工作室保存也算）、新文案、点通知进快速记录且草稿保留 | P1 | Testing | V10.80 | `app.js` reminder；`LittleDaysReminders.swift`（只读 pending） | 同上 7 | v184（替身）✅；模拟器见 agent.md；真机 ⏳ | — |
+
 ### 4.5 其他已有规划（不在近期版本里）
 
 | ID | 标题 | 优先级 | 状态 | 说明 |
@@ -195,3 +206,4 @@ Memory Wall v1.0：**V10.78 已实施，等真机验收**（Founder 2026-11-15 �
 | 2026-11-15 | 新增 DS-01 实际内容和 DS-02～DS-14（自动 iCloud 备份规划 + 风险 R1～R10）；新增 MW-01～MW-05（照片墙 v1.0 规划）；补齐第 2、5、6 节 |
 | 2026-11-15 | **V10.78 / 构建 0.2.0 (6)**：DS-09、DS-10、DS-12、CAP-E003、CAP-E004、MW-01～05、DS-02 / 04～08 → Testing。全量回归 run-all15 118/118、单元 344/344、外壳测试 OK；Release 归档（0539d00）成功；模拟器升级 (4)→(6) 数据与媒体 9/9 一致；在线链接 Version 125。真机全部 ⏳；上传等 Founder |
 | 2026-11-18 | **V10.79**：新增 CAP-029（P1）、CAP-030（P2）→ Testing。v183 68 项 + 单元 348/348；全量回归见 agent.md。未打新构建，真机 ⏳ |
+| 2026-11-18 | **V10.80**：新增 QR-01～05（自己写 / 每日一问 / 录音试听 / 照片墙补记 / 每日提醒）→ Testing。v184 浏览器 58 项 + 单元 8 项；全量回归和模拟器结果见 agent.md |
