@@ -1,7 +1,8 @@
 """Cut the Captain vignettes and cover art from the Founder's reference board.
 
-Source: docs/visual/botanical-board-v1.png — the Capiday Botanical Decorative
-System board (v1) the Founder supplied on 2026-11-18 ("裁出插画当正式素材").
+Sources (both supplied by the Founder on 2026-11-18, "裁出插画当正式素材"):
+- docs/visual/botanical-board-v1.png (1448×1086): plants and cover art;
+- docs/visual/captain-scenes-v1.png (1536×1024): the four Captain scenes.
 Output: Public/botanical/*.png (used by Public/js/botanicals.mjs).
 
 - Captain scenes and paper-coloured cover art: the paper is turned pure white
@@ -50,14 +51,21 @@ def save(img, name):
     q.save(path, optimize=True)
     print(name, img.size, os.path.getsize(path))
     MANIFEST.append({"name": name, "width": img.size[0], "height": img.size[1], "bytes": os.path.getsize(path)})
+# Captain: the Founder's hi-res Captain sheet (docs/visual/captain-scenes-v1.png,
+# 1536×1024, four scenes, 2026-11-18) replaces the small crops from the board.
+captains = Image.open(ROOT / "docs/visual/captain-scenes-v1.png").convert("RGB")
 crops = {
-    "captain-sleep": (815, 128, 1130, 298),
-    "captain-sit": (1140, 120, 1430, 300),
-    "captain-ready": (820, 340, 1110, 498),
-    "captain-stamp": (1105, 345, 1430, 498),
+    "captain-sleep": (0, 55, 775, 492),
+    "captain-sit": (795, 12, 1536, 488),
+    "captain-ready": (14, 512, 745, 996),
+    "captain-stamp": (755, 512, 1536, 1004),
 }
+CAPTAIN_MAX = 540  # px wide: sharp up to 180 pt on a 3x iPhone, and lighter to load
 for name, box in crops.items():
-    save(to_white(board.crop(box)), name)
+    img = trim_white(to_white(captains.crop(box), feather=14))
+    if img.width > CAPTAIN_MAX:
+        img = img.resize((CAPTAIN_MAX, round(img.height * CAPTAIN_MAX / img.width)), Image.LANCZOS)
+    save(img, name)
 save(to_white(board.crop((1125, 868, 1222, 975))), "cover-sprig")
 save(to_white(board.crop((1252, 790, 1418, 972)), clear=[(0, 0, 100, 78)]), "cover-captain")
 # Travel Notes: the blossom on green cloth → transparent (green becomes clear).

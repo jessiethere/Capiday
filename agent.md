@@ -48,6 +48,14 @@
 
 ## 更新日志
 
+### 2026-11-18 — V10.88（续 3）：Founder 高清 Captain 四场景替换低清裁图
+
+- **来源**：Founder 发来的 Captain 四场景图（1536×1024），存为 `docs/visual/captain-scenes-v1.png`：趴在册子上休息 / 坐在册子旁（白花、书、小印章）/ 准备盖章（爪子放在印章上）/ 帮你盖章（按下印章）。
+- **做法**：`tools/cut_botanical_art.py` 改为从这张图裁 Captain（纸色变白、边缘渐隐、去掉多余空白），统一缩到 540 px 宽（3x iPhone 上 180 pt 以内清晰），256 色 PNG：captain-sleep 540×306（85 KB）、captain-sit 540×371（92 KB）、captain-ready 540×372（96 KB）、captain-stamp 540×342（92 KB）。`botanicals.mjs` 的尺寸同步更新。
+- **清晰度**：四张在所有计划用途（首页 Captain 卡片约 120 pt、首次盖章约 96 pt、空状态约 150 pt）都是「直接可用」，不再 NEEDS HI-RES。
+- **建议（待确认）**：Captain / My Cat 默认书封改用高清 `captain-sit`，替代素材板里低清的 `cover-captain`（NEEDS HI-RES REPLACEMENT）。
+- **状态**：仍未接入新页面，等 Founder 确认。
+
 ### 2026-11-18 — V10.88（续 2）：按「Approved reference = specification」裁出全部素材 + 清晰度评估（等待 Founder 确认，未接入新页面）
 
 - **需求**：Founder 确认最新参考图里的灰色长毛 Captain（琥珀眼、毛量明显、水彩 editorial）为 Phase 1 approved Captain assets；植物也要用参考图的水彩风格，不再用扁平几何 SVG；低清裁图只算 Phase 1 production/prototype assets，要记录来源和分辨率，不够清晰标 NEEDS HI-RES REPLACEMENT（不放大、不重画、不换风格）；书封只做 Travel Notes / My Days / Captain·My Cat；先给预览、像素尺寸、显示尺寸、Retina 评估，确认后再接入页面。

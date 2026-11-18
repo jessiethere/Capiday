@@ -7,27 +7,27 @@
  "assets": [
   {
    "name": "captain-sleep",
-   "width": 315,
-   "height": 170,
-   "bytes": 29933
+   "width": 540,
+   "height": 306,
+   "bytes": 87225
   },
   {
    "name": "captain-sit",
-   "width": 290,
-   "height": 180,
-   "bytes": 25791
+   "width": 540,
+   "height": 371,
+   "bytes": 93958
   },
   {
    "name": "captain-ready",
-   "width": 290,
-   "height": 158,
-   "bytes": 23789
+   "width": 540,
+   "height": 372,
+   "bytes": 98143
   },
   {
    "name": "captain-stamp",
-   "width": 325,
-   "height": 153,
-   "bytes": 25887
+   "width": 540,
+   "height": 342,
+   "bytes": 94403
   },
   {
    "name": "cover-sprig",

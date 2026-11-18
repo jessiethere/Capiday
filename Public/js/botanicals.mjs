@@ -141,15 +141,15 @@ export function botanical(kind, { variant = 0, size = "m", place = "tr", flip = 
 // Captain — the grey long-haired Little Keeper with amber eyes — with books,
 // a small seal and a few leaves. A modern, natural little cat: the Eastern
 // feeling comes from the books, paper, seal and plants, never from costume.
-// The pictures are cut from the Founder's reference board
-// (docs/visual/botanical-board-v1.png, tools/cut_botanical_art.py) with the
+// The pictures are cut from the Founder's Captain sheet
+// (docs/visual/captain-scenes-v1.png, tools/cut_botanical_art.py) with the
 // paper turned white, so they sit on paper with `mix-blend-mode: multiply`.
-// Static; one picture per pose; small PNGs (24–30 KB), loaded lazily.
+// Static; one picture per pose; PNGs 540 px wide (≈90 KB), loaded lazily.
 const ART = {
-  "captain-sleep": [315, 170],
-  "captain-sit": [290, 180],
-  "captain-ready": [290, 158],
-  "captain-stamp": [325, 153],
+  "captain-sleep": [540, 306],
+  "captain-sit": [540, 371],
+  "captain-ready": [540, 372],
+  "captain-stamp": [540, 342],
   "cover-sprig": [97, 107],
   "cover-captain": [166, 182],
   "cover-travel-blossom": [108, 104],
