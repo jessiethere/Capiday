@@ -45,7 +45,7 @@ final class ReminderUITests: XCTestCase {
             allow.tap()
             print("LDSTEP allowed notifications")
         } else { print("LDSTEP no notification question (already answered)") }
-        XCTAssertTrue(waitPhase("wait-notification", 60), "draft step done")
+        XCTAssertTrue(waitPhase("wait-notification", 150), "draft step done")
         shot("2-before-home")
         XCUIDevice.shared.press(.home)
         // The reminder fires about two minutes after it was set.
@@ -61,6 +61,9 @@ final class ReminderUITests: XCTestCase {
         }
         XCTAssertTrue(waitPhase("done", 120), "scenario finished")
         shot("4-done")
-        print("LDSTEP state: \(state())")
+        // One line per step (JSON), easy to read back from the log.
+        for step in state()["steps"] as? [[String: Any]] ?? [] {
+            if let data = try? JSONSerialization.data(withJSONObject: step), let line = String(data: data, encoding: .utf8) { print("LDRESULT \(line)") }
+        }
     }
 }

@@ -35,7 +35,7 @@ let phase = "start";
 const publish = () => {
   const host = document.querySelector("dialog[open]") || document.documentElement;
   if (box.parentNode !== host) host.append(box);
-  box.setAttribute("aria-label", "LDSTATE:" + JSON.stringify({ phase, n: steps.length, last: steps.at(-1) || null }));
+  box.setAttribute("aria-label", "LDSTATE:" + JSON.stringify({ phase, n: steps.length, steps }));
 };
 setInterval(publish, 300);
 const click = (sel) => {
