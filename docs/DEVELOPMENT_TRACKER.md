@@ -227,3 +227,4 @@ Memory Wall v1.0：**V10.78 已实施，等真机验收**（Founder 2026-11-15 �
 | 2026-11-18 | **V10.86** Typography System v2：typography tokens（design-tokens.json → tokens.css）+ Editorial Serif（首页 / 集章 / 这一周 / 阅读器标题）+ Functional Sans（操作层不变），用户字体不改；集章卡窄屏换行。v191 26 项；真机 ⏳ |
 | 2026-11-18 | 全量回归 run-all23（V10.85 + V10.86）：122/127 → 更新 4 个按旧设计写的断言（v47 / v102 宋体标题、v151 25 个封面、v171 植物标本在「查看更多封面」）后 126/127；v119 为旧偶发问题（V10.84 上同样失败）。固定链接 Version 132 |
 | 2026-11-18 | **V10.87** 植物装饰：`js/botanicals.mjs`（秋枝 + 小红果、梅枝、竹青叶枝，代码画的原创 SVG）放在首页日期旁、集章卡、这一周、页尾、月令集章页；只是点缀（aria-hidden、不能点、不压字，窄屏少放）；v192 34/34。固定链接 Version 133 |
+| 2026-11-18 | **V10.88** Capiday Botanical Decorative System：visual audit（V10.87 九个问题）→ `botanicals.mjs` 统一素材（corner / sprig / berry / blossom / Captain vignette sit·sleep / paper grain）+ botanical tokens（--bot-*）+ `decorPlan` 密度控制；首页只剩日期旁一小枝 + 集章卡一角；集章页一个淡角落 + 纸纹，空月份 Captain 场景；3 个默认书封改用共享素材；植物不再用朱砂。v192 39/39 |

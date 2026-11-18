@@ -153,3 +153,18 @@ html:lang(zh) {
   --type-navLabel-lh: 1.2;
   --type-navLabel-track: 0em;
 }
+:root {
+  --bot-paper: #F8F5EC;
+  --bot-warmGray: #756D63;
+  --bot-bamboo: #6B7F62;
+  --bot-sage: #8A9A84;
+  --bot-lightLeaf: #A8B59C;
+  --bot-branch: #A48D74;
+  --bot-fruit: #C9875F;
+  --bot-blossom: #FCFAF4;
+  --bot-blossomCenter: #D8B56E;
+  --bot-cat: #BEB8AF;
+  --bot-catEar: #E6CCC2;
+  --bot-bookCream: #EFE6D6;
+  --bot-seal: #C2544A;
+}

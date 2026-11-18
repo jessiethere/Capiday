@@ -48,6 +48,62 @@
 
 ## 更新日志
 
+### 2026-11-18 — V10.88：Capiday Botanical Decorative System（植物装饰系统 v1）
+
+- **需求**：Founder 给出 Capiday 现代中式视觉参考图（Botanical Corner / Small Sprig / Berry Branch / White Blossom / Paper Texture / Captain Vignette / Color Palette / Usage Examples），要求把 V10.87 的「加花花草草」升级成一套可复用、可控制密度、能长期扩展的视觉资产系统：Modern Editorial Journal × Chinese Stationery Sensibility × Living Media。美国用户感到 calm / tactile / refined / distinctive，不是 Chinese-themed app；中国用户自然感到纸张、留白、植物、册页和印章。先 Visual Audit，再实施 Phase 1。
+
+#### Visual Audit（V10.87 现状 → 问题 → 处理）
+
+| # | V10.87 现状 | 问题（对照新规则） | V10.88 处理 |
+|---|---|---|---|
+| 1 | 首页 4 处装饰：日期旁大秋枝、集章卡梅枝、这一周叶枝、页尾叶枝 | 首页应最克制：日期区最多一小枝、集章卡一个角落、其他模块干净 | 只留日期旁 **一小枝**（照片多时不放）+ 集章卡 **一个小果枝角**；这一周、页尾去掉 |
+| 2 | 小红果、梅花花瓣和花心用朱砂 #C2544A / 粉朱砂 | 朱砂只给真正的印章；果实要 muted orange，不要 bright red | 果实 #C9875F（muted orange），花改为白色小花（#FCFAF4 + 淡金花心）；植物里不再有朱砂 |
+| 3 | 叶子用赭黄、锈红、橄榄等 5–6 色 | 单个植物 3–4 色；灰绿 / 竹青 / 浅叶绿 / 枝干棕 | 叶子只用竹青 #6B7F62、灰绿 #8A9A84、浅叶绿 #A8B59C，枝干 #A48D74，另加果实或白花一种 |
+| 4 | 墨色描边 #5E5246（75%） | 要 light watercolor / soft edges / low contrast | 去掉墨线：同色 35% 细边 + 半透明填色 + 内部淡洗 + 淡叶脉 |
+| 5 | 集章页：右上秋枝 + 右下梅枝；树枝压着月份箭头 | 集章页只要一个 very subtle corner；不能盖住交互 | 只留 **一个淡角落枝叶**（quiet，右下，避开月份箭头）+ 纸纹 |
+| 6 | 植物是三个 SVG 常量，位置在各页面手写；没有尺寸 / 位置 / 翻转 / 密度控制 | 要统一 reusable asset system | `botanical(kind, {variant,size,place,flip,tone})`、`captainVignette({pose})`、`decorPlan(surface, ctx)`、`withinDensity()` |
+| 7 | 3 个默认书封各自带 `SPRIG_SVG` / `CAT_SVG`（只有线条的占位猫） | 书封也应用同一套素材 | 书封改用共享素材（白色小花 / 极淡小枝 / Captain 场景） |
+| 8 | 没有纸张质感 | Paper Texture 是系统一部分，premium modern paper | `.paper-grain`：160px SVG 噪点小瓦片，5% 不透明，暖白底 #F8F5EC |
+| 9 | Captain 只有已确认的 3D 抠图（柠檬帽） | 需要 Captain vignette 的静态视觉语言 | 新增线描淡彩 Captain 场景（坐在书旁 / 趴在书上睡），只用在书封和空状态（理由见下） |
+
+#### Botanical Decorative System（实现）
+
+- **文件**：`Public/js/botanicals.mjs`（唯一画植物的地方，13.2 KB，gzip 5.1 KB）；颜色 token 在 `design-tokens.json` → `botanical`，`tools/sync_tokens.py` 生成 `--bot-*`（`tokens.css`）；样式在 `styles.css`「V10.88 · Capiday Botanical Decorative System」一节。
+- **素材（asset）与用途**：
+  - `corner`（Botanical Corner，大）：一根自然弯曲的细枝 + 6–7 片不规则叶子；variant 1 加两朵白色小花，variant 2 加少量果实。用途：集章页角落（quiet），以后空状态、Reader 特殊模板。
+  - `sprig`（Small Botanical Sprig）：一根短枝 + 2 / 3 / 4 片叶子（3 个 variant）。最常用：首页日期旁、日常书封、Captain 场景里的小枝；以后月份标题旁、卡片角落、My Books。
+  - `berry`（Berry Branch）：细枝 + 灰绿叶 + 5 颗 muted orange 小果。seasonal accent，目前只用在首页集章卡。
+  - `blossom`（Small White Blossom）：细茎 + 三朵很小的白色五瓣花 + 淡叶；variant 1 是单朵。用途：旅行笔记书封；以后空状态、特殊纸张。不做花边、婚礼请柬风格或花束。
+  - `captainVignette({ pose })`：Captain + 两本书（竹青布面、奶白纸面）+ 一枚小印章（场景里唯一的朱砂）+ 一小枝叶子。pose：`sit`（坐在书旁看着印章）、`sleep`（趴在书上睡）。用途：Captain 书封、集章页空月份。
+  - `.paper-grain`：纸纹。用途：首页集章卡、集章页卡片、日常 / Captain 书封。
+- **API 选项**：`size` xs / s / m / l（34 / 56 / 92 / 140 px），`place` tr / tl / br / bl / inline（每个素材都按「从右上角长出」画，其他角用 CSS 镜像），`flip` 左右翻转，`tone` "quiet"（更淡），`variant`。没有随机数、没有动画，同一输入永远同一画面。
+- **密度控制**：`decorPlan(surface, ctx)` 决定一个页面能放什么，`withinDensity(plan)` 检查（一个 viewport 最多 1 个大角落、1 个 Captain 场景、约 3 个小装饰）。`home`：日期旁一小枝，今天照片 ≥ 4 张时不放；`stampCard`：一个小果枝角；`stamps`：一个淡角落（本月照片章 ≥ 10 枚时更小），空月份加 Captain 场景。
+
+#### 规则（asset / color / placement / density / Captain）
+
+- **Asset rules**：只从 `botanicals.mjs` 取；不在页面里另画、不复制 SVG；不用大尺寸水彩 PNG；装饰一律 `aria-hidden="true"`、`focusable="false"`、`pointer-events: none`；不进手帐数据、备份和导出；打印隐藏。
+- **Color rules**：纸 #F8F5EC、暖灰 #756D63、竹青 #6B7F62、灰绿 #8A9A84、浅叶绿 #A8B59C、枝干棕 #A48D74、果实 #C9875F、白花 #FCFAF4 / 花心 #D8B56E、Captain 灰 #BEB8AF / 耳朵 #E6CCC2、书 #EFE6D6；红字仍是 #A9483A；**朱砂 #C2544A 只用于真正的印章**（Captain 场景里的小印章、书封小印），植物插画里没有。单个植物 3–4 色。cool（深色）主题透明度 0.45；minimal 主题 0.6 并降低饱和度。
+- **Placement rules**：storytelling surfaces can carry botanical details; interaction surfaces stay clean。可以：页面 / 卡片角落、书封、空状态、集章 / 月份页、Captain 场景。不放：按钮里、Tab Bar、编辑器工具条、视频 / 音频控件、设置控件、对话框、密集的功能页面；装饰不能压住文字或可点区域（测试逐个比对）。
+- **Density rules**：一个 viewport 最多 1 个大角落、约 2–3 个小枝；不同时出现 枝 + 花 + 果 + 多个印章；照片多就少放，页面空可以稍多；优先级：用户内容 > 字体排版 > 印章 > 植物。
+- **Captain vignette direction**：Little Keeper / 守册猫，现代、自然的小猫；东方气质来自书、纸、印章、枝叶和构图，**不来自服装**（不做汉服、官帽、中国结、古装、传统建筑）。场景只用少量枝叶。以后的状态：① 趴在书上睡（已有 `sleep`）② 坐在册子旁（已有 `sit`）③ 看着印章 ④ 伸爪准备盖章 ⑤ 帮你按下一枚章——③–⑤ 需要正式插画，不做复杂动画。
+
+#### 页面
+
+- **用了**：首页日期旁（一小枝）、首页集章卡（小果枝角 + 纸纹）、月令集章页（一个淡角落 + 纸纹；空月份加 Captain 场景）、3 个默认书封（旅行笔记白花 + 小印；日常极淡小枝 + 纸纹 + 小印；Captain 场景 + 纸纹，只有场景里的一枚印）。
+- **主动没用，及原因**：
+  - 首页「这一周」、我的手帐区、页尾：首页要最克制，每张卡片都放植物会抢内容（V10.87 放过，这次撤掉）。
+  - 首页 Captain 区（趴在卡片上的 Captain、标签、邀请卡、Captain 面板）：继续用已确认的 3D Captain 美术。线描 Captain 和 3D Captain 同屏会像两只不同的猫；等统一的插画版 Captain 确认后再换。
+  - Journal Studio、工具条、底部 Tab Bar、按钮、设置、日历、照片墙、对话框 / 面板、视频 / 音频控件：都是 interaction surfaces。
+  - 手帐页面画布、导出图片、阅读器：页面是用户内容；Reader 特殊模板留到以后。
+  - 天气、季节自动切换、复杂插画引擎、动画：Phase 1 不做。
+- **代码**：`Public/js/botanicals.mjs`（重写）、`Public/app.js`（`homeDecorHTML`、`stampStripHTML`、`stampsPage` 用 `decorPlan`；去掉这一周 / 页尾的装饰）、`Public/js/personal-ui.mjs`（书封改用共享素材，删除 `SPRIG_SVG` / `CAT_SVG`）、`Public/styles.css`（新一节，替换 V10.87 那一节；`.cover-capiday svg:not(.bot)`）、`design-tokens.json`（botanical）、`tools/sync_tokens.py`（生成 `--bot-*`）、`Public/tokens.css`（生成）、`Public/js/whats-new.mjs`（10.88）、`Native/…/WebApp/`（同步）、`docs/DESIGN_SYSTEM.md`、`tests/v192-browser.cjs`（重写，39 项）。
+- **性能**：全部是内联 SVG（每件 0.8–3.4 KB），没有位图、没有 SVG 滤镜（纸纹的噪点是 160 px 的背景小瓦片，只解码一次），没有动画；一个页面最多 2–3 件。
+- **Accessibility**：装饰对 VoiceOver 隐藏、不可聚焦、不可点；点在装饰位置仍然触发下面的卡片（集章卡）；文字和按钮始终在装饰之上（z-index），测试逐片检查不压字、不压按钮、不压月份箭头；装饰不改变文字颜色和对比度。
+- **中英文检查**（v192，Chromium，**不是真机**）：中英文首页都是「日期旁一小枝 + 集章卡一角」；集章页都是一个淡角落 + 纸纹；空月份中英文都是 Captain 场景；320 / 375 / 390 / 430 宽都不压字；植物与语言无关，没有书法、竖排或文化词汇。
+- **测试**：v192 39/39；单元测试 382/382；Python 18/18；全量回归 run-all25：进行中，结果补记在下一条。
+- **需真机看**：线条与淡彩在 iPhone 上的浓淡（浅色叶子在低亮度下可能太淡）、纸纹在 3x 屏上是否看得出、Captain 场景的大小、深色主题。
+- **下一步**：正式插画版 Captain（③ 看着印章 ④ 伸爪 ⑤ 盖章）并统一首页 Captain；空状态逐步用上（书架空、日历空日）；Reader 特殊纸张模板；季节换装饰（Phase 2+，不自动按天气）。
+
 ### 2026-11-18 — V10.87：植物装饰（树叶、小红果、梅花）
 
 - **需求**：Founder 发来参考图（首页 / 月令集章页上有秋天的树枝、红果和梅花），「我会希望我们的页面也有树叶梅花这样的装饰」。

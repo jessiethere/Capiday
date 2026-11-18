@@ -47,6 +47,11 @@ if typo:
 
     css += ':root {\n' + block('en') + '\n}\n'
     css += 'html:lang(zh) {\n' + block('zh') + '\n}\n'
+# ---- 1c. V10.88 botanical decoration colors: --bot-<name> ----
+# Plants, books and the Captain vignette read only these (js/botanicals.mjs).
+bot = {k: v for k, v in tokens.get('botanical', {}).items() if not k.startswith('_')}
+if bot:
+    css += ':root {\n' + ''.join(f'  --bot-{name}: {value};\n' for name, value in bot.items()) + '}\n'
 (root / 'Public/tokens.css').write_text(css, encoding='utf-8')
 
 # ---- 2. literal colors → variables with the literal as fallback ----

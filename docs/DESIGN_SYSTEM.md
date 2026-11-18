@@ -545,3 +545,11 @@ Web 运行时加载共享 JSON。`Public/tokens.css` 是加载前的回退，由
   - 不出现在 Journal Studio、手帐页面画布、书封、导出图片里，也不写进手帐数据和备份。
   - 深色主题（cool）透明度 0.5；极简主题 0.6 并降低饱和度；打印时隐藏。
   - 固定画法、没有随机数和动画，减弱动态效果时也一样。
+
+## 2026-11-18 V10.88 · Capiday Botanical Decorative System（取代 V10.87 的写法）
+
+- 唯一来源 `Public/js/botanicals.mjs`：`botanical(kind, { variant, size, place, flip, tone })`（kind：corner / sprig / berry / blossom）、`captainVignette({ pose: "sit" | "sleep" })`、`decorPlan(surface, ctx)`、`withinDensity(plan)`；纸纹 `.paper-grain`。
+- 颜色只来自 `design-tokens.json` → `botanical`（`--bot-*`）：paper #F8F5EC、warmGray #756D63、bamboo #6B7F62、sage #8A9A84、lightLeaf #A8B59C、branch #A48D74、fruit #C9875F、blossom #FCFAF4、blossomCenter #D8B56E、cat #BEB8AF、catEar #E6CCC2、bookCream #EFE6D6、seal #C2544A（只给印章）。
+- 画法：同色半透明填色 + 内部淡洗 + 淡叶脉，没有墨色描边；单件 3–4 色；每件都按「从右上角长出」绘制，其他角用 CSS 镜像。
+- 尺寸 xs 34 / s 56 / m 92 / l 140 px；quiet 色调 0.62；cool 主题 0.45；minimal 主题 0.6 + 降饱和；打印隐藏。
+- 位置与密度、哪里不用、Captain 场景方向：见 agent.md「V10.88」条目（同一份规则）。

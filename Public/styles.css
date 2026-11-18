@@ -26861,7 +26861,7 @@ html[lang="en"] .keeper-perch .keeper-entry::before {
   color: inherit;
   opacity: 0.78;
 }
-.cover-capiday svg {
+.cover-capiday svg:not(.bot) {
   position: absolute;
   fill: none;
   stroke: currentColor;
@@ -27076,128 +27076,176 @@ html[lang="en"] .keeper-perch .keeper-entry::before {
   min-width: 0;
 }
 
-/* ===== V10.87 · Botanical decorations (leaves, berries, plum blossom) =====
-   Original line-and-wash drawings from js/botanicals.mjs. Decoration only:
-   never tappable, never over the words, not on journal pages, covers, the
-   Journal Studio, exports or backups. Lighter in dark themes. */
-.deco {
+/* =====================================================================
+   V10.88 · Capiday Botanical Decorative System (js/botanicals.mjs).
+   Colors: --bot-* tokens only (design-tokens.json "botanical"). Plants are
+   decoration: hidden from VoiceOver, never tappable, never over words or
+   controls, sized by class, placed by class, mirrored by class. Storytelling
+   surfaces only (Home date, stamp card, stamp page, covers, empty states).
+   ===================================================================== */
+.bot {
   position: absolute;
-  pointer-events: none;
   z-index: 0;
-  overflow: visible;
-  height: auto !important;
+  display: block;
+  height: auto;
   max-width: none;
+  overflow: visible;
+  pointer-events: none;
+  fill: none;
+  stroke: none;
+  opacity: 0.92;
 }
-.deco-branch {
-  aspect-ratio: 170 / 120;
+.bot-xs { width: 34px; }
+.bot-s { width: 56px; }
+.bot-m { width: 92px; }
+.bot-l { width: 140px; }
+.bot-corner { aspect-ratio: 160 / 120; }
+.bot-sprig { aspect-ratio: 1; }
+.bot-berry { aspect-ratio: 120 / 90; }
+.bot-blossom { aspect-ratio: 70 / 90; }
+.bot-vignette { aspect-ratio: 160 / 110; }
+/* Placement: every asset is drawn growing from the top-right corner. */
+.bot-at-tr { top: 0; right: 0; }
+.bot-at-tl { top: 0; left: 0; transform: scaleX(-1); }
+.bot-at-br { bottom: 0; right: 0; transform: scaleY(-1); }
+.bot-at-bl { bottom: 0; left: 0; transform: scale(-1, -1); }
+.bot-at-tl.bot-flip { transform: none; }
+.bot-at-tr.bot-flip { transform: scaleX(-1); }
+.bot-at-br.bot-flip { transform: scale(-1, -1); }
+.bot-at-bl.bot-flip { transform: scaleY(-1); }
+.bot-at-inline { position: relative; inset: auto; margin: 0 auto; }
+.bot-quiet { opacity: 0.62; }
+/* Line and wash: soft edges, low contrast, 3–4 colors per piece. */
+.bot .bb { fill: none; stroke: var(--bot-branch); stroke-linecap: round; stroke-linejoin: round; }
+.bot .bl { stroke-width: 0.5; stroke-opacity: 0.35; }
+.bot .bl-1 { fill: var(--bot-bamboo); fill-opacity: 0.66; stroke: var(--bot-bamboo); }
+.bot .bl-2 { fill: var(--bot-sage); fill-opacity: 0.74; stroke: var(--bot-sage); }
+.bot .bl-3 { fill: var(--bot-lightLeaf); fill-opacity: 0.82; stroke: var(--bot-lightLeaf); }
+.bot .bw { fill: var(--bot-paper); fill-opacity: 0.2; }
+.bot .bv { fill: none; stroke: var(--bot-paper); stroke-opacity: 0.45; stroke-width: 0.5; stroke-linecap: round; }
+.bot .bf { fill: var(--bot-fruit); fill-opacity: 0.85; }
+.bot .bh { fill: var(--bot-paper); fill-opacity: 0.5; }
+.bot .bp { fill: var(--bot-blossom); stroke: var(--bot-warmGray); stroke-opacity: 0.28; stroke-width: 0.45; }
+.bot .bc { fill: var(--bot-blossomCenter); }
+.bot .bd { fill: var(--bot-blossomCenter); fill-opacity: 0.9; }
+/* The Captain vignette: books, a seal (the only cinnabar), the cat. */
+.bot .gd { fill: var(--bot-warmGray); fill-opacity: 0.08; }
+.bot .bk-b { fill: var(--bot-bamboo); fill-opacity: 0.78; }
+.bot .bk-c { fill: var(--bot-bookCream); stroke: var(--bot-branch); stroke-width: 0.5; stroke-opacity: 0.5; }
+.bot .bk-p { fill: var(--bot-paper); fill-opacity: 0.85; }
+.bot .bk-l { fill: none; stroke: var(--bot-branch); stroke-opacity: 0.45; stroke-width: 0.6; }
+.bot .bs { fill: var(--bot-seal); fill-opacity: 0.88; }
+.bot .bs-top { fill: var(--bot-branch); fill-opacity: 0.8; }
+.bot .ck { fill: var(--bot-cat); stroke: var(--bot-warmGray); stroke-opacity: 0.55; stroke-width: 0.8; stroke-linejoin: round; }
+.bot .ce { fill: var(--bot-catEar); }
+.bot .ct { fill: none; stroke: var(--bot-cat); stroke-width: 5; stroke-linecap: round; }
+.bot .cl { fill: none; stroke: var(--bot-warmGray); stroke-width: 0.8; stroke-linecap: round; stroke-opacity: 0.85; }
+.bot .cn { fill: var(--bot-catEar); stroke: var(--bot-warmGray); stroke-width: 0.4; }
+/* Paper texture: warm off-white, faint grain, no stains — a 160px tile. */
+.paper-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .4 0 0 0 0 .33 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
 }
-.deco-plum {
-  aspect-ratio: 120 / 90;
-}
-.deco-leaf {
-  aspect-ratio: 90 / 70;
-}
+/* Themes: the dark theme quiets every plant; minimal keeps them pale. */
+:root[data-theme="cool"] .bot { opacity: 0.45; }
+:root[data-theme="minimal"] .bot { opacity: 0.6; filter: saturate(0.5); }
+@media print { .bot { display: none; } }
+
+/* ---- where they live ---- */
+.v9-masthead,
 .stamp-strip,
-.week-card,
 .sp-card,
-.v9-masthead {
+.sp-empty-art {
   position: relative;
 }
-/* Kept inside the card's corners. */
 .stamp-strip,
-.week-card,
 .sp-card {
   overflow: hidden;
 }
-.stamp-strip > :not(.deco),
-.week-card > :not(.deco),
-.sp-card > :not(.deco),
-.v9-masthead > :not(.deco) {
+.v9-masthead > :not(.bot),
+.stamp-strip > :not(.bot),
+.sp-card > :not(.bot) {
   position: relative;
   z-index: 1;
 }
-/* Home: an autumn branch reaching in at the top right of the date. */
-.v9-masthead > .deco-branch {
-  top: -30px;
-  right: -18px;
-  width: 112px;
-  opacity: 0.92;
+/* Home · one small sprig by the date (not when the screen is full of photos). */
+.v9-masthead > .bot-sprig {
+  top: -8px;
+  right: -6px;
 }
-/* 集章卡: a plum sprig in the bottom-left corner. */
-.stamp-strip > .deco-plum {
-  left: 6px;
+/* The stamp card · its one corner: the seasonal berry branch, bottom left. */
+.stamp-strip.paper-grain {
+  background-color: var(--paper);
+}
+.stamp-strip > .bot-berry {
+  left: 4px;
   bottom: 2px;
-  width: 52px;
-  opacity: 0.9;
+  width: 54px;
 }
 .stamp-strip .ss-go {
-  margin-left: 44px;
+  margin-left: 46px;
   white-space: nowrap;
 }
-/* 这一周 (no photos): a bamboo-green leaf sprig at the top right. */
-.week-card > .deco-leaf {
-  top: -4px;
-  right: 2px;
-  width: 58px;
-  opacity: 0.85;
+/* The stamp page · one very subtle corner + paper grain; stamps lead. */
+.sp-card.paper-grain {
+  background-color: var(--bot-paper);
 }
-/* 月令集章 page: the branch over the top right, plum at the bottom right. */
-.sp-card > .deco-branch {
-  top: -4px;
-  right: -4px;
-  width: 86px;
-  opacity: 0.92;
+.sp-card > .bot-corner {
+  right: 0;
+  bottom: 0;
+  width: 64px;
 }
-.sp-card > .deco-plum {
-  right: 6px;
-  bottom: 6px;
-  width: 72px;
-  opacity: 0.9;
+.sp-card > .bot-corner.bot-xs {
+  width: 44px;
 }
 .sp-card .sp-note {
-  padding: 0 64px;
+  padding: 0 54px;
 }
-/* The colophon: a small sprig instead of the rule. */
-.home-mag .home-quote.hs-colophon::before {
-  display: none;
-}
-.home-mag .home-quote.hs-colophon > .deco-leaf {
-  position: static;
+/* An empty month: Captain looking at a seal. */
+.sp-empty-art {
   display: block;
-  width: 64px;
-  margin: 0 auto 10px;
-  opacity: 0.8;
+  width: 168px;
+  margin: 4px auto 0;
 }
-/* The only dark theme (cool): quieter. The minimal theme keeps it calm too. */
-:root[data-theme="cool"] .deco {
-  opacity: 0.5 !important;
+.sp-empty-art > .bot-vignette {
+  width: 100%;
 }
-:root[data-theme="minimal"] .deco {
-  opacity: 0.6 !important;
-  filter: saturate(0.6);
-}
-@media print {
-  .deco {
-    display: none;
-  }
-}
-/* Very narrow screens: the words need the room; keep only the corner sprigs
-   that sit in empty space (stamp card, Stamps page, colophon). */
-@media (max-width: 359px) {
-  .v9-masthead > .deco-branch,
-  .week-card > .deco-leaf {
-    display: none;
-  }
-}
-@media (min-width: 360px) and (max-width: 389px) {
-  .v9-masthead > .deco-branch {
-    top: -34px;
-    right: -20px;
-    width: 92px;
-  }
-}
-/* The branch tucks behind the backup note when that note is showing. */
+/* The branch tucks behind the backup note when that note shows. */
 .home-mag .backup-nudge {
   position: relative;
   z-index: 2;
+}
+@media (max-width: 359px) {
+  .v9-masthead > .bot-sprig { display: none; }
+}
+
+/* ---- My Books · Capiday's three default covers (V10.88) ---- */
+.cover-capiday .bot.cv-art {
+  position: absolute;
+  top: auto;
+  left: auto;
+  margin: 0;
+  transform: none;
+}
+.cover-capiday-travel .bot.cv-art {
+  right: 7%;
+  bottom: 6%;
+  width: 46%;
+  opacity: 0.95;
+}
+.cover-capiday-everyday.paper-grain {
+  background-color: var(--bot-paper);
+}
+.cover-capiday-everyday .bot.cv-art {
+  right: 9%;
+  bottom: 9%;
+  width: 22%;
+}
+.cover-capiday-captain.paper-grain {
+  background-color: var(--bot-paper);
+}
+.cover-capiday-captain .bot.cv-art {
+  left: 8%;
+  bottom: 7%;
+  width: 84%;
 }

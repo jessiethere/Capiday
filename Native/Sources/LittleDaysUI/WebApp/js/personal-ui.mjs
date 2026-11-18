@@ -1,3 +1,4 @@
+import { botanical, captainVignette } from "./botanicals.mjs";
 import { fontFamily, coverColor, stickerURL } from "./library.mjs";
 import { mediaCardHTML } from "./canvas.mjs";
 export const escapeHTML = (value = "") =>
@@ -173,8 +174,8 @@ export const THEME_COVERS = {
 };
 // A thin botanical sprig and (placeholder until the real line art) a simple
 // sitting-cat outline for the Captain cover.
-const SPRIG_SVG = '<svg class="cv-sprig" viewBox="0 0 60 90" aria-hidden="true"><path d="M30 88C30 60 28 40 22 14"/><path d="M27 60c-8-2-14-9-15-17 8 1 14 7 15 17Z"/><path d="M28 45c8-3 13-10 13-18-8 2-13 9-13 18Z"/><path d="M25 30c-6-3-9-9-9-15 6 2 9 8 9 15Z"/><circle cx="22" cy="12" r="3"/></svg>';
-const CAT_SVG = '<svg class="cv-cat" viewBox="0 0 80 90" aria-hidden="true"><path d="M24 30l-4-16 12 9h16l12-9-4 16"/><path d="M24 30c-3 6-3 14 2 19M56 30c3 6 3 14-2 19"/><path d="M26 49c-8 8-10 22-6 32h40c4-10 2-24-6-32"/><path d="M60 81c10 0 14-6 12-12"/><path d="M34 38h1M45 38h1"/><path d="M38 43l2 2 2-2"/></svg>';
+// V10.88: Capiday's own covers draw their plants and Captain from the shared
+// Botanical Decorative System (js/botanicals.mjs), not a copy of their own.
 // Chinese titles on these covers fall back to a Song face, never a brush one.
 const editorialFont = (book, catalog) => fontFamily(book.coverFont || "elegant", catalog).replace('"LD-chinese"', '"Songti SC","STSong","LD-zh-xiaowei"');
 const SEASON_PHOTOS = {
@@ -249,9 +250,17 @@ function themeCoverHTML(book, ctx, template) {
     case "capiday-captain": {
       const year = String(now.getFullYear());
       const sub = line || year;
-      const art = template === "capiday-captain" ? CAT_SVG + SPRIG_SVG : template === "capiday-travel" ? SPRIG_SVG : '<i class="cv-rule" aria-hidden="true"></i>';
+      const art =
+        template === "capiday-captain"
+          ? captainVignette({ pose: "sit", place: "inline", cls: "cv-art" })
+          : template === "capiday-travel"
+            ? botanical("blossom", { variant: 0, place: "inline", cls: "cv-art" })
+            : `<i class="cv-rule" aria-hidden="true"></i>${botanical("sprig", { variant: 0, place: "inline", tone: "quiet", cls: "cv-art" })}`;
+      const grain = template === "capiday-travel" ? "" : " paper-grain";
+      // Captain's cover has its own little seal in the scene (one seal per cover).
+      const seal = template === "capiday-captain" ? "" : '<i class="cv-seal" aria-hidden="true">C</i>';
       const kicker = template === "capiday-everyday" ? `<small class="cv-kicker">CAPIDAY · ${esc(year)}</small>` : "";
-      return `<div class="book-cover cover-theme cover-capiday cover-${template}" style="${style};--cover-font:${esc(editorialFont(book, catalog))}">${kicker}<b class="cv-title">${title}</b><small class="cv-sub">${esc(sub)}</small>${art}<i class="cv-seal" aria-hidden="true">C</i></div>`;
+      return `<div class="book-cover cover-theme cover-capiday cover-${template}${grain}" style="${style};--cover-font:${esc(editorialFont(book, catalog))}">${kicker}<b class="cv-title">${title}</b><small class="cv-sub">${esc(sub)}</small>${art}${seal}</div>`;
     }
     case "seasonal-almanac": {
       const season = coverSeason(now);

@@ -314,5 +314,21 @@
         "tracking": 0
       }
     }
+  },
+  "botanical": {
+    "_note": "V10.88 Botanical Decorative System. Decoration colors only; cinnabar (seal) is for real seals/stamps, never for plants.",
+    "paper": "#F8F5EC",
+    "warmGray": "#756D63",
+    "bamboo": "#6B7F62",
+    "sage": "#8A9A84",
+    "lightLeaf": "#A8B59C",
+    "branch": "#A48D74",
+    "fruit": "#C9875F",
+    "blossom": "#FCFAF4",
+    "blossomCenter": "#D8B56E",
+    "cat": "#BEB8AF",
+    "catEar": "#E6CCC2",
+    "bookCream": "#EFE6D6",
+    "seal": "#C2544A"
   }
 }
