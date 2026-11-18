@@ -229,3 +229,4 @@ Memory Wall v1.0：**V10.78 已实施，等真机验收**（Founder 2026-11-15 �
 | 2026-11-18 | **V10.87** 植物装饰：`js/botanicals.mjs`（秋枝 + 小红果、梅枝、竹青叶枝，代码画的原创 SVG）放在首页日期旁、集章卡、这一周、页尾、月令集章页；只是点缀（aria-hidden、不能点、不压字，窄屏少放）；v192 34/34。固定链接 Version 133 |
 | 2026-11-18 | **V10.88** Capiday Botanical Decorative System：visual audit（V10.87 九个问题）→ `botanicals.mjs` 统一素材（corner / sprig / berry / blossom / Captain vignette sit·sleep / paper grain）+ botanical tokens（--bot-*）+ `decorPlan` 密度控制；首页只剩日期旁一小枝 + 集章卡一角；集章页一个淡角落 + 纸纹，空月份 Captain 场景；3 个默认书封改用共享素材；植物不再用朱砂。v192 39/39 |
 | 2026-11-18 | V10.88（续）：Founder 参考图插画作为正式素材——4 个灰色长毛 Captain 场景 + 3 个书封插画（`tools/cut_botanical_art.py` → `Public/botanical/`，multiply 融入纸面）；空月份与 Captain 书封已用；v192 41/41 |
+| 2026-11-18 | V10.88（续 2）：12 个水彩植物素材裁出 + manifest（来源 / 像素）；按 3x 清晰度评估：8 直接可用、7 Phase 1 略软、5 NEEDS HI-RES REPLACEMENT；等待 Founder 确认后接入页面 |

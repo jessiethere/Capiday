@@ -1,0 +1,123 @@
+{
+ "source": "docs/visual/botanical-board-v1.png",
+ "board": [
+  1448,
+  1086
+ ],
+ "assets": [
+  {
+   "name": "captain-sleep",
+   "width": 315,
+   "height": 170,
+   "bytes": 29933
+  },
+  {
+   "name": "captain-sit",
+   "width": 290,
+   "height": 180,
+   "bytes": 25791
+  },
+  {
+   "name": "captain-ready",
+   "width": 290,
+   "height": 158,
+   "bytes": 23789
+  },
+  {
+   "name": "captain-stamp",
+   "width": 325,
+   "height": 153,
+   "bytes": 25887
+  },
+  {
+   "name": "cover-sprig",
+   "width": 97,
+   "height": 107,
+   "bytes": 3294
+  },
+  {
+   "name": "cover-captain",
+   "width": 166,
+   "height": 182,
+   "bytes": 10651
+  },
+  {
+   "name": "cover-travel-blossom",
+   "width": 108,
+   "height": 104,
+   "bytes": 29680
+  },
+  {
+   "name": "corner-berry",
+   "width": 244,
+   "height": 169,
+   "bytes": 10052
+  },
+  {
+   "name": "corner-blossom",
+   "width": 175,
+   "height": 162,
+   "bytes": 8679
+  },
+  {
+   "name": "sprig-1",
+   "width": 80,
+   "height": 80,
+   "bytes": 2479
+  },
+  {
+   "name": "sprig-2",
+   "width": 79,
+   "height": 72,
+   "bytes": 2380
+  },
+  {
+   "name": "sprig-3",
+   "width": 86,
+   "height": 80,
+   "bytes": 2929
+  },
+  {
+   "name": "sprig-4",
+   "width": 78,
+   "height": 80,
+   "bytes": 2358
+  },
+  {
+   "name": "sprig-5",
+   "width": 94,
+   "height": 80,
+   "bytes": 2726
+  },
+  {
+   "name": "sprig-6",
+   "width": 83,
+   "height": 76,
+   "bytes": 2718
+  },
+  {
+   "name": "berry-1",
+   "width": 177,
+   "height": 107,
+   "bytes": 5125
+  },
+  {
+   "name": "berry-2",
+   "width": 140,
+   "height": 112,
+   "bytes": 4487
+  },
+  {
+   "name": "blossom-1",
+   "width": 161,
+   "height": 118,
+   "bytes": 5493
+  },
+  {
+   "name": "blossom-2",
+   "width": 151,
+   "height": 126,
+   "bytes": 5162
+  }
+ ]
+}

@@ -36,11 +36,20 @@ def to_white(img, clear=(), feather=10):
     for (x0, y0, x1, y1) in clear:
         out[y0:y1, x0:x1] = 255
     return Image.fromarray(out.astype(np.uint8), "RGB")
+def trim_white(img, pad=6):
+    a = np.asarray(img.convert("L"))
+    ys, xs = np.where(a < 236)
+    if not len(xs):
+        return img
+    x0, x1, y0, y1 = xs.min(), xs.max(), ys.min(), ys.max()
+    return img.crop((max(0, x0 - pad), max(0, y0 - pad), min(img.width, x1 + pad + 1), min(img.height, y1 + pad + 1)))
+MANIFEST = []
 def save(img, name):
     path = f"{OUT}/{name}.png"
     q = img.quantize(colors=256, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.FLOYDSTEINBERG)
     q.save(path, optimize=True)
     print(name, img.size, os.path.getsize(path))
+    MANIFEST.append({"name": name, "width": img.size[0], "height": img.size[1], "bytes": os.path.getsize(path)})
 crops = {
     "captain-sleep": (815, 128, 1130, 298),
     "captain-sit": (1140, 120, 1430, 300),
@@ -65,3 +74,24 @@ alpha *= np.clip(edge / 6, 0, 1)
 rgba = np.dstack([a, alpha * 255]).astype(np.uint8)
 img = Image.fromarray(rgba, "RGBA")
 path = f"{OUT}/cover-travel-blossom.png"; img.save(path, optimize=True); print("cover-travel-blossom", img.size, os.path.getsize(path))
+MANIFEST.append({"name": "cover-travel-blossom", "width": img.size[0], "height": img.size[1], "bytes": os.path.getsize(path)})
+
+# Plants (V10.88 follow-up): the approved watercolour plants, paper → white.
+PLANTS = {
+    "corner-berry": (22, 132, 266, 302),
+    "corner-blossom": (272, 136, 448, 300),
+    "sprig-1": (488, 142, 568, 222),
+    "sprig-2": (592, 142, 671, 222),
+    "sprig-3": (695, 142, 781, 222),
+    "sprig-4": (485, 234, 563, 314),
+    "sprig-5": (592, 234, 686, 314),
+    "sprig-6": (699, 234, 783, 314),
+    "berry-1": (46, 388, 229, 496),
+    "berry-2": (246, 386, 386, 498),
+    "blossom-1": (428, 380, 589, 511),
+    "blossom-2": (611, 378, 764, 508),
+}
+for name, box in PLANTS.items():
+    save(trim_white(to_white(board.crop(box), feather=6)), name)
+import json
+(OUT / "manifest.json").write_text(json.dumps({"source": "docs/visual/botanical-board-v1.png", "board": list(board.size), "assets": MANIFEST}, indent=1) + "\n", encoding="utf-8")

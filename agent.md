@@ -48,6 +48,14 @@
 
 ## 更新日志
 
+### 2026-11-18 — V10.88（续 2）：按「Approved reference = specification」裁出全部素材 + 清晰度评估（等待 Founder 确认，未接入新页面）
+
+- **需求**：Founder 确认最新参考图里的灰色长毛 Captain（琥珀眼、毛量明显、水彩 editorial）为 Phase 1 approved Captain assets；植物也要用参考图的水彩风格，不再用扁平几何 SVG；低清裁图只算 Phase 1 production/prototype assets，要记录来源和分辨率，不够清晰标 NEEDS HI-RES REPLACEMENT（不放大、不重画、不换风格）；书封只做 Travel Notes / My Days / Captain·My Cat；先给预览、像素尺寸、显示尺寸、Retina 评估，确认后再接入页面。
+- **做了**：`tools/cut_botanical_art.py` 增加 12 个植物素材（corner-berry、corner-blossom、sprig-1…6、berry-1/2、blossom-1/2），去掉多余空白边；`Public/botanical/manifest.json` 记录来源（`docs/visual/botanical-board-v1.png`，1448×1086）和每个素材的像素尺寸与大小。
+- **清晰度评估规则**：按计划显示尺寸（pt）× 3（iPhone 3x）与素材像素比较：放大 ≤ 1.2× 直接可用；1.2–1.6× Phase 1 可用（@3x 略软）；> 1.6× NEEDS HI-RES REPLACEMENT。
+- **结果**：直接可用 8 个（captain-sleep、captain-stamp、corner-berry、berry-1、berry-2、blossom-1、blossom-2、以及按 120 pt 显示时的 captain-ready 接近）；Phase 1 可用（略软）7 个；NEEDS HI-RES REPLACEMENT 5 个：cover-captain、cover-travel-blossom、sprig-1、sprig-2、sprig-4（详见回复表格）。
+- **状态**：只新增素材文件，**没有接入新页面**。上一步已经接入的（集章页空月份用 captain-sit、三个书封用 cover-*）在提交里但**尚未发布**；首页 / 集章卡 / 集章页角落目前仍是旧的 SVG 植物，等 Founder 确认后整体替换。全量回归 run-all26 在后台运行。
+
 ### 2026-11-18 — V10.88（续）：Founder 参考图里的插画作为正式素材（Captain 场景 + 书封）
 
 - **需求**：Founder 发来更新后的参考图（Captain 改为灰色长毛猫、琥珀色眼睛，四个场景：趴着休息 / 坐着看一看 / 准备盖章 / 帮你盖章），选择「裁出插画当正式素材」。
