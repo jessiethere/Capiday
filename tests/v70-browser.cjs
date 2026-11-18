@@ -37,9 +37,12 @@ const shots = process.env.SHOTS_DIR || "";
     assert.ok(await page.evaluate(() => window.__reminder.some((m) => m.type === "ready")), "tells the app it is ready");
     await page.locator(".settings-gear").click();
     await page.locator('[data-action="reminder-toggle"]').click();
+    // V10.80: turning it on asks for the time first (21:00 offered), then 开启每日提醒.
+    await page.waitForSelector("#reminder-pick");
+    await page.locator('[data-action="reminder-confirm"]').click();
     await page.waitForSelector('[data-action="reminder-toggle"][aria-checked="true"]');
     let m = await last();
-    assert.deepEqual([m.on, m.hour, m.minute, m.body], [true, 21, 0, "今天有什么值得记的？"]);
+    assert.deepEqual([m.on, m.hour, m.minute, m.body], [true, 21, 0, "今天有什么想留下的？写一句，或说一句就好。"]); // V10.80 wording
     assert.equal(m.offTitle, "关闭每日提醒");
     await page.locator("[data-reminder-time]").fill("08:30");
     await page.locator("[data-reminder-time]").dispatchEvent("change");
@@ -54,11 +57,12 @@ const shots = process.env.SHOTS_DIR || "";
     await page.locator('[data-action="save-entry"]').tap();
     await page.waitForSelector(".flip-page:not(.is-cover)");
     assert.equal((await last()).skipToday, true, "today already kept: no reminder today");
-    // A tapped reminder opens the record sheet.
+    // A tapped reminder opens 快速记录 (V10.80; it was the record sheet).
     await require("./signed-in.cjs").leaveReader(page); await page.locator('#navigation [data-page="home"]').click();
     await page.evaluate(() => window.littleDaysFromReminder());
-    await page.waitForSelector("#choose-dialog[open] .quick-sheet");
-    await page.locator('#choose-dialog [data-action="choose-close"]').click();
+    await page.waitForSelector('.jot-page[data-from="reminder"]');
+    await page.locator('[data-action="jot-back"]').click();
+    await page.waitForSelector(".hero");
     // "Turn off" from the notification.
     await page.evaluate(() => window.littleDaysReminderTurnedOff());
     assert.equal((await last()).on, false);
@@ -66,6 +70,8 @@ const shots = process.env.SHOTS_DIR || "";
     await page.waitForSelector('[data-action="reminder-toggle"][aria-checked="false"]');
     // Notifications not allowed: an honest note.
     await page.locator('[data-action="reminder-toggle"]').click();
+    await page.waitForSelector("#reminder-pick");
+    await page.locator('[data-action="reminder-confirm"]').click();
     await page.evaluate(() => window.littleDaysReminderResult({ ok: false, reason: "denied" }));
     await page.waitForFunction(() => /设置 → 通知/.test(document.querySelector(".reminder-warn")?.textContent || ""));
     passed.push("iPhone app: on at 21:00 → 08:30; skipped today once kept; a tap opens the record sheet; off from the notification; a note when notifications are off");

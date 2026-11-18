@@ -46,22 +46,25 @@ const shots = process.env.SHOTS_DIR || "";
     await shot("v44-chooser");
     passed.push("chooser: today's picks + 13 photo collections, all real photos");
 
-    // 2. The chooser leads to page backgrounds (shown first in the Paper panel).
+    // 2. The chooser leads to page backgrounds. V10.79: 「换个页面背景」 opens the
+    // shared 页面背景 sheet (preview, then 应用) — the same one as 自定义 in 今天的故事.
     await page.locator('#choose-dialog [data-action="open-backdrops"]').tap();
-    await page.waitForSelector('.tool-sheet.tall[data-tool-row="paper"] .backdrop-picker');
-    assert.equal(await page.locator("#choose-dialog[open]").count(), 0);
-    assert.deepEqual(await page.$$eval(".backdrop-picker h4", (els) => els.map((el) => el.textContent)), ["照片氛围", "渐变色彩", "可爱图案"]);
-    assert.equal(await page.locator(".backdrop-option img").count(), 20);
-    assert.equal(await page.locator('.backdrop-option[data-backdrop=""]').getAttribute("aria-pressed"), "true");
-    const first = await page.locator(".tool-body > *").first().getAttribute("class");
-    assert.match(first, /backdrop-picker/, "backgrounds come before paper styles");
-    passed.push("「换个页面背景」 opens Paper → backgrounds first (photo mood, gradients, patterns: 20)");
+    await page.waitForSelector("#choose-dialog[open] .bg-sheet .backdrop-picker");
+    assert.deepEqual(await page.$$eval("#choose-dialog .backdrop-picker h4", (els) => els.map((el) => el.textContent)), ["照片氛围", "渐变色彩", "可爱图案"]);
+    assert.equal(await page.locator("#choose-dialog .backdrop-option img").count(), 20);
+    assert.equal(await page.locator('#choose-dialog .backdrop-option[data-backdrop=""]').getAttribute("aria-pressed"), "true");
+    passed.push("「换个页面背景」 opens the 页面背景 sheet (photo mood, gradients, patterns: 20)");
 
     // 3. A light background: the page is covered, words on a frosted card.
-    await page.locator('.backdrop-option[data-backdrop="scene:pattern-clouds"]').tap();
+    await page.locator('#choose-dialog .backdrop-option[data-backdrop="scene:pattern-clouds"]').tap();
+    await page.locator('#choose-dialog [data-action="bg-apply"]').tap();
     await page.waitForSelector("#journal-canvas.has-backdrop:not(.dark-backdrop) .backdrop-veil");
     assert.match(await page.locator("#journal-canvas").evaluate((el) => getComputedStyle(el).backgroundImage), /LD-scene-pattern-clouds\.svg/);
-    assert.equal(await page.locator('.backdrop-option[data-backdrop="scene:pattern-clouds"]').getAttribute("aria-pressed"), "true");
+    // The Paper panel shows the same backgrounds first, with this one chosen.
+    await studioTool(page, "paper");
+    await page.waitForSelector('.tool-sheet[data-tool-row="paper"] .backdrop-picker');
+    assert.match(await page.locator(".tool-body > *").first().getAttribute("class"), /backdrop-picker/, "backgrounds come before paper styles");
+    assert.equal(await page.locator('.tool-sheet .backdrop-option[data-backdrop="scene:pattern-clouds"]').getAttribute("aria-pressed"), "true");
     await shot("v44-picker");
     await page.locator('[data-action="tool-close"]').tap();
     await page.waitForTimeout(250);
@@ -70,7 +73,7 @@ const shots = process.env.SHOTS_DIR || "";
 
     // 4. A dark background: the words turn white.
     await studioTool(page, "paper");
-    await page.locator('.backdrop-option[data-backdrop="photo:starry-lake"]').tap();
+    await page.locator('.tool-sheet .backdrop-option[data-backdrop="photo:starry-lake"]').tap(); // (the closed 页面背景 sheet keeps its own copy)
     await page.waitForSelector("#journal-canvas.dark-backdrop");
     assert.equal(await page.locator("#journal-canvas .canvas-title").evaluate((el) => getComputedStyle(el).color), "rgb(255, 255, 255)");
     assert.notEqual(await page.locator("#journal-canvas .canvas-body").evaluate((el) => getComputedStyle(el).color), "rgb(153, 140, 122)");
