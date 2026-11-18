@@ -93,6 +93,7 @@ P0 的 9 项：CAP-016（Testing）、DS-01（In Progress）、DS-02、DS-05、D
 | CAP-025 | 书架「···」先给删除又拒绝 | P2 | Testing | 0.2.0 (5)（V10.77） | `app.js` bookLinkedDays / openShelfMenu / deleteEmptyBook | 同一判断，直接说明原因；不移动数据 | v175 ✅ | — |
 | CAP-026 | 「···」编辑后旧弹层不关；阅读器封面编辑后离开阅读器 | P2 | Testing | 0.2.0 (5)（V10.77） | `app.js` saveBookForm | 弹层关闭；留在阅读器 | v175 ✅ | — |
 | CAP-027 | 标签筛选时往前放 / 往后放按看得见的书 | P2 | Testing | 0.2.0 (5)（V10.77） | `app.js` shelfHTML stepTo / book-step | 看得见的顺序立刻变化 | v175 ✅ | — |
+| CAP-031 | 弹窗里「取消」字比主按钮小很多（CAP-015 修复不完整） | P3 | Inbox | TBD | `styles.css` `.secondary` / `dialog .primary` | 确认框两个按钮字号协调 | 等 Founder 决定 | — |
 | CAP-029 | 首页照片手帐先选放进哪本；顶部「放进」可换；编辑已有页 = 移动不复制 | P1 | Testing | V10.79 | `app.js` openBookPicker / choosePhotoBook / setStoryBook / movePageTo / followPageScope；`model.mjs` setPageBook | BETA_RELEASE_PLAN「V10.79 真机验收」A–E | v183 68 项、v183-move 4 项 ✅；真机 ⏳ | — |
 | CAP-030 | 「自定义 → 页面背景」（和「添加照片 → 换个页面背景」同一面板，预览 / 应用 / 取消）；误弹「写字 · 改字体」 | P2 | Testing | V10.79 | `app.js` openStoryCustomMenu / openBackdropSheet / applyBackdrop / ghostTap | 同上「页面背景」几步 | v183 ✅；误弹保护只能真机确认 ⏳ | — |
 | CAP-028 | 小屏弹层输入框贴着键盘 | P3 | Testing | 0.2.0 (5)（V10.77） | `styles.css` scroll-margin-bottom | 弹层输入框下留 14 px | v164 34/34 ✅ | — |
@@ -207,3 +208,4 @@ Memory Wall v1.0：**V10.78 已实施，等真机验收**（Founder 2026-11-15 �
 | 2026-11-15 | **V10.78 / 构建 0.2.0 (6)**：DS-09、DS-10、DS-12、CAP-E003、CAP-E004、MW-01～05、DS-02 / 04～08 → Testing。全量回归 run-all15 118/118、单元 344/344、外壳测试 OK；Release 归档（0539d00）成功；模拟器升级 (4)→(6) 数据与媒体 9/9 一致；在线链接 Version 125。真机全部 ⏳；上传等 Founder |
 | 2026-11-18 | **V10.79**：新增 CAP-029（P1）、CAP-030（P2）→ Testing。v183 68 项 + 单元 348/348；全量回归见 agent.md。未打新构建，真机 ⏳ |
 | 2026-11-18 | **V10.80**：新增 QR-01～05（自己写 / 每日一问 / 录音试听 / 照片墙补记 / 每日提醒）→ Testing。v184 浏览器 58 项 + 单元 8 项；全量回归和模拟器结果见 agent.md |
+| 2026-11-18 | 新增 CAP-031（P3，Founder IMG_9563）：弹窗「取消」10px、主按钮 16px；原因是 CAP-015 只放大了主按钮。只登记，没有改代码 |
