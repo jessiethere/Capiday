@@ -245,3 +245,4 @@ Memory Wall v1.0：**V10.78 已实施，等真机验收**（Founder 2026-11-15 �
 | 2026-11-18 | 每周回看插画：reading-journal → captain-reading（739×514）、weekly-recap → captain-recap（758×613），APPROVED · staged；重复发送的抱抱 / 戴帽毛线球 WebP 与补充包 PNG 相同，未另存；#18 → READY AFTER CONFIRMATION |
 | 2026-11-18 | **V10.91** Captain 全部插画：首页（探头 + 点一下眯眼，无眼睛跟随）、面板、书架、设置、装扮（不戴帽 / 柠檬帽 / 毛线球，默认不戴帽）、Playroom B（点一下播一轮停末帧：无帽抱抱 / 戴帽拍毛线球 / v1 毛线球）、每周回看（reading-journal / weekly-recap）；3D 不再绘制（模块保留）。v195 8/8；v108 / v117 退役。v1 原图压缩包未收到 |
 | 2026-11-18 | 全量回归 run-all30（V10.90 + V10.91）：128/129，v113 随默认不戴帽更新后通过 → 129/129。固定链接 Version 136 |
+| 2026-11-18 | **V10.92** v1 原图包接入：14 个素材换成原图（captain-lie → captain-peek = card-edge-peek），按原图尺寸更新清晰度上限；欢迎卡按 README 胸毛底线定位（爪子压边 9px）；首页探头适配正方形原图；4 张新图暂存。test_captain_pack / v193 / v194 / v195 等通过 |

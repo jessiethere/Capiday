@@ -48,18 +48,17 @@ export const ASSETS = {
 // tools/cut_captain_pack.py; Founder 2026-11-18). Only what the interface
 // uses is shipped; the rest stays staged in docs/visual/captain-pack-v1/.
 export const CAPTAIN_PACK = {
-  "captain-face": [360, 386, 120, "APPROVED"],
+  // The Founder's originals (Pack v1 zip) where they exist; sizes as exported.
+  "captain-face": [600, 600, 200, "APPROVED"],
   "captain-sit-up": [540, 647, 180, "APPROVED"],
-  "expr-happy": [360, 452, 120, "APPROVED"],
-  "captain-lie": [540, 640, 180, "APPROVED"],
-  // V10.91: the rest of Captain moves to the illustrations.
-  "expr-calm": [360, 462, 120, "APPROVED"],
-  "expr-sleepy": [360, 422, 120, "APPROVED"],
-  "acc-lemon-hat": [436, 374, 145, "APPROVED"],
-  "acc-yarn": [300, 276, 100, "APPROVED"],
-  "captain-reading": [739, 514, 246, "APPROVED"],
-  "captain-recap": [758, 613, 252, "APPROVED"],
-  // Playroom frames: one 768x512 canvas and origin per sequence.
+  "expr-happy": [600, 600, 200, "APPROVED"],
+  "captain-peek": [768, 598, 256, "APPROVED"],
+  "expr-calm": [600, 600, 200, "APPROVED"],
+  "expr-sleepy": [600, 600, 200, "APPROVED"],
+  "acc-lemon-hat": [512, 512, 170, "APPROVED"],
+  "acc-yarn": [512, 512, 170, "APPROVED"],
+  "captain-reading": [768, 547, 256, "APPROVED"],
+  "captain-recap": [768, 640, 256, "APPROVED"],
   "play-watch": [768, 512, 256, "APPROVED"],
   "play-reach": [768, 512, 256, "APPROVED"],
   "play-bat": [768, 512, 256, "APPROVED"],
@@ -130,14 +129,14 @@ export function captainVignette({ pose = "sit", size = 150, place = "inline", cl
 // Captain on his own (no props), from Pack v1:
 //   face: front bust, calm (avatars) · happy: smiling, eyes closed ·
 //   sit-up: sitting, looking up (greeting) ·
-//   peek: lying with both front paws forward — rests its paws on a card's
-//   top edge, head and ears above it (the card-edge peek).
+//   peek: poses/card-edge-peek.png — the card's top edge goes along the chest
+//   fur line between the paws, so both paws rest in front of the card.
 // No outfit is drawn yet: keeper.outfit stays stored and untouched.
 const PORTRAITS = {
   face: "captain-face",
   happy: "expr-happy",
   "sit-up": "captain-sit-up",
-  peek: "captain-lie",
+  peek: "captain-peek", // poses/card-edge-peek.png
   // V10.91
   calm: "expr-calm", // looking aside, eyes open (Home, at rest)
   sleepy: "expr-sleepy",

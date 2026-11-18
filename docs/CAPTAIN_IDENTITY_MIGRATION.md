@@ -172,6 +172,20 @@ Status values:
 - The Founder named the file `poses/card-edge-peek.png`. No file by that name exists in the pack, so `captain-lie` (the paws-forward pose) is used for it.
 - The invitation keeps `expr-happy`.
 
+**V10.92 (Founder, 2026-11-18): the original Pack v1** (`Captain-Illustrated-Asset-Pack-v1.zip`) arrived. It is stored in `docs/visual/captain-pack-v1/original/` with its README.
+- **Originals in use**, whole at their own size:
+  - `poses/card-edge-peek` → `captain-peek` (was `captain-lie`, our cut);
+  - `portraits/avatar` → `captain-face`;
+  - `expressions/calm|happy|curious|sleepy` → `expr-*`;
+  - `accessories/lemon-hat|yarn-ball` → `acc-*`;
+  - `playroom/01–04` → `play-watch…play-rolled`;
+  - `poses/reading-journal` → `captain-reading`;
+  - `interactions/weekly-recap` → `captain-recap`.
+- **Still our cut**: `captain-sit-up`, a sheet-only pose not in the zip. The README says idle keeps the approved sit / sleep scenes.
+- **Welcome peek**: per the README, the card edge runs along the chest fur line between the paws (y 549 of 598). At 140pt the picture's bottom sits 9px below the card's edge.
+- **Home perch**: the 600×600 expressions are 100pt wide, with 36pt behind the card.
+- **In the zip, staged** (no place yet): `poses/awake-lying`, `interactions/greeting`, `interactions/gentle-reminder`, `portraits/half-body`.
+
 **V10.91 (Founder, 2026-11-18)**: Home, Captain's panel, the shelf, Settings, Looks, the weekly recap and the Playroom are illustrated. **No 3D Captain is drawn anywhere.**
 - The 3D module (`js/keeper-art.mjs`) and its pictures (`library/keepers`, `library.json` keepers / keeperPlay) stay in the repo, unused. They are not deleted yet; the only missing capability is the hug wearing the lemon hat.
 - **Decisions**:

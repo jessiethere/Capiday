@@ -48,6 +48,34 @@
 
 ## 更新日志
 
+### 2026-11-18 — V10.92 换成 Founder 的 v1 原图（Captain-Illustrated-Asset-Pack-v1.zip）
+
+- **需求**：Founder 上传 v1 原图压缩包（V10.91 第 1 条当时受阻）。用 `poses/card-edge-peek.png`、`expressions/happy.png`、`playroom/01–04` 等原图替换临时裁图。
+- **文件**：
+  - 压缩包解开存入 `docs/visual/captain-pack-v1/original/`（README + 18 张 RGBA PNG）。
+  - `tools/cut_captain_pack.py` 新增 ORIGINALS 对照：有原图就整张使用，不裁、不缩，只清掉 alpha < 10 的杂点，再按 256 色压缩（平均色差约 3 级，单张 ~80KB；原文件 ~500KB）。
+  - 原图替换了 14 个素材（见下面「原图对照」）。`captain-sit-up` 原包里没有，保留裁图。
+  - 改名：`captain-lie` → `captain-peek`（它就是 card-edge-peek）。
+  - 新增 4 张暂不上线：awake-lying / greeting / gentle-reminder / half-body。
+  - `botanicals.mjs` 的 CAPTAIN_PACK 按原图尺寸更新：头像 / 表情 600px → 最大清晰 200pt；配件 512px → 170pt；场景 / 帧 768px → 256pt。
+- **原图对照**：
+  - card-edge-peek → captain-peek
+  - avatar → captain-face
+  - expressions ×4 → expr-*
+  - lemon-hat / yarn-ball → acc-*
+  - playroom/01–04 → play-watch…rolled
+  - reading-journal → captain-reading
+  - weekly-recap → captain-recap
+- **版面**：
+  - 欢迎卡：按原图 README「卡片边缘放在两爪之间的胸毛底线」——胸毛底线 y=549/598，宽 140pt，图片底比卡片上沿低 9px，两爪搭在卡片前。
+  - 首页探头：原表情是 600×600 正方形、带边距，改为宽 100pt、藏在卡片后 36pt，整个头部露出。
+  - 引导头像不变（contain 居中，耳尖留白）。
+- **测试（Linux / Chromium，不是真机）**：
+  - `test_captain_pack` 新增「原图整张使用」检查，素材共 27 个；
+  - v194 改查 captain-peek（爪子压过卡片上沿 9.0px）；
+  - v193 / v195 / v158 / v71 / v104 / v110 通过；Python 测试通过。
+- **iPhone 真机**：未验证。
+
 ### 2026-11-18 — V10.90 + V10.91 全量回归 run-all30 + 固定链接 Version 136
 
 - **回归**：

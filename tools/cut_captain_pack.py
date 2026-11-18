@@ -44,6 +44,33 @@ SOURCES = {key: DIR / f"source-{key}.png" for key in ("lying", "sheet", "play", 
 # poses/reading-journal.png and interactions/weekly-recap.png).
 SOURCES["reading-journal"] = DIR / "source-reading-journal.webp"
 SOURCES["weekly-recap"] = DIR / "source-weekly-recap.webp"
+# The Founder's original Captain Illustrated Asset Pack v1 (zip, 2026-11-18):
+# docs/visual/captain-pack-v1/original/. Where an original exists it replaces
+# our cut from the sheets: same picture, the Founder's own framing and size.
+ORIG = DIR / "original"
+ORIGINALS = {
+    "captain-peek": "poses/card-edge-peek.png",
+    "captain-face": "portraits/avatar.png",
+    "expr-calm": "expressions/calm.png",
+    "expr-happy": "expressions/happy.png",
+    "expr-curious": "expressions/curious.png",
+    "expr-sleepy": "expressions/sleepy.png",
+    "acc-lemon-hat": "accessories/lemon-hat.png",
+    "acc-yarn": "accessories/yarn-ball.png",
+    "play-watch": "playroom/01-notice.png",
+    "play-reach": "playroom/02-reach.png",
+    "play-bat": "playroom/03-nudge.png",
+    "play-rolled": "playroom/04-settle.png",
+    "captain-reading": "poses/reading-journal.png",
+    "captain-recap": "interactions/weekly-recap.png",
+    # in the pack, not used by the interface yet (staged)
+    "captain-awake": "poses/awake-lying.png",
+    "captain-greeting": "interactions/greeting.png",
+    "captain-reminder": "interactions/gentle-reminder.png",
+    "captain-half": "portraits/half-body.png",
+}
+for name, rel in ORIGINALS.items():
+    SOURCES[f"orig:{name}"] = ORIG / rel
 V11 = ROOT / "docs/visual/captain-pack-v1.1/playroom"
 for seq, prefix in (("yarn-lemon-hat", "play-hat"), ("hug", "hug")):
     for i, f in enumerate(sorted((V11 / seq).glob("*.png")), 1):
@@ -51,7 +78,7 @@ for seq, prefix in (("yarn-lemon-hat", "play-hat"), ("hug", "hug")):
 
 # name: (source, box x0 y0 x1 y1, max width px, planned display pt, use, audit rows)
 ASSETS = {
-    "captain-lie": ("lying", (200, 92, 1082, 1144), 540, 120, "Lying down, awake, paws forward (Home Captain on the today card; idle)", [11]),
+    "captain-peek": ("lying", (200, 92, 1082, 1144), 540, 132, "Card-edge peek: paws over a card's top edge (guide welcome)", [8]),
     "captain-face": ("sheet", (28, 74, 588, 679), 360, 64, "Front bust, calm (avatar 28-64 pt: guide, panel header, Ask Captain, Settings)", [9, 12, 14, 16]),
     "captain-sit-up": ("sheet", (674, 11, 1233, 683), 540, 150, "Sitting, looking up (greeting; onboarding; Home guide)", [7, 8]),
     "acc-lemon-hat": ("sheet", (71, 757, 527, 1148), 436, 96, "Lemon hat accessory (outfit 'lemon')", [11, 12, 15, 16, 19]),
@@ -77,18 +104,27 @@ ASSETS = {
     "expr-happy": ("expressions", (687, 25, 1158, 615), 360, 96, "Expression happy (eyes closed, smiling)", [6, 12, 13]),
     "expr-curious": ("expressions", (94, 619, 559, 1233), 360, 96, "Expression curious (wide eyes, head tilt)", [12, 17]),
     "expr-sleepy": ("expressions", (691, 665, 1179, 1237), 360, 96, "Expression sleepy (half-closed eyes)", [12, 15]),
+    # Only in the original pack (staged until a place uses them).
+    "captain-awake": ("orig:captain-awake", None, 768, 200, "Lying down, awake, a berry sprig behind", []),
+    "captain-greeting": ("orig:captain-greeting", None, 768, 150, "Greeting: sitting, a paw raised, a blossom sprig", [7, 8]),
+    "captain-reminder": ("orig:captain-reminder", None, 768, 150, "Gentle reminder: a paw on a closed journal", [17]),
+    "captain-half": ("orig:captain-half", None, 600, 96, "Half-body: sitting, paws together", []),
 }
+# Every asset with an original uses it, whole (box None = the whole picture).
+for _name in ORIGINALS:
+    _src, _box, _w, _pt, _use, _rows = ASSETS[_name]
+    ASSETS[_name] = (f"orig:{_name}", None, 768, _pt, _use, _rows)
 
 # Founder 2026-11-18 ("可以放"): shipped with V10.89 for the places that use them;
 # captain-lie (paws forward) with V10.90 as the card-edge peek on the welcome.
-SHIP = {"captain-face", "captain-sit-up", "expr-happy", "captain-lie"}
+SHIP = {"captain-face", "captain-sit-up", "expr-happy", "captain-peek"}
 # V10.91 (Founder, 2026-11-18): Home, Captain's panel, the shelf, Settings,
 # Looks, the weekly recap and the Playroom move to the illustrated Captain.
 SHIP |= {"expr-calm", "expr-sleepy", "acc-lemon-hat", "acc-yarn", "captain-reading", "captain-recap"}
 SHIP |= {"play-watch", "play-reach", "play-bat", "play-rolled"}
 SHIP |= {f"play-hat-{i}" for i in range(1, 5)} | {f"hug-{i}" for i in range(1, 5)}
 # Playroom frames keep their full canvas (same origin across a sequence).
-CANVAS = {n for n in ASSETS if n.startswith(("play-", "hug-"))}
+CANVAS = {n for n in ASSETS if n.startswith(("play-", "hug-"))} | set(ORIGINALS)
 
 
 def clean(img):
@@ -119,6 +155,7 @@ def main():
     sources = {key: Image.open(path).convert("RGBA") for key, path in SOURCES.items()}
     entries = []
     for name, (src, box, max_w, planned, use, rows) in ASSETS.items():
+        box = box or (0, 0, *sources[src].size)  # an original: the whole picture
         img = clean(sources[src].crop(box))
         if name not in CANVAS:
             img = trim(img)
@@ -149,7 +186,7 @@ def main():
             "auditRows": rows,
         })
         print(f"{verdict:13} {name:15} {img.width}x{img.height} planned {planned}pt (clear up to {img.width // 3}pt) {os.path.getsize(path) // 1024}KB")
-    manifest = {"note": "Captain Illustrated Asset Pack v1. shipped=true: also in Public/captain/; the rest stay staged until their place migrates.", "assets": entries}
+    manifest = {"note": "Captain Illustrated Asset Pack v1 (+ Playroom Addendum v1.1). Originals from the Founder's pack are used whole; shipped=true: also in Public/captain/; the rest stay staged until a place uses them.", "assets": entries}
     for folder in (OUT, PUBLIC):
         (folder / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
 

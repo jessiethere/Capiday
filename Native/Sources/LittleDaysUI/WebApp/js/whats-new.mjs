@@ -4,6 +4,24 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.92",
+    date: "2026-11-18",
+    zh: {
+      title: "Captain 换成原图",
+      items: [
+        "Captain 的插画全部换成画师的原图：欢迎卡片上趴在卡片边、首页探头、眯眼笑、头像、帽子和毛线球、玩毛线球的四帧、每周回看，画面更完整也更清楚。",
+        "欢迎卡片上，卡片边缘正好落在 Captain 两爪之间的胸毛下沿，两只爪子搭在卡片前面。",
+      ],
+    },
+    en: {
+      title: "Captain's original artwork",
+      items: [
+        "Captain now uses the artist's original files everywhere: the card-edge peek on the welcome card, Home, the smile, the avatar, the hat and yarn ball, the four yarn frames and the weekly recap — fuller and sharper.",
+        "On the welcome card the card's edge now runs along the chest fur between Captain's paws, so both paws rest in front of the card.",
+      ],
+    },
+  },
+  {
     version: "10.91",
     date: "2026-11-18",
     zh: {

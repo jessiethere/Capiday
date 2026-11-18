@@ -1,55 +1,55 @@
 {
- "note": "Captain Illustrated Asset Pack v1. shipped=true: also in Public/captain/; the rest stay staged until their place migrates.",
+ "note": "Captain Illustrated Asset Pack v1 (+ Playroom Addendum v1.1). Originals from the Founder's pack are used whole; shipped=true: also in Public/captain/; the rest stay staged until a place uses them.",
  "assets": [
   {
-   "name": "captain-lie",
+   "name": "captain-peek",
    "status": "APPROVED",
    "shipped": true,
-   "source": "docs/visual/captain-pack-v1/source-lying.png",
-   "canvas": false,
+   "source": "docs/visual/captain-pack-v1/original/poses/card-edge-peek.png",
+   "canvas": true,
    "sourceSize": [
-    1254,
-    1254
+    768,
+    598
    ],
    "sourceBox": [
-    200,
-    92,
-    1082,
-    1144
+    0,
+    0,
+    768,
+    598
    ],
-   "width": 540,
-   "height": 640,
-   "bytes": 99278,
-   "maxSharpPt": 180,
-   "plannedPt": 120,
-   "upscaleAt3x": 0.67,
-   "use": "Lying down, awake, paws forward (Home Captain on the today card; idle)",
+   "width": 768,
+   "height": 598,
+   "bytes": 87900,
+   "maxSharpPt": 256,
+   "plannedPt": 132,
+   "upscaleAt3x": 0.52,
+   "use": "Card-edge peek: paws over a card's top edge (guide welcome)",
    "auditRows": [
-    11
+    8
    ]
   },
   {
    "name": "captain-face",
    "status": "APPROVED",
    "shipped": true,
-   "source": "docs/visual/captain-pack-v1/source-sheet.png",
-   "canvas": false,
+   "source": "docs/visual/captain-pack-v1/original/portraits/avatar.png",
+   "canvas": true,
    "sourceSize": [
-    1254,
-    1254
+    600,
+    600
    ],
    "sourceBox": [
-    28,
-    74,
-    588,
-    679
+    0,
+    0,
+    600,
+    600
    ],
-   "width": 360,
-   "height": 386,
-   "bytes": 44923,
-   "maxSharpPt": 120,
+   "width": 600,
+   "height": 600,
+   "bytes": 90907,
+   "maxSharpPt": 200,
    "plannedPt": 64,
-   "upscaleAt3x": 0.53,
+   "upscaleAt3x": 0.32,
    "use": "Front bust, calm (avatar 28-64 pt: guide, panel header, Ask Captain, Settings)",
    "auditRows": [
     9,
@@ -90,24 +90,24 @@
    "name": "acc-lemon-hat",
    "status": "APPROVED",
    "shipped": true,
-   "source": "docs/visual/captain-pack-v1/source-sheet.png",
-   "canvas": false,
+   "source": "docs/visual/captain-pack-v1/original/accessories/lemon-hat.png",
+   "canvas": true,
    "sourceSize": [
-    1254,
-    1254
+    512,
+    512
    ],
    "sourceBox": [
-    71,
-    757,
-    527,
-    1148
+    0,
+    0,
+    512,
+    512
    ],
-   "width": 436,
-   "height": 374,
-   "bytes": 34147,
-   "maxSharpPt": 145,
+   "width": 512,
+   "height": 512,
+   "bytes": 37587,
+   "maxSharpPt": 170,
    "plannedPt": 96,
-   "upscaleAt3x": 0.66,
+   "upscaleAt3x": 0.56,
    "use": "Lemon hat accessory (outfit 'lemon')",
    "auditRows": [
     11,
@@ -121,24 +121,24 @@
    "name": "acc-yarn",
    "status": "APPROVED",
    "shipped": true,
-   "source": "docs/visual/captain-pack-v1/source-sheet.png",
-   "canvas": false,
+   "source": "docs/visual/captain-pack-v1/original/accessories/yarn-ball.png",
+   "canvas": true,
    "sourceSize": [
-    1254,
-    1254
+    512,
+    512
    ],
    "sourceBox": [
-    713,
-    784,
-    1173,
-    1207
+    0,
+    0,
+    512,
+    512
    ],
-   "width": 300,
-   "height": 276,
-   "bytes": 21297,
-   "maxSharpPt": 100,
+   "width": 512,
+   "height": 512,
+   "bytes": 46258,
+   "maxSharpPt": 170,
    "plannedPt": 80,
-   "upscaleAt3x": 0.8,
+   "upscaleAt3x": 0.47,
    "use": "Yarn ball accessory (outfit 'yarn'; Playroom ball)",
    "auditRows": [
     19,
@@ -149,11 +149,11 @@
    "name": "play-watch",
    "status": "APPROVED",
    "shipped": true,
-   "source": "docs/visual/captain-pack-v1/source-play.png",
+   "source": "docs/visual/captain-pack-v1/original/playroom/01-notice.png",
    "canvas": true,
    "sourceSize": [
-    1536,
-    1024
+    768,
+    512
    ],
    "sourceBox": [
     0,
@@ -163,7 +163,7 @@
    ],
    "width": 768,
    "height": 512,
-   "bytes": 65664,
+   "bytes": 65055,
    "maxSharpPt": 256,
    "plannedPt": 220,
    "upscaleAt3x": 0.86,
@@ -176,21 +176,21 @@
    "name": "play-reach",
    "status": "APPROVED",
    "shipped": true,
-   "source": "docs/visual/captain-pack-v1/source-play.png",
+   "source": "docs/visual/captain-pack-v1/original/playroom/02-reach.png",
    "canvas": true,
    "sourceSize": [
-    1536,
-    1024
+    768,
+    512
    ],
    "sourceBox": [
-    768,
     0,
-    1536,
+    0,
+    768,
     512
    ],
    "width": 768,
    "height": 512,
-   "bytes": 65403,
+   "bytes": 64232,
    "maxSharpPt": 256,
    "plannedPt": 220,
    "upscaleAt3x": 0.86,
@@ -203,21 +203,21 @@
    "name": "play-bat",
    "status": "APPROVED",
    "shipped": true,
-   "source": "docs/visual/captain-pack-v1/source-play.png",
+   "source": "docs/visual/captain-pack-v1/original/playroom/03-nudge.png",
    "canvas": true,
    "sourceSize": [
-    1536,
-    1024
+    768,
+    512
    ],
    "sourceBox": [
     0,
-    512,
+    0,
     768,
-    1024
+    512
    ],
    "width": 768,
    "height": 512,
-   "bytes": 64646,
+   "bytes": 64140,
    "maxSharpPt": 256,
    "plannedPt": 220,
    "upscaleAt3x": 0.86,
@@ -230,21 +230,21 @@
    "name": "play-rolled",
    "status": "APPROVED",
    "shipped": true,
-   "source": "docs/visual/captain-pack-v1/source-play.png",
+   "source": "docs/visual/captain-pack-v1/original/playroom/04-settle.png",
    "canvas": true,
    "sourceSize": [
-    1536,
-    1024
+    768,
+    512
    ],
    "sourceBox": [
+    0,
+    0,
     768,
-    512,
-    1536,
-    1024
+    512
    ],
    "width": 768,
    "height": 512,
-   "bytes": 65079,
+   "bytes": 64414,
    "maxSharpPt": 256,
    "plannedPt": 220,
    "upscaleAt3x": 0.86,
@@ -473,8 +473,8 @@
    "name": "captain-reading",
    "status": "APPROVED",
    "shipped": true,
-   "source": "docs/visual/captain-pack-v1/source-reading-journal.webp",
-   "canvas": false,
+   "source": "docs/visual/captain-pack-v1/original/poses/reading-journal.png",
+   "canvas": true,
    "sourceSize": [
     768,
     547
@@ -485,12 +485,12 @@
     768,
     547
    ],
-   "width": 739,
-   "height": 514,
-   "bytes": 89218,
-   "maxSharpPt": 246,
+   "width": 768,
+   "height": 547,
+   "bytes": 89354,
+   "maxSharpPt": 256,
    "plannedPt": 120,
-   "upscaleAt3x": 0.49,
+   "upscaleAt3x": 0.47,
    "use": "Looking at the journal, a sprig beside (weekly recap entry: week card)",
    "auditRows": [
     18
@@ -500,8 +500,8 @@
    "name": "captain-recap",
    "status": "APPROVED",
    "shipped": true,
-   "source": "docs/visual/captain-pack-v1/source-weekly-recap.webp",
-   "canvas": false,
+   "source": "docs/visual/captain-pack-v1/original/interactions/weekly-recap.png",
+   "canvas": true,
    "sourceSize": [
     768,
     640
@@ -512,12 +512,12 @@
     768,
     640
    ],
-   "width": 758,
-   "height": 613,
-   "bytes": 112153,
-   "maxSharpPt": 252,
+   "width": 768,
+   "height": 640,
+   "bytes": 112319,
+   "maxSharpPt": 256,
    "plannedPt": 200,
-   "upscaleAt3x": 0.79,
+   "upscaleAt3x": 0.78,
    "use": "Lying by an open album of landscapes, looking up (weekly recap page)",
    "auditRows": [
     18
@@ -527,24 +527,24 @@
    "name": "expr-calm",
    "status": "APPROVED",
    "shipped": true,
-   "source": "docs/visual/captain-pack-v1/source-expressions.png",
-   "canvas": false,
+   "source": "docs/visual/captain-pack-v1/original/expressions/calm.png",
+   "canvas": true,
    "sourceSize": [
-    1254,
-    1254
+    600,
+    600
    ],
    "sourceBox": [
-    102,
-    16,
-    566,
-    610
+    0,
+    0,
+    600,
+    600
    ],
-   "width": 360,
-   "height": 462,
-   "bytes": 53766,
-   "maxSharpPt": 120,
+   "width": 600,
+   "height": 600,
+   "bytes": 80041,
+   "maxSharpPt": 200,
    "plannedPt": 96,
-   "upscaleAt3x": 0.8,
+   "upscaleAt3x": 0.48,
    "use": "Expression calm (looking aside)",
    "auditRows": [
     12,
@@ -556,24 +556,24 @@
    "name": "expr-happy",
    "status": "APPROVED",
    "shipped": true,
-   "source": "docs/visual/captain-pack-v1/source-expressions.png",
-   "canvas": false,
+   "source": "docs/visual/captain-pack-v1/original/expressions/happy.png",
+   "canvas": true,
    "sourceSize": [
-    1254,
-    1254
+    600,
+    600
    ],
    "sourceBox": [
-    687,
-    25,
-    1158,
-    615
+    0,
+    0,
+    600,
+    600
    ],
-   "width": 360,
-   "height": 452,
-   "bytes": 52342,
-   "maxSharpPt": 120,
+   "width": 600,
+   "height": 600,
+   "bytes": 79496,
+   "maxSharpPt": 200,
    "plannedPt": 96,
-   "upscaleAt3x": 0.8,
+   "upscaleAt3x": 0.48,
    "use": "Expression happy (eyes closed, smiling)",
    "auditRows": [
     6,
@@ -585,24 +585,24 @@
    "name": "expr-curious",
    "status": "APPROVED",
    "shipped": false,
-   "source": "docs/visual/captain-pack-v1/source-expressions.png",
-   "canvas": false,
+   "source": "docs/visual/captain-pack-v1/original/expressions/curious.png",
+   "canvas": true,
    "sourceSize": [
-    1254,
-    1254
+    600,
+    600
    ],
    "sourceBox": [
-    94,
-    619,
-    559,
-    1233
+    0,
+    0,
+    600,
+    600
    ],
-   "width": 360,
-   "height": 474,
-   "bytes": 53243,
-   "maxSharpPt": 120,
+   "width": 600,
+   "height": 600,
+   "bytes": 79637,
+   "maxSharpPt": 200,
    "plannedPt": 96,
-   "upscaleAt3x": 0.8,
+   "upscaleAt3x": 0.48,
    "use": "Expression curious (wide eyes, head tilt)",
    "auditRows": [
     12,
@@ -613,29 +613,134 @@
    "name": "expr-sleepy",
    "status": "APPROVED",
    "shipped": true,
-   "source": "docs/visual/captain-pack-v1/source-expressions.png",
-   "canvas": false,
+   "source": "docs/visual/captain-pack-v1/original/expressions/sleepy.png",
+   "canvas": true,
    "sourceSize": [
-    1254,
-    1254
+    600,
+    600
    ],
    "sourceBox": [
-    691,
-    665,
-    1179,
-    1237
+    0,
+    0,
+    600,
+    600
    ],
-   "width": 360,
-   "height": 422,
-   "bytes": 50405,
-   "maxSharpPt": 120,
+   "width": 600,
+   "height": 600,
+   "bytes": 81938,
+   "maxSharpPt": 200,
    "plannedPt": 96,
-   "upscaleAt3x": 0.8,
+   "upscaleAt3x": 0.48,
    "use": "Expression sleepy (half-closed eyes)",
    "auditRows": [
     12,
     15
    ]
+  },
+  {
+   "name": "captain-awake",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1/original/poses/awake-lying.png",
+   "canvas": true,
+   "sourceSize": [
+    768,
+    559
+   ],
+   "sourceBox": [
+    0,
+    0,
+    768,
+    559
+   ],
+   "width": 768,
+   "height": 559,
+   "bytes": 88211,
+   "maxSharpPt": 256,
+   "plannedPt": 200,
+   "upscaleAt3x": 0.78,
+   "use": "Lying down, awake, a berry sprig behind",
+   "auditRows": []
+  },
+  {
+   "name": "captain-greeting",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1/original/interactions/greeting.png",
+   "canvas": true,
+   "sourceSize": [
+    768,
+    901
+   ],
+   "sourceBox": [
+    0,
+    0,
+    768,
+    901
+   ],
+   "width": 768,
+   "height": 901,
+   "bytes": 134780,
+   "maxSharpPt": 256,
+   "plannedPt": 150,
+   "upscaleAt3x": 0.59,
+   "use": "Greeting: sitting, a paw raised, a blossom sprig",
+   "auditRows": [
+    7,
+    8
+   ]
+  },
+  {
+   "name": "captain-reminder",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1/original/interactions/gentle-reminder.png",
+   "canvas": true,
+   "sourceSize": [
+    768,
+    697
+   ],
+   "sourceBox": [
+    0,
+    0,
+    768,
+    697
+   ],
+   "width": 768,
+   "height": 697,
+   "bytes": 107414,
+   "maxSharpPt": 256,
+   "plannedPt": 150,
+   "upscaleAt3x": 0.59,
+   "use": "Gentle reminder: a paw on a closed journal",
+   "auditRows": [
+    17
+   ]
+  },
+  {
+   "name": "captain-half",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1/original/portraits/half-body.png",
+   "canvas": true,
+   "sourceSize": [
+    600,
+    600
+   ],
+   "sourceBox": [
+    0,
+    0,
+    600,
+    600
+   ],
+   "width": 600,
+   "height": 600,
+   "bytes": 75850,
+   "maxSharpPt": 200,
+   "plannedPt": 96,
+   "upscaleAt3x": 0.48,
+   "use": "Half-body: sitting, paws together",
+   "auditRows": []
   }
  ]
 }

@@ -1,6 +1,6 @@
 // V10.90 · New-user guide fine-tuning, walked through at iPhone sizes
 // (390×844 and 375×667, touch). Chromium with synthetic photos — not an iPhone.
-//  1. Welcome: Captain (captain-lie) rests both front paws on the card's top
+//  1. Welcome: Captain (captain-peek, poses/card-edge-peek.png) rests both front paws on the card's top
 //     edge, head and ears above it, the words below the paws.
 //  2. Photo step: only 选今天的照片 is highlighted; the tip keeps the words and
 //     跳过, no 下一步; tapping the button opens the photo picker at once.
@@ -49,9 +49,9 @@ const lib = path.join(__dirname, "../Packages/LittleDaysCore/Sources/LittleDaysC
         const cat = await box(page, "#home-guide .hg-peek img");
         const words = await box(page, "#home-guide .hg-body");
         const under = cat.y + cat.height - card.y; // how far the paws reach over the card's edge
-        assert.equal(await page.locator('#home-guide .hg-peek img[data-asset="captain-lie"]').count(), 1);
+        assert.equal(await page.locator('#home-guide .hg-peek img[data-asset="captain-peek"]').count(), 1);
         assert.ok(under >= 8 && under <= 20, `${L}: paws rest on the top edge (${under.toFixed(1)}px over it)`);
-        assert.ok(cat.y < card.y - 100 && cat.y >= 0, `${L}: head and ears above the card, on screen (cat top ${cat.y.toFixed(0)}, card top ${card.y.toFixed(0)})`);
+        assert.ok(cat.y < card.y - 90 && cat.y >= 0, `${L}: head and ears above the card, on screen (cat top ${cat.y.toFixed(0)}, card top ${card.y.toFixed(0)})`);
         assert.ok(Math.abs(cat.x + cat.width / 2 - (card.x + card.width / 2)) < 3, `${L}: centred on the card`);
         assert.ok(words.y >= cat.y + cat.height + 4, `${L}: the words start below the paws`);
         assert.ok(card.y + card.height <= h, `${L}: the card is on screen`);

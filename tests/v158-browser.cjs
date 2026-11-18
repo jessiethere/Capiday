@@ -54,7 +54,7 @@ const shots = process.env.SHOTS || "";
       await page.goto(base);
       await page.waitForSelector('#home-guide[data-step="welcome"] .hg-card');
       assert.match(await page.locator("#home-guide .hg-body").innerText(), /嗨！我是 Captain。带你认识一下开铺手帐吧？/);
-      assert.equal(await page.locator('#home-guide .hg-captain.hg-peek img.bot-captain[data-asset="captain-lie"]').count(), 1, "Captain on the welcome (V10.90: paws on the card's edge)");
+      assert.equal(await page.locator('#home-guide .hg-captain.hg-peek img.bot-captain[data-asset="captain-peek"]').count(), 1, "Captain on the welcome (V10.90: paws on the card's edge)");
       assert.equal(await page.evaluate(() => document.activeElement?.dataset.action), "hg-next", "focus on 带我看看");
       assert.equal((await record(page)).home, "new");
       if (shots) await page.screenshot({ path: `${shots}/v158-welcome-zh-375.png` });
