@@ -105,15 +105,15 @@ Status values:
 | 3 | Botanical decorative vignettes (`botanicals.mjs` `captainVignette`) | Illustration | none | none | none | 1 | — | — | **MIGRATED** |
 | 4 | Home · Captain invitation card (`keeperInviteHTML`, Captain still off) | Illustration `captain-sit` | buttons only | none (Captain not chosen yet) | none | 1 | greeting (stand-in: sit) | — | **MIGRATED** |
 | 5 | First-stamp moment pill (`stampMoment` `.sm-captain`) | Illustration `captain-stamp` | none | 3D version showed the outfit; now no outfit (state kept) | `captain-press` CSS (works with the picture) | 2 | (lemon-hat variant later) | — | **MIGRATED** |
-| 6 | First-page card after the first page (`fp-art`, `keeperArt("happy")`) | 3D happy | close button only | shows outfit | none | 1 | `expr-happy` (staged) or `captain-stamp` | yes | **READY TO MIGRATE** |
-| 7 | Captain onboarding · intro (`openKeeperOnboarding` `.keeper-intro`, `keeperImage` idle) | 3D idle | none (static) | none (before choosing) | none | 1 | greeting / sitting | yes (`captain-sit` now, or `captain-sit-up` once confirmed) | **READY TO MIGRATE** |
-| 8 | Home guide (3-step tour) · Captain steps (`.hg-captain`, welcome / invite) | 3D idle / happy | none | shows outfit if chosen | none | 1 | greeting / happy (stand-in: sit) | yes for the large picture (`captain-sit`) | **READY TO MIGRATE** |
-| 9 | Home guide · small avatar (`.hg-avatar`, ~28 pt) | 3D idle | none | shows outfit | none | 1 | avatar / bust: `captain-face` (staged) | yes once confirmed (outfit not shown until the lemon-hat decision) | **READY AFTER CONFIRMATION** |
-| 10 | Page-save stamp burst (`keeperStamp`, happy + ✓) | 3D happy | none | shows outfit | pop-in CSS | 2 | stamp moment (`captain-stamp`) | yes, but outfit no longer shown (state kept) | **READY TO MIGRATE** (Phase 2) |
+| 6 | First-page card after the first page (`fp-art`, `keeperArt("happy")`) | Illustration `expr-happy` (V10.89) | close button only | shows outfit | none | 1 | `expr-happy` (staged) or `captain-stamp` | yes | **MIGRATED** |
+| 7 | Captain onboarding · intro (`openKeeperOnboarding` `.keeper-intro`, `keeperImage` idle) | Illustration `captain-sit-up` (V10.89) | none (static) | none (before choosing) | none | 1 | greeting / sitting | yes (`captain-sit` now, or `captain-sit-up` once confirmed) | **MIGRATED** |
+| 8 | Home guide (3-step tour) · Captain steps (`.hg-captain`, welcome / invite) | Illustration: welcome `captain-sit-up`, invite `expr-happy` (V10.89) | none | shows outfit if chosen | none | 1 | greeting / happy (stand-in: sit) | yes for the large picture (`captain-sit`) | **MIGRATED** |
+| 9 | Home guide · small avatar (`.hg-avatar`, ~28 pt) | Illustration `captain-face` (V10.89) | none | shows outfit | none | 1 | avatar / bust: `captain-face` (staged) | yes once confirmed (outfit not shown until the lemon-hat decision) | **MIGRATED** |
+| 10 | Page-save stamp burst (`keeperStamp`, happy + ✓) | Illustration `captain-stamp` (V10.89) | none | shows outfit | pop-in CSS | 2 | stamp moment (`captain-stamp`) | yes, but outfit no longer shown (state kept) | **MIGRATED** |
 | 11 | Home · Captain on the today card (`keeperPerchHTML`, peek) | 3D peek | tap → panel; speech bubble; Captain tag; growth line | shows lemon hat / yarn | `k-peek` entrance; eye follow (`data-keeper-follow`) | 2 | peek-over-card pose + calm / happy + lemon-hat variants | not yet: needs the Founder to confirm `captain-lie` as the perch pose, the lemon-hat way (2b), and dropping eye-follow | **WAITING ON FOUNDER DECISIONS** · KEEP TEMPORARILY |
 | 12 | Captain panel header and notes (`kp-head`, `kp-note`: idle / happy) | 3D | panel navigation (Today / Organize / Memories / Looks / Play) | shows outfit | none | 2 | avatar / bust + calm / happy / curious | art exists (`captain-face`, `expr-*`); outfit display waits on the lemon-hat decision | **WAITING ON FOUNDER DECISIONS** · KEEP TEMPORARILY |
-| 13 | Feedback reply sheet (`keeper-sheet-head`, encouraging) | 3D | sheet | shows outfit | none | 2 | happy / encouraging bust | art exists (`expr-happy`); outfit waits on the lemon-hat decision | **WAITING ON FOUNDER DECISIONS** |
-| 14 | Reader · "Ask Captain" button art (`keeper-ask-art`, encouraging) | 3D | button | shows outfit | none | 2 | small avatar | art exists (`captain-face`); outfit waits on the lemon-hat decision | **WAITING ON FOUNDER DECISIONS** |
+| 13 | Feedback reply sheet (`keeper-sheet-head`, encouraging) | Illustration `expr-happy` (V10.89; outfit not drawn, state kept) | sheet | shows outfit | none | 2 | happy / encouraging bust | art exists (`expr-happy`); outfit waits on the lemon-hat decision | **MIGRATED** |
+| 14 | Reader · "Ask Captain" button art (`keeper-ask-art`, encouraging) | Illustration `captain-face` (V10.89; outfit not drawn, state kept) | button | shows outfit | none | 2 | small avatar | art exists (`captain-face`); outfit waits on the lemon-hat decision | **MIGRATED** |
 | 15 | Bookshelf Captain (`keeperShelfHTML`, idle / sleepy at night) | 3D | tap → line | shows outfit | none | 2 | sitting + sleeping with outfit variants | sit / sleep / lie exist; outfit waits on the lemon-hat decision | **NEEDS CHARACTER ASSET** · KEEP TEMPORARILY |
 | 16 | Settings · Captain card preview and Captain management profile (`keeper-card`, `keeper-profile`) | 3D idle | opens management | shows the chosen outfit (preview) | none | 2 | avatar / bust with outfit variants | art exists (`captain-face`); preview must show the outfit → lemon-hat decision | **WAITING ON FOUNDER DECISIONS** · KEEP TEMPORARILY |
 | 17 | Reminders / guidance (Captain prompt bubble on Home; daily reminder notification) | Text only (bubble sits on the 3D perch) | — | — | — | 2 | gentle reminder | stand-in `expr-curious` if the Founder agrees | **NEEDS CHARACTER ASSET** (or stand-in) |
@@ -122,15 +122,24 @@ Status values:
 | 20 | Playroom (`keeperPlayHTML`: play idle, hug animation frames, yarn ball) | 3D photos / frames | drag / tap yarn ball, poke → happy | lemon / yarn sets (`keeperPlay`) | sprite frames, reduce-motion fallback | 3 | Playroom frames + yarn ball in the illustrated style | no | **BLOCKED** · KEEP TEMPORARILY (migrates last; 4 yarn frames + `acc-yarn` exist; hug frames and hatted frames missing) |
 | 21 | `keeperMiniHTML` (`.keeper-mini`) | 3D (defined, not rendered anywhere) | — | — | — | — | — | — | KEEP TEMPORARILY (dead code; remove once 3D rendering is retired) |
 
+**V10.89 (Founder: 「可以放」, 2026-11-18)**:
+- `captain-face`, `captain-sit-up` and `expr-happy` now ship in `Public/captain/`; the other 10 Pack v1 cuts stay staged.
+- #6–#10 are migrated (Phase 1 complete).
+- #13 and #14 are migrated too: they appear in the reader, next to the illustrated save stamp (#10) and first-stamp pill (#5), so the reader shows only one Captain.
+- Outfits are not drawn in these places; `keeper.outfit` is untouched.
+- Still waiting on the Founder: the lemon-hat approach, eye-follow, Playroom mode and coat colour (section 2b). Until then #11, #12, #15, #16, #19 and #20 stay 3D.
+
 **Mixing check today**:
 - Home without Captain shows only the illustrated invitation.
 - Home with Captain on shows the 3D perch. The illustrated first-stamp pill can appear at the same moment, which is a known temporary mix; it ends with Phase 2 (#11).
 - The empty-month page and the covers are illustrated only.
+- V10.89: the reader is illustrated only (save stamp, first-stamp pill, Ask Captain, reply). Onboarding dialogs (first-page card, Captain intro) are illustrated only.
+- Replaying the Home guide with Captain on shows the illustrated guide over the shaded Home, with the 3D perch dimmed behind it. This is the same temporary mix as above, and it ends with #11.
 
 ## 4. Migration order
 
-1. **Phase 1, static scenes.** Done: #1–#4. Ready now: #6, #7 and #8 (large picture). #9 is ready once Pack v1 is confirmed (`captain-face`).
+1. **Phase 1, static scenes.** Done: #1–#4 (V10.88) and #6–#9 (V10.89).
 2. **Phase 2, light interaction.**
-   - #5 is done; #10 is ready.
+   - Done: #5 (V10.88), #10, #13 and #14 (V10.89).
    - #11–#18 need peek / bust / expressions / reminder / recap art, plus lemon-hat variants for anything that shows the outfit today.
 3. **Phase 3, last.** #19–#20 (outfits, expression animation, Playroom, yarn ball). Remove 3D rendering only when the illustrated set fully replaces each capability.

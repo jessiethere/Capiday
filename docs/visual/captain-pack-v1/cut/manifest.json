@@ -1,5 +1,5 @@
 {
- "note": "Captain Illustrated Asset Pack v1, staged for Founder confirmation; not shipped to Public/ yet.",
+ "note": "Captain Illustrated Asset Pack v1. shipped=true: also in Public/captain/; the rest stay staged until their place migrates.",
  "assets": [
   {
    "name": "captain-lie",
@@ -30,7 +30,7 @@
   {
    "name": "captain-face",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1/source-sheet.png",
    "sourceSize": [
     1254,
@@ -59,7 +59,7 @@
   {
    "name": "captain-sit-up",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1/source-sheet.png",
    "sourceSize": [
     1254,
@@ -275,7 +275,7 @@
   {
    "name": "expr-happy",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1/source-expressions.png",
    "sourceSize": [
     1254,

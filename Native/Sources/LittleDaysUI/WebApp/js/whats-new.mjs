@@ -4,6 +4,28 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.89",
+    date: "2026-11-18",
+    zh: {
+      title: "更多地方换成插画 Captain",
+      items: [
+        "首页新手引导里，Captain 坐着抬头跟你打招呼，邀请你做第一页时它会笑眯眯的；引导小卡片上的小头像也换成了插画。",
+        "做完第一页的完成卡、Captain 开场介绍、保存后的小章，都换成了插画 Captain。",
+        "阅读页「听听 Captain 怎么说」按钮和 Captain 的回复卡片也换成了插画，同一页不会再同时出现两种 Captain。",
+        "首页、Captain 面板、书架、设置、装扮和 Playroom 里的 Captain 暂时不变，等柠檬帽等装扮的插画定下来再换；你选的装扮都保留着。",
+      ],
+    },
+    en: {
+      title: "More of the illustrated Captain",
+      items: [
+        "In Home's first-time guide, Captain sits up to say hello and smiles when inviting you to make your first page; the little avatar on the guide cards is illustrated too.",
+        "The first-page card, Captain's introduction and the little stamp after saving now show the illustrated Captain.",
+        "In the reader, “What does Captain think?” and Captain's reply show the illustrated Captain, so one page never shows two different Captains.",
+        "Captain on Home, in Captain's panel, on the shelf, in Settings, Looks and the Playroom stays as it is until the lemon hat and other looks are illustrated; your chosen look is kept.",
+      ],
+    },
+  },
+  {
     version: "10.88",
     date: "2026-11-18",
     zh: {

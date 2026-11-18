@@ -50,7 +50,7 @@ const shots = process.env.SHOTS_DIR || "";
     await page.waitForSelector(".keeper-onboard");
     // V8.0: Captain only — no animal choice, just Captain's picture.
     assert.equal(await page.locator('[data-action="keeper-pick-animal"]').count(), 0);
-    assert.equal(await page.locator('.keeper-intro img.keeper-img[data-animal="cat"]').count(), 1);
+    assert.equal(await page.locator('.keeper-intro img.bot-captain[data-asset="captain-sit-up"]').count(), 1);
     await page.locator("[data-keeper-name]").fill("糯米");
     await page.locator('[data-action="keeper-pick-mode"][data-mode="gentle"]').click();
     assert.equal(await page.locator("[data-keeper-name]").inputValue(), "糯米", "the name survives picking a mode");
@@ -91,12 +91,18 @@ const shots = process.env.SHOTS_DIR || "";
     await page.keyboard.type("Today was exhausting, but I still managed to work out. I'm proud that I didn't give up.");
     await page.locator('[data-action="save-entry"]').tap();
     await page.waitForSelector(".keeper-stamp");
+    // V10.89: the illustrated Captain pressing the stamp — no 3D Captain here any more.
+    assert.equal(await page.locator('.keeper-stamp img.bot-vignette[data-asset="captain-stamp"]').count(), 1);
+    assert.equal(await page.locator(".keeper-stamp .keeper-img").count(), 0);
     // V10.11: the saved page opens in the reader; 听听 Captain 怎么说 is under ⋯ there.
     await page.waitForSelector(".reader .flip-page");
     await page.locator('[data-action="reader-more"]').click();
     await page.waitForSelector("#choose-dialog[open] .reader-keeper .keeper-ask");
+    assert.equal(await page.locator('.reader-keeper .keeper-ask-art img.bot-captain[data-asset="captain-face"]').count(), 1, "V10.89: Ask Captain shows the illustrated bust");
     await page.locator(".reader-keeper .keeper-ask").click();
     await page.waitForSelector(".keeper-sheet .keeper-reply");
+    assert.equal(await page.locator('.keeper-sheet-head img.bot-captain[data-asset="expr-happy"]').count(), 1, "V10.89: the reply comes from the happy Captain");
+    assert.equal(await page.locator(".keeper-sheet .keeper-img").count(), 0);
     assert.match(await page.locator(".keeper-reply").innerText(), /辛苦|长|消耗|不轻松/);
     assert.match(await page.locator(".keeper-local").innerText(), /这台设备上生成/);
     if (shots) await page.screenshot({ path: `${shots}/v71-reply.png` });

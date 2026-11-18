@@ -48,6 +48,30 @@
 
 ## 更新日志
 
+### 2026-11-18 — V10.89 Captain Pack v1 接入（Phase 1 完成 + 阅读页）
+
+- **需求**：Founder 回复「可以放」→ 按上一条建议，把已确认的 Pack v1 插画接入现在就能换、不需要画装扮的位置。柠檬帽、眼睛跟随、Playroom、毛色 4 项没有单独回复，按「暂不改动」处理，相关位置保持 3D。
+- **文件**：
+  - `tools/cut_captain_pack.py`：新增 `SHIP`（captain-face / captain-sit-up / expr-happy），这 3 张同时写入 `Public/captain/`，manifest 标 `shipped`；其余 10 张仍 STAGED。
+  - `Public/js/botanicals.mjs`：`CAPTAIN_PACK` 登记表 + `captainPortrait("face"|"happy"|"sit-up")`，同样限制在 3x 清晰尺寸内，`alt=""`、`aria-hidden`。
+  - `Public/app.js`：替换 7 处 `keeperArt` / `keeperImage`——
+    - #6 第一页完成卡 → expr-happy；
+    - #7 Captain 开场介绍 → captain-sit-up；
+    - #8 首页引导大图：welcome → sit-up，invite → happy；
+    - #9 引导小头像 → captain-face；
+    - #10 保存后的小章 → captain-stamp；
+    - #14 阅读页「听听 Captain 怎么说」按钮 → captain-face；
+    - #13 Captain 回复卡片 → expr-happy。
+  - `Public/styles.css`：V10.89 区块（尺寸与圆形头像裁切）；角色插画在 cool / minimal 主题下保持全彩，不像植物装饰那样变淡。
+  - `Public/js/whats-new.mjs`：10.89。
+  - 测试：新 `tests/v193-browser.cjs`；`v71` / `v158` 改为检查插画；`tests/test_captain_pack.py` 改为检查「只有确认的 3 张上线」。
+  - `docs/CAPTAIN_IDENTITY_MIGRATION.md`：#6–#10、#13、#14 → MIGRATED。
+- **决定**：
+  - #13 和 #14 也一起换，因为它们和 #10、#5 都出现在阅读页，这样同一页不会混用两种 Captain。
+  - 这些位置不画装扮，`keeper.outfit` 不动（v193 有检查）。
+  - 没有删除任何 3D 代码：`keeperArt` / `keeperImage` 仍用于首页、面板、书架、设置、装扮、Playroom。
+- **已知**：Captain 开启时重播首页引导，插画引导会盖在变暗的首页上，后面是 3D 首页 Captain——和盖章提示同类的临时混用，#11 迁移后结束。
+
 ### 2026-11-18 — Captain Illustrated Asset Pack v1 收到：裁切 + 清晰度评估（STAGED，未接入页面）
 
 - **需求**：Founder 发来 4 张 Pack v1 插画（透明 PNG，无文字）：

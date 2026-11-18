@@ -2104,14 +2104,15 @@ function keeperStamp() {
   const stamp = document.createElement("div");
   stamp.className = "keeper-stamp";
   stamp.setAttribute("aria-hidden", "true");
-  stamp.innerHTML = `${keeperArt("happy", { follow: false })}<i class="keeper-stamp-mark">✓</i>`;
+  // V10.89: the illustrated Captain pressing the stamp (Pack v1 / scenes v1).
+  stamp.innerHTML = `${Bot.captainVignette({ pose: "stamp", size: 72 })}<i class="keeper-stamp-mark">✓</i>`;
   ($("#phone") || document.body).append(stamp);
   setTimeout(() => stamp.remove(), 2400);
 }
 function keeperAskHTML(date, momentId) {
   const k = keeperNow();
   if (!Keeper.modeAllows(k, "feedback")) return "";
-  return `<button class="keeper-ask" data-action="keeper-feedback" data-date="${esc(date)}" data-moment="${esc(momentId)}"><span class="keeper-ask-art" aria-hidden="true">${keeperArt("encouraging", { follow: false })}</span>${t("keeper.ask", { name: Keeper.keeperName(k, languageCode()) })}</button>`;
+  return `<button class="keeper-ask" data-action="keeper-feedback" data-date="${esc(date)}" data-moment="${esc(momentId)}"><span class="keeper-ask-art" aria-hidden="true">${Bot.captainPortrait("face", { size: 26 })}</span>${t("keeper.ask", { name: Keeper.keeperName(k, languageCode()) })}</button>`;
 }
 function keeperShelfHTML(books) {
   const k = keeperNow();
@@ -2138,7 +2139,7 @@ async function openKeeperFeedback(date, momentId) {
   saveKeeper((x) => (x.recent = [...x.recent, ...(reply.used || [])].slice(-12)));
   logEvent("keeper_feedback", { kind: reply.source });
   const dialog = $("#choose-dialog");
-  dialog.innerHTML = `<div class="choose-sheet keeper-sheet"><div class="choose-grabber" aria-hidden="true"></div><div class="keeper-sheet-head">${keeperArt("encouraging")}<b>${esc(name)}</b></div><p class="keeper-reply">${esc(reply.text)}</p><p class="save-help keeper-local">🔒 ${t("keeper.localNote")}</p><button class="choose-cancel" data-action="choose-close">${t("keeper.thanks")}</button></div>`;
+  dialog.innerHTML = `<div class="choose-sheet keeper-sheet"><div class="choose-grabber" aria-hidden="true"></div><div class="keeper-sheet-head"><span class="keeper-sheet-art" aria-hidden="true">${Bot.captainPortrait("happy", { size: 56 })}</span><b>${esc(name)}</b></div><p class="keeper-reply">${esc(reply.text)}</p><p class="save-help keeper-local">🔒 ${t("keeper.localNote")}</p><button class="choose-cancel" data-action="choose-close">${t("keeper.thanks")}</button></div>`;
   if (!dialog.open) dialog.showModal();
 }
 // ---------- Captain's panel (V10.3) ----------
@@ -2658,7 +2659,7 @@ function openKeeperOnboarding() {
   const k = keeperNow();
   keeperDraft ||= { animal: k.animal, name: k.name, mode: k.mode };
   const d = keeperDraft;
-  const intro = `<div class="keeper-intro"><span class="keeper">${keeperImage(catalog, { animal: "cat", mood: "idle", label: "" })}</span><span><b>${t("keeper.animal.cat")}</b><small>${t("keeper.animal.catHint")}</small></span></div>`;
+  const intro = `<div class="keeper-intro"><span class="keeper-intro-art" aria-hidden="true">${Bot.captainPortrait("sit-up", { size: 64 })}</span><span><b>${t("keeper.animal.cat")}</b><small>${t("keeper.animal.catHint")}</small></span></div>`;
   const modes = Keeper.MODES.map((m) => `<button class="keeper-mode ${d.mode === m ? "selected" : ""}" data-action="keeper-pick-mode" data-mode="${m}" aria-pressed="${d.mode === m}"><b>${t("keeper.mode." + m)}</b><small>${t("keeper.mode." + m + "Hint")}</small></button>`).join("");
   const dialog = $("#choose-dialog");
   dialog.innerHTML = `<div class="choose-sheet keeper-onboard"><div class="choose-grabber" aria-hidden="true"></div><h2>${t("keeper.onboard.title")}</h2><p class="save-help">${t("keeper.onboard.body")}</p>${intro}<h3>${t("keeper.onboard.name")}</h3><input class="name-input" data-keeper-name maxlength="12" value="${esc(d.name)}" placeholder="${esc(Keeper.defaultName(d.animal, languageCode()))}"><h3>${t("keeper.onboard.mode")}</h3><div class="keeper-modes">${modes}</div><p class="save-help keeper-local">🔒 ${t("keeper.onboard.privacy")}</p><button class="primary full-width" data-action="keeper-start">${t("keeper.onboard.start")}</button><button class="choose-cancel" data-action="keeper-onboard-later">${t("keeper.invite.later")}</button></div>`;
@@ -9773,10 +9774,11 @@ function placeHomeGuide() {
   }
   box.dataset.step = step.id;
   box.classList.toggle("hg-captain-step", Boolean(step.captain));
-  const art = step.captain ? `<div class="hg-captain" aria-hidden="true">${keeperArt(step.id === "invite" ? "happy" : "idle", { follow: false })}</div>` : "";
+  // V10.89: the illustrated Captain (Pack v1) — sitting up to say hello, smiling for the invitation.
+  const art = step.captain ? `<div class="hg-captain" aria-hidden="true">${Bot.captainPortrait(step.id === "invite" ? "happy" : "sit-up", { size: 112 })}</div>` : "";
   const head = step.captain
     ? ""
-    : `<div class="hg-head"><span class="hg-avatar" aria-hidden="true">${keeperArt("idle", { follow: false })}</span><span class="hg-count">${t("guide.count", { n: index + 1, count: middle.length })}</span><button type="button" class="hg-skip" data-action="hg-skip">${t("guide.skip")}</button></div>`;
+    : `<div class="hg-head"><span class="hg-avatar" aria-hidden="true">${Bot.captainPortrait("face", { size: 30 })}</span><span class="hg-count">${t("guide.count", { n: index + 1, count: middle.length })}</span><button type="button" class="hg-skip" data-action="hg-skip">${t("guide.skip")}</button></div>`;
   const actions =
     step.id === "welcome"
       ? `<button type="button" class="primary" data-action="hg-next">${t("hg.go")}</button><button type="button" class="secondary" data-action="hg-skip">${t("hg.explore")}</button>`
@@ -9859,7 +9861,7 @@ function maybeFirstPageCard() {
       Onboard.markFirstPage();
       logEvent("onboarding_first_page", {});
       const dialog = $("#choose-dialog");
-      dialog.innerHTML = `<div class="choose-sheet first-page-card" role="document"><div class="choose-grabber" aria-hidden="true"></div><div class="fp-art" aria-hidden="true">${keeperArt("happy", { follow: false })}</div><h2>${t("fp.title")}</h2><p>${t("fp.body")}</p><button class="primary full-width" data-action="fp-books">${t("fp.books")}</button><button class="secondary full-width" data-action="fp-home">${t("fp.home")}</button></div>`;
+      dialog.innerHTML = `<div class="choose-sheet first-page-card" role="document"><div class="choose-grabber" aria-hidden="true"></div><div class="fp-art" aria-hidden="true">${Bot.captainPortrait("happy", { size: 104 })}</div><h2>${t("fp.title")}</h2><p>${t("fp.body")}</p><button class="primary full-width" data-action="fp-books">${t("fp.books")}</button><button class="secondary full-width" data-action="fp-home">${t("fp.home")}</button></div>`;
       dialog.showModal();
       dialog.querySelector(".primary")?.focus({ preventScroll: true });
     })

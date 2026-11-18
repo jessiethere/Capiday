@@ -1,4 +1,4 @@
-"""Captain Illustrated Asset Pack v1 stays staged until the Founder confirms."""
+"""Captain Illustrated Asset Pack v1: only confirmed assets ship; the rest stay staged."""
 import json
 from pathlib import Path
 import unittest
@@ -25,12 +25,17 @@ class CaptainPackTests(unittest.TestCase):
         for entry in self.assets:
             self.assertLessEqual(entry['plannedPt'] * 3, entry['width'] * 1.2, entry['name'])
 
-    def test_staged_pack_is_not_shipped_before_confirmation(self):
+    def test_only_confirmed_assets_ship(self):
+        shipped = sorted(e['name'] for e in self.assets if e['shipped'])
+        self.assertEqual(shipped, ['captain-face', 'captain-sit-up', 'expr-happy'])
         for entry in self.assets:
-            self.assertFalse(entry['shipped'])
             for folder in ('Public', 'Native/Sources/LittleDaysUI/WebApp'):
-                self.assertEqual(list((ROOT / folder).rglob(f"{entry['name']}.png")), [], f"{entry['name']} in {folder}")
-
+                found = list((ROOT / folder).rglob(f"{entry['name']}.png"))
+                if entry['shipped']:
+                    self.assertEqual(len(found), 1, f"{entry['name']} in {folder}")
+                    self.assertEqual(found[0].read_bytes(), (CUT / f"{entry['name']}.png").read_bytes())
+                else:
+                    self.assertEqual(found, [], f"{entry['name']} in {folder}")
 
 if __name__ == '__main__':
     unittest.main()

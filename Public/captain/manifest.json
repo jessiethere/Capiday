@@ -1,0 +1,358 @@
+{
+ "note": "Captain Illustrated Asset Pack v1. shipped=true: also in Public/captain/; the rest stay staged until their place migrates.",
+ "assets": [
+  {
+   "name": "captain-lie",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1/source-lying.png",
+   "sourceSize": [
+    1254,
+    1254
+   ],
+   "sourceBox": [
+    200,
+    92,
+    1082,
+    1144
+   ],
+   "width": 540,
+   "height": 640,
+   "bytes": 99278,
+   "maxSharpPt": 180,
+   "plannedPt": 120,
+   "upscaleAt3x": 0.67,
+   "use": "Lying down, awake, paws forward (Home Captain on the today card; idle)",
+   "auditRows": [
+    11
+   ]
+  },
+  {
+   "name": "captain-face",
+   "status": "APPROVED",
+   "shipped": true,
+   "source": "docs/visual/captain-pack-v1/source-sheet.png",
+   "sourceSize": [
+    1254,
+    1254
+   ],
+   "sourceBox": [
+    28,
+    74,
+    588,
+    679
+   ],
+   "width": 360,
+   "height": 386,
+   "bytes": 44923,
+   "maxSharpPt": 120,
+   "plannedPt": 64,
+   "upscaleAt3x": 0.53,
+   "use": "Front bust, calm (avatar 28-64 pt: guide, panel header, Ask Captain, Settings)",
+   "auditRows": [
+    9,
+    12,
+    14,
+    16
+   ]
+  },
+  {
+   "name": "captain-sit-up",
+   "status": "APPROVED",
+   "shipped": true,
+   "source": "docs/visual/captain-pack-v1/source-sheet.png",
+   "sourceSize": [
+    1254,
+    1254
+   ],
+   "sourceBox": [
+    674,
+    11,
+    1233,
+    683
+   ],
+   "width": 540,
+   "height": 647,
+   "bytes": 92515,
+   "maxSharpPt": 180,
+   "plannedPt": 150,
+   "upscaleAt3x": 0.83,
+   "use": "Sitting, looking up (greeting; onboarding; Home guide)",
+   "auditRows": [
+    7,
+    8
+   ]
+  },
+  {
+   "name": "acc-lemon-hat",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1/source-sheet.png",
+   "sourceSize": [
+    1254,
+    1254
+   ],
+   "sourceBox": [
+    71,
+    757,
+    527,
+    1148
+   ],
+   "width": 436,
+   "height": 374,
+   "bytes": 34147,
+   "maxSharpPt": 145,
+   "plannedPt": 96,
+   "upscaleAt3x": 0.66,
+   "use": "Lemon hat accessory (outfit 'lemon')",
+   "auditRows": [
+    11,
+    12,
+    15,
+    16,
+    19
+   ]
+  },
+  {
+   "name": "acc-yarn",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1/source-sheet.png",
+   "sourceSize": [
+    1254,
+    1254
+   ],
+   "sourceBox": [
+    713,
+    784,
+    1173,
+    1207
+   ],
+   "width": 300,
+   "height": 276,
+   "bytes": 21297,
+   "maxSharpPt": 100,
+   "plannedPt": 80,
+   "upscaleAt3x": 0.8,
+   "use": "Yarn ball accessory (outfit 'yarn'; Playroom ball)",
+   "auditRows": [
+    19,
+    20
+   ]
+  },
+  {
+   "name": "play-watch",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1/source-play.png",
+   "sourceSize": [
+    1536,
+    1024
+   ],
+   "sourceBox": [
+    20,
+    79,
+    736,
+    457
+   ],
+   "width": 708,
+   "height": 368,
+   "bytes": 64461,
+   "maxSharpPt": 236,
+   "plannedPt": 220,
+   "upscaleAt3x": 0.93,
+   "use": "Playroom 1: watching the yarn ball",
+   "auditRows": [
+    20
+   ]
+  },
+  {
+   "name": "play-reach",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1/source-play.png",
+   "sourceSize": [
+    1536,
+    1024
+   ],
+   "sourceBox": [
+    788,
+    80,
+    1503,
+    457
+   ],
+   "width": 708,
+   "height": 368,
+   "bytes": 64084,
+   "maxSharpPt": 236,
+   "plannedPt": 220,
+   "upscaleAt3x": 0.93,
+   "use": "Playroom 2: paw raised",
+   "auditRows": [
+    20
+   ]
+  },
+  {
+   "name": "play-bat",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1/source-play.png",
+   "sourceSize": [
+    1536,
+    1024
+   ],
+   "sourceBox": [
+    20,
+    592,
+    758,
+    969
+   ],
+   "width": 720,
+   "height": 362,
+   "bytes": 62356,
+   "maxSharpPt": 240,
+   "plannedPt": 220,
+   "upscaleAt3x": 0.92,
+   "use": "Playroom 3: paw on the ball",
+   "auditRows": [
+    20
+   ]
+  },
+  {
+   "name": "play-rolled",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1/source-play.png",
+   "sourceSize": [
+    1536,
+    1024
+   ],
+   "sourceBox": [
+    788,
+    592,
+    1527,
+    969
+   ],
+   "width": 720,
+   "height": 362,
+   "bytes": 62311,
+   "maxSharpPt": 240,
+   "plannedPt": 220,
+   "upscaleAt3x": 0.92,
+   "use": "Playroom 4: ball rolled away, watching",
+   "auditRows": [
+    20
+   ]
+  },
+  {
+   "name": "expr-calm",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1/source-expressions.png",
+   "sourceSize": [
+    1254,
+    1254
+   ],
+   "sourceBox": [
+    102,
+    16,
+    566,
+    610
+   ],
+   "width": 360,
+   "height": 462,
+   "bytes": 53766,
+   "maxSharpPt": 120,
+   "plannedPt": 96,
+   "upscaleAt3x": 0.8,
+   "use": "Expression calm (looking aside)",
+   "auditRows": [
+    12,
+    13,
+    17
+   ]
+  },
+  {
+   "name": "expr-happy",
+   "status": "APPROVED",
+   "shipped": true,
+   "source": "docs/visual/captain-pack-v1/source-expressions.png",
+   "sourceSize": [
+    1254,
+    1254
+   ],
+   "sourceBox": [
+    687,
+    25,
+    1158,
+    615
+   ],
+   "width": 360,
+   "height": 452,
+   "bytes": 52342,
+   "maxSharpPt": 120,
+   "plannedPt": 96,
+   "upscaleAt3x": 0.8,
+   "use": "Expression happy (eyes closed, smiling)",
+   "auditRows": [
+    6,
+    12,
+    13
+   ]
+  },
+  {
+   "name": "expr-curious",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1/source-expressions.png",
+   "sourceSize": [
+    1254,
+    1254
+   ],
+   "sourceBox": [
+    94,
+    619,
+    559,
+    1233
+   ],
+   "width": 360,
+   "height": 474,
+   "bytes": 53243,
+   "maxSharpPt": 120,
+   "plannedPt": 96,
+   "upscaleAt3x": 0.8,
+   "use": "Expression curious (wide eyes, head tilt)",
+   "auditRows": [
+    12,
+    17
+   ]
+  },
+  {
+   "name": "expr-sleepy",
+   "status": "APPROVED",
+   "shipped": false,
+   "source": "docs/visual/captain-pack-v1/source-expressions.png",
+   "sourceSize": [
+    1254,
+    1254
+   ],
+   "sourceBox": [
+    691,
+    665,
+    1179,
+    1237
+   ],
+   "width": 360,
+   "height": 422,
+   "bytes": 50405,
+   "maxSharpPt": 120,
+   "plannedPt": 96,
+   "upscaleAt3x": 0.8,
+   "use": "Expression sleepy (half-closed eyes)",
+   "auditRows": [
+    12,
+    15
+   ]
+  }
+ ]
+}

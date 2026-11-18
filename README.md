@@ -186,6 +186,12 @@ npm run test:browser:v65
 
 ## 更新日志
 
+### 2026-11-18 — V10.89 更多地方换成插画 Captain
+
+- 首页新手引导（Captain 坐着抬头打招呼、邀请时笑眯眯、小卡片上的小头像）、第一页完成卡、Captain 开场介绍、保存后的小章、阅读页「听听 Captain 怎么说」按钮和 Captain 的回复卡片，都换成了插画 Captain。
+- 首页、Captain 面板、书架、设置、装扮和 Playroom 里的 Captain 暂时不变，等柠檬帽等装扮的插画定下来再换；你选的装扮都保留着。
+- 只上线用到的 3 张插画（正面头像、坐姿抬头、开心表情）；其余 10 张仍在 `docs/visual/captain-pack-v1/` 等待使用。
+
 ### 2026-11-18 — Captain 插画素材包 v1（待确认，还没上线）
 
 - 收到 Founder 的 4 张 Captain 新插画，裁成 13 个素材：趴着、坐姿抬头、正面头像、4 个表情、柠檬帽、毛线球、Playroom 4 帧。在计划尺寸下全部清晰（APPROVED）。

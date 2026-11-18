@@ -11,9 +11,10 @@ Nothing is redrawn, recoloured or restyled. Each figure is cropped, trimmed,
 the near-invisible stray pixels around the fur are cleared (alpha < 10 → 0,
 which is invisible on any background), and it is only ever scaled down.
 
-STAGING: the cuts go to docs/visual/captain-pack-v1/cut/ with manifest.json,
-not to Public/. They reach the app only after the Founder confirms where each
-one is used ("确认后再接入正式页面"). Status rule, same as the botanical pack:
+STAGING: every cut goes to docs/visual/captain-pack-v1/cut/ with manifest.json.
+Only the assets in SHIP (confirmed by the Founder and used by the interface)
+are also written to Public/captain/ ("确认后再接入正式页面"); the rest stay
+staged until their place migrates. Status rule, same as the botanical pack:
 planned pt x 3 vs pixel width. ≤ 1.2x upscale = APPROVED, ≤ 1.6x = LIMITED
 SIZE, more = NEEDS HI-RES.
 """
@@ -27,6 +28,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[1]
 DIR = ROOT / "docs/visual/captain-pack-v1"
 OUT = DIR / "cut"
+PUBLIC = ROOT / "Public/captain"
 SOURCES = {key: DIR / f"source-{key}.png" for key in ("lying", "sheet", "play", "expressions")}
 
 # name: (source, box x0 y0 x1 y1, max width px, planned display pt, use, audit rows)
@@ -45,6 +47,9 @@ ASSETS = {
     "expr-curious": ("expressions", (94, 619, 559, 1233), 360, 96, "Expression curious (wide eyes, head tilt)", [12, 17]),
     "expr-sleepy": ("expressions", (691, 665, 1179, 1237), 360, 96, "Expression sleepy (half-closed eyes)", [12, 15]),
 }
+
+# Founder 2026-11-18 ("可以放"): shipped with V10.89 for the places that use them.
+SHIP = {"captain-face", "captain-sit-up", "expr-happy"}
 
 
 def clean(img):
@@ -69,6 +74,9 @@ def status(px, pt):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
+    PUBLIC.mkdir(parents=True, exist_ok=True)
+    for old in PUBLIC.glob("*.png"):
+        old.unlink()
     sources = {key: Image.open(path).convert("RGBA") for key, path in SOURCES.items()}
     entries = []
     for name, (src, box, max_w, planned, use, rows) in ASSETS.items():
@@ -79,10 +87,13 @@ def main():
         verdict, scale = status(img.width, planned)
         path = OUT / f"{name}.png"
         img.quantize(colors=256, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.FLOYDSTEINBERG).save(path, optimize=True)
+        shipped = name in SHIP and verdict != "NEEDS HI-RES"
+        if shipped:
+            (PUBLIC / path.name).write_bytes(path.read_bytes())
         entries.append({
             "name": name,
             "status": verdict,
-            "shipped": False,
+            "shipped": shipped,
             "source": SOURCES[src].relative_to(ROOT).as_posix(),
             "sourceSize": list(sources[src].size),
             "sourceBox": list(box),
@@ -96,8 +107,9 @@ def main():
             "auditRows": rows,
         })
         print(f"{verdict:13} {name:15} {img.width}x{img.height} planned {planned}pt (clear up to {img.width // 3}pt) {os.path.getsize(path) // 1024}KB")
-    manifest = {"note": "Captain Illustrated Asset Pack v1, staged for Founder confirmation; not shipped to Public/ yet.", "assets": entries}
-    (OUT / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    manifest = {"note": "Captain Illustrated Asset Pack v1. shipped=true: also in Public/captain/; the rest stay staged until their place migrates.", "assets": entries}
+    for folder in (OUT, PUBLIC):
+        (folder / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

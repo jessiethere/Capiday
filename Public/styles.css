@@ -27221,3 +27221,46 @@ html[lang="en"] .keeper-perch .keeper-entry::before {
   width: 100% !important;
   height: auto;
 }
+
+/* =====================================================================
+   V10.89 · Captain Illustrated Asset Pack v1 in the interface
+   (first-page card, Captain intro, Home guide, save stamp, Ask Captain,
+   Captain's reply). Character art, not decoration: full colour in every
+   theme. No outfit is drawn yet (keeper.outfit stays stored).
+   ===================================================================== */
+:root[data-theme] .bot.bot-captain { opacity: 1; filter: none; }
+.keeper-intro-art {
+  flex: none;
+  width: 64px;
+}
+.keeper-intro-art .bot { width: 100% !important; }
+.keeper-stamp { width: 72px; }
+.keeper-stamp .bot { width: 100% !important; }
+.keeper-ask-art {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--c-ece5d8, #ece5d8);
+}
+.keeper-ask-art .bot,
+.hg-avatar .bot {
+  width: 100% !important;
+  height: 100%;
+  margin: 0;
+  object-fit: cover;
+  object-position: 50% 12%;
+}
+.keeper-sheet-head .keeper-sheet-art {
+  display: block;
+  flex: none;
+  width: 56px;
+}
+.keeper-sheet-art .bot { width: 100% !important; }
+.hg-captain .bot,
+.first-page-card .fp-art .bot {
+  width: 100% !important;
+  height: 100%;
+  object-fit: contain;
+}

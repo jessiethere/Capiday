@@ -11,6 +11,7 @@
 //
 //   botanical(kind, options)  kind: "corner" | "sprig" | "berry" | "blossom"
 //   captainVignette(options)  pose: "sleep" | "sit" | "ready" | "stamp"
+//   captainPortrait(kind)     "face" | "happy" | "sit-up" (Captain Pack v1)
 //   coverArt(kind)            "everyday" | "captain" ("travel": NEEDS HI-RES)
 //   decorPlan(surface, ctx)   which decorations a surface may show (density)
 //
@@ -41,6 +42,15 @@ export const ASSETS = {
   "sprig-6": [83, 76, 27, "LIMITED SIZE"],
   "cover-sprig": [94, 101, 31, "LIMITED SIZE"],
 };
+// Captain Illustrated Asset Pack v1 (Public/captain/, cut by
+// tools/cut_captain_pack.py; Founder 2026-11-18). Only what the interface
+// uses is shipped; the rest stays staged in docs/visual/captain-pack-v1/.
+export const CAPTAIN_PACK = {
+  "captain-face": [360, 386, 120, "APPROVED"],
+  "captain-sit-up": [540, 647, 180, "APPROVED"],
+  "expr-happy": [360, 452, 120, "APPROVED"],
+};
+const assetOf = (name) => ASSETS[name] || CAPTAIN_PACK[name];
 // Not good enough at their real size yet: never used in the interface.
 export const NEEDS_HI_RES = ["cover-travel-blossom", "sprig-1", "sprig-2", "sprig-4"];
 
@@ -56,12 +66,12 @@ export const CAPTAIN_POSES = ["sleep", "sit", "ready", "stamp"];
 
 // Display width in pt, held at the asset's clear ceiling.
 export function clearWidth(name, wanted) {
-  const asset = ASSETS[name];
+  const asset = assetOf(name);
   if (!asset) return 0;
   return Math.min(Math.max(1, Math.round(wanted || asset[2])), asset[2]);
 }
 function art(name, { width, place = "inline", flip = false, tone = "", cls = "" } = {}) {
-  const asset = ASSETS[name];
+  const asset = assetOf(name);
   if (!asset) return "";
   const [w, h, , status] = asset;
   const shown = clearWidth(name, width);
@@ -70,7 +80,7 @@ function art(name, { width, place = "inline", flip = false, tone = "", cls = "" 
   if (tone === "quiet") classes.push("bot-quiet");
   if (status === "LIMITED SIZE") classes.push("bot-limited");
   if (cls) classes.push(cls);
-  return `<img class="${classes.join(" ")}" src="botanical/${name}.png" width="${w}" height="${h}" style="width:${shown}px" data-asset="${name}" alt="" aria-hidden="true" loading="lazy" decoding="async" draggable="false">`;
+  return `<img class="${classes.join(" ")}" src="${ASSETS[name] ? "botanical" : "captain"}/${name}.png" width="${w}" height="${h}" style="width:${shown}px" data-asset="${name}" alt="" aria-hidden="true" loading="lazy" decoding="async" draggable="false">`;
 }
 
 // The one way to put a plant on a surface.
@@ -92,6 +102,16 @@ export function botanical(kind, { variant = 0, size, place = "tr", flip = false,
 export function captainVignette({ pose = "sit", size = 150, place = "inline", cls = "" } = {}) {
   const p = CAPTAIN_POSES.includes(pose) ? pose : "sit";
   return art(`captain-${p}`, { width: size, place, cls: ["bot-vignette", `pose-${p}`, cls].filter(Boolean).join(" ") });
+}
+
+// Captain on his own (no props), from Pack v1:
+//   face: front bust, calm (avatars) · happy: smiling, eyes closed ·
+//   sit-up: sitting, looking up (greeting).
+// No outfit is drawn yet: keeper.outfit stays stored and untouched.
+const PORTRAITS = { face: "captain-face", happy: "expr-happy", "sit-up": "captain-sit-up" };
+export function captainPortrait(kind = "face", { size = 64, cls = "" } = {}) {
+  const name = PORTRAITS[kind] || PORTRAITS.face;
+  return art(name, { width: size, place: "inline", cls: ["bot-captain", `cap-${kind in PORTRAITS ? kind : "face"}`, cls].filter(Boolean).join(" ") });
 }
 
 // The default covers' art. Travel Notes has none until its blossom has a
