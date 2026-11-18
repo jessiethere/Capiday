@@ -109,28 +109,21 @@ const shots = process.env.SHOTS || "";
     await page.locator('#navigation [data-page="home"]').tap();
     passed.push("words only: a sheet of diary paper at readable sizes; long words fold and open in full");
 
-    // 3. Nothing today: the invitation, then the latest real story (not yesterday by assumption, never a sample).
+    // 3. Nothing today (V10.84): one main way to start — the photo card — and no second
+    // invitation under it; the days already kept show on the stamp card (never a sample).
     await setDays((s, today, earlier, photo) => {
       s.entries.push({ id: "e-" + earlier, date: earlier, title: "", body: "", photo: "", bookId: "travel", mood: "", layers: [], media: [], isDemo: false, moments: [{ id: "m-old", time: "10:00", title: "湖边的早晨", body: "风很轻。", tags: [], bookId: "travel", layers: [photo("o1", "photo:holiday-pool")], media: [], layoutTemplate: "scrapbook" }] });
     });
-    await page.waitForSelector(".hs-remember .ts-empty");
-    assert.match(await page.locator(".ts-empty").innerText(), /今天还没有写下故事。[\s\S]*或许可以从一张照片、一句话开始。[\s\S]*选一张照片开始/);
-    assert.equal(await page.locator('.ts-empty [data-action="today-photos"]').count(), 1);
-    assert.equal(await page.locator(".ts-empty img").count(), 0, "no sample photo in the empty state");
-    const when = await page.evaluate((d) => new Date(d + "T12:00:00").toLocaleDateString("zh-CN", { month: "long", day: "numeric" }), earlier);
-    assert.match(await page.locator(".ts-recent-head").innerText(), new RegExp(`最近的故事 · ${when}`));
-    assert.match(await page.locator(".ts-card.ts-recent").innerText(), /湖边的早晨[\s\S]*收藏于[\s\S]*去看更大的世界/);
-    await page.locator(".hs-remember").scrollIntoViewIfNeeded();
-    await shot("v102-empty-recent");
-    await page.locator(".ts-card.ts-recent .ts-open").tap();
-    await page.waitForSelector(".day-detail");
-    assert.match(await page.locator(".day-detail").innerText(), /湖边的早晨/);
-    await page.locator('#navigation [data-page="home"]').tap();
-    // Only sample days in the journal: just the invitation, no extra card.
+    await page.waitForSelector(".hero .stamp-strip");
+    assert.equal(await page.locator(".ts-empty").count(), 0, "no second invitation");
+    assert.equal(await page.locator('.hero [data-action="today-photos"]').count(), 1, "one main action");
+    assert.equal(await page.locator(".ts-recent-head").count(), 0);
+    if (earlier.slice(0, 7) === today.slice(0, 7)) assert.match(await page.locator(".stamp-strip .stamp[data-date='" + earlier + "']").getAttribute("class"), /word|photo|mark/, "the latest real day is a stamp");
+    // Only sample days in the journal: no stamp at all (a sample is not one of my days).
     await setDays((s) => { s.entries = s.entries.filter((e) => e.isDemo); });
-    await page.waitForSelector(".hs-remember .ts-empty");
+    await page.waitForSelector(".hero .stamp-strip");
     assert.equal(await page.locator(".ts-recent-head, .ts-card").count(), 0, "no made-up latest story");
-    passed.push("no record today: an invitation with one way to start, then the latest real story (opens the original); with no history of my own, only the invitation");
+    passed.push("no record today: one main way to start (no second invitation); my kept days are stamps, samples never are");
 
     // 4. V10.56 plans: in sight, three at most (what is left first), the rest one tap away;
     // ticking the last one folds the list to one line; nothing is lost.

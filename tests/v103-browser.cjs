@@ -46,7 +46,7 @@ const shots = process.env.SHOTS || "";
     // 1. Two ways in, one panel; the line knows there is a page today, and changes.
     const tag = page.locator('.keeper-home [data-action="keeper-panel"]');
     assert.match(await tag.innerText(), /找 Captain/);
-    const where = await page.evaluate(() => { const r = (sel) => document.querySelector(sel).getBoundingClientRect(); const t = r(".keeper-entry"), c = r(".keeper-home .keeper-tap"), h = r(".v9-hero"); return { tagH: t.height, gap: c.left - t.right, aboveCard: t.bottom <= h.top + 24, inside: t.left >= 0 && t.right <= innerWidth }; });
+    const where = await page.evaluate(() => { const r = (sel) => document.querySelector(sel).getBoundingClientRect(); const t = r(".keeper-entry"), c = r(".keeper-home .keeper-tap"), h = (document.querySelector(".v9-hero") || document.querySelector(".v9-hero-wrap")).getBoundingClientRect() /* V10.84: once today is kept, today's card (same wrapper) */; return { tagH: t.height, gap: c.left - t.right, aboveCard: t.bottom <= h.top + 24, inside: t.left >= 0 && t.right <= innerWidth }; });
     assert.ok(where.tagH >= 44 && Math.abs(where.gap) < 40 && where.aboveCard && where.inside, `the tag sits beside Captain, above the photo-journal card: ${JSON.stringify(where)}`);
     assert.equal(await page.locator("#navigation [data-page]").count() <= 5, true, "no new tab");
     await shot("v103-home");

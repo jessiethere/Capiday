@@ -69,7 +69,7 @@ const photo = (n) => ({ name: `LD-photo-${n}.jpg`, mimeType: "image/jpeg", buffe
         await page.locator('.kp [data-action="choose-close"]').first().tap();
         await page.waitForSelector("#choose-dialog:not([open])", { state: "attached" });
       };
-      const makePage = async (files, line = "", from = '.v9-hero [data-action="today-photos"]') => {
+      const makePage = async (files, line = "", from = '.hero [data-action="today-photos"]' /* V10.84: the photo card, or 再加一页 once today is kept */) => {
         const [chooser] = await Promise.all([page.waitForEvent("filechooser"), page.locator(from).first().tap()]);
         await chooser.setFiles(files);
         await page.waitForSelector('[data-action="story-save"]');

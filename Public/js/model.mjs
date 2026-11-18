@@ -1,5 +1,6 @@
 import { smartLayout } from "./smart-layout.mjs";
 import { storeMarks } from "./rich-text.mjs";
+import { syncRecordedDays } from "./recorded-days.mjs";
 export function dateKey(value = new Date()) {
   return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
 }
@@ -570,7 +571,13 @@ export class Store {
       throw error;
     }
     const next = structuredClone(this.state);
+    // V10.84 · 集章: dates that had a kept page are remembered before the
+    // change (so a page deleted or moved now was already counted) and after it
+    // (new pages). See recorded-days.mjs.
+    const now = new Date().toISOString();
+    syncRecordedDays(next, now);
     change(next);
+    syncRecordedDays(next, now);
     validateStateSnapshot(next);
     // Write first: a storage failure must not be reported as a successful save.
     const encoded = JSON.stringify(next);

@@ -80,6 +80,12 @@ public struct JournalBook: Codable, Identifiable, Equatable {
 /// for; "photo:<id>" library references.
 /// V10.78 · Memory Wall v1.0. Keys name where a card comes from
 /// ("photo:<page id>:<layer id>", "page:<page id>" or "page:day:<date>").
+/// V10.84: one stamped date in `DayState.recordedDays`.
+public struct RecordedDay: Codable, Equatable {
+    public var at: String?
+    public init(at: String? = nil) { self.at = at }
+}
+
 public struct MemoryWallSetting: Codable, Equatable {
     public struct Hidden: Codable, Equatable {
         public var at: String?
@@ -480,6 +486,11 @@ public struct DayState: Codable {
     /// V10.78: the Memory Wall's own setting (hidden photos, whole pages on
     /// the wall, the person's order). Optional; absent = the wall as before.
     public var wall: MemoryWallSetting?
+    /// V10.84 集章卡: the journal dates ("yyyy-MM-dd") that once had a kept
+    /// page, with when each was first seen. Only grows (a date stays after its
+    /// pages are deleted or moved: an empty stamp). Optional; absent = derived
+    /// from the pages there are now. Written by the web app's Store only.
+    public var recordedDays: [String: RecordedDay]?
 
     public init(seed: Seed, today: String = DayKey.string()) {
         habits = seed.habits

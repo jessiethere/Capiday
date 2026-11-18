@@ -197,6 +197,11 @@ final class CoreTests: XCTestCase {
         XCTAssertEqual(wall.hidden?["photo:m1:l1"]?.ref, "media:p1")
         XCTAssertEqual(wall.pages?.first?.key, "page:m2")
         XCTAssertEqual(try JSONDecoder().decode(MemoryWallSetting.self, from: JSONEncoder().encode(wall)), wall)
+        // V10.84: the stamped dates (optional; older journals have none).
+        let stamped = try JSONDecoder().decode([String: RecordedDay].self, from: Data(#"{"2026-11-05":{"at":"2026-11-05T10:00:00.000Z"},"2026-11-17":{}}"#.utf8))
+        XCTAssertEqual(stamped["2026-11-05"]?.at, "2026-11-05T10:00:00.000Z")
+        XCTAssertNil(stamped["2026-11-17"]?.at)
+        XCTAssertEqual(try JSONDecoder().decode([String: RecordedDay].self, from: JSONEncoder().encode(stamped)), stamped)
         // V10.80: a page answering 每日一问, and a thought added later for one photo (both optional).
         let asked = try JSONDecoder().decode(JournalMoment.self, from: Data(#"{"id":"m9","title":"今天的咖啡 really good","prompt":{"id":"quiet","text":"今天有没有一段安静的时间？"}}"#.utf8))
         XCTAssertEqual(asked.prompt?.id, "quiet")

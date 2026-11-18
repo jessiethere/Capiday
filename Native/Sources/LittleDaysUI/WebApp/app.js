@@ -153,6 +153,8 @@ import {
 } from "./js/model.mjs";
 import * as RS from "./js/restore-safety.mjs";
 import * as PhotoCaption from "./js/photo-caption.mjs";
+import * as Stamps from "./js/stamps.mjs";
+import { contentDays as stampContentDays } from "./js/recorded-days.mjs";
 
 // The iOS Swift shell opens index.html?shell=ios (and also injects this marker).
 // Development only: ?dev-local-ai=<model> / =off on a page served from this
@@ -888,6 +890,199 @@ function todayStoryHTML() {
   const when = recent ? new Date(`${recent.date}T12:00:00`).toLocaleDateString(locale(), { month: "long", day: "numeric" }) : "";
   return `<div class="v9-today hs-remember">${head}<div class="ts-empty"><i class="ts-ghost" aria-hidden="true"></i><b>${t("ts.emptyTitle")}</b><small>${t("ts.emptyBody")}</small><button class="ts-start" data-action="today-photos">${t("ts.emptyGo")} →</button>${scene ? `<button class="text-button today-scene" data-action="quick-open" data-way="photo" data-photo="today" data-scene="${esc(scene.id)}">${t("ts.sceneGo", { name: sceneName(scene) })} ›</button>` : ""}</div>${recent ? `<p class="ts-recent-head"><span>${t("ts.recent")}</span> · ${esc(when)}</p>${storyCardHTML(recent, { recent: true })}` : ""}</div>`;
 }
+// ---------- V10.84 · 集章卡 and 这一周 ----------
+// A stamp is a date that once had a kept page (js/recorded-days.mjs); its
+// face comes from that day (js/stamps.mjs). Nothing here writes the journal:
+// the stamps page and the week page only read it, and a stamp whose pages
+// were deleted opens the calendar on that date — never a page that is gone.
+let stampsView = null; // { year, month } shown on the stamp card page
+let stampPicked = null; // the date picked on the stamp card page
+let weekView = null; // Monday (YYYY-MM-DD) of the week shown on the week page
+const hasTodayContent = () => stampContentDays(state()).has(dateKey());
+const monthLabel = (year, month, withYear = false) => new Date(year, month - 1, 1).toLocaleDateString(locale(), withYear ? { year: "numeric", month: "long" } : { month: "long" });
+const stampCount = (key, count) => t(count === 1 && languageCode() === "en" ? `${key}One` : key, { count });
+// One stamp's face. `photos: false` (首页不显示今天的内容) keeps pictures out.
+function stampFaceHTML(cell, { today, photos = true, big = false } = {}) {
+  const s = cell.stamp;
+  const day = Number(cell.date.slice(8));
+  if (!s) {
+    const isToday = cell.date === today;
+    return { cls: `none${cell.date > today ? " future" : ""}${isToday ? " today" : ""}`, inner: big && !isToday ? String(day) : "" };
+  }
+  if (s.kind === "photo" && photos) {
+    const src = safePhoto(s.ref);
+    if (src) return { cls: "photo", inner: `<img src="${esc(src)}" alt="" loading="lazy" decoding="async">` };
+  }
+  if (s.kind === "word" && photos) return { cls: "word", inner: esc(s.ch) };
+  if (s.kind === "empty") return { cls: "empty", inner: String(day) };
+  const glyph = { voice: "∿", draw: "✎" }[s.kind] || "✓";
+  return { cls: `mark ${s.kind}`, inner: photos ? glyph : "" };
+}
+function stampLabel(cell, today) {
+  const when = new Date(`${cell.date}T12:00:00`).toLocaleDateString(locale(), { month: "long", day: "numeric" });
+  if (!cell.stamp) return cell.date === today ? t("stamp.labelToday", { date: when }) : t("stamp.labelNone", { date: when });
+  return t(cell.stamp.kind === "empty" ? "stamp.labelEmpty" : "stamp.labelKept", { date: when });
+}
+// Home: this month's stamp card, small.
+function stampStripHTML() {
+  const today = dateKey();
+  const [year, month] = today.split("-").map(Number);
+  const card = Stamps.monthStamps(state(), year, month);
+  const photos = !privacyOn("hideToday");
+  const cells = card.days.map((cell) => {
+    const face = stampFaceHTML(cell, { today, photos });
+    return `<i class="stamp ${face.cls}" data-date="${cell.date}">${face.inner}</i>`;
+  });
+  const lead = Array.from({ length: card.lead }, () => '<i class="stamp-gap"></i>').join("");
+  const count = card.count ? stampCount("stamp.monthCount", card.count) : t("stamp.monthNone");
+  return `<button class="stamp-strip" data-action="stamps-open" aria-label="${esc(t("stamp.openCard"))} · ${esc(monthLabel(year, month))} · ${esc(count)}"><span class="ss-copy"><small class="v9-kicker">${t("stamp.kicker")}</small><b class="ss-month">${esc(monthLabel(year, month))}</b><span class="ss-count">${esc(count)}</span><small class="ss-note">${t("stamp.note")}</small><span class="ss-go">${t("stamp.openCard")} ›</span></span><span class="ss-grid" aria-hidden="true">${lead}${cells.join("")}</span></button>`;
+}
+// Home: 这一周 — this week once it has a stamp; early in the week (Mon–Wed)
+// with nothing yet, last week's (if it had any). Never a "4/7".
+function homeWeek() {
+  const today = dateKey();
+  const now = Stamps.weekReview(state(), today);
+  if (now.recorded) return { review: now, last: false };
+  const day = new Date(`${today}T12:00:00`).getDay();
+  if (day >= 1 && day <= 3) {
+    // Last week, seen from its Sunday (so none of its days counts as "to come").
+    const before = Stamps.weekReview(state(), Stamps.addDaysKey(Stamps.weekStartKey(today), -1));
+    if (before.recorded) return { review: before, last: true };
+  }
+  return null;
+}
+function weekLine(review, last) {
+  const key = last ? "week.lineLast" : "week.line";
+  return stampCount(key, review.recorded);
+}
+function weekCardHTML() {
+  const week = homeWeek();
+  if (!week) return "";
+  const { review, last } = week;
+  const photos = privacyOn("hideToday") ? [] : review.photos.slice(0, 4);
+  const thumbs = photos.map((p, i) => `<span class="wk-pol p${i}"><img src="${esc(safePhoto(p.ref))}" alt="" loading="lazy" decoding="async"></span>`).join("");
+  const dots = review.days.map((d) => `<i class="${d.stamp ? "on" : d.future ? "future" : ""}"></i>`).join("");
+  const range = `${shortDate(review.start)} – ${shortDate(review.end)}`;
+  const meta = [stampCount("week.days", review.recorded), review.photoCount ? stampCount("week.photos", review.photoCount) : ""].filter(Boolean).join(" · ");
+  return `<button class="week-card${thumbs ? "" : " no-photos"}" data-action="week-open" data-week="${review.start}"><span class="wk-head"><small class="v9-kicker">${t(last ? "week.kickerLast" : "week.kicker")} · ${esc(range)}</small><b class="wk-line">${esc(weekLine(review, last))}</b><small class="wk-meta">${esc(meta)}</small></span>${thumbs ? `<span class="wk-thumbs" aria-hidden="true">${thumbs}</span>` : ""}<span class="wk-foot"><span class="wk-dots" aria-hidden="true">${dots}</span><span class="wk-go">${t("week.open")} ›</span></span></button>`;
+}
+// Small, light ways to start (手绘 stays one tap away, never hidden).
+function homeSmallActionsHTML(done) {
+  const item = (action, iconKind, label, extra = "") => `<button class="today-tile hs-small" data-action="${action}"${extra}>${v9Icon(iconKind)}<b>${label}</b></button>`;
+  return `<div class="story-start-row today-tiles v9-secondary home-small" aria-label="${esc(t("home.otherWays"))}">${item("today-write", "write", done ? t("home.writeLine") : t("story.justWrite"), ` title="${esc(t("story.justWriteHint"))}"`)}${item("today-draw", "draw", t("tile.draw"))}<button class="today-tile hs-small moment-cta" data-action="quick-open" data-photo="">${v9Icon("more")}<b>${t("tile.more")}</b></button><button class="today-tile hs-small backfill-link" data-action="backfill" data-date="${addDays(dateKey(), -1)}">${v9Icon("yesterday")}<b>${t("home.backfillShort")}</b></button></div>`;
+}
+// The stamp card page: one month at a time, every month that has stamps.
+function stampsPage() {
+  const today = dateKey();
+  const stamps = Stamps.stampsByDate(state());
+  const [ty, tm] = today.split("-").map(Number);
+  const view = stampsView || { year: ty, month: tm };
+  const card = Stamps.monthStamps(state(), view.year, view.month, stamps);
+  const months = Stamps.stampMonths(state(), stamps);
+  const total = Object.keys(stamps).length;
+  const earliest = months.length ? months[months.length - 1] : { year: ty, month: tm };
+  const key = (m) => m.year * 12 + m.month;
+  const canPrev = key(view) > key(earliest);
+  const canNext = key(view) < ty * 12 + tm;
+  const heads = Array.from({ length: 7 }, (_, i) => `<i>${esc(new Date(2026, 10, 16 + i).toLocaleDateString(locale(), { weekday: "narrow" }))}</i>`).join("");
+  const lead = Array.from({ length: card.lead }, () => '<i class="stamp-gap"></i>').join("");
+  const cells = card.days
+    .map((cell) => {
+      const face = stampFaceHTML(cell, { today, big: true });
+      const label = esc(stampLabel(cell, today));
+      const picked = stampPicked === cell.date ? " picked" : "";
+      if (!cell.stamp) return `<span class="stamp ${face.cls}" aria-label="${label}">${face.inner}</span>`;
+      return `<button class="stamp ${face.cls}${picked}" data-action="stamp-pick" data-date="${cell.date}" aria-label="${label}" aria-pressed="${Boolean(picked)}">${face.inner}</button>`;
+    })
+    .join("");
+  const pickedCell = stampPicked && stamps[stampPicked] && stampPicked.startsWith(`${view.year}-${String(view.month).padStart(2, "0")}`) ? { date: stampPicked, stamp: stamps[stampPicked] } : null;
+  const when = (d) => new Date(`${d}T12:00:00`).toLocaleDateString(locale(), { year: "numeric", month: "long", day: "numeric", weekday: "short" });
+  const panel = pickedCell
+    ? pickedCell.stamp.kind === "empty"
+      ? `<div class="sp-panel empty" role="status"><b>${esc(when(pickedCell.date))}</b><p>${t("stamp.emptyText")}</p><button class="secondary" data-action="stamp-calendar" data-date="${pickedCell.date}">${t("stamp.toCalendar")} ›</button></div>`
+      : `<div class="sp-panel" role="status"><b>${esc(when(pickedCell.date))}</b><p>${t("stamp.keptText")}</p><button class="primary" data-action="open-day" data-date="${pickedCell.date}">${t("stamp.openDay")} ›</button></div>`
+    : `<p class="sp-hint">${t(card.count ? "stamp.pickHint" : "stamp.monthEmpty")}</p>`;
+  const older = months.filter((m) => key(m) !== key(view));
+  const list = older.length ? `<div class="sp-months"><h2>${t("stamp.otherMonths")}</h2>${older.map((m) => `<button data-action="stamps-month" data-year="${m.year}" data-month="${m.month}"><span>${esc(monthLabel(m.year, m.month, true))}</span><small>${esc(stampCount("stamp.monthCount", m.count))}</small></button>`).join("")}</div>` : "";
+  return `<section class="stamps-page"><header class="sp-top"><button class="back-button" data-action="nav" data-page="home">${icon("back")} ${t("back")}</button><span class="sp-total">${esc(stampCount("stamp.total", total))}</span></header><div class="sp-card"><div class="sp-head"><button class="sp-arrow" data-action="stamps-month" data-delta="-1" aria-label="${t("calendar.prev")}" ${canPrev ? "" : "disabled"}>‹</button><div><small class="v9-kicker">${t("stamp.kicker")}</small><h1>${esc(monthLabel(view.year, view.month, true))}</h1><p class="sp-count">${esc(card.count ? stampCount("stamp.monthCount", card.count) : t("stamp.monthNone"))}</p></div><button class="sp-arrow" data-action="stamps-month" data-delta="1" aria-label="${t("calendar.next")}" ${canNext ? "" : "disabled"}>›</button></div><div class="sp-week" aria-hidden="true">${heads}</div><div class="sp-grid">${lead}${cells}</div><p class="sp-note">${t("stamp.note")}</p></div>${panel}${list}</section>`;
+}
+// The week page: what this week kept, read only.
+function weekPage() {
+  const today = dateKey();
+  const start = weekView || Stamps.weekStartKey(today);
+  // weekReview marks the days after its `today` as still to come; a past
+  // week is seen from its Sunday, so all of it has been.
+  const thisWeek = start === Stamps.weekStartKey(today);
+  const shown = Stamps.weekReview(state(), thisWeek ? today : Stamps.addDaysKey(start, 6));
+  const range = `${shortDate(shown.start)} – ${shortDate(shown.end)}`;
+  const photos = shown.photos.slice(0, 5);
+  const collage = photos.length ? `<div class="wp-collage" data-n="${photos.length}">${photos.map((p, i) => `<span class="wp-pol p${i}"><img src="${esc(safePhoto(p.ref))}" alt="" loading="lazy" decoding="async"></span>`).join("")}</div>` : "";
+  const quote = shown.line ? `<blockquote class="wp-quote">“${esc(shown.line.text)}”<small>${esc(t("week.wrote", { date: shortDate(shown.line.date) }))}</small></blockquote>` : "";
+  const meta = [stampCount("week.days", shown.recorded), shown.photoCount ? stampCount("week.photos", shown.photoCount) : "", shown.voices ? stampCount("week.voices", shown.voices) : ""].filter(Boolean).join(" · ");
+  const dayRows = shown.days
+    .map((d) => {
+      const label = new Date(`${d.date}T12:00:00`).toLocaleDateString(locale(), { weekday: "short", month: "short", day: "numeric" });
+      const face = stampFaceHTML({ date: d.date, stamp: d.stamp }, { today, big: true });
+      const seal = `<i class="stamp ${face.cls}">${face.inner}</i>`;
+      if (!d.stamp) return `<li class="wp-day off">${seal}<span>${esc(label)}</span></li>`;
+      if (d.stamp.kind === "empty") return `<li class="wp-day"><button data-action="stamp-calendar" data-date="${d.date}">${seal}<span>${esc(label)}</span><small>${t("stamp.emptyShort")}</small></button></li>`;
+      return `<li class="wp-day"><button data-action="open-day" data-date="${d.date}">${seal}<span>${esc(label)}</span><small>${t("stamp.openDay")} ›</small></button></li>`;
+    })
+    .join("");
+  const prev = Stamps.addDaysKey(shown.start, -7);
+  const next = Stamps.addDaysKey(shown.start, 7);
+  const canNext = next <= today;
+  const body = shown.recorded ? `${collage}${quote}<p class="wp-meta">${esc(meta)}</p>` : `<p class="wp-none">${t("week.none")}</p>`;
+  return `<section class="week-page"><header class="sp-top"><button class="back-button" data-action="nav" data-page="home">${icon("back")} ${t("back")}</button></header><div class="wp-card"><div class="sp-head"><button class="sp-arrow" data-action="week-open" data-week="${prev}" aria-label="${t("week.prev")}">‹</button><div><small class="v9-kicker">${t(thisWeek ? "week.kicker" : "week.kickerPast")}</small><h1>${esc(range)}</h1>${shown.recorded ? `<p class="sp-count">${esc(weekLine(shown, !thisWeek))}</p>` : ""}</div><button class="sp-arrow" data-action="week-open" data-week="${next}" aria-label="${t("week.next")}" ${canNext ? "" : "disabled"}>›</button></div>${body}<ul class="wp-days">${dayRows}</ul></div></section>`;
+}
+async function stampsAction(actionName, target) {
+  if (actionName === "stamps-open") {
+    const [year, month] = dateKey().split("-").map(Number);
+    stampsView = { year, month };
+    stampPicked = null;
+    logEvent("stamps_open", {});
+    return navigate("stamps");
+  }
+  if (actionName === "stamps-month") {
+    const current = stampsView || { year: Number(dateKey().slice(0, 4)), month: Number(dateKey().slice(5, 7)) };
+    if (target.dataset.year) stampsView = { year: Number(target.dataset.year), month: Number(target.dataset.month) };
+    else {
+      const d = new Date(current.year, current.month - 1 + Number(target.dataset.delta || 0), 1);
+      stampsView = { year: d.getFullYear(), month: d.getMonth() + 1 };
+    }
+    stampPicked = null;
+    render();
+    $("#app-scroll").scrollTop = 0;
+    return;
+  }
+  if (actionName === "stamp-pick") {
+    stampPicked = stampPicked === target.dataset.date ? null : target.dataset.date;
+    logEvent("stamp_pick", {});
+    render();
+    $(".sp-panel")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    return;
+  }
+  if (actionName === "stamp-calendar") {
+    // The pages of this date are gone: the calendar shows its empty day.
+    const date = target.dataset.date;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date || "")) return;
+    selectedDate = date;
+    month = new Date(`${date}T12:00:00`);
+    return navigate("calendar");
+  }
+  if (actionName === "week-open") {
+    const start = target.dataset.week ? Stamps.weekStartKey(target.dataset.week) : Stamps.weekStartKey(dateKey());
+    if (start > dateKey()) return;
+    if (page !== "week") logEvent("week_open", {});
+    weekView = start;
+    if (page === "week") {
+      render();
+      $("#app-scroll").scrollTop = 0;
+      return;
+    }
+    return navigate("week");
+  }
+}
 // ---------- Home · My Library (V10.2) ----------
 // The user's own journals on one shelf: the one most recently written in is
 // larger (with the only "write a page" link); the others stand beside it.
@@ -937,8 +1132,11 @@ function home() {
   const weekday = now.toLocaleDateString(locale(), { weekday: "long" });
   const day = now.toLocaleDateString(locale(), { month: "long", day: "numeric" });
   const books = homeLibraryHTML();
+  // V10.84: two states — nothing kept today (one main way to start), or
+  // today is kept (its page first, then 再加一页).
+  const done = hasTodayContent();
   return `<div class="home-mag"><header class="home-top"><div class="masthead"><div class="brand-title${languageCode() === "en" ? "" : " brand-zh"}" lang="${languageCode() === "en" ? "en" : "zh-Hans"}">${t("brand.wordmark")}${BRAND_SPROUT}</div></div><span class="home-actions"><button class="icon-button" data-action="open-search" aria-label="${t("search.open")}">${icon("search")}</button>${bell()}<button class="icon-button settings-gear" data-action="nav" data-page="settings" aria-label="${hasUnseen() ? t("news.dotLabel", { version: LATEST }) : t("settings")}">${icon("gear")}${hasUnseen() ? `<i class="news-dot" aria-hidden="true"></i>` : ""}</button></span></header>
- ${backupNudgeHTML()}<section class="hero today-card v9-home"><div class="story-start-card"><div class="v9-masthead"><span class="v9-daynum" aria-hidden="true">${now.getDate()}</span><div class="v9-greet"><small class="v9-kicker">${esc(now.toLocaleDateString(locale(), { month: "long" }))} · ${now.getFullYear()}</small>${greetingHTML(weekday, day)}<h1 class="today-prompt">${t("story.prompt")}</h1></div></div><div class="v9-hero-wrap">${keeperPerchHTML()}<div class="v9-hero"><div class="v9-hero-copy"><small class="v9-kicker v9-sage">Photo Journal</small><h2>${t("tile.photo")}</h2><p>${t("story.promptHint")}</p></div>${heroPolaroidsHTML(now)}<button class="story-photos v9-cta" data-action="today-photos">${t("v9.pickPhotos")}<span aria-hidden="true">→</span></button></div></div><div class="story-start-row today-tiles v9-secondary"><button class="today-tile" data-action="today-write" title="${t("story.justWriteHint")}">${v9Icon("write")}<b>${t("story.justWrite")}</b><small>${t("v9.writeHint")}</small></button><button class="today-tile" data-action="today-draw">${v9Icon("draw")}<b>${t("tile.draw")}</b><small>${t("v9.drawHint")}</small></button><button class="today-tile moment-cta" data-action="quick-open" data-photo="">${v9Icon("more")}<b>${t("tile.more")}</b><small>${t("v9.moreHint")}</small></button></div>${dailyPromptHTML()}<button class="text-button backfill-link" data-action="backfill" data-date="${addDays(dateKey(), -1)}">${t("story.backfill")} ›</button></div>${keeperInviteHTML()}${todayListHTML()}${todayStoryHTML()}</section>${memoryHTML()}
+ ${backupNudgeHTML()}<section class="hero today-card v9-home"><div class="story-start-card"><div class="v9-masthead"><span class="v9-daynum" aria-hidden="true">${now.getDate()}</span><div class="v9-greet"><small class="v9-kicker">${esc(now.toLocaleDateString(locale(), { month: "long" }))} · ${now.getFullYear()}</small>${greetingHTML(weekday, day)}<h1 class="today-prompt">${t(done ? "home.doneTitle" : "story.prompt")}</h1></div></div>${done ? `<div class="v9-hero-wrap v84-done">${keeperPerchHTML()}${todayStoryHTML()}</div><div class="home-done-acts"><button class="primary home-more" data-action="today-photos">＋ ${t("home.addPage")}</button></div>` : `<div class="v9-hero-wrap">${keeperPerchHTML()}<div class="v9-hero"><div class="v9-hero-copy"><small class="v9-kicker v9-sage">Photo Journal</small><h2>${t("tile.photo")}</h2><p>${t("story.promptHint")}</p></div>${heroPolaroidsHTML(now)}<button class="story-photos v9-cta" data-action="today-photos">${t("v9.pickPhotos")}<span aria-hidden="true">→</span></button></div></div>`}${homeSmallActionsHTML(done)}${done ? "" : dailyPromptHTML()}</div>${stampStripHTML()}${weekCardHTML()}${keeperInviteHTML()}${todayListHTML()}</section>${memoryHTML()}
  ${books}<p class="home-quote hs-colophon">Collect moments, grow gently.</p></div>`;
 }
 // ---------- Today: habits and (Labs) things to do, on Home ----------
@@ -1800,6 +1998,7 @@ function v9Icon(kind) {
   const paths = {
     write: '<path d="M6 4.5h9.5a2 2 0 0 1 2 2V19a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1Z"/><path d="M8.5 4.5V20"/><path d="M11 9h4M11 12.5h4"/>',
     draw: '<path d="M12 4c4.7 0 8 3 8 6.7 0 2.4-1.8 3.3-3.4 3.3-1.4 0-2.1.8-2.1 1.8 0 1.6-1 3.2-3.1 3.2C7 19 4 15.6 4 11.5 4 7.4 7.4 4 12 4Z"/><circle cx="8.5" cy="10" r="1.1"/><circle cx="12" cy="7.6" r="1.1"/><circle cx="15.6" cy="10" r="1.1"/>',
+    yesterday: '<rect x="4.5" y="5.5" width="15" height="14" rx="1.5"/><path d="M8 3.5v4M16 3.5v4M4.5 10h15"/><path d="M13.5 13.2 11 15.2l2.5 2"/>',
     more: '<path d="M4.5 9.5h15v9a1.5 1.5 0 0 1-1.5 1.5H6a1.5 1.5 0 0 1-1.5-1.5Z"/><path d="M3.5 6.5h17v3h-17z"/><path d="M10 13h4"/>',
   }[kind];
   return `<svg class="v9-icon" viewBox="0 0 24 24" aria-hidden="true">${paths}</svg>`;
@@ -8369,6 +8568,8 @@ function render() {
     settings: settingsPageHTML,
     inbox: () => inboxHTML(social(), inboxFilter, ctx(), { icon }),
     search: searchPageHTML,
+    stamps: stampsPage,
+    week: weekPage,
   }[page]();
   navigation();
   applyShellLanguage();
@@ -11001,6 +11202,7 @@ async function action(target) {
     return;
   }
   if (actionName.startsWith("jot-") || actionName.startsWith("take-")) return jotAction(actionName, target);
+  if (["stamps-open", "stamps-month", "stamp-pick", "stamp-calendar", "week-open"].includes(actionName)) return stampsAction(actionName, target);
   if (actionName === "today-photos" || actionName === "today-write" || actionName === "today-draw") {
     // Home's "what's worth keeping today?": start straight away, no sheet.
     quickOpenedAt = Date.now();

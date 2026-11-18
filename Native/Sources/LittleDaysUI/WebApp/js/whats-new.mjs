@@ -4,6 +4,30 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.84",
+    date: "2026-11-18",
+    zh: {
+      title: "集章卡、这一周，首页只留一个主要动作",
+      items: [
+        "记下一天，就在这个月的集章卡上盖一枚章：有照片用你的照片，只写了字用第一个字。同一天记几页都只算一枚，补记的日子也一样盖章。",
+        "章只会变多：把那天的页面删掉，章还留着，变成只写日期的空章（不会显示已删的内容）。没记的日子只是空着。",
+        "首页「看整张」打开集章卡，可以翻到以前的月份，点一枚章打开那一天。",
+        "这一周有记录时，首页出现「这一周，你留下了几个小日子」，点开看这一周的照片和一句话。",
+        "首页还没记的时候只有一个主按钮「选今天的照片」，自己写、手绘、更多方式、补记昨天收成一行小按钮；记过以后先看到今天这一页和「再加一页」。",
+      ],
+    },
+    en: {
+      title: "A stamp card, this week, and one main action on Today",
+      items: [
+        "Each day you keep gets a stamp on this month's card: your photo, or the first letter you wrote. Several pages on one day are still one stamp; days you fill in later get one too.",
+        "Stamps only add up: delete a day's pages and its stamp stays as a date-only stamp (nothing of the deleted pages shows). Days you skip just stay blank.",
+        "See the card from Today, page back to earlier months, and tap a stamp to open that day.",
+        "When this week has a kept day, Today shows \"This week, you kept N little days\" — tap it to see the week's photos and a line you wrote.",
+        "Before you keep anything today there is one main button, Choose today's photos; Write, Draw, More ways and Yesterday are a row of small buttons. Once today is kept, its page comes first, with Add another page.",
+      ],
+    },
+  },
+  {
     version: "10.83",
     date: "2026-11-18",
     zh: {
