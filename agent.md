@@ -48,6 +48,12 @@
 
 ## 更新日志
 
+### 2026-11-18 — V10.89 全量回归 run-all28 + 固定链接 Version 135
+
+- **run-all28**：129 个文件，127 通过、2 失败——`v38`（键盘弹起时面板位置）单独重跑通过；`v119`（快速编辑样式按钮 tap 超时，以前记录过的偶发项）重跑第一次仍超时，第二次通过。合计 **129/129**（Chromium，**不是真机**）。新测试 `v193` 11/11。
+- **固定链接**：Version 135（V10.89 · 更多地方换成插画 Captain）。上传 `app.js`、`styles.css`、`js/botanicals.mjs`、`js/whats-new.mjs`、`captain/captain-face.png`、`captain/captain-sit-up.png`、`captain/expr-happy.png`。基线 `$S/link89`。
+- **需真机看**：插画头像在引导小卡片（30pt）和「问 Captain」按钮（26pt）里是否清楚；保存小章的大小。
+
 ### 2026-11-18 — V10.89 Captain Pack v1 接入（Phase 1 完成 + 阅读页）
 
 - **需求**：Founder 回复「可以放」→ 按上一条建议，把已确认的 Pack v1 插画接入现在就能换、不需要画装扮的位置。柠檬帽、眼睛跟随、Playroom、毛色 4 项没有单独回复，按「暂不改动」处理，相关位置保持 3D。

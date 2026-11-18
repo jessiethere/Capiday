@@ -238,3 +238,4 @@ Memory Wall v1.0：**V10.78 已实施，等真机验收**（Founder 2026-11-15 �
 | 2026-11-18 | 全量回归 run-all27（V10.88 最终版）：125/128，v119 / v185 / v3 偶发项重跑通过 → 128/128。固定链接 Version 134 |
 | 2026-11-18 | Captain Illustrated Asset Pack v1：4 张源图 → `tools/cut_captain_pack.py` → 13 个素材（lie / sit-up / face / 4 表情 / 柠檬帽 / 毛线球 / Playroom 4 帧），全部 APPROVED；STAGED 在 docs/visual/captain-pack-v1（不进 Public）；审查表更新；等 Founder 5 项决定。test_captain_pack 3/3 |
 | 2026-11-18 | **V10.89** Captain Pack v1 接入：captain-face / captain-sit-up / expr-happy 上线到 `Public/captain/`；#6 第一页完成卡、#7 开场介绍、#8 引导大图、#9 引导小头像、#10 保存小章、#13 回复卡、#14 问 Captain 按钮 → 插画；3D 逻辑未删，outfit 不变。v193 11/11、v192 43/43、v71 / v158 通过 |
+| 2026-11-18 | 全量回归 run-all28（V10.89）：127/129，v38 / v119 偶发项重跑通过 → 129/129。固定链接 Version 135 |
