@@ -7,6 +7,14 @@ Sources (already transparent PNGs, supplied by the Founder; "Approved reference
 - source-play.png (1536x1024): four Playroom frames with the yarn ball;
 - source-expressions.png (1254x1254): calm, happy, curious, sleepy busts.
 
+Playroom Asset Addendum v1.1 (Founder, 2026-11-18), docs/visual/captain-pack-v1.1/:
+- playroom/yarn-lemon-hat/01–04 and playroom/hug/01–04: 768x512 transparent
+  frames on one shared canvas and origin (README-founder.md).
+
+Playroom frames keep their whole 768x512 canvas (CANVAS): no trim, no resize,
+so every frame of a sequence lines up. The four v1 yarn frames are the four
+768x512 quadrants of source-play.png, cut the same way.
+
 Nothing is redrawn, recoloured or restyled. Each figure is cropped, trimmed,
 the near-invisible stray pixels around the fur are cleared (alpha < 10 → 0,
 which is invisible on any background), and it is only ever scaled down.
@@ -30,6 +38,10 @@ DIR = ROOT / "docs/visual/captain-pack-v1"
 OUT = DIR / "cut"
 PUBLIC = ROOT / "Public/captain"
 SOURCES = {key: DIR / f"source-{key}.png" for key in ("lying", "sheet", "play", "expressions")}
+V11 = ROOT / "docs/visual/captain-pack-v1.1/playroom"
+for seq, prefix in (("yarn-lemon-hat", "play-hat"), ("hug", "hug")):
+    for i, f in enumerate(sorted((V11 / seq).glob("*.png")), 1):
+        SOURCES[f"{prefix}-{i}"] = f
 
 # name: (source, box x0 y0 x1 y1, max width px, planned display pt, use, audit rows)
 ASSETS = {
@@ -38,10 +50,21 @@ ASSETS = {
     "captain-sit-up": ("sheet", (674, 11, 1233, 683), 540, 150, "Sitting, looking up (greeting; onboarding; Home guide)", [7, 8]),
     "acc-lemon-hat": ("sheet", (71, 757, 527, 1148), 436, 96, "Lemon hat accessory (outfit 'lemon')", [11, 12, 15, 16, 19]),
     "acc-yarn": ("sheet", (713, 784, 1173, 1207), 300, 80, "Yarn ball accessory (outfit 'yarn'; Playroom ball)", [19, 20]),
-    "play-watch": ("play", (20, 79, 736, 457), 720, 220, "Playroom 1: watching the yarn ball", [20]),
-    "play-reach": ("play", (788, 80, 1503, 457), 720, 220, "Playroom 2: paw raised", [20]),
-    "play-bat": ("play", (20, 592, 758, 969), 720, 220, "Playroom 3: paw on the ball", [20]),
-    "play-rolled": ("play", (788, 592, 1527, 969), 720, 220, "Playroom 4: ball rolled away, watching", [20]),
+    # v1 yarn play, no hat: the four 768x512 quadrants (one canvas each).
+    "play-watch": ("play", (0, 0, 768, 512), 768, 220, "Playroom yarn 1 (no hat): watching the ball", [20]),
+    "play-reach": ("play", (768, 0, 1536, 512), 768, 220, "Playroom yarn 2 (no hat): paw raised", [20]),
+    "play-bat": ("play", (0, 512, 768, 1024), 768, 220, "Playroom yarn 3 (no hat): paw on the ball", [20]),
+    "play-rolled": ("play", (768, 512, 1536, 1024), 768, 220, "Playroom yarn 4 (no hat): ball rolled away", [20]),
+    # v1.1 addendum: yarn play wearing the lemon hat (160 / 130 / 130 / 360 ms).
+    "play-hat-1": ("play-hat-1", (0, 0, 768, 512), 768, 220, "Playroom yarn, lemon hat 1: notice", [20]),
+    "play-hat-2": ("play-hat-2", (0, 0, 768, 512), 768, 220, "Playroom yarn, lemon hat 2: reach", [20]),
+    "play-hat-3": ("play-hat-3", (0, 0, 768, 512), 768, 220, "Playroom yarn, lemon hat 3: nudge", [20]),
+    "play-hat-4": ("play-hat-4", (0, 0, 768, 512), 768, 220, "Playroom yarn, lemon hat 4: settle", [20]),
+    # v1.1 addendum: hugging the heart cushion, no hat (180 / 150 / 220 / 420 ms).
+    "hug-1": ("hug-1", (0, 0, 768, 512), 768, 220, "Playroom hug 1: notice the cushion", [20]),
+    "hug-2": ("hug-2", (0, 0, 768, 512), 768, 220, "Playroom hug 2: lean in", [20]),
+    "hug-3": ("hug-3", (0, 0, 768, 512), 768, 220, "Playroom hug 3: hug", [20]),
+    "hug-4": ("hug-4", (0, 0, 768, 512), 768, 220, "Playroom hug 4: settle", [20]),
     "expr-calm": ("expressions", (102, 16, 566, 610), 360, 96, "Expression calm (looking aside)", [12, 13, 17]),
     "expr-happy": ("expressions", (687, 25, 1158, 615), 360, 96, "Expression happy (eyes closed, smiling)", [6, 12, 13]),
     "expr-curious": ("expressions", (94, 619, 559, 1233), 360, 96, "Expression curious (wide eyes, head tilt)", [12, 17]),
@@ -51,6 +74,8 @@ ASSETS = {
 # Founder 2026-11-18 ("可以放"): shipped with V10.89 for the places that use them;
 # captain-lie (paws forward) with V10.90 as the card-edge peek on the welcome.
 SHIP = {"captain-face", "captain-sit-up", "expr-happy", "captain-lie"}
+# Playroom frames keep their full canvas (same origin across a sequence).
+CANVAS = {n for n in ASSETS if n.startswith(("play-", "hug-"))}
 
 
 def clean(img):
@@ -81,7 +106,9 @@ def main():
     sources = {key: Image.open(path).convert("RGBA") for key, path in SOURCES.items()}
     entries = []
     for name, (src, box, max_w, planned, use, rows) in ASSETS.items():
-        img = trim(clean(sources[src].crop(box)))
+        img = clean(sources[src].crop(box))
+        if name not in CANVAS:
+            img = trim(img)
         if img.width > max_w:
             img = img.resize((max_w, round(img.height * max_w / img.width)), Image.LANCZOS)
             img = clean(img)
@@ -96,6 +123,7 @@ def main():
             "status": verdict,
             "shipped": shipped,
             "source": SOURCES[src].relative_to(ROOT).as_posix(),
+            "canvas": name in CANVAS,
             "sourceSize": list(sources[src].size),
             "sourceBox": list(box),
             "width": img.width,

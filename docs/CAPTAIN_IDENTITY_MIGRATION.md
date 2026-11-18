@@ -61,8 +61,10 @@ Updated 2026-11-18 (evening): the Founder supplied four Pack v1 sheets (transpar
 | Interaction | stamp moment | `captain-stamp` | | | APPROVED · shipped |
 | Interaction | weekly recap | — (looking at the journal) | | | NEEDS CHARACTER ASSET |
 | Interaction | idle | `captain-sit` / `captain-sleep` / `captain-lie` | | | APPROVED |
-| Playroom | yarn play, 4 frames (watch → paw up → paw on ball → ball rolled away) | `play-watch` / `play-reach` / `play-bat` / `play-rolled` | 708–720×362–368 | 236–240 pt | APPROVED · staged |
-| Playroom | hug frames; play frames wearing the lemon hat | — | | | NEEDS CHARACTER ASSET |
+| Playroom | yarn play, no hat, 4 frames (watch → paw up → paw on ball → ball rolled away) | `play-watch` / `play-reach` / `play-bat` / `play-rolled` (the four 768×512 quadrants of the v1 sheet) | 768×512 each | 256 pt | APPROVED · staged |
+| Playroom | yarn play wearing the lemon hat, 4 frames (notice → reach → nudge → settle) | `play-hat-1…4` (Addendum v1.1) | 768×512 each | 256 pt | APPROVED · staged |
+| Playroom | hug, no hat, 4 frames (notice the heart cushion → lean in → hug → settle) | `hug-1…4` (Addendum v1.1) | 768×512 each | 256 pt | APPROVED · staged |
+| Playroom | hug wearing the lemon hat | — | | | NEEDS CHARACTER ASSET (lemon is the default look) |
 
 ## 2b. Pack v1 review notes (2026-11-18)
 
@@ -88,6 +90,43 @@ Updated 2026-11-18 (evening): the Founder supplied four Pack v1 sheets (transpar
 - Transparent PNG, or paper background (we cut it out).
 - At least 3× the display width: a scene about 540 px wide; a bust or avatar at least 200 px.
 - One consistent character across all assets, same palette and brush.
+
+## 2c. Playroom Asset Addendum v1.1 (Founder, 2026-11-18)
+
+Received as `Captain-Playroom-Asset-Addendum-v1.1.zip`. Stored in `docs/visual/captain-pack-v1.1/`; the Founder's own notes are in `README-founder.md`. Cut with the pack by `tools/cut_captain_pack.py` into `docs/visual/captain-pack-v1/cut/`. **Staged, not shipped.**
+
+- **Frames**: 8 transparent PNGs, 768×512, on one shared canvas and origin.
+  - Within each sequence Captain's left edge and baseline do not move (checked by bounding box).
+  - The cut keeps the whole canvas: no trim, no resize. The stray near-invisible specks (alpha < 10) are cleared.
+  - The four v1 no-hat yarn frames are now cut the same way, as the exact 768×512 quadrants of `source-play.png`. They were trimmed to 708–720 px before, which would have made the sequence jitter.
+- **Playback (Founder)**:
+  - One tap plays one round and stops on the last frame; tapping again replays it.
+  - Timings: yarn 160 / 130 / 130 / 360 ms; hug 180 / 150 / 220 / 420 ms.
+  - Fixed container size and alignment, `contain`, no per-frame crop, scale or re-alignment.
+  - The lemon hat is painted into the hat frames. No-hat yarn play uses v1 `playroom/01–04`.
+- **Clarity**: 768 px is sharp up to 256 pt on a 3x iPhone.
+  - Today's Playroom stage is square, up to about 330 pt wide.
+  - Holding the frame box at ≤ 256 pt keeps the frames APPROVED. Filling the whole stage width would be about 1.3× upscale (LIMITED SIZE, a little soft).
+- **Frame-to-frame variation**: the art itself differs slightly between frames even in still areas (tail, about 6–7 levels on average). Our quantization adds about 0.3. The fur may "breathe" a little between frames; that comes from the art, not the cut.
+
+**Mapping to today's 3D Playroom** (`keeperPlayHTML`, `library.json` → `keeperPlay`):
+
+| Today (3D) | With v1 + v1.1 | Gap |
+|---|---|---|
+| Lemon look (default): idle photo; drag or tap the separate yarn ball → Captain catches → 6-frame hug-with-hat animation (×2) | Tap → `play-hat-1…4`, stops on frame 4 | The ball is painted into the frames, so **dragging the ball goes away** (the README asks for tap-to-play) |
+| Lemon look: poke Captain → the same hug-with-hat animation | Poke → `hug-1…4` | **The hug frames have no hat**: with the default lemon look, the hat would vanish during the hug → NEEDS CHARACTER ASSET (hug wearing the lemon hat) |
+| Yarn look: idle picture only, a small hop when poked | Tap → `play-watch…play-rolled`; poke → `hug-1…4` | none |
+| Reduced motion: shows the still frame | Show the last frame directly | none |
+| Idle (before any tap) | Frame 1 of the sequence | none |
+
+**Files the Founder's README refers to that we never received** (only four sheet images of Pack v1 reached us, not a structured pack):
+- `poses/reading-journal.png`: weekly-recap entry. NEEDS FILE.
+- `interactions/weekly-recap.png`: weekly-recap page. NEEDS FILE.
+- `poses/card-edge-peek.png`: stand-in in use is `captain-lie`, cut from the lying sheet.
+- `expressions/happy.png`: stand-in in use is `expr-happy`, cut from the expressions sheet.
+- `playroom/01–04.png`: stand-in is the quadrants of the play sheet (the same art).
+
+If the Founder sends the structured v1 pack, the cuts are swapped for the exact files.
 
 ## 3. Where Captain appears today (audit)
 
@@ -119,7 +158,7 @@ Status values:
 | 17 | Reminders / guidance (Captain prompt bubble on Home; daily reminder notification) | Text only (bubble sits on the 3D perch) | — | — | — | 2 | gentle reminder | stand-in `expr-curious` if the Founder agrees | **NEEDS CHARACTER ASSET** (or stand-in) |
 | 18 | Weekly recap (week card / week page; Captain panel look-back row) | No Captain today | — | — | — | 2 | weekly recap / looking at journal | no | **NEEDS CHARACTER ASSET** |
 | 19 | Captain panel · Looks / dress-up chips (`keeperLooksHTML`) | 3D per outfit | choose outfit (writes `keeper.outfit`) | core | none | 3 | lemon hat + yarn for the chip pose | no | **BLOCKED** (accessories exist now; waits on the lemon-hat decision, then panel #12) |
-| 20 | Playroom (`keeperPlayHTML`: play idle, hug animation frames, yarn ball) | 3D photos / frames | drag / tap yarn ball, poke → happy | lemon / yarn sets (`keeperPlay`) | sprite frames, reduce-motion fallback | 3 | Playroom frames + yarn ball in the illustrated style | no | **BLOCKED** · KEEP TEMPORARILY (migrates last; 4 yarn frames + `acc-yarn` exist; hug frames and hatted frames missing) |
+| 20 | Playroom (`keeperPlayHTML`: play idle, hug animation frames, yarn ball) | 3D photos / frames | drag / tap yarn ball, poke → happy | lemon / yarn sets (`keeperPlay`) | sprite frames, reduce-motion fallback | 3 | Playroom frames + yarn ball in the illustrated style | no | **KEEP TEMPORARILY** · assets nearly complete (v1 + v1.1: yarn no hat, yarn with hat, hug no hat); missing: hug wearing the lemon hat; dragging the ball is replaced by tap-to-play (Founder README). Waits on the Founder to migrate Playroom now (it was planned last) |
 | 21 | `keeperMiniHTML` (`.keeper-mini`) | 3D (defined, not rendered anywhere) | — | — | — | — | — | — | KEEP TEMPORARILY (dead code; remove once 3D rendering is retired) |
 
 **V10.89 (Founder: 「可以放」, 2026-11-18)**:

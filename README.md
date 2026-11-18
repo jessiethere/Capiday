@@ -186,6 +186,11 @@ npm run test:browser:v65
 
 ## 更新日志
 
+### 2026-11-18 — Captain Playroom 素材补充包 v1.1（待确认，还没上线）
+
+- 收到戴柠檬帽玩毛线球 4 帧和抱抱抱枕 4 帧，都清晰、对齐；连同 v1 的无帽毛线球 4 帧，放在 `docs/visual/captain-pack-v1.1/` 和 `docs/visual/captain-pack-v1/cut/`，附动画预览。
+- Playroom 还没有换。还缺戴柠檬帽的抱抱，以及每周回看用的两张图（reading-journal、weekly-recap）。
+
 ### 2026-11-18 — V10.90 新手引导微调
 
 - 欢迎卡片：Captain 趴在卡片上沿，两只前爪搭在边上，头和耳朵在上方，文字有足够空间。

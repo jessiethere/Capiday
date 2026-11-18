@@ -48,6 +48,31 @@
 
 ## 更新日志
 
+### 2026-11-18 — Captain Playroom Asset Addendum v1.1 收到：入库、裁切、对齐检查、Playroom 审查（STAGED，未接入）
+
+- **需求**：Founder 上传 `Captain-Playroom-Asset-Addendum-v1.1.zip`，没有附文字。包内：
+  - 戴柠檬帽玩毛线球 4 帧、抱心形抱枕 4 帧，都是 768×512 透明 PNG，同一画布和原点；
+  - README：点一下播放一轮停在末帧、再点重播；节奏 160/130/130/360、180/150/220/420 ms；容器固定、用 contain。
+- **文件**：
+  - 原图 + Founder README 存入 `docs/visual/captain-pack-v1.1/`；动画预览 `preview.gif`（纸色舞台，按 README 节奏）。
+  - `tools/cut_captain_pack.py` 加入 8 帧，Playroom 帧加 `CANVAS`（保留整张 768×512 画布，不裁、不缩）。v1 无帽毛线球 4 帧改为按 source-play.png 的 4 个 768×512 象限精确裁切——以前裁成 708–720px，播放时会抖。
+  - manifest 21 项，全部 APPROVED（帧在 256pt 内清晰）。
+  - `tests/test_captain_pack.py` 新增同画布检查。
+- **检查**：
+  - 每组内 Captain 左边缘和底线不动（hat 组 41/443，hug 组 31–32/464–465）。
+  - 原画本身帧间有细微差异（尾巴区平均约 6–7 级），量化只增加约 0.3。
+- **Playroom 审查**（`docs/CAPTAIN_IDENTITY_MIGRATION.md` 第 2c 节）：
+  - 柠檬帽（默认装扮）的「点毛线球」可以用 hat 4 帧；无帽可以用 v1 4 帧；戳 Captain 可以用 hug 4 帧。
+  - **缺口**：抱抱只有无帽版。默认柠檬帽时抱抱会让帽子消失，所以需要戴帽版抱抱（NEEDS CHARACTER ASSET）。
+  - 拖动毛线球的玩法会变成点一下播放（README 已这样规定）。
+  - 舞台约 330pt，帧框限制在 ≤ 256pt 才算清晰。
+- **README 提到但我们没有收到的 v1 文件**：
+  - `poses/reading-journal.png`、`interactions/weekly-recap.png`：每周回看用，NEEDS FILE；
+  - `poses/card-edge-peek.png`、`expressions/happy.png`、`playroom/01–04.png`：现在用我们从 4 张总图裁出的对应图代替。
+  - 我们只收到过 4 张总图，没有收到结构化的 v1 包。
+- **决定**：按「确认后再接入正式页面」与「Playroom 最后迁移」，没有改 App 代码，没有删 3D Playroom；链接不变。V10.90 回归在后台继续（这次没有改 Public）。
+- **下一步**：等 Founder 回复——①现在迁移 Playroom 吗；②补戴帽版抱抱，或柠檬帽时戳 Captain 改播 hat 毛线球；③补发结构化 v1 包（至少 reading-journal / weekly-recap）。
+
 ### 2026-11-18 — V10.90（续）引导步骤卡头像换成开心 Captain
 
 - **需求**：新手引导步骤卡左上角的 Captain 头像统一换成 expressions/happy（即 Pack v1 的 `expr-happy`，眯眼笑）；保留圆形底，contain 居中，耳尖和两侧留空隙，小尺寸下整张脸看得清。
