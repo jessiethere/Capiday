@@ -521,3 +521,11 @@ Web 运行时加载共享 JSON。`Public/tokens.css` 是加载前的回退，由
 **命名**：中文首页「集章卡」；集章详情页大标题是月份（「十一月」），小字「月令集章」，年份另起一行；英文首页 “This month”，详情页 “November”，小字 “Stamps”。不用 Monthly Stamp / Seal Collection。
 
 **书封**：新增 3 个默认封面（Typography + Color + Texture + 极简线稿 + 朱砂小印）：旅行笔记 Travel Notes（竹青布纹）、日常 Everyday（暖纸、编辑排版）、Captain（奶油白 + 简笔猫 + 植物）。排在精选封面最前；新建手帐的默认封面**没有改**（仍是 `magazine-jp`）。Captain 封面上的猫是**占位简笔轮廓**，正式线稿等统一美术。
+
+## 2026-11-18 V10.86 · Typography System v2：Editorial Serif + Functional Sans
+
+- **讲故事层（Editorial）**：大日期、首页主标题、Section、月份、集章详情、这一周主句、阅读器书名与标题、日详情 / 章节标题、Capiday 书封、引用。中文现代宋体（Songti SC → STSong → Noto Serif CJK SC → … → 站酷小薇），英文 Cormorant Garamond 正体、lining 数字；字重 500；层级靠字号 / 行距 / 留白。
+- **操作层（Functional）**：按钮、Tab、导航、设置、编辑器工具、媒体控件、表单、小字、状态、菜单、输入框 —— 系统 Sans（苹方 / SF）。
+- **用户内容**：页面画布文字、Journal Studio 字体选择、书封所选字体、历史页面 —— 永远不被 UI token 覆盖。
+- **Tokens**：`design-tokens.json` → `typography`（families + styles：displayDate、heroTitle、sectionTitle、monthTitle、journalTitle、bookCoverTitle、quote、body、button、caption、statLabel、meta、navLabel），`tools/sync_tokens.py` 生成 `--type-*`（英文 `:root`，中文 `html:lang(zh)`）；`styles.css`「V10.86 Typography v2」一节是这些角色唯一设字体的地方。新页面要用这些 token，不要另写 font-family。
+- 不用：全 App 宋体、按钮 / 小字 Serif、书法 / 毛笔 / 难读装饰字体。

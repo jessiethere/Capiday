@@ -967,7 +967,9 @@ function weekCardHTML() {
   const photos = privacyOn("hideToday") ? [] : review.photos.slice(0, 4);
   const thumbs = photos.map((p, i) => `<span class="wk-pol p${i}"><img src="${esc(safePhoto(p.ref))}" alt="" loading="lazy" decoding="async"></span>`).join("");
   const dots = review.days.map((d) => `<i class="${d.stamp ? "on" : d.future ? "future" : ""}"></i>`).join("");
-  const range = `${shortDate(review.start)} – ${shortDate(review.end)}`;
+  // The card's range is short ("Nov 16 – 22" / 「11月16日 – 22日」 stays readable on one line).
+  const short = (k) => new Date(`${k}T12:00:00`).toLocaleDateString(locale(), { month: "short", day: "numeric" });
+  const range = `${short(review.start)} – ${short(review.end)}`;
   const meta = [stampCount("week.days", review.recorded), review.photoCount ? stampCount("week.photos", review.photoCount) : ""].filter(Boolean).join(" · ");
   return `<button class="week-card${thumbs ? "" : " no-photos"}" data-action="week-open" data-week="${review.start}"><span class="wk-head"><small class="v9-kicker">${t(last ? "week.kickerLast" : "week.kicker")} · ${esc(range)}</small><b class="wk-line">${esc(weekLine(review, last))}</b><small class="wk-meta">${esc(meta)}</small></span>${thumbs ? `<span class="wk-thumbs" aria-hidden="true">${thumbs}</span>` : ""}<span class="wk-foot"><span class="wk-dots" aria-hidden="true">${dots}</span><span class="wk-go">${t("week.open")} ›</span></span></button>`;
 }

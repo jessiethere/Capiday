@@ -129,5 +129,190 @@
       },
       "tint": 0.06
     }
-  ]
+  ],
+  "typography": {
+    "_note": "V10.86 Typography v2: Editorial Serif for storytelling, Functional Sans for interaction. Generated into Public/tokens.css by tools/sync_tokens.py (English values in :root, Chinese overrides under html:lang(zh)). UI only: user-chosen page / cover fonts are never replaced.",
+    "families": {
+      "numeral": [
+        "LD-elegant",
+        "Georgia",
+        "serif"
+      ],
+      "editorial": {
+        "en": [
+          "LD-elegant",
+          "Songti SC",
+          "STSong",
+          "Noto Serif CJK SC",
+          "Noto Serif SC",
+          "Georgia",
+          "serif"
+        ],
+        "zh": [
+          "Songti SC",
+          "STSong",
+          "Noto Serif CJK SC",
+          "Noto Serif SC",
+          "Source Han Serif SC",
+          "LD-zh-xiaowei",
+          "LD-elegant",
+          "Georgia",
+          "serif"
+        ]
+      },
+      "editorialText": {
+        "en": [
+          "LD-vintage-serif",
+          "Songti SC",
+          "STSong",
+          "Noto Serif CJK SC",
+          "Georgia",
+          "serif"
+        ],
+        "zh": [
+          "Songti SC",
+          "STSong",
+          "Noto Serif CJK SC",
+          "Noto Serif SC",
+          "LD-zh-xiaowei",
+          "LD-vintage-serif",
+          "Georgia",
+          "serif"
+        ]
+      },
+      "sans": [
+        "-apple-system",
+        "BlinkMacSystemFont",
+        "PingFang SC",
+        "Hiragino Sans GB",
+        "Segoe UI",
+        "Microsoft YaHei",
+        "Noto Sans SC",
+        "sans-serif"
+      ]
+    },
+    "styles": {
+      "displayDate": {
+        "family": "numeral",
+        "size": 78,
+        "weight": 400,
+        "lineHeight": 0.78,
+        "tracking": -0.02
+      },
+      "heroTitle": {
+        "family": "editorial",
+        "size": {
+          "en": 28,
+          "zh": 24
+        },
+        "weight": {
+          "en": 500,
+          "zh": 500
+        },
+        "lineHeight": {
+          "en": 1.12,
+          "zh": 1.32
+        },
+        "tracking": {
+          "en": -0.005,
+          "zh": 0.02
+        }
+      },
+      "sectionTitle": {
+        "family": "editorial",
+        "size": {
+          "en": 27,
+          "zh": 22
+        },
+        "weight": 500,
+        "lineHeight": 1.2,
+        "tracking": {
+          "en": 0,
+          "zh": 0.04
+        }
+      },
+      "monthTitle": {
+        "family": "editorial",
+        "size": {
+          "en": 30,
+          "zh": 24
+        },
+        "weight": 500,
+        "lineHeight": 1.1,
+        "tracking": {
+          "en": 0,
+          "zh": 0.06
+        }
+      },
+      "journalTitle": {
+        "family": "editorial",
+        "size": {
+          "en": 20,
+          "zh": 17
+        },
+        "weight": 500,
+        "lineHeight": 1.3,
+        "tracking": {
+          "en": 0,
+          "zh": 0.02
+        }
+      },
+      "bookCoverTitle": {
+        "family": "editorial",
+        "size": 19,
+        "weight": 500,
+        "lineHeight": 1.05,
+        "tracking": 0
+      },
+      "quote": {
+        "family": "editorialText",
+        "size": 16,
+        "weight": 400,
+        "lineHeight": 1.6,
+        "tracking": 0
+      },
+      "body": {
+        "family": "sans",
+        "size": 15,
+        "weight": 400,
+        "lineHeight": 1.6,
+        "tracking": 0
+      },
+      "button": {
+        "family": "sans",
+        "size": 15,
+        "weight": 600,
+        "lineHeight": 1.2,
+        "tracking": 0
+      },
+      "caption": {
+        "family": "sans",
+        "size": 12,
+        "weight": 400,
+        "lineHeight": 1.5,
+        "tracking": 0
+      },
+      "statLabel": {
+        "family": "sans",
+        "size": 15,
+        "weight": 500,
+        "lineHeight": 1.3,
+        "tracking": 0
+      },
+      "meta": {
+        "family": "sans",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 1.3,
+        "tracking": 0.12
+      },
+      "navLabel": {
+        "family": "sans",
+        "size": 10,
+        "weight": 500,
+        "lineHeight": 1.2,
+        "tracking": 0
+      }
+    }
+  }
 }

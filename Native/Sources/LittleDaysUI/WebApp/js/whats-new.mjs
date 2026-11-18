@@ -4,6 +4,28 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.86",
+    date: "2026-11-18",
+    zh: {
+      title: "更像一本手帐的字体",
+      items: [
+        "首页的大日期、「今天已经记下来了」、「今天的故事」、月份和「这一周」的那一句，改用更轻、更优雅的宋体气质，不再靠粗体。",
+        "按钮、底部栏、设置、编辑工具和小字继续用清楚的无衬线字体。",
+        "你自己在页面里选的字体和以前的页面都不变。",
+        "小屏幕或字放大时，集章卡的月份不再被挤掉。",
+      ],
+    },
+    en: {
+      title: "Type that reads like a journal",
+      items: [
+        "Today’s big date, the title, section titles, the month and the week’s line now use a lighter, more editorial serif instead of heavy bold.",
+        "Buttons, the tab bar, settings, editor tools and small text stay in a clear sans-serif.",
+        "Fonts you chose on your own pages, and your earlier pages, are unchanged.",
+        "On small screens or with bigger text, the stamp card’s month is never cut off.",
+      ],
+    },
+  },
+  {
     version: "10.85",
     date: "2026-11-18",
     zh: {

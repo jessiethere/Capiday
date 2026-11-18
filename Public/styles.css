@@ -26925,3 +26925,153 @@ html[lang="en"] .keeper-perch .keeper-entry::before {
 .cover-capiday-captain .cv-sprig {
   width: 20%;
 }
+
+/* =====================================================================
+   V10.86 · Typography v2 — Editorial Serif for storytelling, Functional
+   Sans for interaction. The values are tokens (design-tokens.json
+   "typography" → tokens.css --type-*; English on :root, Chinese under
+   html:lang(zh)). This block is the one place they are applied: pages do
+   not set their own font-family for these roles.
+   - Serif / 宋体: the big date, Home's title, section titles, months,
+     the week's line, reader / day titles, Capiday cover titles, quotes.
+   - Sans (unchanged): buttons, tab bar, navigation, settings, the editor's
+     tools, media controls, forms, small text, status, menus, inputs.
+   - Never touched: what people write on their pages and the fonts they
+     chose (page canvas, Journal Studio fonts, a cover's chosen font).
+   Hierarchy comes from size, line height and space — not heavy bold.
+   ===================================================================== */
+.v9-daynum {
+  font-family: var(--type-displayDate-family);
+  font-weight: var(--type-displayDate-weight);
+  letter-spacing: var(--type-displayDate-track);
+}
+.home-mag .v9-home .today-prompt {
+  font-family: var(--type-heroTitle-family) !important;
+  font-size: var(--type-heroTitle-size);
+  font-weight: var(--type-heroTitle-weight);
+  line-height: var(--type-heroTitle-lh);
+  letter-spacing: var(--type-heroTitle-track);
+}
+.home-mag .hs-head h2.hs-title.en,
+.home-mag .hs-head h2.hs-title.zh,
+.home-mag .hs-head h2.hs-title {
+  font-family: var(--type-sectionTitle-family) !important;
+  font-size: var(--type-sectionTitle-size) !important;
+  font-weight: var(--type-sectionTitle-weight) !important;
+  line-height: var(--type-sectionTitle-lh) !important;
+  letter-spacing: var(--type-sectionTitle-track);
+  font-style: normal !important;
+}
+.home-mag .v9-hero-copy h2 {
+  font-family: var(--type-sectionTitle-family);
+  font-weight: var(--type-sectionTitle-weight);
+  letter-spacing: var(--type-sectionTitle-track);
+}
+.stamp-strip .ss-month,
+.stamps-page .sp-head h1 {
+  font-family: var(--type-monthTitle-family);
+  font-size: var(--type-monthTitle-size);
+  font-weight: var(--type-monthTitle-weight);
+  line-height: var(--type-monthTitle-lh);
+  letter-spacing: var(--type-monthTitle-track);
+}
+.week-card .wk-line,
+.week-page .sp-head h1 {
+  font-family: var(--type-journalTitle-family);
+  font-size: var(--type-journalTitle-size);
+  font-weight: var(--type-journalTitle-weight);
+  line-height: var(--type-journalTitle-lh);
+  letter-spacing: var(--type-journalTitle-track);
+}
+/* Reader / day titles keep their sizes; only the face and weight change. */
+.reader-name b,
+.reader-title-line {
+  font-family: var(--type-journalTitle-family);
+  font-weight: var(--type-journalTitle-weight);
+}
+/* These were forced to sans by the V9 interface rule (!important). */
+.day-detail .day-masthead h1,
+.day-detail .chapter-strip h2,
+.day-masthead h1.day-title,
+#app .day-masthead h1,
+#app .chapter-strip h2 {
+  font-family: var(--type-journalTitle-family) !important;
+  font-weight: var(--type-journalTitle-weight);
+}
+.wp-quote {
+  font-family: var(--type-quote-family);
+  font-size: var(--type-quote-size);
+  font-weight: var(--type-quote-weight);
+  line-height: var(--type-quote-lh);
+}
+/* Capiday's own covers: the chosen cover font stays; only weight / rhythm. */
+.cover-capiday .cv-title {
+  font-weight: var(--type-bookCoverTitle-weight);
+  line-height: var(--type-bookCoverTitle-lh);
+}
+/* Interaction layer (sans): kickers, counts, captions, buttons, tabs. */
+.home-mag .v9-kicker,
+.stamp-strip .v9-kicker,
+.week-card .v9-kicker,
+.sp-head .v9-kicker {
+  font-family: var(--type-meta-family);
+  font-weight: var(--type-meta-weight);
+}
+.stamp-strip .ss-count,
+.sp-count,
+.sp-total {
+  font-family: var(--type-statLabel-family);
+  font-size: var(--type-statLabel-size);
+  font-weight: var(--type-statLabel-weight);
+  line-height: var(--type-statLabel-lh);
+}
+.stamp-strip .ss-note,
+.week-card .wk-meta,
+.sp-note,
+.sp-hint,
+.kp-chat-label {
+  font-family: var(--type-caption-family);
+  font-size: var(--type-caption-size);
+  font-weight: var(--type-caption-weight);
+  line-height: var(--type-caption-lh);
+}
+.home-mag .v9-home .home-done-acts .home-more,
+.home-mag .v9-cta {
+  font-family: var(--type-button-family);
+  font-weight: var(--type-button-weight);
+}
+#navigation .nav-item span {
+  font-family: var(--type-navLabel-family);
+  font-size: var(--type-navLabel-size);
+  font-weight: var(--type-navLabel-weight);
+  line-height: var(--type-navLabel-lh);
+}
+/* Lining figures in the editorial serif (Cormorant's old-style "3" sits low). */
+.home-mag .v9-home .today-prompt,
+.home-mag .hs-head h2.hs-title,
+.stamp-strip .ss-month,
+.stamps-page .sp-head h1,
+.week-card .wk-line,
+.week-page .sp-head h1,
+.reader-name b,
+.reader-title-line,
+.wp-quote {
+  font-variant-numeric: lining-nums;
+}
+/* A narrow stamp card (small phones, larger text): the month and count above,
+   the month's stamps below — never a clipped month name. */
+.stamp-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.stamp-strip .ss-copy {
+  flex: 1 1 130px;
+}
+.stamp-strip .ss-grid {
+  flex: 0 0 auto;
+}
+.stamp-strip .ss-copy,
+.stamp-strip .ss-month {
+  min-width: 0;
+}

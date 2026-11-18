@@ -48,6 +48,45 @@
 
 ## 更新日志
 
+### 2026-11-18 — V10.86：Typography System v2 —— Editorial Serif（讲故事）+ Functional Sans（操作）
+
+- **需求**（Founder，对比参考概念图）：不全局换字体，建立双层体系：品牌 / 阅读层用优雅的 Serif / 宋体气质（大日期、首页主标题、Section、月份、集章详情、书封标题、阅读器标题、章节标题、品牌短句），操作层继续 Sans（按钮、Tab、导航、设置、编辑工具、照片 / 视频 / 音频控件、表单、小字、状态、菜单、输入框）；层级靠字号、行距、留白，不靠粗体；用户内容不改；先 Audit → Tokens → 应用到 Home / 集章 / 书封 / 阅读器；不大改编辑器；验收 A–J。
+- **Typography Audit（改之前，Chromium 计算值）**：
+  - 大日期 `18`：Cormorant（LD-elegant）斜体 78 px / 500 —— 已是高对比 Serif。
+  - 首页主标题「今天已经记下来了」：系统 Sans 21 px / **650**（偏粗、偏工具型）。
+  - Section「今天的故事」：中文系统 Sans 23–24 px / **700**；英文 Cormorant 斜体 27 px / 500。
+  - 月份「十一月」：Libre Baskerville 22 px / **700**；这一周主句：18 px / **700**；「已集 N 枚」Sans 15 / 600；小标题 12 / 600。
+  - 按钮 15 / 600、底部栏 9 px / 400、小按钮 13 / 600 —— Sans。
+  - 阅读器书名 Sans 14 / 600；页面上的文字 = 用户 / 模板字体（例如 LD-minimal-sans、手写）。
+  - 一条 V9 的全局规则把 `.today-prompt`、`.day-masthead h1`、`.chapter-strip h2` 等强制成 Sans（`!important`），所以以前给它们写的字体后备其实没生效。
+  - 过度粗体：首页主标题 650、中文 Section 700、月份 700、这一周 700。
+- **新 Typography Tokens**（`design-tokens.json` → `typography`；`tools/sync_tokens.py` 生成 `tokens.css` 里的 `--type-<名>-family / -size / -weight / -lh / -track`，英文值在 `:root`，中文覆盖在 `html:lang(zh)`；不手写第二套）：
+
+  | token | 字体 | 英文 | 中文 |
+  |---|---|---|---|
+  | displayDate | numeral（Cormorant） | 78 / 400 / 0.78 | 同 |
+  | heroTitle | editorial | 28 / 500 / 1.12 | 24 / 500 / 1.32，字距 0.02em |
+  | sectionTitle | editorial | 27 / 500 / 1.2 | 22 / 500 / 1.2，0.04em |
+  | monthTitle | editorial | 30 / 500 / 1.1 | 24 / 500 / 1.1，0.06em |
+  | journalTitle | editorial | 20 / 500 / 1.3 | 17 / 500 / 1.3 |
+  | bookCoverTitle | editorial | 19 / 500 / 1.05 | 同 |
+  | quote | editorialText（Baskerville / 宋体） | 16 / 400 / 1.6 | 同 |
+  | body / button / caption / statLabel / meta / navLabel | sans | 15/400 · 15/600 · 12/400 · 15/500 · 12/500 +0.12em · 10/500 | 同 |
+
+  - editorial 中文栈：Songti SC → STSong → Noto Serif CJK SC → Noto Serif SC → Source Han Serif SC → 站酷小薇 → Cormorant → Georgia；英文栈：Cormorant → Songti SC（书名等中文内容）→ … → Georgia。sans：系统字体（苹方）。
+- **中英文策略**：中文 = 现代宋体（iPhone 自带 Songti SC，App 不变大），字重 500、略加字距，正文和操作仍是苹方；英文 = Cormorant Garamond（可变字重 300–700，所以 500 是真字重不是假粗），**正体不再用斜体**，用 lining 数字（不用旧式数字），Baskerville 只做引用小字。不追求中英文同一套字体，追求同一种感觉。
+- **已应用**（`styles.css` 最后的「V10.86 Typography v2」一节，是这些角色唯一设置字体的地方）：首页大日期、主标题、Section 标题、照片卡标题、集章卡月份 / 数量 / 说明 / 小标题、集章详情页标题、这一周主句、这一周页标题与引用、阅读器书名与页面标题行、日详情大标题与章节标题、Capiday 书封标题的字重与行距、主按钮、底部栏文字（9 px → 10 px / 500，更清楚）。
+- **没有改**：Journal Studio 编辑器（工具条、面板、字体选择逻辑）、页面画布上的文字（用户 / 模板字体）、书封上用户选的封面字体、「今天的故事」卡片上页面自己的标题字体、品牌字标「开铺手帐 / Capiday」、设置页、日历、照片墙、对话框（继续 Sans）；`library.mjs fontFamily` 里页面内容的毛笔字后备（Phase 2）。
+- **其他**：集章卡改为可换行布局——窄屏或字放大时，章的格子换到月份下面，月份不会被挤成 0 宽（v191 发现：320 宽 + 130% 时「November」被挤掉）。英文这一周卡片的日期范围用短月份（Nov 16 – Nov 22），不再把「22」挤到第二行。
+- **可访问性 / 后备风险**：
+  - Web 层字号是固定 px，**iOS 的「动态字体」（Dynamic Type）目前不会让 App 里的字变大**（以前就是这样）；浏览器里用 130% 缩放 + 320 宽测试了不重叠、不截断、无横向滚动，真机「更大字体」要另外看。
+  - Linux / Windows 上没有 Songti SC，中文标题会落到 Noto Serif CJK / 站酷小薇，样子和 iPhone 不同；固定链接在 Windows 上看到的宋体效果不代表 iPhone。
+  - Cormorant 在小字号下偏细，所以只用于 ≥ 17 px 的标题；更小的 Serif 用 Baskerville。
+  - 中文宋体 500 在低亮度下比苹方稍淡，需要真机看「今天已经记下来了」「十一月」的清晰度。
+- **文件**：`design-tokens.json`、`tools/sync_tokens.py`、`Public/tokens.css`（生成）、`Public/styles.css`（V10.86 一节 + 集章卡换行）、`Public/app.js`（这一周卡片短日期）、`Public/js/whats-new.mjs`（10.86）、`Native/…/WebApp/`、`docs/DESIGN_SYSTEM.md`、`tests/v191-browser.cjs`（新，26 项）。
+- **验收 A–J**（`tests/v191-browser.cjs` 26/26，Chromium，**不是真机**）：A 首页主标题 / Section / 月份 / 这一周 / 阅读器书名都是 editorial serif 且字重 ≤ 500 ✅；B 大日期是 Cormorant、字号 ≥ 主标题 2.5 倍 ✅；C 中文宋体 ≥ 22 px、字重 500 ✅；D 英文标题是正体 Cormorant ✅；E 按钮 / 底部栏 / 小字 / 数量 / Captain 标签仍是 Sans ✅；F Journal Studio 工具没有变 Serif ✅；G 页面上的手写字体、今天卡片上的页面标题字体都没变 ✅；H 界面里没有毛笔字后备、Cormorant 已加载 ✅；I 320 宽 + 130% 文字：不重叠、不截断、无横向滚动 ✅（真机 Dynamic Type 见风险）；J 每个角色的字体都等于对应 token ✅。
+- **全量回归 run-all23**（V10.85 + V10.86 一起）：进行中，结果补记。
+
 ### 2026-11-18 — V10.85：Visual Direction v1 Phase 1（颜色 · 字体 · 印章 · 竹青这一周 · Captain 守册猫 · 3 个默认书封）
 
 - **需求**（Founder 已确认的产品决策，按 Phase 1 实施）：现代国际化的功能层 + 东方手帐气质的内容层 + 印章 / 纸张 / 留白 / 植物 / Captain 的细节层；不做传统「中国风主题」。逐项：配色（暖灰 #756D63、朱砂只用于印章、红字 #A9483A、竹青辅助）、集章命名、这一周改竹青、字章改白底描边、Captain 首次盖章频率（确定可测）、Captain 首页定位与聊天降级、3 个默认书封、天气不做、「今天一个字」进 Phase 3、中英文、验收 A–O、文档。
