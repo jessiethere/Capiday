@@ -70,7 +70,10 @@ async function at(browser, time) {
     await page.waitForTimeout(1200);
     await page.evaluate(() => document.querySelectorAll("dialog[open]").forEach((d) => d.close())); // the first-page streak card
     await SS.leaveReader(page);
-    await page.locator('#navigation [data-page="home"]').click();
+    // V10.84: once today is kept, Home shows today's page instead of the photo
+    // card; the card is back the next morning (nothing kept yet that day).
+    await page.clock.setSystemTime(new Date("2026-11-18T09:00:00"));
+    await page.reload();
     await page.waitForSelector(".hero .v9-polaroids");
     const mine = await hero(page);
     const urls = await page.evaluate(() => {

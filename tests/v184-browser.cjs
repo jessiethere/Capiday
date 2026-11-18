@@ -104,6 +104,16 @@ const notesText = (page) => page.locator("#wv-notes").innerText();
       await page.reload();
       await page.waitForSelector(".hero");
       check("换一题：今天之内记得换过的题", (await page.locator(".daily-prompt .dp-q").innerText()) === q2);
+      const askedId = await page.locator(".daily-prompt").getAttribute("data-prompt");
+      // English labels of 每日一问 (it shows only while today is not kept yet, V10.84).
+      await page.evaluate(() => localStorage.setItem("little-days.language", "en"));
+      await page.reload();
+      await page.waitForSelector(".hero");
+      check("English: Write freely + Daily prompt", (await page.locator('[data-action="today-write"] b').innerText()) === "Write freely" && /Daily prompt/i.test(await page.locator(".daily-prompt .v9-kicker").innerText()));
+      check("English: buttons", (await page.locator(".daily-prompt").innerText()).includes("Write a line") && (await page.locator(".daily-prompt").innerText()).includes("Say it") && (await page.locator(".daily-prompt").innerText()).includes("Another one"));
+      await page.evaluate(() => localStorage.setItem("little-days.language", "zh-CN"));
+      await page.reload();
+      await page.waitForSelector(".hero");
 
       // ------------------------------------------------ Reminder (before anything is saved)
       await page.locator(".settings-gear").tap();
@@ -169,8 +179,12 @@ const notesText = (page) => page.locator("#wv-notes").innerText();
 
       // ------------------------------------------------ 1c. 每日一问 · 写一句
       await home(page);
-      const asked = await page.locator(".daily-prompt").getAttribute("data-prompt");
-      await page.locator('[data-action="prompt-write"]').tap();
+      // V10.84: once today is kept, 每日一问 is not on Home; 写一句 → 带上今天的题目.
+      check("今天已记：首页不再显示每日一问", (await page.locator(".daily-prompt").count()) === 0);
+      const asked = askedId;
+      await page.locator('.home-small [data-action="today-write"]').tap();
+      await page.waitForSelector(".jot-page");
+      await page.locator('[data-action="jot-prompt-on"]').tap();
       await page.waitForSelector(".jot-page .jot-prompt");
       await page.locator("#jot-text").fill("在窗边发呆了十分钟");
       await page.waitForTimeout(450);
@@ -183,7 +197,11 @@ const notesText = (page) => page.locator("#wv-notes").innerText();
 
       // ------------------------------------------------ 1d. 说一句: record → listen → again → keep
       await home(page);
-      await page.locator('[data-action="prompt-say"]').tap();
+      // V10.84: today is kept, so 每日一问 is not on Home: 写一句 → 🎙 说一句 (the same recorder).
+      await page.locator('.home-small [data-action="today-write"]').tap();
+      await page.waitForSelector(".jot-page");
+      await page.locator('[data-action="jot-prompt-on"]').tap(); // answer 每日一问 with a voice note
+      await page.locator('[data-action="take-start"][data-where="jot"]').tap();
       await page.waitForSelector(".jot-page");
       await recordTake(page, 1200);
       check("说一句：录完先能试听（还没写进手帐）", (await page.locator(".take.review audio").count()) === 1 && (await page.locator(".take.review [data-action=take-again]").count()) === 1);
@@ -291,8 +309,7 @@ const notesText = (page) => page.locator("#wv-notes").innerText();
       await page.evaluate(() => localStorage.setItem("little-days.language", "en"));
       await page.reload();
       await page.waitForSelector(".hero");
-      check("English: Write freely + Daily prompt", (await page.locator('[data-action="today-write"] b').innerText()) === "Write freely" && /Daily prompt/i.test(await page.locator(".daily-prompt .v9-kicker").innerText()) && !/[一-鿿]/.test(await page.locator(".daily-prompt .dp-q").innerText()));
-      check("English: buttons", (await page.locator(".daily-prompt").innerText()).includes("Write a line") && (await page.locator(".daily-prompt").innerText()).includes("Say it") && (await page.locator(".daily-prompt").innerText()).includes("Another one"));
+      check("English: today kept → Write a line (small button)", (await page.locator('.home-small [data-action="today-write"] b').innerText()) === "Write a line");
       r = await lastReminder(page);
       check("English: the reminder text follows the app language", r?.body === "Anything you’d like to remember from today? Write a line or leave a quick voice note." && r.title === "Capiday");
       s = await read(page);

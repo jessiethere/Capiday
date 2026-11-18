@@ -8773,12 +8773,20 @@ function streakNow() {
   return streakInfo(recordedDays(state()), dateKey());
 }
 function streakChipHTML() {
+  // V10.84: no streak on Home, even with Labs on (the Founder: no 连续打卡);
+  // the code and the days stay. The first stamp of a day replaces it.
+  return "";
+  // eslint-disable-next-line no-unreachable
   if (!labsOn()) return "";
   const s = streakNow();
   return `<button class="streak-chip ${s.today ? "done" : ""}" data-action="streak-open"><i class="streak-dot" aria-hidden="true"></i>${s.streak ? t("streak.chip", { count: s.streak, week: s.weekCount }) : t("streak.start")}</button>`;
 }
 function maybeCelebrate(anywhere = false) {
-  // B4 (frozen for now): no streak stamp popping up on its own; with Labs on it works as before.
+  // B4 (frozen for now): no streak stamp popping up on its own. V10.84: not
+  // with Labs on either — no "Day N" celebration sheet; the quiet first-stamp
+  // moment (stampMoment) is the only thing a new day shows.
+  return;
+  // eslint-disable-next-line no-unreachable
   if (!labsOn()) return;
   if ((!anywhere && page !== "home") || document.querySelector("dialog[open]")) return;
   const s = streakNow();

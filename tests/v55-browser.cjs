@@ -36,38 +36,31 @@ const shots = process.env.SHOTS_DIR || "";
     await page.reload();
     await page.waitForSelector(".hero");
 
-    // 1. Home: the streak chip (2 days so far, today not yet).
-    assert.match(await page.locator(".streak-chip").innerText(), /连续 2 天/);
-    await page.locator(".streak-chip").tap();
-    await page.waitForSelector("#streak-dialog[open]");
-    assert.match(await page.locator(".streak-message").innerText(), /第 3 天/);
-    assert.equal(await page.locator(".streak-confetti").count(), 0, "just looking: no celebration");
-    await page.locator('#streak-dialog [data-action="streak-write"]').tap();
-    await page.waitForSelector("#choose-dialog[open] .quick-sheet");
-    passed.push("Home streak chip; looking at it shows the week and how to keep it going");
+    // 1. V10.84: no streak chip on Home (not even with Labs on).
+    assert.equal(await page.locator(".streak-chip").count(), 0, "no streak chip");
+    passed.push("Home: no streak chip (V10.84)");
 
-    // 2. Today's first page → back on Home → the stamp moment, once.
+    // 2. Today's first page: the quiet first-stamp moment, never a "Day N" sheet; once.
+    await page.locator('.home-small [data-action="quick-open"]').tap();
+    await page.waitForSelector("#choose-dialog[open] .quick-sheet");
     await page.locator('[data-action="quick-way"][data-way="write"]').tap();
     await page.locator('[data-action="quick-start"]').tap();
     await page.waitForSelector('#journal-canvas [data-inline="title"]');
     await page.keyboard.type("第三天");
     await page.evaluate(() => document.activeElement.blur());
     await page.locator('[data-action="save-entry"]').tap();
-    await page.waitForSelector("#streak-dialog[open] .streak-card.celebrate");
-    assert.match(await page.locator(".streak-card h2").innerText(), /连续记录 3 天/);
-    assert.match(await page.locator(".streak-message").innerText(), /三天/, "the 3-day milestone message");
-    assert.equal(await page.locator(".streak-confetti i").count(), 16);
-    assert.equal(await page.locator(".streak-week span.on").count() >= 1, true);
+    await page.waitForSelector("#stamp-moment");
+    assert.match(await page.locator("#stamp-moment").innerText(), /今天，也留下来了。/);
+    assert.equal(await page.locator("#streak-dialog[open]").count(), 0, "no Day N sheet");
     if (shots) await page.screenshot({ path: `${shots}/v55-stamp.png` });
-    await page.locator('#streak-dialog [data-action="streak-close"]').tap();
     await menu(page, "calendar");
     await menu(page, "home");
     await page.waitForTimeout(500);
-    assert.equal(await page.locator("#streak-dialog[open]").count(), 0, "only once a day");
-    assert.match(await page.locator(".streak-chip").innerText(), /连续 3 天/);
-    const events = await page.evaluate(() => JSON.parse(localStorage.getItem("little-days.events")).filter((e) => e.e === "celebrate"));
-    assert.equal(events.length, 1);
-    passed.push("today's first page → a 'Day 3' stamp moment with the milestone line, once a day");
+    assert.equal(await page.locator("#streak-dialog[open]").count(), 0, "still none");
+    assert.equal(await page.locator(".streak-chip").count(), 0);
+    const events = await page.evaluate(() => JSON.parse(localStorage.getItem("little-days.events") || "[]").filter((e) => e.e === "celebrate"));
+    assert.equal(events.length, 0);
+    passed.push("today's first page → the quiet first stamp (no streak, no Day N sheet)");
 
     // 3. Reading a day: tap an untitled title to write it; double-click to change it.
     await menu(page, "calendar");

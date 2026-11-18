@@ -52,12 +52,13 @@ const shots = process.env.SHOTS_DIR || "";
       localStorage.setItem("little-days.v1", JSON.stringify(s));
     }, today);
     await page.reload();
-    // V10.2: a quiet invitation (no sample photo posing as a memory); the photo of the day is one tap away.
-    await page.waitForSelector(".home-mag .ts-empty");
-    assert.match(await page.locator(".home-mag .ts-empty").innerText(), /今天还没有写下故事[\s\S]*从一张照片、一句话开始[\s\S]*选一张照片开始[\s\S]*今日推荐的照片/);
-    assert.equal(await page.locator(".home-mag .ts-empty img").count(), 0);
-    assert.equal(await page.locator(".home-mag .ts-empty .today-scene").count(), 1);
-    passed.push("fresh day: an invitation to start; the photo of the day is a link");
+    // V10.84: one main way to start (the photo card); no second invitation and
+    // no sample photo posing as a memory.
+    await page.waitForSelector(".hero .stamp-strip");
+    assert.equal(await page.locator(".home-mag .ts-empty").count(), 0);
+    assert.equal(await page.locator('.hero [data-action="today-photos"]').count(), 1);
+    assert.equal(await page.locator(".hero .ts-card").count(), 0, "no sample day shown as today");
+    passed.push("fresh day: one main way to start, nothing posing as a memory (V10.84)");
 
     assert.deepEqual(errors, []);
     console.log(`V4.5 E2E passed (${passed.length} groups):\n - ${passed.join("\n - ")}\nNo page errors.`);

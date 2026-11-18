@@ -39,13 +39,16 @@ const base = process.env.PREVIEW_URL || "http://127.0.0.1:8080";
       localStorage.setItem("little-days.v1", JSON.stringify(s));
     }, today);
     await page.reload();
-    await page.waitForSelector(".today-scene");
-    assert.match(await page.locator(".today-scene").innerText(), /今日推荐的照片/);
-    const sceneId = await page.locator(".today-scene").getAttribute("data-scene");
+    // V10.84: Home keeps one main action; the picture of the day is one of the
+    // ways in 更多方式 (the record sheet), not a second link on Home.
+    await page.waitForSelector(".hero .stamp-strip");
+    assert.equal(await page.locator(".today-scene").count(), 0);
+    await page.locator('.home-small [data-action="quick-open"]').tap();
+    await page.waitForSelector("#choose-dialog[open] .quick-sheet");
+    await page.locator('#choose-dialog [data-action="quick-way"][data-way="photo"]').tap();
+    await page.locator('#choose-dialog [data-action="quick-photo"][data-photo="today"]').tap();
+    const sceneId = ((await page.locator('#choose-dialog [data-action="quick-photo"][data-photo="today"] img').getAttribute("src")) || "").match(/LD-photo-([a-z0-9-]+)\.jpg/)?.[1];
     assert.ok(sceneId, "a picture of the day");
-    await page.locator(".today-scene").tap();
-    // The record sheet opens on 照片 + 一句话 with today's photo chosen; the
-    // photo becomes the whole page, with one line to write on it.
     await page.waitForSelector('#choose-dialog[open] [data-action="quick-way"][data-way="photo"][aria-pressed="true"]');
     await page.waitForSelector('#choose-dialog[open] [data-action="quick-photo"][data-photo="today"][aria-pressed="true"]');
     await page.locator('#choose-dialog [data-action="quick-start"]').tap();
@@ -53,7 +56,7 @@ const base = process.env.PREVIEW_URL || "http://127.0.0.1:8080";
     assert.match(await page.locator("#journal-canvas").getAttribute("style"), new RegExp(`LD-photo-${sceneId}`));
     await studioMode(page, "layout");
     await page.waitForSelector("#journal-canvas"); // mode layout (chosen in More)
-    passed.push("Home: picture of the day → one tap makes a photo + one line page");
+    passed.push("更多方式: picture of the day → a photo + one line page (no second link on Home, V10.84)");
 
     // 3. Photo library (V10.25: 「更多 → 本页照片」 is gone; the collections live in
     // ＋照片 → 照片素材, which opens the same swipe sheet).
