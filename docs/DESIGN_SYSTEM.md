@@ -529,3 +529,19 @@ Web 运行时加载共享 JSON。`Public/tokens.css` 是加载前的回退，由
 - **用户内容**：页面画布文字、Journal Studio 字体选择、书封所选字体、历史页面 —— 永远不被 UI token 覆盖。
 - **Tokens**：`design-tokens.json` → `typography`（families + styles：displayDate、heroTitle、sectionTitle、monthTitle、journalTitle、bookCoverTitle、quote、body、button、caption、statLabel、meta、navLabel），`tools/sync_tokens.py` 生成 `--type-*`（英文 `:root`，中文 `html:lang(zh)`）；`styles.css`「V10.86 Typography v2」一节是这些角色唯一设字体的地方。新页面要用这些 token，不要另写 font-family。
 - 不用：全 App 宋体、按钮 / 小字 Serif、书法 / 毛笔 / 难读装饰字体。
+
+## 2026-11-18 V10.87 · 植物装饰（树叶、小红果、梅花）
+
+- **来源**：Founder 给的参考图（首页、月令集章页上有树枝、红果和梅花），要求「我们的页面也有树叶梅花这样的装饰」。
+- **画法**：`Public/js/botanicals.mjs` 用代码画的原创线描 + 淡彩（墨色细线 0.55、叶子 86% 填色），不下载、不复制参考图的美术。三种：
+  - `BERRY_BRANCH` 秋天的树枝：橄榄绿 / 赭黄 / 锈红叶子 + 朱砂小红果；
+  - `PLUM_SPRIG` 梅枝：深褐枝、三朵五瓣梅花（浅朱砂花瓣、朱砂花心、金色花蕊）+ 花苞；
+  - `LEAF_SPRIG` 竹青叶枝：竹青系叶子 + 一颗小红果。
+- **位置**：首页日期右上（秋枝，躲在备份提示条后面）、集章卡左下（梅枝，「看整张」右移让位）、这一周卡片右上（叶枝，只在没有照片时）、首页页尾（叶枝代替原来的短横线）、月令集章页卡片右上（秋枝）和右下（梅枝）。
+- **规则**：
+  - 只是点缀：`aria-hidden`、`pointer-events: none`，不能点、读屏不读；点到梅花的位置仍然打开集章卡。
+  - 不盖住文字和按钮（v192 逐个比对每片叶子 / 花和卡片里每段文字的位置，390 / 375 / 320 / 430 宽、中英文）。
+  - 小于 360 宽时，首页日期旁的树枝和这一周的叶枝不显示；360–389 宽时树枝缩小。
+  - 不出现在 Journal Studio、手帐页面画布、书封、导出图片里，也不写进手帐数据和备份。
+  - 深色主题（cool）透明度 0.5；极简主题 0.6 并降低饱和度；打印时隐藏。
+  - 固定画法、没有随机数和动画，减弱动态效果时也一样。

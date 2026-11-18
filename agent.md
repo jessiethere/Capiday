@@ -48,6 +48,22 @@
 
 ## 更新日志
 
+### 2026-11-18 — V10.87：植物装饰（树叶、小红果、梅花）
+
+- **需求**：Founder 发来参考图（首页 / 月令集章页上有秋天的树枝、红果和梅花），「我会希望我们的页面也有树叶梅花这样的装饰」。
+- **做法**：
+  - 新文件 `Public/js/botanicals.mjs`：用代码画的原创线描 + 淡彩 SVG（不下载、不复制参考图美术），三种：`BERRY_BRANCH`（秋枝 + 小红果）、`PLUM_SPRIG`（梅枝，三朵五瓣梅 + 花苞）、`LEAF_SPRIG`（竹青叶枝）。固定画法，没有随机数。
+  - `Public/app.js`：首页日期区（`.v9-masthead`）右上秋枝；集章卡（`stampStripHTML`）左下梅枝；这一周（`weekCardHTML`，只在没有照片时）右上叶枝；页尾 colophon 叶枝；月令集章页（`stampsPage`）卡片右上秋枝、右下梅枝。
+  - `Public/styles.css` 新增「V10.87 Botanical decorations」一节：绝对定位、`pointer-events: none`、卡片 `overflow: hidden`（装饰不出卡片边）、文字和按钮在装饰之上；备份提示条盖在树枝上（树枝像从提示条后面伸出来）；< 360 宽隐藏日期旁树枝和这一周叶枝，360–389 宽树枝缩小；cool 主题 0.5、minimal 0.6 + 降饱和；打印隐藏。
+  - 「看整张」右移 44px 给梅枝让位，不换行；月令集章页说明文字左右留白 64px。
+- **没有改**：Journal Studio、手帐页面画布、书封、导出、数据和备份（装饰不在数据里，v192 检查 `little-days.v1` 里没有 svg / deco）。
+- **验收**（`tests/v192-browser.cjs` 34/34，Chromium，**不是真机**）：中英文首页 4 处装饰都在且尺寸正常；读屏隐藏、不能点；每片叶子 / 花都不压文字和按钮（390、375、320、430 宽）；点梅花位置仍打开集章卡；集章页月份箭头仍在最上层可点；Studio、书架、书封里没有装饰；数据里没有装饰；cool 主题透明度 ≤ 0.5；没有页面错误。
+- **其他测试**：单元测试 382/382；Python（外壳同步等）18/18；相关浏览器测试 v188、v189、v190、v191、v47、v102、v41、v45、v55、v103、v109、v184、v187、v151、v171、v164、v165、v153 全部通过。全量回归 run-all24：进行中，结果补记在下一条。
+- **固定链接**：Version 133（上传 `app.js`、`styles.css`、`js/botanicals.mjs`（新）、`js/whats-new.mjs`）。
+- **文件**：`Public/js/botanicals.mjs`、`Public/app.js`、`Public/styles.css`、`Public/js/whats-new.mjs`（10.87）、`Native/…/WebApp/`（同步）、`docs/DESIGN_SYSTEM.md`、`tests/v192-browser.cjs`、`agent.md`、`README.md`、`docs/DEVELOPMENT_TRACKER.md`。
+- **需真机看**：线条在 iPhone 屏幕上的粗细（0.55 px 的墨线在 3x 屏上可能偏细）、树枝和 Captain / 气泡同时出现时是否拥挤、深色主题的效果。
+- **下一步（可选）**：节气 / 季节换装饰（冬梅、春樱、夏荷、秋枝）；设置里一个「页面装饰」开关；Captain 封面换正式线稿。
+
 ### 2026-11-18 — V10.85 + V10.86 全量回归 run-all23、4 个旧断言按新设计更新、固定链接 Version 132
 
 - **需求**：V10.85（Visual Direction Phase 1）与 V10.86（Typography v2）合并跑全量浏览器回归，修复回归中的问题后一起发布到固定链接。

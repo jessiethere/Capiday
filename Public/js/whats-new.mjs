@@ -4,6 +4,28 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.87",
+    date: "2026-11-18",
+    zh: {
+      title: "树叶和梅花",
+      items: [
+        "首页的日期旁多了一枝秋天的树叶和小红果。",
+        "集章卡角落有一枝梅花，「这一周」（没有照片时）有一小枝竹青叶子，页尾也换成了一小枝叶子。",
+        "月令集章页的右上角有树枝，右下角有梅花。",
+        "装饰只是点缀：不会挡住文字和按钮，不会出现在你的手帐页面、书封和导出的图片里。",
+      ],
+    },
+    en: {
+      title: "Leaves and plum blossom",
+      items: [
+        "An autumn branch with little red berries now sits beside today’s date on Home.",
+        "The stamp card has a sprig of plum blossom, This week (without photos) a small green leaf sprig, and the end of Home a little sprig too.",
+        "The Stamps page has a branch at the top and plum blossom at the bottom.",
+        "They are only decoration: they never cover words or buttons, and never appear on your journal pages, covers or exported images.",
+      ],
+    },
+  },
+  {
     version: "10.86",
     date: "2026-11-18",
     zh: {

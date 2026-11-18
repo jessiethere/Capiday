@@ -226,3 +226,4 @@ Memory Wall v1.0：**V10.78 已实施，等真机验收**（Founder 2026-11-15 �
 | 2026-11-18 | **V10.85** Visual Direction v1 Phase 1：tokens（muted #756D63、bamboo、cinnabar、cinnabarInk）、宋体标题栈 + 去掉界面毛笔字后备、白底描边印章、浅竹青这一周、Captain 守册猫（首页标签 + 面板今天 / 回看 / 聊天降级 + 首次盖章出现规则）、3 个默认书封。v190 浏览器 42 + 单元 4；真机 ⏳ |
 | 2026-11-18 | **V10.86** Typography System v2：typography tokens（design-tokens.json → tokens.css）+ Editorial Serif（首页 / 集章 / 这一周 / 阅读器标题）+ Functional Sans（操作层不变），用户字体不改；集章卡窄屏换行。v191 26 项；真机 ⏳ |
 | 2026-11-18 | 全量回归 run-all23（V10.85 + V10.86）：122/127 → 更新 4 个按旧设计写的断言（v47 / v102 宋体标题、v151 25 个封面、v171 植物标本在「查看更多封面」）后 126/127；v119 为旧偶发问题（V10.84 上同样失败）。固定链接 Version 132 |
+| 2026-11-18 | **V10.87** 植物装饰：`js/botanicals.mjs`（秋枝 + 小红果、梅枝、竹青叶枝，代码画的原创 SVG）放在首页日期旁、集章卡、这一周、页尾、月令集章页；只是点缀（aria-hidden、不能点、不压字，窄屏少放）；v192 34/34。固定链接 Version 133 |

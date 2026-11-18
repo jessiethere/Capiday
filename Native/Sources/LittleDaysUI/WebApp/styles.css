@@ -27075,3 +27075,129 @@ html[lang="en"] .keeper-perch .keeper-entry::before {
 .stamp-strip .ss-month {
   min-width: 0;
 }
+
+/* ===== V10.87 · Botanical decorations (leaves, berries, plum blossom) =====
+   Original line-and-wash drawings from js/botanicals.mjs. Decoration only:
+   never tappable, never over the words, not on journal pages, covers, the
+   Journal Studio, exports or backups. Lighter in dark themes. */
+.deco {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  overflow: visible;
+  height: auto !important;
+  max-width: none;
+}
+.deco-branch {
+  aspect-ratio: 170 / 120;
+}
+.deco-plum {
+  aspect-ratio: 120 / 90;
+}
+.deco-leaf {
+  aspect-ratio: 90 / 70;
+}
+.stamp-strip,
+.week-card,
+.sp-card,
+.v9-masthead {
+  position: relative;
+}
+/* Kept inside the card's corners. */
+.stamp-strip,
+.week-card,
+.sp-card {
+  overflow: hidden;
+}
+.stamp-strip > :not(.deco),
+.week-card > :not(.deco),
+.sp-card > :not(.deco),
+.v9-masthead > :not(.deco) {
+  position: relative;
+  z-index: 1;
+}
+/* Home: an autumn branch reaching in at the top right of the date. */
+.v9-masthead > .deco-branch {
+  top: -30px;
+  right: -18px;
+  width: 112px;
+  opacity: 0.92;
+}
+/* 集章卡: a plum sprig in the bottom-left corner. */
+.stamp-strip > .deco-plum {
+  left: 6px;
+  bottom: 2px;
+  width: 52px;
+  opacity: 0.9;
+}
+.stamp-strip .ss-go {
+  margin-left: 44px;
+  white-space: nowrap;
+}
+/* 这一周 (no photos): a bamboo-green leaf sprig at the top right. */
+.week-card > .deco-leaf {
+  top: -4px;
+  right: 2px;
+  width: 58px;
+  opacity: 0.85;
+}
+/* 月令集章 page: the branch over the top right, plum at the bottom right. */
+.sp-card > .deco-branch {
+  top: -4px;
+  right: -4px;
+  width: 86px;
+  opacity: 0.92;
+}
+.sp-card > .deco-plum {
+  right: 6px;
+  bottom: 6px;
+  width: 72px;
+  opacity: 0.9;
+}
+.sp-card .sp-note {
+  padding: 0 64px;
+}
+/* The colophon: a small sprig instead of the rule. */
+.home-mag .home-quote.hs-colophon::before {
+  display: none;
+}
+.home-mag .home-quote.hs-colophon > .deco-leaf {
+  position: static;
+  display: block;
+  width: 64px;
+  margin: 0 auto 10px;
+  opacity: 0.8;
+}
+/* The only dark theme (cool): quieter. The minimal theme keeps it calm too. */
+:root[data-theme="cool"] .deco {
+  opacity: 0.5 !important;
+}
+:root[data-theme="minimal"] .deco {
+  opacity: 0.6 !important;
+  filter: saturate(0.6);
+}
+@media print {
+  .deco {
+    display: none;
+  }
+}
+/* Very narrow screens: the words need the room; keep only the corner sprigs
+   that sit in empty space (stamp card, Stamps page, colophon). */
+@media (max-width: 359px) {
+  .v9-masthead > .deco-branch,
+  .week-card > .deco-leaf {
+    display: none;
+  }
+}
+@media (min-width: 360px) and (max-width: 389px) {
+  .v9-masthead > .deco-branch {
+    top: -34px;
+    right: -20px;
+    width: 92px;
+  }
+}
+/* The branch tucks behind the backup note when that note is showing. */
+.home-mag .backup-nudge {
+  position: relative;
+  z-index: 2;
+}
