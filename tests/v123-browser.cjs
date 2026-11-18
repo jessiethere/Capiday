@@ -35,6 +35,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const launch = async (w, h) => {
     ctx = await engine.launchPersistentContext(profile, { headless: true, viewport: { width: w, height: h }, hasTouch: true, ...(webkit ? {} : { executablePath: process.env.CHROMIUM_PATH || undefined, isMobile: true }) });
     await ctx.addInitScript(SS.seed);
+    await ctx.addInitScript(SS.acceptJot);
     page = ctx.pages()[0] || (await ctx.newPage());
     page.setDefaultTimeout(30000);
     page.on("pageerror", (e) => errors.push(e.message));

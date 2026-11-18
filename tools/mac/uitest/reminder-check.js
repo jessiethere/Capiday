@@ -60,11 +60,6 @@ const soonTime = `${pad(soon.getHours())}:${pad(soon.getMinutes())}`;
 const later = new Date(Date.now() + 60 * 60 * 1000);
 const laterTime = later.getDate() === new Date().getDate() ? `${pad(later.getHours())}:${pad(later.getMinutes())}` : "23:59";
 let result = null;
-const before = window.littleDaysReminderResult;
-window.littleDaysReminderResult = (r) => {
-  result = r;
-  before?.(r);
-};
 const home = async () => {
   if (document.querySelector("#phone.in-reader")) click('[data-action="reader-back"]');
   await wait(400);
@@ -79,6 +74,13 @@ const settings = async () => {
 
 await until(() => document.querySelector(".hero"), 60000);
 await wait(2500);
+// Hooked only now: the app's own script (a module) sets this handler while it
+// starts, and this check can begin before that.
+const before = window.littleDaysReminderResult;
+window.littleDaysReminderResult = (r) => {
+  result = r;
+  before?.(r);
+};
 steps.push({ step: "0-start", reminder: localStorage.getItem("little-days.reminder"), pending: await pending() });
 
 // 1. Turn on (asks for the time first), a time two minutes ahead.

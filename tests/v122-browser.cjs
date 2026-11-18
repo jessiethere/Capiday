@@ -50,6 +50,7 @@ async function stopServer() {
   const launch = async () => {
     ctx = await engine.launchPersistentContext(dir, opts);
     await ctx.addInitScript(SS.seed);
+    await ctx.addInitScript(SS.acceptJot);
     page = ctx.pages()[0] || (await ctx.newPage());
     page.setDefaultTimeout(20000);
     page.on("pageerror", (e) => errors.push(e.message));
