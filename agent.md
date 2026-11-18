@@ -48,6 +48,23 @@
 
 ## 更新日志
 
+### 2026-11-18 — Captain Canonical Visual Identity（Founder 决定）+ 迁移审查（只出审查，未改 3D 逻辑）
+
+- **决定**：插画版 Captain 是 Capiday **唯一的长期品牌形象**（canonical character identity）；3D Captain 只是迁移期的 legacy implementation，不再长期双形态并存。
+- **形象**：灰色长毛猫、琥珀 / 金黄色眼睛、脸型微楔形略尖、毛量明显、三角耳朵、不做圆脸 chibi、温柔 watercolor / editorial 插画。
+- **依据**：真实 Captain 照片 = character source of truth（**仓库里还没有：NEEDS IDENTITY PHOTOS**；属于个人照片，未经 Founder 同意不放进公开仓库）；已确认的 Botanical / Captain 参考图（`docs/visual/captain-scenes-v1.png`、`botanical-board-v1.png`）= art direction；两者冲突时真实外形优先、参考图控制画风。不自行重画、不 SVG 化、不换风格；缺素材标 **NEEDS CHARACTER ASSET**。
+- **数据必须保留**：`state.keeper` 的 enabled / invite / animal / name / mode / **outfit** / lastStage / 聊天与成长数据、本机 `little-days.captain-stamps`、Playroom 偏好——迁移中一律不删除、不 reset。已有 outfit（如 `lemon`）即使插画柠檬帽还没有也保留，之后映射为同名插画配件。
+- **迁移期规则**：已切换插画的模块不再同时出现 3D；未迁移的可暂时 3D。**Playroom 最后迁移**；只有插画资产完整替代某项能力后，才移除对应 3D 渲染。
+- **审查**（全文见 `docs/CAPTAIN_IDENTITY_MIGRATION.md`）：21 处 Captain 出现位置——
+  - 已迁移（插画）5 处：Captain / My Cat 书封、集章页空月份、装饰小场景、首页 Captain 邀请卡、首次盖章提示条。
+  - READY TO MIGRATE 4 处：首页第一页完成卡（`fp-art`）、Captain onboarding 介绍、首页引导里的 Captain 大图、保存后的 Captain 小章（Phase 2）。
+  - NEEDS CHARACTER ASSET：首页今天卡片上的 Captain（需要「趴在卡片边」姿势 + 柠檬帽变体）、Captain 面板头像与提示、反馈回复、阅读器「问 Captain」、书架 Captain、设置预览、引导小头像、提醒、每周回看。
+  - BLOCKED（Phase 3）：Looks 装扮、Playroom。
+  - 1 处死代码（`keeperMiniHTML`）。
+- **Captain Illustrated Asset Pack v1**：已有 APPROVED 4 个（sitting、sleeping、preparing stamp、pressing stamp）；NEEDS CHARACTER ASSET：lying down（醒着）、looking at journal、peek-over-card、4 个表情（calm / happy / curious / sleepy）、头像 / 半身小图、柠檬帽、毛线球、greeting、gentle reminder、weekly recap、Playroom 帧。规格：透明 PNG 或纸底、宽度 ≥ 3× 显示尺寸、同一角色同一画风。
+- **当前混用说明**：Captain 开启时首页仍是 3D Captain，首次盖章提示条是插画 Captain，会短暂同时出现——Phase 2 迁移首页 Captain 后结束。
+- **这次没有改代码**（3D 逻辑、装扮数据、动画都未动）；等 Founder 看过审查后再按 Phase 推进。
+
 ### 2026-11-18 — V10.88（续 4）：按 Founder 规则接入 approved 资产（APPROVED / LIMITED SIZE / NEEDS HI-RES）
 
 - **需求**（Founder 确认）：① Captain / My Cat 默认书封改用高清「坐在册子旁」（captain-sit）；② 6 个略软的 botanical 资产继续用，但只在实际清晰的尺寸内显示，不为填满空间放大；③ cover-travel-blossom、sprig-1、sprig-2、sprig-4 正式 UI 不使用，标记 NEEDS HI-RES REPLACEMENT，可在 asset audit 中保留说明，不作为 production asset 上线；不自行重画、SVG 化或换风格。统一规则：高清且符合 approved reference → 使用；略软但在真实 UI 尺寸下自然清晰 → 缩小使用；真机尺寸下仍明显模糊 → 暂不使用。

@@ -186,6 +186,11 @@ npm run test:browser:v65
 
 ## 更新日志
 
+### 2026-11-18 — Captain 统一为一个插画形象（审查）
+
+- **Captain is transitioning to one unified illustrated Little Keeper identity across Capiday.** 插画版 Captain（灰色长毛、琥珀色眼睛）是唯一的长期形象；3D Captain 只在迁移期保留，Playroom 最后迁移。
+- 已列出全部 21 处 Captain 位置和缺少的插画素材（`docs/CAPTAIN_IDENTITY_MIGRATION.md`）；用户的装扮、名字、模式等数据全部保留，不会被重置。这次只做审查，代码未改。
+
 ### 2026-11-18 — Capiday Visual Direction v1 – Botanical Decorative System（V10.88）
 
 - **方向**：Modern Editorial Journal × Chinese Stationery Sensibility × Living Media。植物、纸张和印章是安静的细节，不是「中国风主题」；英文界面下同样成立。
