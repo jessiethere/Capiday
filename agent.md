@@ -48,6 +48,18 @@
 
 ## 更新日志
 
+### 2026-11-18 — V10.90 + V10.91 全量回归 run-all30 + 固定链接 Version 136
+
+- **回归**：
+  - V10.90 单独的回归 run-all29 跑到 69 个、没有失败时停掉，和 V10.91 合并后重跑。
+  - **run-all30**（V10.90 + V10.91）：129 个文件，128 通过、1 失败。失败的是 `v113`：它检查本机模型提示里写着「柠檬帽」，而 V10.91 默认不戴帽，属于预期变化；已改成「默认不戴帽时提示里不写帽子」，重跑通过（b5d39ce）。
+  - 合计 **129/129**（Chromium，**不是真机**）。
+- **固定链接**：Version 136（V10.91 · Captain 全部换成插画，含 V10.90 新手引导微调）。
+  - 上传：`app.js`、`styles.css`、`js/botanicals.mjs`、`js/captain.mjs`、`js/onboarding.mjs`、`js/whats-new.mjs`、`shared/i18n.json`，以及 `captain/` 下 19 张新图。
+  - 发布前读过线上的 `js/onboarding.mjs`，与上一版基线一致。
+  - 新基线 `$S/link91`。
+- **iPhone 真机**：仍未验证（Mac 未连接）。
+
 ### 2026-11-18 — V10.91 Captain 全部换成插画（首页 → 面板 / 书架 / 设置 / 装扮 → Playroom，+ 每周回看）
 
 - **需求**（Founder 五条）：
