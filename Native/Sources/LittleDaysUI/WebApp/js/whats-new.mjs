@@ -4,6 +4,30 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.79",
+    date: "2026-11-18",
+    zh: {
+      title: "先选放进哪本手帐，页面背景更好找",
+      items: [
+        "首页「照片手帐」选完照片后，会先问「这页放进哪本手帐？」：按书架顺序列出，点了才进编辑器，不会替你选。关掉也没关系，选好的照片还在，再点「照片手帐」就回来。只有一本手帐时直接进入；还没有手帐时先建一本，建好照片接着放进去。",
+        "编辑器顶部的「放进 · 手帐名」随时可以换一本：照片、文字、日期、排版和背景都保留。名字太长会省略，箭头和日期一直看得到。",
+        "从某本手帐里新建一页，自动放进这本；编辑以前的页时，顶部显示它真正所在的手帐。换到另一本时是把这一页移过去，不是复制，原来的手帐不再显示它。",
+        "「自定义」里新增「页面背景」，和「添加照片」里的「换个页面背景」是同一个：先预览，点「应用」才换，点「取消」什么都不变，只影响当前这一页。",
+        "修好：关掉面板时偶尔误弹「写字 · 改字体」。",
+      ],
+    },
+    en: {
+      title: "Choose the journal first; page backgrounds are easier to find",
+      items: [
+        "Photo journal on Home now asks which journal the page is for after you pick photos — in your shelf's order, nothing chosen for you. Close it and your photos are kept; tap Photo journal again to carry on. With one journal you go straight in; with none, you make one first and the photos go right in.",
+        "Goes into · journal at the top of the editor can be changed any time; photos, words, date, layout and background all stay. Long names are shortened; the arrow and the date stay in view.",
+        "A new page started inside a journal goes into that journal; an older page shows the journal it is really in. Moving it moves that same page — it isn't copied, and the old journal no longer shows it.",
+        "Customize now has Page background — the same sheet as Change page background under Add a picture: preview first, Apply to change it, Cancel to leave the page as it was. Only the page you're on changes.",
+        "Fixed: Words & fonts sometimes opened by mistake when a sheet was closed.",
+      ],
+    },
+  },
+  {
     version: "10.78",
     date: "2026-11-15",
     zh: {

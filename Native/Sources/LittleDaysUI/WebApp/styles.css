@@ -25347,3 +25347,220 @@ dialog .primary {
 .wall-hidden-sheet .wh-item { display: flex; flex-direction: column; gap: 6px; }
 .wall-hidden-sheet .wh-item img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
 .wall-hidden-sheet .wh-item button { min-height: 34px; padding: 4px 8px; font-size: 13px; }
+
+/* V10.79 · 这页放进哪本手帐？ — one sheet for Home's 照片手帐, 放进 in
+   今天的故事 and the Journal Studio. Shelf order; ✓ = the journal it is in
+   now; 上次选的 is only a mark. */
+.book-pick .bp-hint {
+  margin: 0 4px 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--t-6f675d, #6F675D);
+}
+.book-pick .bp-photos {
+  display: flex;
+  gap: 6px;
+  margin: 0 4px 12px;
+  overflow: hidden;
+}
+.book-pick .bp-photos img,
+.book-pick .bp-photos span {
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+.book-pick .bp-photos span {
+  display: grid;
+  place-items: center;
+  background: var(--c-ffffff, #ffffff);
+  font-size: 13px;
+  color: var(--t-6f675d, #6F675D);
+}
+.book-pick .bp-list {
+  display: grid;
+  gap: 8px;
+  max-height: min(52vh, 420px);
+  overflow-y: auto;
+  padding: 2px;
+}
+.book-pick .bp-book {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 8px 12px 8px 8px;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  background: var(--c-ffffff, #ffffff);
+  color: var(--t-2b2622, #2b2622);
+  text-align: left;
+}
+.book-pick .bp-book.selected {
+  border-color: var(--c-5f6f52, #5F6F52);
+}
+.book-pick .bp-cover .book-cover {
+  width: 44px;
+  height: 58px;
+  font-size: 7px;
+}
+.book-pick .bp-name {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.book-pick .bp-name b {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 15px;
+}
+.book-pick .bp-name small {
+  justify-self: start;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--c-eef1e8, #eef1e8);
+  font-size: 11px;
+  color: var(--c-5f6f52, #5F6F52);
+}
+.book-pick .bp-check {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--c-5f6f52, #5F6F52);
+  color: var(--c-ffffff, #ffffff);
+  font-style: normal;
+  font-weight: 700;
+}
+.book-pick .bp-new {
+  min-height: 48px;
+  margin-top: 10px;
+  border: 1px dashed var(--c-b9ad9c, #b9ad9c);
+  border-radius: 14px;
+  background: none;
+  font-size: 15px;
+  color: var(--t-4a433c, #4a433c);
+}
+/* 放进 · 书名 ▾ — a long name is cut with …, the arrow and the date stay. */
+.story-book-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 10px 0 12px;
+  border: 1px solid var(--c-e3dccf, #e3dccf);
+  border-radius: 12px;
+  background: var(--c-ffffff, #ffffff);
+  color: var(--t-2b2622, #2b2622);
+  font-size: 14px;
+}
+.story-book-btn .sb-into {
+  flex: 0 0 auto;
+  font-size: 13px;
+  color: var(--t-6f675d, #6F675D);
+}
+.story-book-btn .sb-into::after {
+  content: " ·";
+}
+.story-book-btn .sb-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+.story-book-btn .sb-caret {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+.sv-where {
+  display: flex;
+  justify-content: center;
+  padding: 0 16px 4px;
+}
+.sv-where .story-book-btn {
+  max-width: min(100%, 320px);
+  min-height: 34px;
+  font-size: 13px;
+}
+/* V10.79 · 自定义 menu and the 页面背景 sheet (preview on a copy; 应用 / 取消). */
+.story-menu .sm-row {
+  margin-bottom: 8px;
+}
+.bg-sheet {
+  max-height: 88vh;
+}
+.bg-sheet .bg-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  margin: 0 2px 10px;
+}
+.bg-sheet .bg-head b {
+  text-align: center;
+  font-size: 17px;
+}
+.bg-sheet .bg-cancel {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  background: none;
+  font-size: 15px;
+  color: var(--t-6f675d, #6F675D);
+}
+.bg-sheet .bg-apply {
+  min-height: 40px;
+  padding: 0 18px;
+  border-radius: 12px;
+}
+.bg-sheet .bg-apply:disabled {
+  opacity: 0.45;
+}
+.bg-sheet .bg-preview {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.bg-sheet .bg-paper {
+  width: min(42vw, 168px);
+}
+.bg-sheet .bg-preview small,
+.bg-sheet .bg-note {
+  font-size: 12px;
+  line-height: 1.45;
+  text-align: center;
+  color: var(--t-6f675d, #6F675D);
+}
+.bg-sheet .bg-note {
+  margin: 4px 8px 12px;
+  font-size: 13px;
+}
+.bg-sheet .bg-options {
+  max-height: 38vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* The 放进 row is part of the Studio's height budget: the paper gives it its
+   34px, so the editor still fits the screen. It is shown only while no tool
+   is open (studioWhereHTML), so every tool sheet keeps the room it had. */
+.phone.sv:has(.sv-where) .studio-stage.large .canvas-wrap {
+  width: min(100%, calc((var(--studio-h, 100dvh - 40px) - 238px) * 0.8));
+}
+.phone.sv .sv-where {
+  padding-bottom: 2px;
+}
+.phone.sv .sv-where .story-book-btn {
+  min-height: 32px;
+}

@@ -110,7 +110,7 @@ const lib = path.join(__dirname, "../Packages/LittleDaysCore/Sources/LittleDaysC
     // 5. Customize: drag a photo on the 08:10 page; back in the preview a
     //    style change asks first, and Cancel keeps that page as it is.
     await page.locator('.story-tabs [data-action="story-page"]').nth(1).tap();
-    await page.locator('[data-action="story-adjust"]').tap();
+    await require("./signed-in.cjs").storyStudio(page);
     await page.waitForSelector("#journal-canvas .photo-layer");
     const layer = page.locator("#journal-canvas .photo-layer").first();
     const box = await layer.boundingBox();

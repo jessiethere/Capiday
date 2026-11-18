@@ -65,7 +65,7 @@ const lib = path.join(__dirname, "../Packages/LittleDaysCore/Sources/LittleDaysC
       passed.push(`${run.lang} ${run.w}: two photos, no words → a centred, even pair; 换个排版 gives three different arrangements and comes back round, both photos kept`);
 
       // ------------------------------------------------ arranged by hand: not re-laid without asking
-      await page.locator('[data-action="story-adjust"]').tap();
+      await SS.storyStudio(page);
       await page.waitForSelector("#canvas-wrap");
       // A hand move (the same flag the editor sets when a photo is dragged).
       const moved = await page.evaluate(() => {

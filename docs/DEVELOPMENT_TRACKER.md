@@ -93,6 +93,8 @@ P0 的 9 项：CAP-016（Testing）、DS-01（In Progress）、DS-02、DS-05、D
 | CAP-025 | 书架「···」先给删除又拒绝 | P2 | Testing | 0.2.0 (5)（V10.77） | `app.js` bookLinkedDays / openShelfMenu / deleteEmptyBook | 同一判断，直接说明原因；不移动数据 | v175 ✅ | — |
 | CAP-026 | 「···」编辑后旧弹层不关；阅读器封面编辑后离开阅读器 | P2 | Testing | 0.2.0 (5)（V10.77） | `app.js` saveBookForm | 弹层关闭；留在阅读器 | v175 ✅ | — |
 | CAP-027 | 标签筛选时往前放 / 往后放按看得见的书 | P2 | Testing | 0.2.0 (5)（V10.77） | `app.js` shelfHTML stepTo / book-step | 看得见的顺序立刻变化 | v175 ✅ | — |
+| CAP-029 | 首页照片手帐先选放进哪本；顶部「放进」可换；编辑已有页 = 移动不复制 | P1 | Testing | V10.79 | `app.js` openBookPicker / choosePhotoBook / setStoryBook / movePageTo / followPageScope；`model.mjs` setPageBook | BETA_RELEASE_PLAN「V10.79 真机验收」A–E | v183 68 项、v183-move 4 项 ✅；真机 ⏳ | — |
+| CAP-030 | 「自定义 → 页面背景」（和「添加照片 → 换个页面背景」同一面板，预览 / 应用 / 取消）；误弹「写字 · 改字体」 | P2 | Testing | V10.79 | `app.js` openStoryCustomMenu / openBackdropSheet / applyBackdrop / ghostTap | 同上「页面背景」几步 | v183 ✅；误弹保护只能真机确认 ⏳ | — |
 | CAP-028 | 小屏弹层输入框贴着键盘 | P3 | Testing | 0.2.0 (5)（V10.77） | `styles.css` scroll-margin-bottom | 弹层输入框下留 14 px | v164 34/34 ✅ | — |
 | CAP-014 | 双击文字进入编辑 | P2 | Testing | 下一构建（V10.71） | `app.js` beginGesture / DOUBLE_TAP_MS | Sprint 01 验收清单第 2 项 | v167 10 项 ✅；模拟器 testTextDoubleTap ✅；真机 ⏳ | — |
 | CAP-002 | 标题编辑时键盘遮挡 | P2 | Testing | 下一构建（V10.70） | Editor Layout Coordinator `updateVisibleArea` | Sprint 01 验收第 1 项 | v162、v166 ✅；模拟器布局测量 ✅；真机 ⏳ | — |
@@ -192,3 +194,4 @@ Memory Wall v1.0：**V10.78 已实施，等真机验收**（Founder 2026-11-15 �
 | 2026-11-15 | **Nightly Sprint**：Pending Inventory 核对——Founder 列出的 14 条线索都已有条目（1–2 → CAP-016；3–4 → CAP-018；5 → CAP-017；6 → CAP-020；7 → CAP-019；8 → **CAP-021（新）**；9 → **CAP-022（新）**；10 → CAP-014；11 → CAP-002 / 003 / 012 / 013 / 009；12 → CAP-010 / 011；13 → CAP-E004；14 → 其余 CAP-001～015）。Books 代码审查新增 CAP-023～027，回归发现 CAP-028。V10.77 修复 CAP-021～028，状态 Testing；构建号 4 → 5；全量回归 112/113 + v51 修复后通过；升级测试 4 → 5 通过；Release 归档 0.2.0 (5) 成功（7e3f6b4）；**上传被 Mac 权限规则拦下，未上传** |
 | 2026-11-15 | 新增 DS-01 实际内容和 DS-02～DS-14（自动 iCloud 备份规划 + 风险 R1～R10）；新增 MW-01～MW-05（照片墙 v1.0 规划）；补齐第 2、5、6 节 |
 | 2026-11-15 | **V10.78 / 构建 0.2.0 (6)**：DS-09、DS-10、DS-12、CAP-E003、CAP-E004、MW-01～05、DS-02 / 04～08 → Testing。全量回归 run-all15 118/118、单元 344/344、外壳测试 OK；Release 归档（0539d00）成功；模拟器升级 (4)→(6) 数据与媒体 9/9 一致；在线链接 Version 125。真机全部 ⏳；上传等 Founder |
+| 2026-11-18 | **V10.79**：新增 CAP-029（P1）、CAP-030（P2）→ Testing。v183 68 项 + 单元 348/348；全量回归见 agent.md。未打新构建，真机 ⏳ |

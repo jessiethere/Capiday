@@ -59,7 +59,9 @@ function wav(seconds = 1) {
       });
     let g = await geometry();
     assert.ok(g.scroll <= 2, "the editor fits the screen");
-    assert.ok(g.paper.width >= Math.min(g.w - 40, (g.h - 260) * 0.8), `a large paper (${g.paper.width}px on ${g.w}×${g.h})`);
+    // V10.79: the 放进 · journal row under the top bar takes 34px of the height (−294 instead of −260).
+    assert.ok(g.paper.width >= Math.min(g.w - 40, (g.h - 294) * 0.8), `a large paper (${g.paper.width}px on ${g.w}×${g.h})`);
+    assert.equal(await page.locator(".sv-where .sb-name").count(), 1, "放进 · the page's journal under the top bar");
     assert.ok(g.undo.top >= g.paper.bottom && g.redo.top >= g.paper.bottom, "undo / redo sit under the paper, never on it");
     assert.ok(g.undo.left < g.w / 3 && g.redo.left < g.w / 3, "at the lower left");
     assert.ok(g.undo.width >= 44 && g.undo.height >= 44, "44px touch targets");
@@ -277,7 +279,8 @@ function wav(seconds = 1) {
       g = await geometry();
       assert.ok(g.scroll <= 2, `${w}×${h}: no scrolling (${g.scroll})`);
       assert.ok(g.paper.top >= g.bar.bottom - 1 && g.undo.top >= g.paper.bottom - 1 && g.undo.bottom <= g.dock.top + 1, `${w}×${h}: bar, paper, undo row and tools do not overlap`);
-      assert.ok(g.paper.width >= Math.min(w - 40, (h - 260) * 0.8), `${w}×${h}: paper ${Math.round(g.paper.width)}px`);
+      // V10.79: −294 (was −260): the 放进 · journal row takes 34px of the height.
+      assert.ok(g.paper.width >= Math.min(w - 40, (h - 294) * 0.8), `${w}×${h}: paper ${Math.round(g.paper.width)}px`);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${w}×${h}: no sideways scroll`);
       await shot(`v100-${w}`);
     }

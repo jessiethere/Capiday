@@ -134,6 +134,7 @@ import {
   dateKey,
   addDays,
   localDayOf,
+  setPageBook,
   weekStart,
   weeklyCount,
   toggleCheck,
@@ -623,6 +624,7 @@ function returnToReading() {
 function openStudio(date = dateKey()) {
   readReturn = null;
   studioScope = null;
+  movedCoverHere = false;
   studioPreview = false;
   studioTouched = false;
   draftState = "saved";
@@ -5210,11 +5212,11 @@ function todayPicks() {
 function backdrops() {
   return (catalog.scenes || []).filter((scene) => !scene.retired);
 }
-function backdropHTML(page) {
+function backdropHTML(page, action = "backdrop") {
   const en = languageCode() === "en";
   const current = /^(scene|photo):/.test(page.backdrop || "") ? page.backdrop : "";
   const option = (reference, inner, label) =>
-    `<button class="backdrop-option ${current === reference ? "selected" : ""}" data-action="backdrop" data-backdrop="${esc(reference)}" aria-pressed="${current === reference}" aria-label="${esc(label)}">${inner}</button>`;
+    `<button class="backdrop-option ${current === reference ? "selected" : ""}" data-action="${action}" data-backdrop="${esc(reference)}" aria-pressed="${current === reference}" aria-label="${esc(label)}">${inner}</button>`;
   const thumb = (reference) => `<img src="${esc(safePhoto(reference))}" alt="" loading="lazy">`;
   const photoMood = libraryPhotos().filter((photo) => photo.backdrop);
   const groups = [
@@ -5261,6 +5263,126 @@ function lastQuickBook() {
     return "";
   }
 }
+// ---------- V10.79 · 这页放进哪本手帐？ ----------
+// One sheet wherever the person chooses a page's journal: Home's 照片手帐
+// (after the photos, before the editor opens) and 放进 in 今天的故事. The
+// journals are in the shelf's order (never re-sorted by when they were last
+// used); the one the page is in now has a ✓; the one last chosen here is
+// marked 上次选的 — only marked, never chosen for the person. Nothing changes
+// until a journal is tapped, and closing the sheet changes nothing.
+const PICKED_BOOK_KEY = "little-days.picked-book";
+function lastPickedBook() {
+  try {
+    const id = localStorage.getItem(PICKED_BOOK_KEY);
+    return state().books.some((b) => b.id === id) ? id : "";
+  } catch {
+    return "";
+  }
+}
+function rememberPickedBook(id) {
+  try {
+    localStorage.setItem(PICKED_BOOK_KEY, id);
+  } catch {}
+}
+// Every journal on the shelf can be written in (there are no read-only ones yet).
+function writableBooks() {
+  return state().books || [];
+}
+let bookPick = null; // { onPick(id), onClose() } while the sheet is open
+function openBookPicker({ title, hint = "", current = "", photos = [], create = false, kind = "", onPick, onClose = null }) {
+  const dialog = $("#choose-dialog");
+  const mark = lastPickedBook();
+  const rows = writableBooks()
+    .map((book) => {
+      const on = book.id === current;
+      return `<button class="bp-book${on ? " selected" : ""}" data-action="book-pick" data-book="${esc(book.id)}" aria-pressed="${on}"${book.id === mark ? ' data-mark="1"' : ""}><span class="bp-cover" aria-hidden="true">${coverHTML(book, ctx())}</span><span class="bp-name"><b>${esc(book.title)}</b>${book.id === mark ? `<small>${t("pick.last")}</small>` : ""}</span>${on ? `<i class="bp-check" aria-label="${t("pick.current")}">✓</i>` : ""}</button>`;
+    })
+    .join("");
+  const strip = photos.length
+    ? `<div class="bp-photos" aria-label="${esc(t("pick.photos", { count: photos.length }))}">${photos
+        .slice(0, 6)
+        .map((p) => `<img src="${esc(safePhoto(p.reference))}" alt="">`)
+        .join("")}${photos.length > 6 ? `<span>+${photos.length - 6}</span>` : ""}</div>`
+    : "";
+  bookPick = null; // the earlier sheet (if any) is being replaced, not closed by the person
+  dialog.innerHTML = `<div class="choose-sheet book-pick" data-kind="${esc(kind)}" role="document"><div class="choose-grabber" aria-hidden="true"></div><div class="kp-title"><span></span><b>${esc(title)}</b><button class="kp-x" data-action="book-pick-close" aria-label="${t("close")}">×</button></div>${hint ? `<p class="bp-hint">${esc(hint)}</p>` : ""}${strip}<div class="bp-list" role="group" aria-label="${esc(title)}">${rows}</div>${create ? `<button class="bp-new" data-action="book-pick-new">＋ ${t("pick.newBook")}</button>` : ""}<button class="choose-cancel" data-action="book-pick-close">${t("cancel")}</button></div>`;
+  bookPick = { onPick, onClose };
+  if (!dialog.open) dialog.showModal();
+}
+function bookPicked(id) {
+  const pick = bookPick;
+  if (!pick || !state().books.some((b) => b.id === id)) return;
+  bookPick = null;
+  $("#choose-dialog").close();
+  pick.onPick(id);
+}
+function closeBookPicker() {
+  const pick = bookPick;
+  bookPick = null;
+  if ($("#choose-dialog").open) $("#choose-dialog").close();
+  pick?.onClose?.();
+}
+// Closed some other way (Esc, or the sheet pulled down): the same as ×.
+$("#choose-dialog").addEventListener("close", () => {
+  if (bookPick && !$("#choose-dialog").open) closeBookPicker();
+});
+
+// Home's 照片手帐: the photos are chosen first and kept here until the person
+// says which journal they go into (or puts them away). Nothing is made — no
+// page, no draft — before that, so closing the sheet leaves the journal as it
+// was and the same photos come back with the next tap on 照片手帐.
+let pendingPhotos = null; // { saved, date }
+function choosePhotoBook() {
+  if (!pendingPhotos) return;
+  const books = writableBooks();
+  // One journal: nothing to choose — the editor says which one at the top.
+  if (books.length === 1) return startPhotoStory(books[0].id);
+  // No journal yet: make one first (the usual new-journal form), then go on.
+  if (!books.length) return newBookForPhotos();
+  logEvent("book_pick_open", { photos: pendingPhotos.saved.length, books: books.length });
+  openBookPicker({
+    title: t("pick.title"),
+    hint: t("pick.hint"),
+    photos: pendingPhotos.saved,
+    create: true,
+    kind: "home",
+    onPick: (bookId) => {
+      rememberPickedBook(bookId);
+      logEvent("book_pick", { from: "home" });
+      startPhotoStory(bookId);
+    },
+    onClose: () => {
+      if (pendingPhotos) toast(t("pick.kept", { count: pendingPhotos.saved.length }), { action: "photo-book-again", label: t("pick.continue") });
+    },
+  });
+}
+function startPhotoStory(bookId) {
+  const chosen = pendingPhotos;
+  if (!chosen || !state().books.some((b) => b.id === bookId)) return;
+  pendingPhotos = null;
+  startPage(bookId, chosen.date || dateKey());
+  startStory(suggestGroups(chosen.saved), bookId);
+}
+// The new-journal form, then straight on with the photos. Closing the form
+// without making a journal keeps the photos (the next 照片手帐 brings them back).
+let afterBookCreated = null;
+function newBookForPhotos() {
+  afterBookCreated = (bookId) => {
+    rememberPickedBook(bookId);
+    startPhotoStory(bookId);
+  };
+  if ($("#choose-dialog").open) {
+    bookPick = null;
+    $("#choose-dialog").close();
+  }
+  openBookDialog();
+  toast(t("pick.makeFirst"));
+}
+$("#form-dialog").addEventListener("close", () => {
+  if (!afterBookCreated) return;
+  afterBookCreated = null;
+  if (pendingPhotos) toast(t("pick.kept", { count: pendingPhotos.saved.length }), { action: "photo-book-again", label: t("pick.continue") });
+});
 const QUICK_WAY_KEY = "little-days.quick-way";
 const QUICK_WAYS = ["photo", "write", "draw"];
 // V10.32 · The other ways (video, sound, free layout): a compact row right
@@ -5380,6 +5502,34 @@ function scopedMoments() {
 function coverInScope() {
   return !studioScope || (editor?.bookId || "") === studioScope;
 }
+// V10.79 · Moving the page being edited into another journal (放进 at the
+// top of the Studio, or 记到 in its page info): the same page — same id,
+// same photos, words, date, layout and background — now belongs to that
+// journal, so the old one no longer shows it. Nothing is copied. Opened from
+// a journal, the editor then shows the journal the page went to (and ‹ goes
+// back to it). Undo puts it back.
+let movedCoverHere = false;
+function movePageTo(bookId, pageId = activeMomentId) {
+  if (!editor || !state().books.some((b) => b.id === bookId)) return;
+  const page = pageId ? findMoment(editor, pageId) : editor;
+  if (!page || pageBookOf(page) === bookId) return;
+  changeEditor((entry) => setPageBook(entry, pageId || null, bookId));
+  if (!pageId) movedCoverHere = true;
+  followPageScope();
+  rememberPickedBook(bookId);
+  logEvent("page_move", { cover: !pageId });
+  render();
+  toast(t("pick.moved", { name: state().books.find((b) => b.id === bookId)?.title || "" }));
+}
+// The editor opened from a journal follows the page in view when the page's
+// journal changed (moved, or a move undone).
+function followPageScope() {
+  if (!studioScope || !editor) return;
+  const book = activeMomentId ? pageBookOf(findMoment(editor, activeMomentId)) : movedCoverHere ? editor.bookId || "" : "";
+  if (!book || book === studioScope) return;
+  studioScope = book;
+  if (studioReturnBook) studioReturnBook = book;
+}
 // Where the editor goes after a page is removed: { id } (null = the day's
 // cover), or null when nothing of the book is left on this day.
 function pageAfterRemoval() {
@@ -5468,7 +5618,7 @@ function dropBlankFreshPage() {
 }
 let lastQuick = null; // the sheet's choices, to go back to them on cancel
 async function startQuickRecord() {
-  const { book, way, photo, date, lib } = quick;
+  const { book, way, photo, date, lib, fromHome } = quick;
   if (way === "photo" && photo === "pick" && !lib) return toast(t("quick.libFirst"));
   lastQuick = { ...quick };
   const scene = todayScene();
@@ -5481,7 +5631,7 @@ async function startQuickRecord() {
     // are chosen does a page start, so Cancel leaves me where I was (Home, or
     // the sheet I came from) and no empty page is left behind.
     if ($("#choose-dialog")?.open) $("#choose-dialog").close();
-    chooseAttachment({ kind: "quick", book, date });
+    chooseAttachment({ kind: "quick", book, date, home: Boolean(fromHome) && !book });
     return;
   }
   const name = startPage(book, date);
@@ -5514,10 +5664,11 @@ async function startQuickRecord() {
 // same pages in the studio. Pages edited by hand are never re-laid-out
 // without asking.
 let story = null; // { date, book, style, step: preview|group, groups, selected, made, index }
-function startStory(suggestion) {
+function startStory(suggestion, chosenBook = "") {
   const groups = Array.isArray(suggestion) ? suggestion : suggestion.groups;
   const empty = activeMomentId;
-  const book = activePage()?.bookId || editor.bookId || "daily";
+  // V10.79: the journal the person chose wins over anything the page had.
+  const book = chosenBook || activePage()?.bookId || editor.bookId || "daily";
   if (empty && !hasMomentContent(findMoment(editor, empty) || {})) changeEditor((e) => removeMoment(e, empty), false);
   activeMomentId = null;
   quickResult = null;
@@ -5705,8 +5856,13 @@ function layoutStoryPage(target, isCover) {
   }
   target.layoutTemplate = "scrapbook";
   target.layoutStyle = style;
-  target.template = result.paper;
-  if (result.backdrop) target.backdrop = result.backdrop;
+  // V10.79: a background the person chose in 页面背景 stays when the page is
+  // laid out again (换个排版 / 换风格) in this story.
+  const keepBg = Boolean(story?.bgChosen?.[isCover ? "cover" : target.id]);
+  target.template = keepBg && target.backdrop ? "minimal" : result.paper;
+  if (keepBg) {
+    // as chosen
+  } else if (result.backdrop) target.backdrop = result.backdrop;
   else if (/^scene:color-/.test(target.backdrop || "")) delete target.backdrop;
   decorate(target, { stickers: look.stickers }, { seed: variant + (isCover ? 1 : 0), max: look.deco, makeId: id });
   target.layoutEdited = false;
@@ -5774,7 +5930,7 @@ function makeStory() {
       entry.layoutTemplate = "scrapbook";
       entry.layoutStyle = story.style;
       entry.layoutVariant = 0;
-      entry.bookId = story.book;
+      setPageBook(entry, null, story.book);
     }, false);
   layoutStory({ force: true });
   story.step = "preview";
@@ -5833,14 +5989,16 @@ function storyPage() {
   // S4-B: a day cover only when asked for (a dashed tab after the pages).
   const canAddCover = !story.made.cover && !hasDayPageContent(editor);
   const tabs = pages.length > 1 || canAddCover ? `<div class="story-tabs" role="tablist" aria-label="${t("story.pages")}">${pages.map((p, i) => `<button role="tab" data-action="story-page" data-index="${i}" aria-selected="${i === story.index}">${esc(p.label)}</button>`).join("")}${canAddCover ? `<button class="story-cover-add" data-action="story-cover-add">＋ ${t("cover.addOptional")}</button>` : ""}</div>` : "";
-  const books = state().books.map((b) => `<option value="${esc(b.id)}" ${b.id === story.book ? "selected" : ""}>${esc(b.title)}</option>`).join("");
+  // V10.79 · 放进: the journal this story goes into, chosen in the same sheet as on Home.
+  const bookName = state().books.find((b) => b.id === story.book)?.title || "";
+  const books = `<button class="story-book-btn" data-action="story-book" aria-haspopup="dialog" aria-label="${esc(t("pick.intoLabel", { name: bookName }))}"><span class="sb-into">${t("story.into")}</span><b class="sb-name">${esc(bookName)}</b><svg class="sb-caret" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>`;
   const title = story.date === dateKey() ? t("story.previewTitle") : t("story.previewTitleDay", { date: friendlyDate(story.date) });
   // V10.29 · Quick Edit: every quick change happens right here — change a
   // photo, write, change the layout or style — and Save. 自定义 (free moving,
   // layers…) is at the top right for when it is wanted.
   const tool = (panel, glyph, label) => `<button data-action="story-panel" data-panel="${panel}" aria-pressed="${story.panel === panel}"><span class="qe-glyph" aria-hidden="true">${glyph}</span><b>${t(label)}</b></button>`;
   const bar = `<div class="story-actions qe-bar">${storyPanelHTML(current, total)}<div class="qe-tools" role="group" aria-label="${t("story.styleLabel")}">${tool("photo", "⇄", "qe.photo")}<button data-action="story-text"><span class="qe-glyph" aria-hidden="true">Aa</span><b>${t("qe.words")}</b></button>${tool("layout", "▦", "qe.layout")}<button class="primary qe-save" data-action="story-save">${t("save")}</button></div></div>`;
-  return `<header class="story-bar">${back}<h1>${esc(title)}</h1><button class="story-custom" data-action="story-adjust">${t("story.customize")}</button></header><div class="story-where"><label class="story-book"><span>${t("story.into")}</span><select data-story-book aria-label="${t("story.into")}">${books}</select></label><label class="story-day"><span>${t("story.day")}</span><input type="date" data-story-date value="${esc(story.date)}" max="${dateKey()}" aria-label="${t("story.day")}"></label></div>${tabs}<button class="story-canvas" data-action="story-tap" aria-label="${t("story.addWords")}">${current ? sharedCanvasHTML(current.page, ctx(), { readOnly: true, dayPage: current.cover }) : ""}${storyRingHTML(current)}</button>${bar}`;
+  return `<header class="story-bar">${back}<h1>${esc(title)}</h1><button class="story-custom" data-action="story-custom" aria-haspopup="dialog">${t("story.customize")}</button></header><div class="story-where">${books}<label class="story-day"><span>${t("story.day")}</span><input type="date" data-story-date value="${esc(story.date)}" max="${dateKey()}" aria-label="${t("story.day")}"></label></div>${tabs}<button class="story-canvas" data-action="story-tap" aria-label="${t("story.addWords")}">${current ? sharedCanvasHTML(current.page, ctx(), { readOnly: true, dayPage: current.cover }) : ""}${storyRingHTML(current)}</button>${bar}`;
 }
 // ---------- V10.29 · Quick Edit: change a photo, change the layout ----------
 // 写文字 (and a tap beside the photos) opens the page's own line (整体); on
@@ -6046,7 +6204,7 @@ function storyAddCover() {
     entry.layoutTemplate = "scrapbook";
     entry.layoutStyle = story.style;
     entry.layoutVariant = 0;
-    entry.bookId = story.book;
+    setPageBook(entry, null, story.book);
   }, false);
   layoutStory({ which: ["cover"], force: true });
   story.index = 0;
@@ -6488,6 +6646,16 @@ async function finishStory() {
   }
   clearTimeout(draftTimer);
   try {
+    // V10.79: saved into the journal last chosen, whatever else happened on
+    // the way (a page added, a layout redone) — and only those pages.
+    if (!state().books.some((b) => b.id === book)) throw Object.assign(new Error("book"), { code: "book" });
+    changeEditor((entry) => {
+      for (const momentId of madeIds) {
+        const m = findMoment(entry, momentId);
+        if (m && m.bookId !== book) m.bookId = book;
+      }
+      if (story.made?.cover && entry.bookId !== book) setPageBook(entry, null, book);
+    }, false);
     store.update((s) => saveEntry(s, editor));
     const ids = [...mediaReferences({ entries: [], books: [], checks: [], drafts: { day: editor } })];
     const [stored, missing] = await Promise.all([store.stored(), ids.length ? media.missing(ids).catch(() => ids) : []]);
@@ -6499,6 +6667,11 @@ async function finishStory() {
       button.textContent = button.dataset.label || t("save");
     }
     logEvent("story_save_failed", { err: error?.code === "stale-state" ? "stale-state" : String(error?.message || "save").slice(0, 16) });
+    if (error?.code === "book") {
+      // The journal was removed meanwhile: the pages stay as a draft; choose again.
+      toast(t("pick.gone"));
+      return storyAction("story-book", null);
+    }
     if (await askConfirm(t(error?.code === "stale-state" ? "error.conflict" : "exit.saveFailed"), { ok: t("exit.retry") })) return finishStory();
     return;
   }
@@ -6529,6 +6702,22 @@ async function finishStory() {
   const first = made || pagesNow.find((p) => p.date === date);
   openReader(book, first ? Reader.keyOf(first) : Reader.COVER);
   toast(t("story.saved", { name: state().books.find((b) => b.id === book)?.title || "" }));
+}
+// V10.79 · 放进 changed: every page of this story goes into that journal —
+// nothing else on the pages changes (photos, words, date, layout, background).
+// The day's other pages stay in the journal they are in.
+function setStoryBook(bookId) {
+  if (!story || !state().books.some((b) => b.id === bookId)) return;
+  rememberPickedBook(bookId);
+  if (bookId === story.book) return render();
+  story.book = bookId;
+  changeEditor((entry) => {
+    for (const momentId of story.made?.ids || []) setPageBook(entry, momentId, bookId);
+    if (story.made?.cover) setPageBook(entry, null, bookId);
+  }, false);
+  flushDraft();
+  logEvent("book_pick", { from: "story" });
+  render();
 }
 // After Save: see what I just made — the book opens at that page (turn the
 // pages, or go Home from the menu), not straight back to Home.
@@ -6689,6 +6878,10 @@ async function storyAction(actionName, target) {
   if (actionName === "story-tap") {
     // Tap a photo on the page: choose it (to change it, or write for it);
     // tap anywhere else: write.
+    // V10.79: a tap that closed a sheet (自定义, 页面背景, 放进) can reach the
+    // page underneath on iPhone as a second, made-up click — that one opened
+    // 写字 · 改字体 by mistake. Taps right after a sheet closed are ignored.
+    if (ghostTap()) return;
     const current = storyPages()[story.index];
     const at = window.__storyTapAt;
     window.__storyTapAt = null;
@@ -6877,9 +7070,12 @@ async function storyAction(actionName, target) {
     if (quickSession) quickSession.shuffles++;
     logEvent("story_relayout", { style: story.style });
   }
+  if (actionName === "story-custom") return openStoryCustomMenu();
+  if (actionName === "story-bg") return openBackdropSheet("story");
   if (actionName === "story-adjust") {
     const current = storyPages()[story.index];
     if (!current) return;
+    if ($("#choose-dialog").open) $("#choose-dialog").close();
     page = "studio";
     selectMoment(current.cover ? null : current.page.id);
     readReturn = { page: "story", book: selectedBook, date: selectedDate, moment: "" };
@@ -6888,9 +7084,145 @@ async function storyAction(actionName, target) {
     return;
   }
   if (actionName === "story-save") return finishStory();
+  if (actionName === "story-book") {
+    openBookPicker({ title: t("pick.title"), current: story.book, kind: "story", onPick: setStoryBook });
+    return;
+  }
   render();
 }
 
+// ---------- V10.79 · 自定义 · 页面背景 ----------
+// 自定义 in 今天的故事 is a small menu: 页面背景 (this page's background, right
+// here) and 更多编辑 (the Journal Studio, as before). 页面背景 is one sheet —
+// the same one 换个页面背景 opens from 添加照片 in the Studio — built on the
+// usual background choices (backdropHTML). Choosing only previews, on a copy
+// shown in the sheet: the page itself, other pages and the draft are not
+// touched until 应用; 取消 (or closing) leaves the page exactly as it was, after
+// any number of previews. Only the background (and the plain paper under it)
+// changes — photos, words, date and layout stay.
+// The made-up click comes back at the same spot as the tap that closed the
+// sheet: only a tap there, right after, is ignored — a real tap elsewhere is not.
+const SHEET_GHOST_MS = 400;
+let lastPointer = null; // { x, y, at } of the latest pointer press or click
+let sheetClose = null; // { x, y, at } of the tap that closed the sheet
+let tapPoint = null; // { x, y } of the click being handled
+for (const type of ["pointerdown", "click"])
+  document.addEventListener(
+    type,
+    (event) => {
+      lastPointer = { x: event.clientX, y: event.clientY, at: Date.now() };
+      if (type === "click") tapPoint = { x: event.clientX, y: event.clientY };
+    },
+    true,
+  );
+$("#choose-dialog").addEventListener("close", () => {
+  const recent = lastPointer && Date.now() - lastPointer.at < 1000;
+  sheetClose = recent ? { x: lastPointer.x, y: lastPointer.y, at: Date.now() } : null;
+});
+function ghostTap() {
+  if (!sheetClose || !tapPoint || Date.now() - sheetClose.at >= SHEET_GHOST_MS) return false;
+  return Math.hypot(tapPoint.x - sheetClose.x, tapPoint.y - sheetClose.y) < 40;
+}
+function openStoryCustomMenu() {
+  if (!story?.made) return;
+  const dialog = $("#choose-dialog");
+  const row = (action, glyph, title, hint) => `<button class="choose-backdrop sm-row" data-action="${action}"><span aria-hidden="true">${glyph}</span><span><b>${title}</b><small>${hint}</small></span><i>›</i></button>`;
+  dialog.innerHTML = `<div class="choose-sheet story-menu" role="document"><div class="choose-grabber" aria-hidden="true"></div><div class="kp-title"><span></span><b>${t("story.customize")}</b><button class="kp-x" data-action="choose-close" aria-label="${t("close")}">×</button></div>${row("story-bg", "🎨", t("bg.title"), t("bg.menuHint"))}${row("story-adjust", "✎", t("bg.moreEdit"), t("bg.moreEditHint"))}<button class="choose-cancel" data-action="choose-close">${t("cancel")}</button></div>`;
+  if (!dialog.open) dialog.showModal();
+}
+// One background for a page: a picture / gradient / pattern goes over plain
+// paper; 不用背景 takes it away (and gives back the paper the page had, when
+// it had no background before this sheet).
+function applyBackdrop(page, reference, before = null) {
+  if (/^(scene|photo):[a-z0-9-]+$/.test(reference || "")) {
+    page.backdrop = reference;
+    page.template = "minimal";
+  } else {
+    delete page.backdrop;
+    if (before && !before.backdrop && before.template) page.template = before.template;
+  }
+}
+let bgSheet = null; // { from, pageId (null = the day page), before, choice }
+function bgPage() {
+  if (!editor || !bgSheet) return null;
+  return bgSheet.pageId ? findMoment(editor, bgSheet.pageId) : editor;
+}
+function openBackdropSheet(from) {
+  if (!editor) return;
+  let pageId = null;
+  if (from === "story") {
+    const current = story && storyPages()[story.index];
+    if (!current) return;
+    pageId = current.cover ? null : current.page.id;
+  } else pageId = isDayPage() ? null : activeMomentId;
+  const page = pageId ? findMoment(editor, pageId) : editor;
+  if (!page) return;
+  bgSheet = { from, pageId, before: { backdrop: page.backdrop || "", template: page.template || "" }, choice: null };
+  logEvent("bg_open", { from });
+  const dialog = $("#choose-dialog");
+  // A page whose own photo is its whole background (照片 + 一句话): changing
+  // the background would take the photo away, so it is not offered here.
+  const ownPhoto = page.layoutTemplate === "line" && /^(media:|data:)/.test(page.backdrop || "");
+  dialog.innerHTML = `<div class="choose-sheet bg-sheet" role="document"><div class="choose-grabber" aria-hidden="true"></div><div class="bg-head"><button class="bg-cancel" data-action="bg-cancel">${t("cancel")}</button><b>${t("bg.title")}</b><button class="primary bg-apply" data-action="bg-apply" disabled>${t("bg.apply")}</button></div><div class="bg-preview" aria-label="${esc(t("bg.preview"))}"><span class="reader-thumb-paper bg-paper"></span><small>${t("bg.previewNote")}</small></div>${ownPhoto ? `<p class="bg-note">${t("bg.ownPhoto")}</p>` : `<div class="bg-options">${backdropHTML(page, "bg-preview")}</div>`}</div>`;
+  paintBackdropPreview();
+  if (!dialog.open) dialog.showModal();
+}
+function bgPreviewPage() {
+  const page = bgPage();
+  if (!page) return null;
+  const copy = structuredClone(page);
+  if (bgSheet.choice != null) applyBackdrop(copy, bgSheet.choice, bgSheet.before);
+  return copy;
+}
+function paintBackdropPreview() {
+  const dialog = $("#choose-dialog");
+  const copy = bgPreviewPage();
+  const paper = dialog.querySelector(".bg-paper");
+  if (!copy || !paper) return;
+  paper.innerHTML = sharedCanvasHTML(copy, ctx(), { readOnly: true, dayPage: !bgSheet.pageId });
+  const shown = /^(scene|photo):/.test(copy.backdrop || "") ? copy.backdrop : "";
+  for (const option of dialog.querySelectorAll('.bg-options [data-action="bg-preview"]')) {
+    const on = option.dataset.backdrop === shown;
+    option.classList.toggle("selected", on);
+    option.setAttribute("aria-pressed", String(on));
+  }
+  const apply = dialog.querySelector(".bg-apply");
+  if (apply) apply.disabled = bgSheet.choice == null || (copy.backdrop || "") === bgSheet.before.backdrop;
+}
+function previewBackdrop(reference) {
+  if (!bgSheet || !bgPage()) return;
+  bgSheet.choice = reference || "";
+  paintBackdropPreview();
+}
+function closeBackdropSheet() {
+  bgSheet = null;
+  if ($("#choose-dialog").open) $("#choose-dialog").close();
+}
+function applyBackdropSheet() {
+  const sheet = bgSheet;
+  const page = bgPage();
+  if (!sheet || !page || sheet.choice == null) return closeBackdropSheet();
+  const pageId = sheet.pageId;
+  changeEditor(
+    (entry) => {
+      const target = pageId ? findMoment(entry, pageId) : entry;
+      if (target) applyBackdrop(target, sheet.choice, sheet.before);
+    },
+    sheet.from !== "story",
+  );
+  if (sheet.from === "story" && story) {
+    (story.bgChosen ||= {})[pageId || "cover"] = true;
+    flushDraft();
+    render();
+  }
+  logEvent("bg_apply", { from: sheet.from, none: !sheet.choice });
+  closeBackdropSheet();
+  toast(t(sheet.choice ? "bg.applied" : "bg.removed"));
+}
+// The sheet closed some other way (Esc / pulled down): the same as 取消.
+$("#choose-dialog").addEventListener("close", () => {
+  if (bgSheet && !$("#choose-dialog").open) bgSheet = null;
+});
 // ---------- Quick Create result: shuffle / a line / edit / done ----------
 // After picking my photos the page is already laid out; this view keeps only
 // four choices so finishing a page takes seconds. "编辑" opens every tool.
@@ -7182,6 +7514,15 @@ function studioTitleHTML() {
   const count = day ? t("studio.coverOf", { count: total }) : t("studio.pageOf", { n: moments.indexOf(current) + 1 + cover, count: total });
   return `<button class="sv-title" data-action="pages-manage" aria-label="${t("pages.title")}"><b data-studio-title>${esc(name)}</b><small>${esc(count)}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></small></button>`;
 }
+// V10.79 · 放进: which journal the page in view is in, at the top — the same
+// sheet as on Home changes it (the page moves; nothing is copied).
+function studioWhereHTML() {
+  // Only while no tool is open: every tool sheet keeps the room it had.
+  if (!editor || studioTool) return "";
+  const page = activePage();
+  const name = state().books.find((b) => b.id === pageBookOf(page))?.title || "";
+  return `<div class="sv-where"><button class="story-book-btn" data-action="page-book" aria-haspopup="dialog" aria-label="${esc(t("pick.intoLabel", { name }))}"><span class="sb-into">${t("story.into")}</span><b class="sb-name">${esc(name)}</b><svg class="sb-caret" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></div>`;
+}
 function refreshStudioTitle() {
   const el = document.querySelector("[data-studio-title]");
   if (el && !isDayPage()) el.textContent = activePage().title || studioDateLabel();
@@ -7199,7 +7540,7 @@ function studioPage() {
   if (studioPreview)
     return `<header class="studio-bar sv-top"><button class="studio-back" data-action="studio-preview" aria-label="${t("studio.previewBack")}">${icon("back")}</button><div class="sv-title static"><b>${t("studio.preview")}</b><small>${t("studio.previewHint")}</small></div><button class="primary" data-action="save-entry">${t("studio.done")}</button></header><div class="studio-stage large previewing">${paper}</div><div class="tool-dock-wrap"><nav class="sv-export" aria-label="${t("studio.preview")}"><button data-action="share-story"><span aria-hidden="true">⇪</span><b>${t("share.story")}</b></button><button data-action="export">${icon("download")}<b>${t("export.photo")}</b></button><button data-action="export-video"><span aria-hidden="true">▶</span><b>${t("export.video")}</b></button></nav></div>`;
   const status = draftDirty && draftState !== "failed" ? "saving" : draftState;
-  return `<header class="studio-bar sv-top"><button class="studio-back" data-action="studio-back" aria-label="${t("studio.back")}">${icon("back")}</button><h1 class="visually-hidden">${t("studio.title")}</h1>${studioTitleHTML()}<button class="draft-status" id="draft-status" data-action="draft-retry" data-state="${status}" ${status === "failed" ? "" : "disabled"}>${draftStatusInner(status)}</button><button class="sv-preview" data-action="studio-preview" aria-label="${t("studio.preview")}">${svIcon("eye")}</button><button class="primary" data-action="save-entry">${t("studio.done")}</button></header><div class="studio-stage ${!studioTool ? "large" : STRIP_TOOLS.includes(studioTool) ? "large strip-open" : ""}">${paper}${importCardHTML()}${typeBarHTML()}<div class="stage-bar"><button data-action="undo" ${history.length ? "" : "disabled"} aria-label="${t("studio.undo")}">${icon("undo")}</button><button data-action="redo" ${future.length ? "" : "disabled"} aria-label="${t("studio.redo")}">${icon("redo")}</button>${chapterChipsHTML()}</div></div><div class="tool-dock-wrap" id="tool-menu">${toolMenuHTML()}</div>`;
+  return `<header class="studio-bar sv-top"><button class="studio-back" data-action="studio-back" aria-label="${t("studio.back")}">${icon("back")}</button><h1 class="visually-hidden">${t("studio.title")}</h1>${studioTitleHTML()}<button class="draft-status" id="draft-status" data-action="draft-retry" data-state="${status}" ${status === "failed" ? "" : "disabled"}>${draftStatusInner(status)}</button><button class="sv-preview" data-action="studio-preview" aria-label="${t("studio.preview")}">${svIcon("eye")}</button><button class="primary" data-action="save-entry">${t("studio.done")}</button></header>${studioWhereHTML()}<div class="studio-stage ${!studioTool ? "large" : STRIP_TOOLS.includes(studioTool) ? "large strip-open" : ""}">${paper}${importCardHTML()}${typeBarHTML()}<div class="stage-bar"><button data-action="undo" ${history.length ? "" : "disabled"} aria-label="${t("studio.undo")}">${icon("undo")}</button><button data-action="redo" ${future.length ? "" : "disabled"} aria-label="${t("studio.redo")}">${icon("redo")}</button>${chapterChipsHTML()}</div></div><div class="tool-dock-wrap" id="tool-menu">${toolMenuHTML()}</div>`;
 }
 
 // Save stays in reach: when the top bar has scrolled away, show the small
@@ -9473,6 +9814,17 @@ async function action(target) {
     await deleteReadPage(target.dataset.date, target.dataset.moment || "");
   }
   if (actionName === "day-restore") restoreClearedDay();
+  if (actionName === "book-pick") return bookPicked(target.dataset.book);
+  if (actionName === "page-book" && editor) {
+    const pageId = activeMomentId;
+    return openBookPicker({ title: t("pick.moveTitle"), hint: t("pick.moveHint"), current: pageBookOf(activePage()), kind: "studio", onPick: (bookId) => movePageTo(bookId, pageId) });
+  }
+  if (actionName === "book-pick-close") return closeBookPicker();
+  if (actionName === "book-pick-new") return newBookForPhotos();
+  if (actionName === "photo-book-again") {
+    $("#toast").classList.remove("visible", "has-action");
+    return choosePhotoBook();
+  }
   if (actionName === "rich-demo") return addRichDemoPage();
   if (actionName === "samples-remove") {
     if (!(await askConfirm(t("samples.confirm")))) return;
@@ -9853,23 +10205,17 @@ async function action(target) {
     else $("#photos-input").click();
   }
   if (actionName === "choose-close") $("#choose-dialog").close();
-  if (actionName === "open-backdrops") {
-    if ($("#choose-dialog")?.open) $("#choose-dialog").close();
-    studioTool = "paper";
-    sheetTall = true;
-    render();
-  }
+  // V10.79: 换个页面背景 (添加照片) opens the same 页面背景 sheet as 自定义 in 今天的故事.
+  if (actionName === "open-backdrops") return openBackdropSheet("studio");
   if (actionName === "backdrop") {
     // V10.24: one background per page — a picture / gradient / pattern
     // replaces the paper (it goes back to plain, not kept underneath).
     const reference = target.dataset.backdrop;
-    changeTarget((p) => {
-      if (/^(scene|photo):[a-z0-9-]+$/.test(reference)) {
-        p.backdrop = reference;
-        p.template = "minimal";
-      } else delete p.backdrop;
-    });
+    changeTarget((p) => applyBackdrop(p, reference));
   }
+  if (actionName === "bg-preview") return previewBackdrop(target.dataset.backdrop);
+  if (actionName === "bg-apply") return applyBackdropSheet();
+  if (actionName === "bg-cancel") return closeBackdropSheet();
   if (actionName === "sheet-grow") {
     sheetTall = !sheetTall;
     render();
@@ -9901,8 +10247,13 @@ async function action(target) {
     quickOpenedAt = Date.now();
     quickTaps = 1;
     const way = actionName === "today-photos" ? "photo" : actionName === "today-draw" ? "draw" : "write";
+    // V10.79: photos chosen before but not yet put into a journal — the same
+    // photos come back, with the question still to answer.
+    if (way === "photo" && pendingPhotos) return choosePhotoBook();
     logEvent("quick_open", { way, from: "home" });
-    quick = { date: dateKey(), book: lastQuickBook() || todayEntry()?.bookId || state().books[0]?.id || "daily", way, photo: "mine", fromHome: true };
+    // 照片手帐 asks which journal after the photos (V10.79) — none is chosen
+    // for the person here. 随手写 / 手绘 keep their journal as before.
+    quick = { date: dateKey(), book: way === "photo" ? "" : lastQuickBook() || todayEntry()?.bookId || state().books[0]?.id || "daily", way, photo: "mine", fromHome: true };
     quickSession = { started: quickOpenedAt, taps: 1, shuffles: 0 };
     await startQuickRecord();
     return;
@@ -10060,9 +10411,8 @@ document.addEventListener("input", (event) => {
     return;
   }
   if (target.dataset?.dayBook != null) {
-    changeEditor((e) => {
-      e.bookId = target.value;
-    });
+    // V10.79: only the day page moves; the day's other pages stay where they are.
+    movePageTo(target.value, null);
     return;
   }
   if (target.dataset.playerSeek != null) {
@@ -10102,6 +10452,10 @@ document.addEventListener("input", (event) => {
         };
       }, false);
   }
+  if (target.dataset.momentField === "bookId") {
+    movePageTo(target.value, activeMomentId);
+    return;
+  }
   if (target.dataset.momentField) {
     const key = target.dataset.momentField;
     changeTarget((moment) => {
@@ -10128,19 +10482,6 @@ document.addEventListener("input", (event) => {
 document.addEventListener("change", (event) => {
   if (event.target.dataset?.storyDate != null && story) {
     moveStoryTo(event.target.value);
-    return;
-  }
-  if (event.target.dataset?.storyBook != null && story) {
-    // The whole story goes into the chosen book.
-    story.book = event.target.value;
-    changeEditor((entry) => {
-      for (const momentId of story.made?.ids || []) {
-        const m = findMoment(entry, momentId);
-        if (m) m.bookId = story.book;
-      }
-      if (story.made?.cover) entry.bookId = story.book;
-    }, false);
-    flushDraft();
     return;
   }
   if (handleV3Change(event)) return;
@@ -11614,6 +11955,15 @@ async function saveBookForm() {
     const [stored, missing] = await Promise.all([store.stored(), refs.length ? media.missing(refs).catch(() => refs) : []]);
     if (!stored || missing.length) throw Object.assign(new Error("save"), { code: missing.length ? "media" : "store" });
     if (isNew) logEvent("book_create", { stage: "saved" });
+    // V10.79: made from Home's 照片手帐 (no journal yet) → on with the photos.
+    if (isNew && afterBookCreated) {
+      const then = afterBookCreated;
+      afterBookCreated = null;
+      bookSaving = false;
+      $("#form-dialog").close();
+      then(book.id);
+      return;
+    }
     // V10.77: edited from the reader's cover → stay in the reader (its cover
     // shows the change); from the shelf's ··· sheet → that sheet closes too
     // (it still showed the old name).
@@ -11901,6 +12251,7 @@ function chooseAttachment(target) {
 function afterHistoryStep() {
   if (activeMomentId && !findMoment(editor, activeMomentId))
     activeMomentId = null;
+  followPageScope();
   if (!selectedLayerOf()) selectedLayer = null;
   cropMode = false;
   scheduleDraft();
@@ -13602,7 +13953,12 @@ async function handleImageUpload(event, target) {
     // New photos for the page open in the photo editor first (skip = as is).
     if (["photos", "replace"].includes(target?.kind)) saved = (await editPhotos(saved, "add")) || saved;
     const [{ reference }] = saved;
-    if (target?.kind === "quick") {
+    if (target?.kind === "quick" && target.home && !target.book) {
+      // V10.79 · Home's 照片手帐: which journal, asked now — before any page
+      // is made (see choosePhotoBook).
+      pendingPhotos = { saved, date: target.date || dateKey() };
+      choosePhotoBook();
+    } else if (target?.kind === "quick") {
       // The page starts only now that photos were chosen (see startQuickRecord).
       if (target.book) startPage(target.book, target.date || dateKey());
       // Quick Create: my photos, laid out in their own shapes; no editor.

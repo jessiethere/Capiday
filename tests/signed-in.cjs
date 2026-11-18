@@ -52,6 +52,30 @@ function acceptGroups() {
   if (document.documentElement) watch();
   else document.addEventListener("DOMContentLoaded", watch);
 }
+// V10.79: Home's 照片手帐 now asks which journal (when there are several)
+// before the editor opens. Older suites were written when it went straight
+// on: they answer the question as a person would — the journal marked 上次选的,
+// else the shelf's first. tests/v183 tests the sheet itself and turns this
+// off with localStorage "test.keepBookPick" = "1".
+function acceptBookPick() {
+  const keep = () => {
+    try {
+      return localStorage.getItem("test.keepBookPick") === "1";
+    } catch {
+      return false;
+    }
+  };
+  const watch = () =>
+    new MutationObserver(() => {
+      const sheet = document.querySelector('#choose-dialog[open] .book-pick[data-kind="home"]:not([data-accepted])');
+      if (!sheet || keep()) return;
+      sheet.dataset.accepted = "1";
+      const choice = sheet.querySelector('.bp-book[data-mark="1"]') || sheet.querySelector(".bp-book");
+      setTimeout(() => choice?.click(), 0);
+    }).observe(document.documentElement, { childList: true, subtree: true });
+  if (document.documentElement) watch();
+  else document.addEventListener("DOMContentLoaded", watch);
+}
 module.exports = function signedIn(chromium) {
   const launch = chromium.launch.bind(chromium);
   chromium.launch = async (options) => {
@@ -61,6 +85,7 @@ module.exports = function signedIn(chromium) {
       const context = await newContext(contextOptions);
       await context.addInitScript(seedAccount);
       await context.addInitScript(acceptGroups);
+      await context.addInitScript(acceptBookPick);
       return context;
     };
     browser.newPage = async (pageOptions) => (await browser.newContext(pageOptions)).newPage();
@@ -85,6 +110,15 @@ async function leaveStudio(page) {
 module.exports.leaveStudio = leaveStudio;
 module.exports.seed = seedAccount; // for persistent profiles (launchPersistentContext)
 module.exports.acceptGroups = acceptGroups;
+module.exports.acceptBookPick = acceptBookPick;
+// V10.79: 自定义 in 今天的故事 is a small menu (页面背景 / 更多编辑); older
+// suites open the Journal Studio from it, as 自定义 did before.
+module.exports.storyStudio = async (page) => {
+  await page.locator('.story-bar [data-action="story-custom"]').tap();
+  await page.waitForSelector('#choose-dialog[open] .story-menu [data-action="story-adjust"]');
+  await page.locator('#choose-dialog[open] .story-menu [data-action="story-adjust"]').tap();
+  await page.waitForSelector("#phone.in-studio");
+};
 // V10.62: suites that start as a brand-new user (no helper) but test something
 // else than the Home guide: the guide counts as already seen (tests/v158 tests it).
 function seenOnboarding() {

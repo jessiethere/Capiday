@@ -14,6 +14,25 @@ export function localDayOf(stamp) {
   const time = new Date(text);
   return Number.isNaN(time.getTime()) ? text.slice(0, 10) : dateKey(time);
 }
+// V10.79 · Puts one page into another journal, without copying it: the page
+// keeps its id and everything on it, only its `bookId` changes.
+// `pageId` null = the day page (cover). A day page's journal is also the one
+// its other pages without their own `bookId` follow, so those pages are given
+// the journal they are in right now first — moving the day page never moves
+// them along. Returns false when there is no such page.
+export function setPageBook(entry, pageId, bookId) {
+  if (!entry || !bookId) return false;
+  if (pageId == null) {
+    const was = entry.bookId || "";
+    for (const moment of entry.moments || []) if (!moment.bookId && was) moment.bookId = was;
+    entry.bookId = bookId;
+    return true;
+  }
+  const moment = (entry.moments || []).find((m) => m.id === pageId);
+  if (!moment) return false;
+  moment.bookId = bookId;
+  return true;
+}
 export function addDays(key, amount) {
   const date = new Date(`${key}T12:00:00`);
   date.setDate(date.getDate() + amount);

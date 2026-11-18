@@ -10500,5 +10500,101 @@
   "books.coverSample": {
     "zh": "封面上是示例照片，创建后保持这一张；想用自己的照片，在「封面照片」里换。",
     "en": "The cover shows an example photo; it stays the same after you create the journal. To use your own, change it under Cover photo."
+  },
+  "pick.title": {
+    "zh": "这页放进哪本手帐？",
+    "en": "Which journal is this page for?"
+  },
+  "pick.hint": {
+    "zh": "按书架上的顺序。点一本才会继续，关掉不会放进任何一本。",
+    "en": "In your shelf's order. Nothing happens until you tap one; closing puts it nowhere."
+  },
+  "pick.last": {
+    "zh": "上次选的",
+    "en": "Last chosen"
+  },
+  "pick.current": {
+    "zh": "现在在这一本",
+    "en": "In this one now"
+  },
+  "pick.photos": {
+    "zh": "已选 {count} 张照片",
+    "en": "{count} photos chosen"
+  },
+  "pick.newBook": {
+    "zh": "新建一本手帐",
+    "en": "New journal"
+  },
+  "pick.kept": {
+    "zh": "已选的 {count} 张照片还在，还没放进任何手帐。",
+    "en": "Your {count} photos are kept — not in any journal yet."
+  },
+  "pick.continue": {
+    "zh": "选手帐",
+    "en": "Choose"
+  },
+  "pick.makeFirst": {
+    "zh": "先建一本手帐，照片会接着放进去。",
+    "en": "Make a journal first — your photos go in right after."
+  },
+  "pick.intoLabel": {
+    "zh": "放进《{name}》，点一下可以换一本",
+    "en": "Goes into {name} — tap to choose another"
+  },
+  "pick.gone": {
+    "zh": "那本手帐已经不在了，请重新选一本。照片和文字都还在。",
+    "en": "That journal is gone — please choose another. Your photos and words are kept."
+  },
+  "pick.moveTitle": {
+    "zh": "把这一页放进哪本手帐？",
+    "en": "Which journal should this page be in?"
+  },
+  "pick.moveHint": {
+    "zh": "这一页会移过去，不会复制；页面上的内容都不变。",
+    "en": "The page moves there — it isn't copied, and nothing on it changes."
+  },
+  "pick.moved": {
+    "zh": "这一页已放进《{name}》",
+    "en": "This page is now in {name}"
+  },
+  "bg.title": {
+    "zh": "页面背景",
+    "en": "Page background"
+  },
+  "bg.apply": {
+    "zh": "应用",
+    "en": "Apply"
+  },
+  "bg.preview": {
+    "zh": "这一页换背景后的样子",
+    "en": "How this page looks with the background"
+  },
+  "bg.previewNote": {
+    "zh": "只是预览：点「应用」才会换，点「取消」什么都不变。",
+    "en": "Just a preview: Apply changes it, Cancel leaves the page as it was."
+  },
+  "bg.ownPhoto": {
+    "zh": "这一页用你的照片铺满整页，换背景会把照片换掉，所以这里不能换。可以在「更多编辑」里把版式改成自由排版后再换背景。",
+    "en": "This page uses your photo as its whole background — a new background would replace the photo, so it can't be changed here. Switch the page to a free layout in More editing first."
+  },
+  "bg.menuHint": {
+    "zh": "换当前这一页的背景，先预览再应用",
+    "en": "Change this page's background — preview first"
+  },
+  "bg.moreEdit": {
+    "zh": "更多编辑",
+    "en": "More editing"
+  },
+  "bg.moreEditHint": {
+    "zh": "在手帐工作室里调整文字、贴纸和每一处细节",
+    "en": "Words, stickers and every detail, in the Journal Studio"
+  },
+  "bg.applied": {
+    "zh": "这一页的背景换好了",
+    "en": "The page has its new background"
+  },
+  "bg.removed": {
+    "zh": "这一页不用背景了",
+    "en": "This page has no background now"
   }
 }

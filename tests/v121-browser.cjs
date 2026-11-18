@@ -29,6 +29,7 @@ const PHOTOS = ["latte-art", "corner-cafe", "home-dinner", "coffee-cheers", "mor
     const c = await chromium.launchPersistentContext(dir, opts);
     await c.addInitScript(SS.seed);
     await c.addInitScript(SS.acceptGroups);
+    await c.addInitScript(SS.acceptBookPick);
     return c;
   };
   let ctx = await launch();
@@ -266,6 +267,7 @@ const PHOTOS = ["latte-art", "corner-cafe", "home-dinner", "coffee-cheers", "mor
     ctx = await chromium.launchPersistentContext(dir2, opts);
     await ctx.addInitScript(SS.seed);
     await ctx.addInitScript(SS.acceptGroups);
+    await ctx.addInitScript(SS.acceptBookPick);
     page = ctx.pages()[0] || (await ctx.newPage());
     watch(page);
     await page.goto(base);
@@ -287,6 +289,7 @@ const PHOTOS = ["latte-art", "corner-cafe", "home-dinner", "coffee-cheers", "mor
     ctx = await chromium.launchPersistentContext(dir3, opts);
     await ctx.addInitScript(SS.seed);
     await ctx.addInitScript(SS.acceptGroups);
+    await ctx.addInitScript(SS.acceptBookPick);
     page = ctx.pages()[0] || (await ctx.newPage());
     watch(page);
     await page.goto(base);
@@ -296,7 +299,7 @@ const PHOTOS = ["latte-art", "corner-cafe", "home-dinner", "coffee-cheers", "mor
     await (await chooser).setFiles(PHOTOS.slice(0, 3));
     await page.waitForSelector(".story-canvas .scrapbook-page");
     if (await page.locator('.story-tabs [data-action="story-page"]').count() > 1) await page.locator('.story-tabs [data-action="story-page"]').nth(1).tap();
-    await page.locator('[data-action="story-adjust"]').tap();
+    await SS.storyStudio(page);
     await page.waitForSelector("#journal-canvas .photo-layer img");
     await settle();
     const magN = (await shown()).imgs;

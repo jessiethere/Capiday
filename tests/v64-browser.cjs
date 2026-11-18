@@ -45,7 +45,7 @@ const lib = path.join(__dirname, "../Packages/LittleDaysCore/Sources/LittleDaysC
     passed.push("Editorial: masthead on the spread, kicker and folio on each page");
 
     // 2. Customize: drag the first photo onto the second — they change places.
-    await page.locator('[data-action="story-adjust"]').tap();
+    await require("./signed-in.cjs").storyStudio(page);
     await page.waitForSelector("#journal-canvas .photo-layer");
     let m = await page0();
     const photos = m.layers.filter((l) => l.kind === "photo" && !l.gen);

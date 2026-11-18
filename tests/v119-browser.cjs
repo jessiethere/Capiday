@@ -185,7 +185,7 @@ const lib = path.join(__dirname, "../Packages/LittleDaysCore/Sources/LittleDaysC
 
     // ---------------------------------------------------------- Customize keeps it
     await page.locator('.story-tabs [data-action="story-page"]').nth(1).tap();
-    await page.locator('[data-action="story-adjust"]').tap();
+    await SS.storyStudio(page);
     await page.waitForSelector("#journal-canvas");
     const studioWords = await page.$$eval("#journal-canvas .layer-text", (els) => els.map((el) => el.textContent));
     assert.ok(studioWords.includes("第一杯：拉花是一只小熊") && studioWords.includes("cheers 和朋友碰杯 🙂 two lattes"), JSON.stringify(studioWords));

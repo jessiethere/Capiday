@@ -97,7 +97,7 @@ const pics = ["coffee-cheers", "latte-art", "corner-cafe", "latte-beans"].map((i
     // V10.29 Quick Edit: 换照片 · 写文字 · 换个排版 + 保存; 自定义 at the top right;
     // the styles and 调整分组 are in 换个排版.
     assert.deepEqual(await page.$$eval(".qe-tools [data-action]", (els) => els.map((el) => el.dataset.panel || el.dataset.action)), ["photo", "story-text", "layout", "story-save"]);
-    assert.equal(await page.locator('.story-bar [data-action="story-adjust"]').count(), 1);
+    assert.equal(await page.locator('.story-bar [data-action="story-custom"]').count(), 1);
     await require("./signed-in.cjs").storyLayoutPanel(page);
     assert.deepEqual(await page.$$eval(".qe-styles [data-action]", (els) => els.map((el) => el.dataset.style)), ["editorial", "cozy", "playful"]);
     assert.equal(await page.locator('.qe-panel [data-action="story-group"]').count(), 1);

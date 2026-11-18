@@ -71,7 +71,7 @@ const photoFile = (n) => path.join(lib, `LD-photo-${n}.jpg`);
       // The bottom: three tools and Save; 自定义 at the top right.
       assert.deepEqual(await page.$$eval(".qe-tools button", (els) => els.map((el) => el.dataset.panel || el.dataset.action)), ["photo", "story-text", "layout", "story-save"]);
       assert.deepEqual(await page.$$eval(".qe-tools button b, .qe-tools .qe-save", (els) => els.map((el) => el.textContent.trim()).filter(Boolean)), zh ? ["换照片", "写文字", "换个排版", "保存"] : ["Photo", "Words", "Layout", "Save"]);
-      assert.equal(await page.locator('.story-bar [data-action="story-adjust"]').innerText(), zh ? "自定义" : "Customize");
+      assert.equal(await page.locator('.story-bar [data-action="story-custom"]').innerText(), zh ? "自定义" : "Customize");
       const bar = await page.locator(".qe-bar").boundingBox();
       assert.ok(bar.y + bar.height <= run.h + 1, "the Quick Edit bar is on screen");
       // V10.31: at the bottom of the screen even when the page is shorter than it (tall phones)
@@ -175,7 +175,7 @@ const photoFile = (n) => path.join(lib, `LD-photo-${n}.jpg`);
       await page.waitForSelector("#choose-dialog:not([open])", { state: "attached" });
       // 自定义 and back: nothing changes on the way.
       const beforeCustom = JSON.stringify(await draft());
-      await page.locator('.story-bar [data-action="story-adjust"]').tap();
+      await SS.storyStudio(page);
       await page.waitForSelector("#canvas-wrap");
       await page.locator('[data-action="studio-back"]').first().tap();
       await page.waitForSelector('[data-action="story-save"]');
@@ -223,7 +223,7 @@ const photoFile = (n) => path.join(lib, `LD-photo-${n}.jpg`);
       const [chooser2] = await Promise.all([page.waitForEvent("filechooser"), page.locator('#navigation [data-page="home"]').tap().then(() => page.waitForSelector(".hero")).then(() => page.locator('[data-action="today-photos"]').first().tap())]);
       await chooser2.setFiles([photoFile("beach-day"), photoFile("balloons")]);
       await page.waitForSelector('[data-action="story-save"]');
-      await page.locator('.story-bar [data-action="story-adjust"]').tap();
+      await SS.storyStudio(page);
       await page.waitForSelector("#canvas-wrap");
       const id = await page.evaluate(() => document.querySelector("#canvas-wrap .layer[data-layer]")?.getAttribute("data-layer"));
       const box = await page.locator(`#canvas-wrap .layer[data-layer="${id}"]`).boundingBox();
