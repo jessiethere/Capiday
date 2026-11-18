@@ -57,11 +57,16 @@ const shots = process.env.SHOTS_DIR || "";
     // 1. Home → 手绘: a blank board left with 完成 adds no layer (a page is ready first).
     await page.locator('[data-action="today-draw"]').first().tap();
     await page.waitForSelector("#draw-dialog[open] .draw-canvas");
+    // V10.81: the safe area belongs to the dialog box (one owner for every
+    // full-screen editor, tests/v185 measures it); the bar has only its own padding.
     const pad = await page.evaluate(() => {
-      const rule = [...document.styleSheets].flatMap((s) => { try { return [...s.cssRules]; } catch { return []; } }).find((r) => r.selectorText === ".draw-top");
-      return rule?.style.padding || "";
+      const rules = [...document.styleSheets].flatMap((s) => { try { return [...s.cssRules]; } catch { return []; } });
+      const owner = rules.find((r) => r.selectorText?.includes("dialog.draw-dialog") && r.style.paddingTop);
+      const bar = rules.find((r) => r.selectorText === ".draw-top");
+      return { owner: owner?.style.paddingTop || "", bar: bar?.style.padding || "" };
     });
-    assert.match(pad, /safe-area-inset-top/, "A: the bar keeps clear of the status bar");
+    assert.match(pad.owner, /--sat/, "A: the board keeps clear of the status bar");
+    assert.doesNotMatch(pad.bar, /safe-area|--sat/, "A: the safe area is not added twice");
     assert.ok(await page.locator(".studio-bar").count(), "the page is ready before drawing");
     await page.locator('#draw-dialog [data-draw="done"]').tap();
     await page.waitForSelector("#draw-dialog:not([open])", { state: "attached" });

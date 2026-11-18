@@ -1,4 +1,5 @@
 import Foundation
+import UniformTypeIdentifiers
 import WebKit
 import LittleDaysCore
 
@@ -103,6 +104,20 @@ final class LittleDaysSchemeHandler: NSObject, WKURLSchemeHandler {
                 urlSchemeTask.didReceive(data.subdata(in: at..<end))
                 at = end
             }
+            urlSchemeTask.didFinish()
+            return
+        }
+        // V10.81: a photo just picked in the photo library (LittleDaysPhotoPicker),
+        // read once by the page and handed to its own file input.
+        if url.path.hasPrefix(LittleDaysPhotoPicker.route) {
+            let name = String(url.path.dropFirst(LittleDaysPhotoPicker.route.count))
+            guard let file = LittleDaysPhotoPicker.file(named: name), let data = try? Data(contentsOf: file, options: .mappedIfSafe),
+                  let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: ["Content-Type": UTType(filenameExtension: file.pathExtension)?.preferredMIMEType ?? "image/jpeg", "Content-Length": String(data.count), "Cache-Control": "no-store"]) else {
+                urlSchemeTask.didFailWithError(URLError(.fileDoesNotExist))
+                return
+            }
+            urlSchemeTask.didReceive(response)
+            urlSchemeTask.didReceive(data)
             urlSchemeTask.didFinish()
             return
         }

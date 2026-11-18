@@ -4,6 +4,28 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.81",
+    date: "2026-11-18",
+    zh: {
+      title: "直接打开相册或相机，照片配文回来了",
+      items: [
+        "「添加照片」最上面有两个入口：「从相册选择」在 iPhone App 里直接打开照片图库，可以一次选好几张，按你选的顺序放进来；「拍一张照片」直接打开相机。都不再弹出英文的「Photo Library / Take Photo / Choose Files」菜单。取消或不允许相机，草稿都不会变。",
+        "选中一张照片，工具栏第一个是「配文」：给这张照片写一句，显示在它下面、只跟着这张照片；几张照片各写各的，可以改、可以「删除配文」。和「今天的故事」里「给这张写字」是同一份文字，以前写过的配文都还在。",
+        "「编辑图片」顶部的「跳过 / 编辑图片 / 完成」不再顶到状态栏里，标题居中，「跳过」更好点；手绘、裁剪画面、照片素材这几个全屏页面也用同一套安全区规则。",
+        "修好：在「文字」里打完字直接点「完成」，第一下有时没反应。",
+      ],
+    },
+    en: {
+      title: "Straight to your photos or the camera — and photo captions are back",
+      items: [
+        "Add a picture now starts with two ways in: From your photos opens your photo library straight away in the iPhone app (pick several, they come in the order you picked), and Take a photo opens the camera. No more \"Photo Library / Take Photo / Choose Files\" menu. Cancelling, or not allowing the camera, leaves your draft as it was.",
+        "Select a photo and the first tool is Caption: a line for that photo, shown under it and kept with it. Each photo has its own; edit it or Remove caption. It's the same words as \"Words for it\" in Today's story, so captions you wrote before are all still there.",
+        "Edit photo's Skip / title / Done no longer sit under the status bar; the title is centred and Skip is easier to tap. Drawing, Crop and the photo library pages follow the same safe-area rule.",
+        "Fixed: tapping Done right after typing in Text sometimes needed a second tap.",
+      ],
+    },
+  },
+  {
     version: "10.80",
     date: "2026-11-18",
     zh: {

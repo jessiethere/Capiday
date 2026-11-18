@@ -165,7 +165,7 @@ const shots = process.env.SHOTS || "";
     if (await page.locator(".tool-sheet").count()) await studioClose(page);
     // V10.20: 形状 joins the row and 裁剪画面 opens the full-screen crop editor.
     // V10.64: on a page (not the cover) 移到… follows (顺序 too, with 2+ photos).
-    assert.deepEqual(await dock(), ["layer-deselect", "shape", "crop-open", "photo-edit", "replace-photo", "photo-move", "layer", "layer-delete"]);
+    assert.deepEqual(await dock(), ["layer-deselect", "photo-caption", "shape", "crop-open", "photo-edit", "replace-photo", "photo-move", "layer", "layer-delete"]);
     await shot("v101-photo");
     await settle();
     s = await story();

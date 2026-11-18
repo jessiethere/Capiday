@@ -77,6 +77,10 @@
 | [CAP-029](#cap-029) | 首页「照片手帐」没有问放进哪本，编辑器里「放进」已替人选好 | P1 | Fixed — Pending Device Verification | 2026-11-18 | 下一个构建（V10.79） |
 | [CAP-030](#cap-030) | 「换个页面背景」难找；点页面空白处弹出「写字 · 改字体」 | P2 | Fixed — Pending Device Verification | 2026-11-18 | 下一个构建（V10.79） |
 | [CAP-031](#cap-031) | 弹窗里「取消」的字比主按钮小很多（删除空书等确认框；CAP-015 只修了主按钮） | P3 | Confirmed — 等 Founder 决定是否修复 | 2026-11-18 | TBD（建议下一个构建） |
+| [CAP-032](#cap-032) | 「编辑图片」顶部「跳过 / 编辑图片 / 完成」顶到状态栏里（反复出现的安全区问题） | P1 | Fixed — Pending Device Verification | 2026-11-18（IMG_9566） | 下一个构建（V10.81） |
+| [CAP-033](#cap-033) | 工作室里选中照片后没有「配文」入口（照片配文只在「今天的故事」里能写） | P2 | Fixed — Pending Device Verification | 2026-11-18（IMG_9567） | 下一个构建（V10.81） |
+| [CAP-034](#cap-034) | 「从相册选择」弹出英文的 Photo Library / Take Photo / Choose Files 菜单，多点一步 | P2 | Fixed — Pending Device Verification | 2026-11-18（IMG_9564 / 9565） | 下一个构建（V10.81） |
+| [CAP-035](#cap-035) | 「编辑图片 · 文字」里打完字直接点「完成」，第一下没反应 | P2 | Fixed — Pending Device Verification | 回归测试发现（V10.81） | 下一个构建（V10.81） |
 
 **功能改进（Enhancement）**
 
@@ -1120,6 +1124,47 @@
 - **修复建议**：`dialog .secondary` 也用和主按钮同一套字（例如 `500 16px var(--ui-sans)`，最小高度一致），只作用在弹窗里，页面上的 `.secondary` 不变；同时把确认框打开时的焦点描边改成只在键盘操作时显示（`:focus-visible`），手指点开时不显示粗框。改完要清点所有弹窗截图对比（中英文、375 宽小屏），并在真机上看确认框。
 - **Target**：建议下一个构建（等 Founder 说「开始修复」）。
 - **Verification**：TBD。
+
+<a id="cap-032"></a>
+### CAP-032 · 「编辑图片」顶部按钮顶到状态栏里（反复出现的安全区问题）
+
+- **Reported Date**：2026-11-18 · **Source**：Founder（真实 iPhone，IMG_9566，不放进仓库）· **Severity**：P1（「跳过 / 完成」在状态栏区域里，iOS 会抢走那里的点按，可能点不到；同类问题以前在手绘板出现过 P0）· **Status**：Fixed — Pending Device Verification（V10.81）
+- **Steps to Reproduce**：工作室 → 照片 → 从相册选择一张 → 出现深色「编辑图片」→ 看顶部。
+- **Actual**：「跳过」「编辑图片」「完成」贴着时间、信号栏；「跳过」上还有一个聚焦框；下面两角是圆角（说明是一个居中的卡片，不是全屏）。
+- **Root Cause（代码确认）**：全屏弹窗的安全区一直是「一个页面一个页面」补的：手绘板（V10.46，`.draw-top`）和裁剪画面（`.ce-top`）各自在顶栏上加 `env(safe-area-inset-top)`，照片墙查看器、页面管理在容器上加；**编辑图片（`dialog.photo-editor`）和照片素材（`dialog.scene-dialog`）从来没有加**。它们是 `height: min(930px, 100dvh)`、居中、圆角 24 的卡片；iPhone App 里网页铺满整个屏幕（外壳 `contentInsetAdjustmentBehavior = .never`，`viewport-fit=cover`），所以卡片顶在 y≈0–13，顶栏只有 12px 内边距，正好落在状态栏 / 灵动岛里。「跳过」的框是 `showModal()` 把焦点给了第一个按钮。所以每做一个新的全屏页面，这个问题就会再出现一次。
+- **Fix**：安全区只由一层负责——全屏弹窗本身（`Public/styles.css`「V10.81 · Full-screen dialogs own the safe area」）：iPhone App 里 `photo-editor / draw-dialog / scene-dialog` 正好是整个屏幕（top 0、不居中、无圆角），`photo-editor / draw-dialog / crop-editor` 用 `padding-top: var(--sat); padding-bottom: var(--sab)`，照片素材只加顶部；里面的顶栏（`.pe-top / .draw-top / .ce-top`）去掉自己的 `env()`，只留普通内边距——不会加两次。键盘弹起时（在「文字」里打字），这些弹窗跟着可见区域，不再额外加一次状态栏高度。照片墙查看器和页面管理原来就在容器上，统一改成同一个变量 `--sat / --sab`。顶栏改成三列网格，标题在正中间；「跳过」至少 44×44、15px；打开时焦点给标题，不再给「跳过」画框。
+- **Regression test**：`tests/v185-browser.cjs` C 组：5 种 iPhone 尺寸（SE、13/14、15/16/17、15/16 Pro Max、17 Pro Max，安全区 20 / 47 / 59 / 59 / 62）× 两个入口（添加照片、已有照片「调整」）+ 裁剪画面 + 键盘弹起，量「跳过 / 标题 / 完成」在状态栏下方 0–22px、标题居中 ±2px、容器顶边 0 且只加一次安全区、工具栏在底部安全区上方。`tests/v145` 改为检查安全区在容器上、顶栏上没有。
+- **Verification**：浏览器模拟 ✅；iOS 模拟器真实 `env()` 测量见 agent.md（V10.81）；**真机 ⏳**。
+
+<a id="cap-033"></a>
+### CAP-033 · 工作室里选中照片后没有「配文」入口
+
+- **Reported Date**：2026-11-18 · **Source**：Founder（IMG_9567：选中照片后的工具是 形状、裁剪画面、调整、替换、移到、顺序、图层、删除）· **Severity**：P2 · **Status**：Fixed — Pending Device Verification（V10.81）
+- **历史调查**：照片配文是 V10.19（「杂志模式：每张照片写一句」）做的：文字存在**照片图层自己身上**（`caption`，按照片图层 id 关联，不按时间或顺序），页面上由一个绑定的文字图层显示在照片正下方（`bind: "caption"`、`captionOf: <照片 id>`，显示时从照片读文字）。入口一直只在「今天的故事」：点照片 →「Aa 给这张写字」/「写字」面板里的照片条。工作室的照片工具从 V10.1 起就没有配文按钮（V10.20 改成 形状 / 裁剪画面 / 调整 / 替换），所以**不是被删、隐藏或改名**，而是入口不一致：从首页「今天的故事」进来可以写，从「自定义 → 更多编辑」、阅读器「编辑」、书里新建、工作室里加照片进来都不能写（已有配文只能在纸上点那行字改）。照片编辑器的「文字」是另一回事：把字画在照片**上面**（`edit.text`，会烧进图片），不是照片下方的配文，两者保持不变。
+- **数据**：旧配文全部还在、能读（`caption` 字段从 V10.19 起没变，Swift `StickerLayer.caption / captionOf` 也在）；配文和整页文字（`title / body`）是不同字段，互不影响。
+- **Fix（恢复历史设计，不新建配文系统）**：工作室选中照片时工具栏第一个是「配文」，打开和「写字」同样样子的面板（照片缩略图条、「照片 n / N」、输入框），写的就是同一个 `caption`；这一页上还没有这张照片的那行字时，在照片正下方加一行（标成排版生成的，重新排版时按照片的配文重新放，不会重复）；改字只改这一行；清空或「删除配文」去掉这张照片的配文和它那一行，别的照片不动。一次打开 = 一步撤销。替换照片沿用 V10.29 规则：同一个图层 id，所以配文跟着位置留下。新逻辑在 `Public/js/photo-caption.mjs`（单元测试 `tests/v185-caption.test.mjs`）。
+- **Verification**：`tests/v185` B 组 ✅（新增 / 编辑 / 删除、两张独立、替换保留、自动排版后一行不重复、保存重开、旧页面配文读取和修改不影响另一张和整页文字、撤销）；**真机 ⏳**。
+
+<a id="cap-034"></a>
+### CAP-034 · 「从相册选择」弹出英文的系统菜单，多点一步
+
+- **Reported Date**：2026-11-18 · **Source**：Founder（IMG_9564 / IMG_9565）· **Severity**：P2 · **Status**：Fixed — Pending Device Verification（V10.81，需要新的 iOS 构建）
+- **Root Cause**：「从相册选择」点的是网页的 `<input type="file" accept="image/*" multiple>`。在 iPhone 的 WKWebView 里，这种输入框一定先弹 WebKit 自己的菜单「Photo Library / Take Photo / Choose Files」——网页没有办法让它直接进相册。菜单的语言跟着 **iPhone 的系统语言**，不跟 App 里选的界面语言（App 包里有 zh-Hans 资源；系统是英文时菜单就是英文）。
+- **Fix**：「添加照片」最上面两个入口：
+  - **从相册选择**：iPhone App 里由外壳直接打开系统照片图库（`LittleDaysPhotoPicker.swift`，PHPickerViewController：可多选、按选择顺序、不需要照片访问权限、只拿到选中的照片；HEIC 按最兼容格式给 JPEG，和以前 WebKit 给的一样）。照片写到临时文件夹，网页通过 `littledays://app/__picked/<名字>` 读回来，再交给**原来的同一个输入框**——导入、修图、排版、保存都是原来的代码。用完删掉临时文件。在线链接 / 浏览器里没有外壳，就照旧打开文件选择。
+  - **拍一张照片**：新的 `<input type="file" accept="image/*" capture="environment">`，WebKit 直接打开相机（不弹菜单），拍好的照片交给同一个输入框。
+  - 取消、拒绝相机权限、读不出来：草稿不变；读不出来时提示「这几张照片没能读进来，再试一次吧」，不加任何东西。
+  - 「换照片 → 从相册选择」也走直接打开相册。
+- **无法控制的部分**：系统照片图库和相机界面本身的文字跟随 iPhone 系统语言（系统是英文就显示英文），App 不能改。
+- **Verification**：`tests/v185` A 组 ✅（替身代替原生图库）；iOS 模拟器真实图库见 agent.md；相机只能在真机上测；**真机 ⏳**。
+
+<a id="cap-035"></a>
+### CAP-035 · 「编辑图片 · 文字」打完字直接点「完成」，第一下没反应
+
+- **Found**：2026-11-18，V10.81 回归测试（`tests/v185` C4）· **Severity**：P2 · **Status**：Fixed — Pending Device Verification（V10.81）
+- **Root Cause**：标题输入框失去焦点时（`change` 事件）整个编辑器重画一遍（`photo-editor-ui.mjs`，V3.6 起），并把焦点放回输入框。点「完成 / 跳过 / 别的标签」时先失去焦点 → 重画把刚按下的按钮换掉 → 这一下点按丢了，键盘还会再弹回来。
+- **Fix**：不再整体重画；只在需要时补上「删除文字」按钮。
+- **Verification**：`tests/v185` C4 ✅；真机 ⏳。
 
 ## 5b. 功能改进（Enhancement）
 

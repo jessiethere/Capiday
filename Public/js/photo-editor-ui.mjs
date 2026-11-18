@@ -74,7 +74,7 @@ export function openPhotoEditor(items, options) {
       state.items.length > 1
         ? `<div class="pe-strip">${state.items.map((it, i) => `<button data-pe-action="pick" data-index="${i}" class="${i === state.index ? "selected" : ""}" aria-label="${i + 1}"><img src="${esc(it.src)}" alt="" style="filter:${PE.cssFilter(it.edit)}">${PE.isIdentity(it.edit) ? "" : "<i>✓</i>"}</button>`).join("")}</div>`
         : "";
-    dialog.innerHTML = `<div class="pe-sheet"><header class="pe-top"><button class="text-button" data-pe-action="cancel">${t(mode === "add" ? "pe.skip" : "cancel")}</button><b>${t("pe.heading")}${state.items.length > 1 ? ` ${state.index + 1}/${state.items.length}` : ""}</b><button class="primary" data-pe-action="done">${t("pe.done")}</button></header><div class="pe-stage"><div class="pe-frame" data-pe-drag="image" style="${style.frame}"><img class="pe-image" src="${esc(view.url)}" alt="" draggable="false" style="${style.image}">${textHTML(item.edit)}</div></div>${strip}<nav class="pe-tabs" role="tablist">${TABS_NOW.map((tab) => `<button role="tab" data-pe-action="tab" data-tab="${tab}" aria-selected="${state.tab === tab}">${t("pe.tab." + tab)}</button>`).join("")}</nav><div class="pe-controls">${controlsHTML(item)}</div></div>`;
+    dialog.innerHTML = `<div class="pe-sheet"><header class="pe-top"><button class="text-button" data-pe-action="cancel">${t(mode === "add" ? "pe.skip" : "cancel")}</button><b tabindex="-1" autofocus>${t("pe.heading")}${state.items.length > 1 ? ` ${state.index + 1}/${state.items.length}` : ""}</b><button class="primary" data-pe-action="done">${t("pe.done")}</button></header><div class="pe-stage"><div class="pe-frame" data-pe-drag="image" style="${style.frame}"><img class="pe-image" src="${esc(view.url)}" alt="" draggable="false" style="${style.image}">${textHTML(item.edit)}</div></div>${strip}<nav class="pe-tabs" role="tablist">${TABS_NOW.map((tab) => `<button role="tab" data-pe-action="tab" data-tab="${tab}" aria-selected="${state.tab === tab}">${t("pe.tab." + tab)}</button>`).join("")}</nav><div class="pe-controls">${controlsHTML(item)}</div></div>`;
   }
   // Light update while a slider or drag is moving (keeps the control alive).
   async function refreshPreview() {
@@ -157,8 +157,15 @@ export function openPhotoEditor(items, options) {
       else return;
       refreshPreview();
     };
+    // V10.81: typing the title no longer redraws the whole editor when the field
+    // loses focus — a tap on 完成 / 跳过 / a tab right after typing blurs the
+    // field first, and that redraw took the tap away (and brought the keyboard
+    // back). Only 删除文字 has to follow whether there are words now.
     const onChange = (event) => {
-      if (event.target.dataset.peText === "value") render().then(() => dialog.querySelector('[data-pe-text="value"]')?.focus());
+      if (event.target.dataset.peText !== "value") return;
+      const row = dialog.querySelector(".pe-controls .pe-row");
+      const remove = row?.querySelector('[data-pe-action="text-remove"]');
+      if (current().edit.text && row && !remove) row.insertAdjacentHTML("afterbegin", `<button class="text-button" data-pe-action="text-remove">${t("pe.textRemove")}</button>`);
     };
     // Drag the picture to choose what the crop shows; drag the title to place it.
     const onDown = (event) => {

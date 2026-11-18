@@ -152,6 +152,7 @@ import {
   validateStateSnapshot,
 } from "./js/model.mjs";
 import * as RS from "./js/restore-safety.mjs";
+import * as PhotoCaption from "./js/photo-caption.mjs";
 
 // The iOS Swift shell opens index.html?shell=ios (and also injects this marker).
 // Development only: ?dev-local-ai=<model> / =off on a page served from this
@@ -5183,7 +5184,8 @@ function ctxDockHTML(tool) {
   const own =
     kind === "photo" && layer.mediaRef
       ? // V10.20: shape (the frame) · crop (what shows inside) · adjust · replace.
-        tool(`data-action="tool" data-tool="shape" aria-expanded="${on("shape")}"`, "shape", t("shape.title"), `dock-btn ${on("shape") ? "open" : ""}`) + tool('data-action="crop-open"', "crop", t("crop.tool")) + tool('data-action="photo-edit"', "adjust", t("ctx.adjust")) + tool('data-action="replace-photo"', "replace", t("photo.replaceShort")) + (activeMomentId && findMoment(editor, activeMomentId) && PageOps.isPhoto(layer) ? tool('data-action="photo-move"', "pages", t("pg.moveTo")) + (PageOps.photoSequence(activePage()).length > 1 ? tool('data-action="photo-order"', "photos", t("pg.order")) : "") : "")
+        // V10.81: 配文 (the photo's own words, V10.19) first — Journal Studio had no way to them.
+        tool(`data-action="photo-caption" aria-haspopup="dialog"`, "caption", t("ctx.caption"), PhotoCaption.captionOf(activePage(), layer.id).trim() ? "has-caption" : "") + tool(`data-action="tool" data-tool="shape" aria-expanded="${on("shape")}"`, "shape", t("shape.title"), `dock-btn ${on("shape") ? "open" : ""}`) + tool('data-action="crop-open"', "crop", t("crop.tool")) + tool('data-action="photo-edit"', "adjust", t("ctx.adjust")) + tool('data-action="replace-photo"', "replace", t("photo.replaceShort")) + (activeMomentId && findMoment(editor, activeMomentId) && PageOps.isPhoto(layer) ? tool('data-action="photo-move"', "pages", t("pg.moveTo")) + (PageOps.photoSequence(activePage()).length > 1 ? tool('data-action="photo-order"', "photos", t("pg.order")) : "") : "")
       : kind === "text"
         ? tool('data-action="ctx-edit-text"', "pen", t("edit")) + style("font", "font", "ctx.font") + style("color", "color", "ctx.color") + style("align", "align", "ctx.align")
         : kind === "video"
@@ -6714,6 +6716,98 @@ function addMissingCaptions(page) {
     page.layers.push(layer);
   }
 }
+// ---------- V10.81 · 配文 in Journal Studio ----------
+// The photo's own words from V10.19 (今天的故事 ›「Aa 给这张写字」), now also
+// from the selected photo's tools in Journal Studio (配文). The same data: the
+// words on the photo layer (`caption`), shown right under the photo by a text
+// layer bound to it — no second caption system. Typing is kept on the spot
+// (one undo step per opening); an empty field removes the words and their line.
+let capSheet = null; // { photoId, stepped }
+function captionPhotosHere(page = activePage()) {
+  return PageOps.photoSequence(page).filter(PhotoCaption.isCaptionPhoto);
+}
+// The line under a photo that has none on the page yet (laid out again with
+// the page when it is re-arranged, from the photo's words).
+function newCaptionLayer(page, photo) {
+  const look = STYLE_LOOK[styleOf(page.layoutStyle)];
+  const text = String(photo.caption || "");
+  const w = Math.min(86, Math.max(26, Number(photo.w) || 40));
+  const size = 10.5 * typeScale(page.typeStyle);
+  const h = textBlock(text, size, w).height;
+  const y = Math.min(99 - h / 2, (Number(photo.y) || 50) + (Number(photo.h) || 30) / 2 + 1.2 + h / 2);
+  const layer = { id: id(), kind: "text", bind: "caption", captionOf: photo.id, text, x: Number(photo.x) || 50, y, w, scale: 1, rotation: 0, fontId: pickFont(text, look), fontSize: size, color: look.muted, weight: 400, spacing: 0, align: "center", gen: true };
+  applyType([layer], page.typeStyle);
+  return layer;
+}
+function capSheetHTML() {
+  const page = activePage();
+  const photos = captionPhotosHere(page);
+  const photo = photos.find((p) => p.id === capSheet.photoId);
+  if (!photo) return "";
+  const n = photos.indexOf(photo) + 1;
+  const said = (p) => Boolean(String(p.caption || "").trim());
+  const strip =
+    photos.length > 1
+      ? `<div class="sw-strip" role="tablist" aria-label="${t("cap.strip")}">${photos.map((p, i) => `<button class="sw-item" role="tab" data-action="cap-target" data-target="${esc(p.id)}" aria-selected="${p.id === photo.id}" aria-label="${esc(t("sw.photoOf", { n: i + 1, count: photos.length }) + (said(p) ? ` · ${t("sw.written")}` : ""))}"><img src="${esc(safePhoto(p.mediaRef))}" alt=""><b class="sw-num" aria-hidden="true">${i + 1}</b>${said(p) ? '<i class="sw-dot" aria-hidden="true"></i>' : ""}</button>`).join("")}</div>`
+      : "";
+  const value = String(photo.caption || "");
+  return `<div class="choose-sheet cap-sheet" data-photo="${esc(photo.id)}"><div class="choose-grabber" aria-hidden="true"></div><div class="sw-head"><h2>${t("cap.title")}</h2><span class="sw-head-btns"><button class="sw-done" data-action="cap-done">${t("pages.done")}</button></span></div>${strip}<div class="sw-edit"><div class="sw-now"><img src="${esc(safePhoto(photo.mediaRef))}" alt=""><span><b>${t("sw.photoOf", { n, count: photos.length })}</b><small>${t("cap.hint")}</small></span></div><textarea data-cap-text rows="2" maxlength="${WORDS_MAX}" placeholder="${esc(t("sw.photoPlaceholder"))}" aria-label="${esc(t("cap.label", { n }))}">${esc(value)}</textarea>${wordsCountHTML(value)}</div><div class="cap-actions"><button class="text-button cap-remove" data-action="cap-remove" ${value.trim() ? "" : "hidden"}>${t("cap.remove")}</button></div></div>`;
+}
+function openPhotoCaption(photoId) {
+  capSheet = { photoId, stepped: false };
+  const dialog = $("#choose-dialog");
+  dialog.innerHTML = capSheetHTML();
+  if (!dialog.innerHTML) return (capSheet = null);
+  // See-through (like 换照片): the words show up under the photo while typing.
+  dialog.classList.add("see-through");
+  if (!dialog.open) dialog.showModal();
+  dialog.querySelector("[data-cap-text]")?.focus({ preventScroll: true });
+}
+// Typed words go on the photo at once (the first change of an opening is one undo step).
+function setCaptionNow(value) {
+  if (!capSheet || !editor) return;
+  const apply = (page) => PhotoCaption.setPhotoCaption(page, capSheet.photoId, value, { makeLayer: (photo) => newCaptionLayer(page, photo) });
+  if (!capSheet.stepped) {
+    capSheet.stepped = true;
+    changeTarget((page) => apply(page), false);
+  } else {
+    apply(activePage());
+    scheduleDraft();
+    updateCanvas();
+  }
+  activePage().updatedAt = new Date().toISOString();
+  const sheet = $("#choose-dialog .cap-sheet");
+  if (!sheet) return;
+  const item = sheet.querySelector(`.sw-item[data-target="${CSS.escape(capSheet.photoId)}"]`);
+  const dot = item?.querySelector(".sw-dot");
+  if (item && value.trim() && !dot) item.insertAdjacentHTML("beforeend", '<i class="sw-dot" aria-hidden="true"></i>');
+  if (item && !value.trim() && dot) dot.remove();
+  const remove = sheet.querySelector(".cap-remove");
+  if (remove) remove.hidden = !value.trim();
+  const count = sheet.querySelector(".sw-count");
+  if (count) count.outerHTML = wordsCountHTML(value);
+}
+function closePhotoCaption() {
+  const had = Boolean(capSheet);
+  capSheet = null;
+  $("#choose-dialog").classList.remove("see-through");
+  if ($("#choose-dialog").open) $("#choose-dialog").close();
+  if (had) {
+    flushDraft();
+    render();
+  }
+}
+document.addEventListener("input", (event) => {
+  if (!event.target.matches?.("#choose-dialog [data-cap-text]")) return;
+  setCaptionNow(event.target.value);
+});
+$("#choose-dialog").addEventListener("close", () => {
+  if (!capSheet) return;
+  $("#choose-dialog").classList.remove("see-through");
+  capSheet = null;
+  flushDraft();
+  render();
+});
 // Quick type: changes this page's typeStyle and the words already on it.
 function storyType(change) {
   const current = storyPages()[story.index];
@@ -7947,7 +8041,7 @@ function openPhotoChooser(targetSlot = "layers") {
   const en = languageCode() === "en";
   const picks = todayPicks();
   const dialog = $("#choose-dialog");
-  dialog.innerHTML = `<div class="choose-sheet"><div class="choose-grabber" aria-hidden="true"></div><h2>${t(targetSlot === "main" ? "choose.mainTitle" : targetSlot === "line" ? "line.chooseTitle" : "choose.title")}</h2><button class="choose-album" data-action="choose-album"><span aria-hidden="true">📷</span><span><b>${t("choose.album")}</b><small>${t(targetSlot === "main" ? "choose.albumOne" : "choose.albumMany")}</small></span><i>›</i></button><h3>${t("choose.picks")}</h3><div class="choose-picks">${picks
+  dialog.innerHTML = `<div class="choose-sheet"><div class="choose-grabber" aria-hidden="true"></div><h2>${t(targetSlot === "main" ? "choose.mainTitle" : targetSlot === "line" ? "line.chooseTitle" : "choose.title")}</h2><div class="choose-ways"><button class="choose-album" data-action="choose-album"><span aria-hidden="true">🖼️</span><span><b>${t("choose.album")}</b><small>${t(targetSlot === "main" ? "choose.albumOne" : "choose.albumMany")}</small></span><i>›</i></button><button class="choose-album choose-camera" data-action="choose-camera"><span aria-hidden="true">📷</span><span><b>${t("choose.camera")}</b><small>${t("choose.cameraHint")}</small></span><i>›</i></button></div><h3>${t("choose.picks")}</h3><div class="choose-picks">${picks
     .map((scene) => `<button data-action="use-scene" data-scene="${esc(scene.id)}"><img src="${esc(safePhoto(`photo:${scene.id}`))}" alt=""><span>${esc(sceneName(scene))}</span></button>`)
     .join("")}</div><h3>${t("scene.title")}</h3><div class="choose-collections">${sceneCollections()
     .map((c) => {
@@ -8035,6 +8129,7 @@ const SV_ICONS = {
   crop: '<path d="M7 3v14h14"/><path d="M3 7h14v14"/>',
   adjust: '<path d="M5 7h8M17 7h2M5 17h2M11 17h8"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
   pen: '<path d="M4 20h4l10-10-4-4L4 16v4Z"/><path d="m13 7 4 4"/>',
+  caption: '<rect x="4.5" y="3.5" width="15" height="11" rx="2"/><path d="m5 13 4-3.5 3 2.5 2.5-2 4.5 3.5"/><path d="M6 18.5h12M8.5 21h7"/>',
   color: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/>',
   align: '<path d="M4 6h16M4 10.5h10M4 15h16M4 19.5h10"/>',
   trash: '<path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/>',
@@ -10765,13 +10860,33 @@ async function action(target) {
     soundMenu = false;
     openPhotoChooser(target.dataset.target === "main" ? "main" : "layers");
   }
-  if (actionName === "choose-album") {
+  if (actionName === "choose-album" || actionName === "choose-camera") {
+    // V10.81: 从相册选择 opens the photo library straight away (iOS app), 拍一张照片
+    // the camera; both end in the same input (and import) as before.
+    const way = actionName === "choose-camera" ? "camera" : "library";
     $("#choose-dialog").close();
-    if (photoTarget === "line") chooseAttachment({ kind: "backdrop" });
-    else if (photoTarget === "main") $("#photo-input").click();
-    else $("#photos-input").click();
+    if (photoTarget === "line") chooseAttachment({ kind: "backdrop" }, way);
+    else openPhotoInput($(photoTarget === "main" ? "#photo-input" : "#photos-input"), way);
   }
   if (actionName === "choose-close") $("#choose-dialog").close();
+  // V10.81 · 配文 (Journal Studio): done, remove the words, another photo of this page.
+  if (actionName === "cap-done") return closePhotoCaption();
+  if (actionName === "cap-remove") {
+    const field = $("#choose-dialog [data-cap-text]");
+    if (field) {
+      field.value = "";
+      setCaptionNow("");
+      field.focus({ preventScroll: true });
+    }
+    return;
+  }
+  if (actionName === "cap-target") {
+    if (!capSheet || !captionPhotosHere().some((p) => p.id === target.dataset.target)) return;
+    capSheet.photoId = target.dataset.target;
+    $("#choose-dialog").innerHTML = capSheetHTML();
+    $("#choose-dialog [data-cap-text]")?.focus({ preventScroll: true });
+    return;
+  }
   // V10.79: 换个页面背景 (添加照片) opens the same 页面背景 sheet as 自定义 in 今天的故事.
   if (actionName === "open-backdrops") return openBackdropSheet("studio");
   if (actionName === "backdrop") {
@@ -11200,6 +11315,15 @@ $("#photos-input").addEventListener("change", (event) =>
 $("#attachment-image-input").addEventListener("change", (event) =>
   handleImageUpload(event, attachmentTarget),
 );
+// V10.81 · 拍一张照片: the photo goes to the input it was taken for.
+$("#camera-input").addEventListener("change", (event) => {
+  const files = [...(event.target.files || [])];
+  const input = cameraFor;
+  cameraFor = null;
+  event.target.value = "";
+  if (input && files.length) giveFiles(input, files);
+});
+$("#camera-input").addEventListener("cancel", () => (cameraFor = null));
 // Cancelled the photo picker on the way in: nothing was started, so I stay
 // where I was. From the "how shall we keep today?" sheet, the sheet comes
 // back with the same choices.
@@ -12773,7 +12897,8 @@ function photoSourceAction(name, target) {
   if (name === "ps-album") {
     const { target: into } = photoSource;
     $("#choose-dialog").close();
-    chooseAttachment(into);
+    // V10.81: 换照片 › 从相册选择 also opens the photo library straight away (iOS app).
+    chooseAttachment(into, "library");
     return true;
   }
   if (name === "ps-pick") {
@@ -12822,10 +12947,82 @@ function studioReplacePhoto(layerId, item) {
   });
   flushDraft();
 }
-function chooseAttachment(target) {
+function chooseAttachment(target, way = "") {
   attachmentTarget = target;
   $("#attachment-image-input").multiple = ["collage", "quick", "jot"].includes(target.kind);
-  $("#attachment-image-input").click();
+  if (way) openPhotoInput($("#attachment-image-input"), way);
+  else $("#attachment-image-input").click();
+}
+// ---------- V10.81 · 从相册选择 / 拍一张照片 ----------
+// Before: every 从相册选择 opened WebKit's file menu (Photo Library / Take
+// Photo / Choose Files — in the iPhone's own language). Now:
+// - 从相册选择 in the iOS app opens the system photo library at once
+//   (LittleDaysPhotoPicker.swift, PHPicker: several photos, in the order
+//   picked, no photo-library permission needed). Elsewhere (the online link,
+//   a browser) the file input opens as before.
+// - 拍一张照片 opens the camera at once (#camera-input, `capture`).
+// Either way the photos are then given to the same file input as before, so the
+// import, the photo editor, the layout and the saving are the same code.
+// Cancelling (or no camera permission) changes nothing: the draft stays as it is.
+const nativePhotoLibrary = () => Boolean(window.capidayFiles?.photos && window.webkit?.messageHandlers?.littleDaysPhotos);
+let cameraFor = null; // the input a photo from the camera goes to
+function openPhotoInput(input, way = "library") {
+  if (!input) return;
+  if (way === "camera") {
+    cameraFor = input;
+    const camera = $("#camera-input");
+    camera.value = "";
+    return camera.click();
+  }
+  if (nativePhotoLibrary()) return pickFromLibrary(input);
+  input.click();
+}
+// Files from the camera or the photo library, given to a page input as if they
+// had been chosen there (its change handler does the rest).
+function giveFiles(input, files) {
+  if (!input || !files.length) return false;
+  const list = new DataTransfer();
+  for (const file of files) list.items.add(file);
+  input.files = list.files;
+  input.dispatchEvent(new Event("change", { bubbles: true }));
+  return true;
+}
+const pickWaits = new Map();
+let pickSeq = 0;
+window.capidayPhotosPicked = (answer) => {
+  const done = pickWaits.get(answer?.id);
+  if (!done) return;
+  pickWaits.delete(answer.id);
+  done(answer);
+};
+async function pickFromLibrary(input) {
+  const id = `pick-${Date.now()}-${++pickSeq}`;
+  const answer = await new Promise((resolve) => {
+    pickWaits.set(id, resolve);
+    window.webkit.messageHandlers.littleDaysPhotos.postMessage({ type: "pick", id, limit: input.multiple ? 0 : 1 });
+  });
+  const bridge = window.webkit?.messageHandlers?.littleDaysPhotos;
+  if (!answer.ok) {
+    if (answer.error !== "busy") toast(t("photos.pickFailed"));
+    return;
+  }
+  // Cancelled: nothing picked, nothing changes.
+  if (!answer.files?.length) return;
+  try {
+    const files = [];
+    for (const one of answer.files) {
+      const response = await fetch(one.url);
+      if (!response.ok) throw new Error("read");
+      const blob = await response.blob();
+      if (!blob.size) throw new Error("empty");
+      files.push(new File([blob], one.name || "photo.jpg", { type: one.type || blob.type || "image/jpeg" }));
+    }
+    giveFiles(input, files);
+  } catch {
+    toast(t("photos.pickFailed"));
+  } finally {
+    bridge?.postMessage({ type: "done", id });
+  }
 }
 function afterHistoryStep() {
   if (activeMomentId && !findMoment(editor, activeMomentId))
@@ -13868,6 +14065,9 @@ async function v31Action(target) {
       if (["layer", "textstyle"].includes(studioTool)) studioTool = null;
       render();
       editTextLayer(selectedLayer);
+      return true;
+    case "photo-caption":
+      if (PhotoCaption.isCaptionPhoto(selectedLayerOf())) openPhotoCaption(selectedLayer);
       return true;
     case "replace-photo":
       if (selectedLayerOf()?.kind === "photo") {

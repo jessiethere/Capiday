@@ -21,3 +21,10 @@ xcodebuild test -project Native/LittleDays.xcodeproj -scheme CapidayUITests -des
 - Gotchas found while setting this up:
   - Build the app once with the automatic `LittleDays` scheme before running `test`, otherwise the test scheme can't find the `LittleDaysUI` module.
   - Pass `ONLY_ACTIVE_ARCH=YES ARCHS=arm64`, otherwise it also builds for x86_64 and fails.
+
+## Other checks in this folder
+
+The target script only knows `DrawUITests.swift`: to run another check, copy its file to that name in `Native/UITests/`, and its page script to `/tmp/ld-uitest/`.
+
+- `ReminderUITests.swift` + `reminder-check.js` (V10.80): daily reminder — the real permission alert and a real notification banner.
+- `PhotoUITests.swift` + `photo-check.js` (V10.81): 添加照片 → 从相册选择 opens the system photo library straight away (the test picks two Simulator sample photos and taps 添加, later 取消), the 编辑图片 top bar measured against the real `env(safe-area-inset-top)`, 配文 on a photo, save. The Simulator has no camera: 拍一张照片 is checked on a real iPhone only.

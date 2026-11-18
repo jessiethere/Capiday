@@ -10760,5 +10760,41 @@
   "reminder.confirm": {
     "zh": "开启每日提醒",
     "en": "Turn on daily reminder"
+  },
+  "ctx.caption": {
+    "zh": "配文",
+    "en": "Caption"
+  },
+  "cap.title": {
+    "zh": "照片配文",
+    "en": "Photo caption"
+  },
+  "cap.hint": {
+    "zh": "写在这张照片下面，只跟着这张照片",
+    "en": "Shown under this photo, and kept with it"
+  },
+  "cap.label": {
+    "zh": "第 {n} 张照片的配文",
+    "en": "Caption for photo {n}"
+  },
+  "cap.strip": {
+    "zh": "这一页的照片",
+    "en": "Photos on this page"
+  },
+  "cap.remove": {
+    "zh": "删除配文",
+    "en": "Remove caption"
+  },
+  "choose.camera": {
+    "zh": "拍一张照片",
+    "en": "Take a photo"
+  },
+  "choose.cameraHint": {
+    "zh": "直接打开相机，拍好放进这一页",
+    "en": "Opens the camera; the photo goes on this page"
+  },
+  "photos.pickFailed": {
+    "zh": "这几张照片没能读进来，再试一次吧",
+    "en": "Those photos couldn't be read — try again"
   }
 }

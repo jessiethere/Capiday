@@ -6184,10 +6184,25 @@ details.check-history[open] > summary > span:first-child::after {
   flex-direction: column;
 }
 .pe-top {
-  display: flex;
-  justify-content: space-between;
+  /* V10.81: three columns, so 编辑图片 stays in the middle whatever the two
+     buttons' widths (跳过 is narrow, 完成 wide); 跳过 / 取消 get a real tap size. */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  padding: 12px 14px;
+  gap: 8px;
+  padding: 8px 14px;
+  min-height: 56px;
+}
+.pe-top > :first-child {
+  justify-self: start;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 4px;
+  text-align: left;
+  font-size: 15px;
+}
+.pe-top > .primary {
+  justify-self: end;
 }
 .pe-top b {
   font-size: 14px;
@@ -10654,8 +10669,10 @@ dialog h2,
   justify-content: space-between;
   /* V10.46 (P0, TestFlight): on an iPhone the board fills the screen, so
      取消 / 完成 sat under the status bar, where iOS keeps the taps — the board
-     could not be left. Keep the bar below the status bar / Dynamic Island. */
-  padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
+     could not be left. V10.81: the dialog box itself keeps the status bar /
+     Dynamic Island area (see "Full-screen dialogs own the safe area"), so
+     this bar only has its own padding. */
+  padding: 10px 14px;
 }
 .draw-top b {
   font-size: 15px;
@@ -10714,7 +10731,7 @@ dialog h2,
 .draw-tools {
   display: grid;
   gap: 10px;
-  padding: 12px 14px calc(14px + env(safe-area-inset-bottom));
+  padding: 12px 14px 14px;
 }
 .draw-pens {
   display: grid;
@@ -20531,13 +20548,13 @@ dialog.crop-editor::backdrop {
   display: grid;
   grid-template-rows: auto 1fr auto auto;
   height: 100%;
-  padding-bottom: env(safe-area-inset-bottom);
 }
 .ce-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
+  /* V10.81: the safe area is the dialog's own padding. */
+  padding: 10px 14px;
 }
 .ce-top b {
   font: 600 16px var(--ui-sans);
@@ -23387,7 +23404,7 @@ body.typing:not(.typing-dialog) .ctx-caption {
   height: 100dvh;
   max-height: 100dvh;
   margin: 0;
-  padding: calc(10px + env(safe-area-inset-top, 0px)) 0 calc(14px + env(safe-area-inset-bottom, 0px));
+  padding: calc(10px + var(--sat)) 0 calc(14px + var(--sab));
   border: 0;
   border-radius: 0;
   background: var(--c-1f1b18f2, #1f1b18f2);
@@ -24001,7 +24018,7 @@ body.typing:not(.typing-dialog) .ctx-caption {
   height: 100dvh;
   max-height: 100dvh;
   margin: 0;
-  padding: calc(8px + env(safe-area-inset-top, 0px)) 0 0;
+  padding: calc(8px + var(--sat)) 0 0;
   border: 0;
   border-radius: 0;
   background: var(--cream);
@@ -25932,4 +25949,79 @@ dialog .primary {
 }
 .reminder-sheet .reminder-time {
   margin-bottom: 10px;
+}
+
+/* ---------- V10.81 · Full-screen dialogs own the safe area ----------
+   编辑图片 (photo editor), 手绘 (drawing board), 裁剪画面 (crop) and 照片素材
+   (photo browser) fill the iPhone screen. The safe area (status bar / Dynamic
+   Island on top, the home indicator below) belongs to ONE layer: the dialog
+   box. On the iPhone the box is exactly the screen (top 0, no centring, no
+   card corners), and it keeps --sat / --sab as its own padding; the bars
+   inside (.pe-top, .draw-top, .ce-top, .pb-top) only have their own small
+   padding, so nothing is added twice. Before V10.81 the photo editor and the
+   photo browser had no safe area at all (their bars sat under the status
+   bar), while the drawing board and the crop editor each added it on their
+   own bar — the same fix made screen by screen. tests/v185-browser.cjs
+   checks every one of them against a simulated safe area. */
+html[data-shell="ios"] :is(dialog.photo-editor, dialog.draw-dialog, dialog.scene-dialog) {
+  width: 100vw;
+  max-width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0;
+  border-radius: 0;
+}
+:is(dialog.photo-editor, dialog.draw-dialog, dialog.crop-editor) {
+  padding-top: var(--sat);
+  padding-bottom: var(--sab);
+}
+/* The photo browser's light list runs to the bottom edge (it scrolls). */
+dialog.scene-dialog {
+  padding-top: var(--sat);
+}
+/* Typing in the photo editor (文字): the box follows the visible area above
+   the keyboard; the status bar is still its own padding (not added again). */
+@media (pointer: coarse) {
+  html.kb-open :is(dialog.photo-editor, dialog.draw-dialog, dialog.crop-editor, dialog.scene-dialog)[open] {
+    margin-top: var(--vv-top, 0px);
+    height: var(--vv-h, 100dvh);
+    max-height: var(--vv-h, 100dvh);
+    overflow-y: auto;
+  }
+}
+/* The editor opens with its title focused (not 跳过), so no focus ring sits
+   on a button nobody touched. */
+.pe-top b:focus {
+  outline: none;
+}
+
+/* ---------- V10.81 · 配文 in Journal Studio ----------
+   The photo's own words (V10.19) from the selected photo's tools: the same
+   strip / field as 今天的故事's 写字 sheet (.sw-*). With 配文 the photo tools
+   are nine: all stay in sight (删除 too), ← 返回 gives up a little room. */
+.tool-dock.sv-tools.ctx[data-ctx="photo"] .ctx-back {
+  flex-basis: 44px;
+}
+.tool-dock.sv-tools.ctx .sv-tool.has-caption .sv-icon {
+  background: var(--c-e3ebdc, #e3ebdc);
+}
+.cap-sheet .sw-edit {
+  margin-top: 10px;
+}
+.cap-actions {
+  display: flex;
+  justify-content: flex-end;
+  min-height: 36px;
+  padding: 4px 2px 0;
+}
+.cap-actions .cap-remove {
+  color: var(--t-a24b3f, #a24b3f);
+}
+
+/* ---------- V10.81 · 添加照片: two ways in at the top ----------
+   从相册选择 (straight to the photo library) and 拍一张照片 (straight to the
+   camera), the same card look as before, one under the other. */
+.choose-ways {
+  display: grid;
+  gap: 8px;
 }

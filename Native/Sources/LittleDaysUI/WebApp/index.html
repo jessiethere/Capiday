@@ -78,6 +78,9 @@
     <input id="photo-input" type="file" accept="image/*" hidden />
     <input id="photos-input" type="file" accept="image/*" multiple hidden />
     <input id="attachment-image-input" type="file" accept="image/*" hidden />
+    <!-- V10.81 · 拍一张照片: straight to the camera (no menu); the photo then goes
+         through the same input as a picked one. -->
+    <input id="camera-input" type="file" accept="image/*" capture="environment" hidden />
     <input
       id="video-input"
       type="file"
