@@ -115,7 +115,8 @@ function mockOllama() {
     reply = await say("你的柠檬帽真好看");
     const second = mock.seen[1].body.messages;
     assert.deepEqual(second.map((m) => m.role), ["system", "user", "assistant", "user"]);
-    assert.match(second[0].content, /柠檬帽|lemon/i, "what Captain wears is in the prompt");
+    // V10.91: Captain wears no hat by default, so the prompt claims no hat.
+    assert.doesNotMatch(second[0].content, /柠檬帽|lemon hat/i, "no hat by default: none in the prompt");
     passed.push("on (dev switch): chat lines go to 127.0.0.1 /api/chat with think:false; the reply is cleaned and marked 本机模型 · 开发; only typed lines and earlier model replies are sent — never the page's title or words");
 
     // 3. Real features stay with the rules (no call).
