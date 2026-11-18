@@ -4,6 +4,26 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.82",
+    date: "2026-11-18",
+    zh: {
+      title: "「存成图片」直接存进照片",
+      items: [
+        "阅读器「···」→「把这一页存成图片」：在 iPhone App 里直接存进「照片」，存好后提示「已保存到照片」，不再弹出分享面板。图片和以前一样是 2160 × 2700 的 PNG，不压缩。",
+        "第一次存时 iPhone 会问能不能「添加到照片」；不允许的话会说明没有保存，可以点「去设置」打开。保存失败会说明原因，不会显示「已保存」。",
+        "「分享这一页」照旧打开分享面板，分享的是同一张图片。",
+      ],
+    },
+    en: {
+      title: "Save as image goes straight to Photos",
+      items: [
+        "Reader ··· → Save this page as an image: in the iPhone app it now goes straight into Photos and says \"Saved to Photos\" — no share sheet. The image is the same 2160 × 2700 PNG as before, not compressed.",
+        "The first time, iPhone asks whether Capiday may add to Photos. If not allowed, you're told nothing was saved, with a button to open Settings. If saving fails you're told why — never \"saved\".",
+        "Share this page still opens the share sheet, with the same image.",
+      ],
+    },
+  },
+  {
     version: "10.81",
     date: "2026-11-18",
     zh: {

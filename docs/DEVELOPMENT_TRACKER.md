@@ -98,6 +98,7 @@ P0 的 9 项：CAP-016（Testing）、DS-01（In Progress）、DS-02、DS-05、D
 | CAP-033 | 工作室照片工具恢复「配文」（V10.19 的照片配文，同一份数据） | P2 | Testing | V10.81 | `js/photo-caption.mjs`（新）、`app.js` 配文面板 / 工具栏 | 同上 B 组 | v185 B 组 ✅、v185-caption 5 项 ✅；v101 / v120 工具顺序更新 ✅；真机 ⏳ | — |
 | CAP-034 | 「添加照片」：从相册选择直接打开图库（原生 PHPicker）、拍一张照片直接打开相机 | P2 | Testing | V10.81（需新 iOS 构建） | `LittleDaysPhotoPicker.swift`（新）、`LittleDaysWebResources.swift`（`/__picked/`）、`LittleDaysWebShellView.swift`、`index.html`（`#camera-input`）、`app.js` | 同上 A 组 | v185 A 组 ✅（替身）；模拟器见 agent.md；相机只能真机 ⏳ | — |
 | CAP-035 | 「编辑图片 · 文字」打完字点「完成」第一下没反应 | P2 | Testing | V10.81 | `photo-editor-ui.mjs` onChange | 同上 C4 | v185 C4 ✅；真机 ⏳ | — |
+| CAP-036 | 「把这一页存成图片」直接存进照片（原生 Photos），「分享这一页」保留分享面板 | P2 | Testing | V10.82（需新 iOS 构建） | `LittleDaysPhotoSaver.swift`（新）、`LittleDaysWebShellView.swift`、pbxproj + InfoPlist.strings（`NSPhotoLibraryAddUsageDescription`）、`app.js` `exportReaderPage` / `saveToPhotos` | BETA_RELEASE_PLAN「V10.82 真机验收」 | v186 19 项 ✅；iOS 构建 ✅；模拟器 UI 测试未运行（被 Mac 安全检查拦下）；真机 ⏳ | — |
 | CAP-029 | 首页照片手帐先选放进哪本；顶部「放进」可换；编辑已有页 = 移动不复制 | P1 | Testing | V10.79 | `app.js` openBookPicker / choosePhotoBook / setStoryBook / movePageTo / followPageScope；`model.mjs` setPageBook | BETA_RELEASE_PLAN「V10.79 真机验收」A–E | v183 68 项、v183-move 4 项 ✅；真机 ⏳ | — |
 | CAP-030 | 「自定义 → 页面背景」（和「添加照片 → 换个页面背景」同一面板，预览 / 应用 / 取消）；误弹「写字 · 改字体」 | P2 | Testing | V10.79 | `app.js` openStoryCustomMenu / openBackdropSheet / applyBackdrop / ghostTap | 同上「页面背景」几步 | v183 ✅；误弹保护只能真机确认 ⏳ | — |
 | CAP-028 | 小屏弹层输入框贴着键盘 | P3 | Testing | 0.2.0 (5)（V10.77） | `styles.css` scroll-margin-bottom | 弹层输入框下留 14 px | v164 34/34 ✅ | — |
@@ -214,3 +215,4 @@ Memory Wall v1.0：**V10.78 已实施，等真机验收**（Founder 2026-11-15 �
 | 2026-11-18 | **V10.80**：新增 QR-01～05（自己写 / 每日一问 / 录音试听 / 照片墙补记 / 每日提醒）→ Testing。v184 浏览器 58 项 + 单元 8 项；全量回归和模拟器结果见 agent.md |
 | 2026-11-18 | 新增 CAP-031（P3，Founder IMG_9563）：弹窗「取消」10px、主按钮 16px；原因是 CAP-015 只放大了主按钮。只登记，没有改代码 |
 | 2026-11-18 | **V10.81**：新增 CAP-032（P1）、CAP-033 / 034 / 035（P2）→ Testing（照片添加入口、工作室照片配文、全屏编辑器安全区、编辑器「完成」丢点按）。v185 浏览器 + 单元；全量回归、iOS 构建和模拟器结果见 agent.md。真机 ⏳ |
+| 2026-11-18 | **V10.82**：新增 CAP-036（P2）→ Testing（存成图片直接存进照片）。v186 19 项；iOS Debug 构建成功；全量回归见 agent.md。真机 ⏳ |

@@ -81,6 +81,7 @@
 | [CAP-033](#cap-033) | 工作室里选中照片后没有「配文」入口（照片配文只在「今天的故事」里能写） | P2 | Fixed — Pending Device Verification | 2026-11-18（IMG_9567） | 下一个构建（V10.81） |
 | [CAP-034](#cap-034) | 「从相册选择」弹出英文的 Photo Library / Take Photo / Choose Files 菜单，多点一步 | P2 | Fixed — Pending Device Verification | 2026-11-18（IMG_9564 / 9565） | 下一个构建（V10.81） |
 | [CAP-035](#cap-035) | 「编辑图片 · 文字」里打完字直接点「完成」，第一下没反应 | P2 | Fixed — Pending Device Verification | 回归测试发现（V10.81） | 下一个构建（V10.81） |
+| [CAP-036](#cap-036) | 「把这一页存成图片」打开分享面板（和「分享这一页」重复），面板里还没有「存储图像」 | P2 | Fixed — Pending Device Verification | 2026-11-18（Founder 真机） | 下一个构建（V10.82） |
 
 **功能改进（Enhancement）**
 
@@ -1165,6 +1166,22 @@
 - **Root Cause**：标题输入框失去焦点时（`change` 事件）整个编辑器重画一遍（`photo-editor-ui.mjs`，V3.6 起），并把焦点放回输入框。点「完成 / 跳过 / 别的标签」时先失去焦点 → 重画把刚按下的按钮换掉 → 这一下点按丢了，键盘还会再弹回来。
 - **Fix**：不再整体重画；只在需要时补上「删除文字」按钮。
 - **Verification**：`tests/v185` C4 ✅；真机 ⏳。
+
+<a id="cap-036"></a>
+### CAP-036 · 「把这一页存成图片」打开分享面板，不是存进照片
+
+- **Reported Date**：2026-11-18 · **Source**：Founder（真机，阅读器「···」→「把这一页存成图片」；截图里分享面板只有 AirDrop、信息、邮件、微信、拷贝、指定给联系人、打印、更多，没有「存储图像」；文件 Capiday-2026-11-17.png）· **Severity**：P2（功能能用但语义不对、多一步，且和「分享这一页」重复）· **Status**：Fixed — Pending Device Verification（V10.82，需要新构建）
+- **Root Cause（代码确认）**：
+  1. 网页里「存成图片」是用 `<a download>` **下载**这张 PNG（`Public/app.js` `exportReaderPage`，V10.78 CAP-E004）。
+  2. iOS 外壳把所有不是备份的下载都交给 `UIActivityViewController`（`LittleDaysWebShellView.swift` `downloadDidFinish`）——也就是分享面板。所以「存成图片」和「分享这一页」最后都是同一个面板。
+  3. App 的 Info.plist 没有 `NSPhotoLibraryAddUsageDescription`。没有这条说明，iOS 不会在分享面板里提供「存储图像」，所以面板里连「存到照片」都没有。
+- **Fix**：
+  - 新增 `LittleDaysPhotoSaver.swift`（消息 `littleDaysSavePhoto`）：网页把画好的 PNG（base64）交给外壳，外壳用 `PHPhotoLibrary` + `PHAssetCreationRequest.addResource(with: .photo, data:)` **原样**存进照片（不重新编码、不转 JPEG，仍是 2160 × 2700 PNG，文件名 `Capiday-日期.png`）。只申请「仅添加照片」（`.addOnly`），不读相册。
+  - iOS 回答之后才告诉网页（`window.capidayPhotoSaved`）：成功才显示「已保存到照片」；不允许 → 页面内对话框说明「没有保存」，有「去设置」（打开系统设置里开铺手帐的页面）；受限制（屏幕使用时间）/ 写入失败 → 提示原因，不显示已保存。
+  - 加了 `NSPhotoLibraryAddUsageDescription`（pbxproj 两个配置 + 中英文 InfoPlist.strings）。
+  - 「分享这一页」不变（系统分享面板，同一张 PNG）；在线链接 / 浏览器里「存成图片」照旧下载。
+  - 保存、分享都不改页面数据；当前页面和草稿不受影响。
+- **Verification**：`tests/v186-browser.cjs` 19 项 ✅（照片桥替身）；iOS Debug 构建 ✅（BUILD SUCCEEDED，Info.plist 里有新说明）；模拟器 XCUITest（`SaveUITests`）已写好但**这次被 Mac 的自动安全检查拦下、没有运行**；**真机 ⏳**。
 
 ## 5b. 功能改进（Enhancement）
 

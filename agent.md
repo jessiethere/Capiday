@@ -48,6 +48,29 @@
 
 ## 更新日志
 
+### 2026-11-18 — V10.82：「把这一页存成图片」直接存进照片，「分享这一页」保留分享面板（CAP-036）
+
+- **需求**（Founder 真机）：「存成图片」生成 PNG 后打开了 iOS 分享面板（AirDrop / 信息 / 邮件 / 微信 / 拷贝 / 指定给联系人 / 打印 / 更多，连「存储图像」都没有），和「分享这一页」重复。要求：存成图片 = 渲染当前页最终样子 → 直接存进「照片」→ 关 loading、提示「已保存到照片」→ 不开分享面板；没有权限时正常请求「添加照片」权限，拒绝后不假装成功、说清楚、可去设置，不丢页面和草稿；失败要说明原因。分享这一页 = 继续用分享面板，两者共用渲染、不共用最后一步。清晰度不降低、不做有损 JPEG；背景、照片、文字、贴纸、排版和阅读器一致。验证 A–H；Web/WKWebView 不可靠就走现有 Swift 桥调原生 Photos，不要用分享面板绕。
+- **原来为什么是分享面板（根因）**：① 网页里「存成图片」= `<a download>` 下载 PNG（`exportReaderPage`，V10.78 CAP-E004）；② iOS 外壳 `downloadDidFinish` 把所有非备份下载交给 `UIActivityViewController`，所以「存成图片」和「分享这一页」最后是同一个面板；③ Info.plist 没有 `NSPhotoLibraryAddUsageDescription`，iOS 因此不在分享面板里放「存储图像」。WKWebView 的网页本身没有办法直接写入照片库，所以必须走原生。
+- **修改后的数据流（Web → Swift → Photos）**：
+  1. 阅读器「···」→「把这一页存成图片」→ `exportReaderPage("png")`：检查照片都读得到、先加载字体 → `renderJournalCanvas(scale: 2)` 画出 2160 × 2700 → 空白检查 → `canvas.toBlob("image/png")`（和以前完全同一段代码、同一张图）。
+  2. 在 iPhone App 里（`window.capidayFiles.savePhoto` + 消息通道 `littleDaysSavePhoto`）：`saveToPhotos(file)` 用 FileReader 转 base64，`postMessage({type:"save", id, name, data})`，然后**等** iOS 的回答（没有超时就当成功的逻辑）。
+  3. Swift `LittleDaysPhotoSaver`：解码、检查 PNG 文件头 → `PHPhotoLibrary.requestAuthorization(for: .addOnly)`（第一次会弹系统询问）→ 允许 / 受限时 `performChanges { PHAssetCreationRequest.forAsset().addResource(with: .photo, data: png, options: originalFilename) }` → 回调里 `window.capidayPhotoSaved({id, ok, reason, status, detail, bytes})`。
+  4. 网页：`ok` → 提示「已保存到照片」；`denied` → 页面内对话框「没有保存：…」+「去设置」（`{type:"settings"}` → `UIApplication.openSettingsURLString`）/「先不用」；`restricted` → 说明被限制；`write` → 「没能保存到照片，什么都没有存（iOS 给的原因）」。全过程不改手帐数据，停在当前页。
+  5. 「分享这一页」：同一张 PNG，仍走 `navigator.share` / 下载 → 外壳分享面板（没改）。在线链接 / 浏览器：没有外壳，「存成图片」照旧下载。
+- **图片质量**：交给照片的就是画出来的 PNG 字节本身（`addResource(with: .photo, data:)` 不重新编码），尺寸 2160 × 2700、RGBA、无损；不转 JPEG。v186 用合成页面（照片背景、两张倾斜的照片、配文、贴纸、中英混排长文字）检查：存进照片的字节和分享的字节完全相同（SHA-256 一致），缩小后和阅读器里这一页的截图平均差 < 24/255，颜色丰富（不是空白）。Founder 截图里的 `Capiday-2026-11-17.png` 是同一条渲染路径产生的，这次没有改渲染。
+- **权限处理**：只申请「仅添加照片」（`.addOnly`，不读用户相册），说明文字「开铺手帐会把你选择保存的手帐页面存到「照片」。」/「Capiday saves the journal pages you choose to Photos.」；第一次存时由 iOS 询问；拒绝 → 不保存、不显示成功、提供「去设置」；之后在设置里打开即可再存；受限制（屏幕使用时间）单独说明。
+- **文件**：`Native/Sources/LittleDaysUI/WebShell/LittleDaysPhotoSaver.swift`（新）、`LittleDaysWebShellView.swift`（注册、`capidayFiles.savePhoto`）、`Native/LittleDays.xcodeproj/project.pbxproj`（`INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription` ×2）、`Native/App/zh-Hans.lproj` 和 `en.lproj/InfoPlist.strings`、`Public/app.js`（`exportReaderPage` 分流、`saveToPhotos`、`photosDenied`）、`i18n.json`（`pageExport.savedPhotos / photosDenied / openSettings / notNow / photosRestricted / photosFailed`）、`Public/js/whats-new.mjs`（10.82）、`Native/…/WebApp/`（同步）、`tests/v186-browser.cjs`（新）、`tools/mac/uitest/SaveUITests.swift` + `save-check.js`（新）、BUG_BACKLOG（CAP-036）、DEVELOPMENT_TRACKER、BETA_RELEASE_PLAN（V10.82 真机验收）、README。
+- **运行 / 测试**：
+  - `tests/v186-browser.cjs` **19 项通过**（Chromium + 照片桥替身，不是 iPhone）：A 不开分享面板、不下载；B 交给照片的是 PNG、2160 × 2700、文件名 `Capiday-2026-11-17.png`；C 回答前不显示、iOS 确认后才显示「已保存到照片」；D 拒绝时说明没有保存、有「去设置」并请 App 打开设置；E 再允许后正常保存；写入失败说明原因、不显示已保存；F 分享打开分享面板、不经过照片保存、同一张 PNG（字节相同）；G 保存和分享不改手帐数据、还在这一页；H 多照片 + 背景 + 文字 + 贴纸画全、和阅读器一致；在线链接照旧下载。导出图已人工查看（照片背景、两张照片、配文、贴纸、文字都在）。
+  - 单元 361/361、Python 外壳测试 OK。
+  - **iOS**：Mac 上 Debug 构建（模拟器）**BUILD SUCCEEDED**，构建出的 Info.plist 有 `NSPhotoLibraryAddUsageDescription`，`zh-Hans.lproj` 在包里。
+  - **模拟器实测没有运行**：先试用 `simctl launch --console` 读检查结果（Swift `print` 有缓冲，读不到），再试 XCUITest（`SaveUITests`：真实「添加到照片」询问点「不允许」→ 看到说明 → 分享面板出现并关闭 → 重置权限后点「允许」→ 存两次、不出现分享面板 → 在模拟器照片库 `DCIM/100APPLE` 里数文件）。用超时包装启动的命令和运行 UI 测试的命令都被 **Mac 上 Claude Code 的自动安全检查拒绝**（“Auto-Mode Bypass”）。按规则没有绕过，等 Founder 决定。已做的准备：专用模拟器「Capiday Save Check」（6AC6B500…，测试前照片库里有 6 张自带照片）、`/tmp/ld-uitest` 临时工程（含 UI 测试 target，未改仓库工程）。
+  - 全量回归 run-all19：见下一条（运行中）。
+- **固定链接**：Version 128（V10.82；只上传了变化的 app.js、whats-new、i18n）。在线链接里没有 iPhone 外壳，「存成图片」仍是下载。
+- **已知问题 / 没有验证**：真机全部 ⏳（真实权限弹窗、照片 App 里的文件、清晰度目测、分享面板里的「存储图像」）；模拟器 UI 测试未运行；在线链接里存成图片仍是下载（浏览器限制）。整本书 PDF、这一页 PDF 不变（仍是下载 → 分享面板，用于存到「文件」或发出去）。
+- **下一步**：Founder 决定是否允许在 Mac 上运行 UI 测试（或自己在 Xcode 里运行 `CapidayUITests`）；新构建后按 BETA_RELEASE_PLAN「V10.82 真机验收」测。
+
 ### 2026-11-18 — V10.81：照片添加（从相册选择 / 拍一张照片）、工作室恢复照片配文、全屏编辑器安全区统一（CAP-032～035）
 
 - **需求**（Founder，真机截图 IMG_9564 / 9565 / 9567 / 9566）：① 「添加照片」顶部两个独立入口：「从相册选择」直接打开照片图库（多选、进入原有编辑流程、取消不影响草稿）；「拍一张照片」直接打开相机（拍完进当前工作室、能继续编辑；取消 / 拒绝权限 / 失败不丢草稿），保留拍照能力；先查清是 HTML 输入框、WKWebView 还是原生，优先复用；做不稳就说明原因和方案；保留今日推荐、照片素材、页面背景；不要中文界面配英文系统菜单，控制不了的要说明。② 照片配文：先查历史（是什么、删了 / 藏了 / 改名 / 挪了、旧数据能否读、和整页文字是否不同结构、入口是否不一致），确认是回归就恢复历史设计，不另造配文系统。③ 「编辑图片」顶部按钮反复顶到状态栏：找到真正负责的布局层统一处理安全区，不能随手加 margin / padding；各入口、各尺寸一致；加回归测试。④ A1–A6、B1–B6、C1–C7、D1–D5 测试；如实报告真机待测。
@@ -67,9 +90,9 @@
   - `tests/v185-browser.cjs` **75 项全部通过**：A0 两个入口在最上面、今日推荐 / 照片素材 / 换个页面背景仍在、没有英文系统词；A1 相册一张（走原生桥替身，没有打开文件菜单）；A2 一次三张、按选择顺序、各自独立媒体；A3 拍照输入框 `capture=environment`、单张、照片进页面；A4 相册取消草稿不变、读不出来提示且不加；A5 相机取消草稿不变；A6 导入后能「调整」、保存后 5 张都在；浏览器里「从相册选择」照旧打开多选输入框；英文入口文字。B1 工具栏第一个是「配文」、9 个都在视野内、写入照片且在照片正下方、改字、删除只删这一张、撤销；B2 两张独立；B3 替换保留 id 和配文；B4 自动排版后各一行不重复；B5 保存后阅读器显示、重新载入后仍在；B6 V10.19 样式的旧页面在工作室显示两张配文、读出旧字、改一张不影响另一张和整页标题正文。C1/C2 五种尺寸（SE 20、13/14 47、15/16/17 59、15/16 Pro Max 59、17 Pro Max 62）× 新加照片 / 已有照片「调整」：三个按钮在状态栏下 0–22px、标题居中 ±2px、容器 top 0 且安全区只加一次、工具在底部安全区之上；打开时焦点在标题；键盘弹起时不重复加；裁剪画面同样。C3 跳过 / 完成能关；C4 滤镜 / 裁剪 1:1 / 亮度 / 文字都写进 `edit`，「完成」一下就关；C5 回到工作室两张都在。D1 别的页不动；D2 照片 id 和媒体不变；D4 反复开关配文不多出一行。
   - `tests/v185-caption.test.mjs` 5 项 ✅；单元 361/361 ✅；Python 外壳测试 18 项 OK（Public 与 WebApp 一致）。
   - 受影响的旧测试单独重跑：browser、v101、v119、v120、v121、v122、v125、v129、v145、v152、v154、v156、v157、v160、v184、v36、v37、v43、v52、v55 全部通过（v101 / v120 / v145 按新规则更新；v119 第一次超时、单独重跑通过）。
-  - 全量回归 run-all18：见下一条记录（运行中）。
+  - 全量回归 run-all18：跑到 14 / 121 时停止（14 个全部通过），因为接着开始 V10.82 的改动；并入 V10.82 的全量回归 run-all19（见 V10.82 条目）。
 - **D3 / D5**：D3（不显示虚假成功）—— 图库读取失败只提示、不加照片（v185 A4）；保存失败的提示沿用原有机制（`draft-status`，v122 覆盖）。D5（备份恢复）—— 没有改备份格式或存储；`caption` 是 V10.19 起就有的字段（Swift `StickerLayer.caption / captionOf` 已有），备份原样包含；备份相关套件在全量回归里。
-- **iOS 构建 / 模拟器**：Mac 在本轮中途休眠后一直没有回应，**新 Swift 代码（PHPicker 桥）还没有编译**，模拟器检查（`PhotoUITests` + `photo-check.js`：真实图库选两张 →「添加」→ 量编辑图片顶栏和真实 `env(safe-area-inset-top)` → 配文 → 图库取消 → 保存）**还没有跑**。Mac 回来后补。
+- **iOS 构建 / 模拟器**：Mac 回来后（V10.82 那一轮）在 Mac 上把项目快进到 `2e4e3b8`，iOS 模拟器 Debug 构建 **BUILD SUCCEEDED**（含 `LittleDaysPhotoPicker.swift`，新文件没有警告）。模拟器检查（`PhotoUITests` + `photo-check.js`：真实图库选两张 →「添加」→ 量编辑图片顶栏和真实 `env(safe-area-inset-top)` → 配文 → 图库取消 → 保存）**没有运行**：运行 UI 测试的命令被 Mac 上 Claude Code 的自动安全检查拦下（见 V10.82 条目），等 Founder 决定。
 - **已知问题 / 没有验证**：真机全部 ⏳（尤其是相机直达、真实图库、各尺寸 iPhone 顶栏）；系统图库 / 相机界面的语言跟随 iPhone 系统语言；旧构建（0.2.0 (6)）里「从相册选择」仍会弹菜单（需要新构建）；工作室里拖动照片时它的配文那一行不跟着走（和以前一样，配文不会丢；重新排版会放回照片下面）。
 - **下一步**：Mac 回来后：同步、iOS Debug 构建、模拟器 `PhotoUITests`；全量回归结果；发布固定链接；Founder 按 BETA_RELEASE_PLAN「V10.81 真机验收」测；决定是否打 0.2.0 (7)。
 
