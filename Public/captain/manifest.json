@@ -4,7 +4,7 @@
   {
    "name": "captain-lie",
    "status": "APPROVED",
-   "shipped": false,
+   "shipped": true,
    "source": "docs/visual/captain-pack-v1/source-lying.png",
    "sourceSize": [
     1254,

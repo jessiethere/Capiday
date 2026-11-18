@@ -48,7 +48,7 @@ const check = (name, ok, detail = "") => {
     });
     const box = document.createElement("div");
     box.id = "v193";
-    box.innerHTML = ["face", "happy", "sit-up"].map((k) => B.captainPortrait(k, { size: 400 })).join("") + B.captainPortrait("nonsense", { size: 20 });
+    box.innerHTML = ["face", "happy", "sit-up", "peek"].map((k) => B.captainPortrait(k, { size: 400 })).join("") + B.captainPortrait("nonsense", { size: 20 });
     document.body.append(box);
     const imgs = [...box.querySelectorAll("img")];
     await Promise.all(imgs.map((i) => (i.complete ? null : new Promise((r) => (i.onload = i.onerror = r)))));
@@ -60,11 +60,11 @@ const check = (name, ok, detail = "") => {
       loaded: imgs.map((i) => [i.dataset.asset, i.naturalWidth > 0, i.src.includes("/captain/")]),
       widths: imgs.map((i) => [i.dataset.asset, i.getBoundingClientRect().width, B.CAPTAIN_PACK[i.dataset.asset][2]]),
       hidden: imgs.every((i) => i.alt === "" && i.getAttribute("aria-hidden") === "true"),
-      fallback: imgs[3].dataset.asset,
+      fallback: imgs[4].dataset.asset,
     };
   });
-  check("only the confirmed Pack v1 pictures ship (face, sit-up, happy)", JSON.stringify(sys.shipped) === JSON.stringify(sys.packKeys) && sys.packKeys.join() === "captain-face,captain-sit-up,expr-happy", JSON.stringify(sys));
-  check("staged Pack v1 pictures are not in the app (404)", sys.stagedStatus.length === 10 && sys.stagedStatus.every((s) => s === 404), JSON.stringify(sys.stagedStatus));
+  check("only the confirmed Pack v1 pictures ship (face, lie, sit-up, happy)", JSON.stringify(sys.shipped) === JSON.stringify(sys.packKeys) && sys.packKeys.join() === "captain-face,captain-lie,captain-sit-up,expr-happy", JSON.stringify(sys));
+  check("staged Pack v1 pictures are not in the app (404)", sys.stagedStatus.length === 9 && sys.stagedStatus.every((s) => s === 404), JSON.stringify(sys.stagedStatus));
   check("the code registry matches Public/captain/manifest.json", sys.registry.every(([, ok]) => ok), JSON.stringify(sys.registry));
   check("every portrait loads from captain/", sys.loaded.every(([, ok, dir]) => ok && dir), JSON.stringify(sys.loaded));
   check("a request for more is held at the clear size", sys.widths.every(([, w, ceil]) => w <= ceil + 0.5), JSON.stringify(sys.widths));

@@ -9729,6 +9729,9 @@ window.addEventListener("resize", () => {
 // Settings → 功能介绍 shows it again.
 let hgStep = null; // 0–4 while open
 let hgReplay = false;
+// V10.90: after 选今天的照片 is tapped in the guide, the guide steps aside
+// while the photo picker (and whatever it leads to) is open, then carries on.
+let hgPaused = false;
 let hgFollow = null;
 function maybeStartOnboarding() {
   if (!Account.isSignedIn(account) || !$("#tour")?.hidden) return;
@@ -9745,6 +9748,7 @@ function openHomeGuide({ replay = false } = {}) {
   }
   $("#app-scroll").scrollTop = 0;
   hgStep = 0;
+  hgPaused = false;
   logEvent("onboarding_open", { replay });
   placeHomeGuide();
 }
@@ -9753,14 +9757,35 @@ function closeHomeGuide(outcome) {
   if (!hgReplay) Onboard.finishHome(outcome);
   logEvent("onboarding_" + (outcome === "done" ? "done" : "skip"), { step: hgStep, replay: hgReplay });
   hgStep = null;
+  hgPaused = false;
   clearInterval(hgFollow);
   $("#home-guide")?.remove();
+}
+// The guide waits while the person is picking photos or making the page.
+// - Back on Home with nothing open (picker cancelled): it carries on.
+// - A page of one's own was made meanwhile: the guide is done (the first-page
+//   card follows, as for anyone's first page).
+function resumeHomeGuide() {
+  if (hgStep == null || !hgPaused) return false;
+  if (Onboard.hasOwnContent(state())) {
+    closeHomeGuide("done");
+    if (!$("#choose-dialog").open) maybeFirstPageCard();
+    return true;
+  }
+  if (page !== "home" || document.querySelector("dialog[open]")) {
+    $("#home-guide")?.remove();
+    clearInterval(hgFollow);
+    return true;
+  }
+  hgPaused = false;
+  return false;
 }
 function hgTargets(step) {
   return step.target ? [...document.querySelectorAll(step.target)] : [];
 }
 function placeHomeGuide() {
   if (hgStep == null) return;
+  if (resumeHomeGuide()) return;
   if (page !== "home") return closeHomeGuide("skipped");
   const step = Onboard.STEPS[hgStep];
   const middle = Onboard.STEPS.filter((s) => s.target);
@@ -9774,8 +9799,10 @@ function placeHomeGuide() {
   }
   box.dataset.step = step.id;
   box.classList.toggle("hg-captain-step", Boolean(step.captain));
-  // V10.89: the illustrated Captain (Pack v1) — sitting up to say hello, smiling for the invitation.
-  const art = step.captain ? `<div class="hg-captain" aria-hidden="true">${Bot.captainPortrait(step.id === "invite" ? "happy" : "sit-up", { size: 112 })}</div>` : "";
+  // The illustrated Captain (Pack v1). V10.90: on the welcome it rests both
+  // front paws on the card's top edge (head and ears above); the invitation
+  // keeps the smiling, eyes-closed Captain.
+  const art = step.captain ? `<div class="hg-captain${step.id === "welcome" ? " hg-peek" : ""}" aria-hidden="true">${step.id === "welcome" ? Bot.captainPortrait("peek", { size: 132 }) : Bot.captainPortrait("happy", { size: 112 })}</div>` : "";
   const head = step.captain
     ? ""
     : `<div class="hg-head"><span class="hg-avatar" aria-hidden="true">${Bot.captainPortrait("face", { size: 30 })}</span><span class="hg-count">${t("guide.count", { n: index + 1, count: middle.length })}</span><button type="button" class="hg-skip" data-action="hg-skip">${t("guide.skip")}</button></div>`;
@@ -9784,13 +9811,18 @@ function placeHomeGuide() {
       ? `<button type="button" class="primary" data-action="hg-next">${t("hg.go")}</button><button type="button" class="secondary" data-action="hg-skip">${t("hg.explore")}</button>`
       : step.id === "invite"
         ? `<button type="button" class="primary" data-action="hg-start">${t("hg.start")}</button><button type="button" class="secondary" data-action="hg-later">${t("hg.later")}</button>`
-        : `${index ? `<button type="button" class="secondary" data-action="hg-prev">${t("guide.prev")}</button>` : ""}<button type="button" class="primary" data-action="hg-next">${t("guide.next")}</button>`;
-  box.innerHTML = `<div class="hg-shade" aria-hidden="true"></div><div class="hg-ring" aria-hidden="true" hidden></div><section class="hg-card" role="dialog" aria-modal="true" aria-describedby="hg-body">${art}${head}<p id="hg-body" class="hg-body" aria-live="polite">${t("hg." + step.id)}</p><div class="hg-actions">${actions}</div></section>`;
+        : step.tap
+          ? "" // V10.90: the highlighted button itself is the way on
+          : `${index ? `<button type="button" class="secondary" data-action="hg-prev">${t("guide.prev")}</button>` : ""}<button type="button" class="primary" data-action="hg-next">${t("guide.next")}</button>`;
+  const targetLabel = step.tap ? (hgTargets(step)[0]?.textContent || "").replace(/→/g, "").trim() : "";
+  // The highlighted button stays tappable: a see-through button exactly over it.
+  const hit = step.tap ? `<button type="button" class="hg-hit" data-action="hg-tap" aria-label="${esc(targetLabel)}" hidden></button>` : "";
+  box.innerHTML = `<div class="hg-shade" aria-hidden="true"></div><div class="hg-ring" aria-hidden="true" hidden></div>${hit}<section class="hg-card${step.tap ? " hg-tap-step" : ""}" role="dialog" aria-modal="true" aria-describedby="hg-body">${art}${head}<p id="hg-body" class="hg-body" aria-live="polite">${t("hg." + step.id)}</p>${actions ? `<div class="hg-actions">${actions}</div>` : ""}</section>`;
   const targets = hgTargets(step);
   // A place further down Home comes into view first (the menu is always there).
   if (targets[0] && !targets[0].closest("#navigation")) targets[0].scrollIntoView({ block: "center" });
   positionHomeGuide();
-  if (!box.contains(document.activeElement)) box.querySelector(".hg-card .primary")?.focus({ preventScroll: true });
+  if (!box.contains(document.activeElement)) (box.querySelector(".hg-hit") || box.querySelector(".hg-card .primary"))?.focus({ preventScroll: true });
   clearInterval(hgFollow);
   hgFollow = setInterval(() => (hgStep == null ? clearInterval(hgFollow) : positionHomeGuide()), 250);
 }
@@ -9814,6 +9846,11 @@ function positionHomeGuide() {
   const pad = 6;
   Object.assign(ring.style, { left: `${r.left - phone.left - pad}px`, top: `${r.top - phone.top - pad}px`, width: `${r.right - r.left + pad * 2}px`, height: `${r.bottom - r.top + pad * 2}px` });
   ring.hidden = false;
+  const hit = box.querySelector(".hg-hit");
+  if (hit) {
+    Object.assign(hit.style, { left: `${r.left - phone.left}px`, top: `${r.top - phone.top}px`, width: `${r.right - r.left}px`, height: `${r.bottom - r.top}px` });
+    hit.hidden = false;
+  }
   card.classList.remove("at-bottom");
   const above = r.top - phone.top;
   const below = phone.bottom - r.bottom;
@@ -9830,6 +9867,20 @@ function homeGuideAction(name) {
     const go = document.createElement("button");
     Object.assign(go.dataset, { action: "quick-open", photo: "" });
     action(go);
+  } else if (name === "hg-tap") {
+    // The real button, as if tapped on Home: the photo picker opens at once
+    // (same user tap, so the system picker is allowed), and the guide steps
+    // aside until the person is back on Home.
+    const step = Onboard.STEPS[hgStep];
+    if (!step?.tap) return false;
+    hgStep = Math.min(Onboard.STEPS.length - 1, hgStep + 1);
+    hgPaused = true;
+    clearInterval(hgFollow);
+    $("#home-guide")?.remove();
+    logEvent("onboarding_tap", { step: step.id });
+    const go = document.createElement("button");
+    go.dataset.action = step.tap;
+    action(go);
   } else if (name === "hg-prev") {
     hgStep = Math.max(1, hgStep - 1);
     placeHomeGuide();
@@ -9840,12 +9891,20 @@ function homeGuideAction(name) {
   return true;
 }
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && hgStep != null) {
+  if (event.key === "Escape" && hgStep != null && !hgPaused) {
     event.preventDefault();
     closeHomeGuide("skipped");
   }
 });
 window.addEventListener("resize", () => hgStep != null && positionHomeGuide());
+// V10.90: photo picker closed without photos → the waiting guide carries on.
+document.addEventListener(
+  "cancel",
+  (event) => {
+    if (event.target?.id === "attachment-image-input" && hgPaused) setTimeout(placeHomeGuide, 0);
+  },
+  true,
+);
 // After the first page of one's own is really in the journal database: once.
 let firstPageCheck = false;
 function maybeFirstPageCard() {
@@ -9962,6 +10021,7 @@ function accountAction(target) {
     case "hg-start":
     case "hg-prev":
     case "hg-next":
+    case "hg-tap":
       return homeGuideAction(name);
     case "fp-books":
     case "fp-home":
@@ -13373,10 +13433,11 @@ async function pickFromLibrary(input) {
   const bridge = window.webkit?.messageHandlers?.littleDaysPhotos;
   if (!answer.ok) {
     if (answer.error !== "busy") toast(t("photos.pickFailed"));
-    return;
+    return input.dispatchEvent(new Event("cancel"));
   }
-  // Cancelled: nothing picked, nothing changes.
-  if (!answer.files?.length) return;
+  // Cancelled: nothing picked, nothing changes (V10.90: said so, like the
+  // file input's own cancel, so a waiting guide carries on).
+  if (!answer.files?.length) return input.dispatchEvent(new Event("cancel"));
   try {
     const files = [];
     for (const one of answer.files) {

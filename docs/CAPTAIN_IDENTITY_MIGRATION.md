@@ -47,7 +47,7 @@ Updated 2026-11-18 (evening): the Founder supplied four Pack v1 sheets (transpar
 |---|---|---|---|---|---|
 | Base pose | sitting (with books and seal) | `captain-sit` (scenes v1) | 540×371 | 180 pt | APPROVED · shipped |
 | Base pose | sitting, looking up (no props) | `captain-sit-up` (Pack v1) | 540×647 | 180 pt | APPROVED · staged |
-| Base pose | lying down, awake, paws forward | `captain-lie` (Pack v1) | 540×640 | 180 pt | APPROVED · staged |
+| Base pose | lying down, awake, paws forward | `captain-lie` (Pack v1) | 540×640 | 180 pt | APPROVED · shipped V10.90 (welcome card-edge peek) |
 | Base pose | sleeping | `captain-sleep` (scenes v1) | 540×306 | 180 pt | APPROVED · shipped |
 | Base pose | looking at journal | — | — | — | NEEDS CHARACTER ASSET |
 | Base pose | preparing stamp / pressing stamp | `captain-ready` / `captain-stamp` | 540×372 / 540×342 | 180 pt | APPROVED · shipped |
@@ -128,6 +128,11 @@ Status values:
 - #13 and #14 are migrated too: they appear in the reader, next to the illustrated save stamp (#10) and first-stamp pill (#5), so the reader shows only one Captain.
 - Outfits are not drawn in these places; `keeper.outfit` is untouched.
 - Still waiting on the Founder: the lemon-hat approach, eye-follow, Playroom mode and coat colour (section 2b). Until then #11, #12, #15, #16, #19 and #20 stay 3D.
+
+**V10.90 (Founder, 2026-11-18)**:
+- The Home guide's welcome uses `captain-lie` as the card-edge peek: both front paws rest on the card's top edge, head and ears above it.
+- The Founder named the file `poses/card-edge-peek.png`. No file by that name exists in the pack, so `captain-lie` (the paws-forward pose) is used for it.
+- The invitation keeps `expr-happy`.
 
 **Mixing check today**:
 - Home without Captain shows only the illustrated invitation.

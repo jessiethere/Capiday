@@ -54,7 +54,7 @@ const shots = process.env.SHOTS || "";
       await page.goto(base);
       await page.waitForSelector('#home-guide[data-step="welcome"] .hg-card');
       assert.match(await page.locator("#home-guide .hg-body").innerText(), /嗨！我是 Captain。带你认识一下开铺手帐吧？/);
-      assert.equal(await page.locator('#home-guide .hg-captain img.bot-captain[data-asset="captain-sit-up"]').count(), 1, "Captain on the welcome (V10.89: illustrated)");
+      assert.equal(await page.locator('#home-guide .hg-captain.hg-peek img.bot-captain[data-asset="captain-lie"]').count(), 1, "Captain on the welcome (V10.90: paws on the card's edge)");
       assert.equal(await page.evaluate(() => document.activeElement?.dataset.action), "hg-next", "focus on 带我看看");
       assert.equal((await record(page)).home, "new");
       if (shots) await page.screenshot({ path: `${shots}/v158-welcome-zh-375.png` });
@@ -79,6 +79,15 @@ const shots = process.env.SHOTS || "";
         assert.equal(await page.locator('#home-guide .hg-avatar img.bot-captain[data-asset="captain-face"]').count(), 1);
         if (shots) await page.screenshot({ path: `${shots}/v158-${id}-zh-375.png` });
         seen.push(`${id} ring ${c.ring.join("–")} card ${c.card.join("–")}`);
+        if (id === "photos") {
+          // V10.90: no 下一步 here — tapping 选今天的照片 opens the picker; cancelling it, the guide carries on.
+          assert.equal(await page.locator('#home-guide [data-action="hg-next"]').count(), 0);
+          assert.equal(await page.locator('#home-guide [data-action="hg-skip"]').count(), 1);
+          const [chooser] = await Promise.all([page.waitForEvent("filechooser"), page.locator("#home-guide .hg-hit").tap()]);
+          assert.ok(chooser.isMultiple());
+          await page.evaluate(() => document.querySelector("#attachment-image-input").dispatchEvent(new Event("cancel", { bubbles: true })));
+          continue;
+        }
         await page.locator('#home-guide [data-action="hg-next"]').tap();
       }
       await page.waitForSelector('#home-guide[data-step="invite"]');
@@ -102,6 +111,7 @@ const shots = process.env.SHOTS || "";
       await page.locator('[data-action="tour-replay"]').tap();
       await page.waitForSelector('#home-guide[data-step="welcome"]');
       await page.locator('#home-guide [data-action="hg-next"]').tap();
+      await page.waitForSelector('#home-guide[data-step="photos"] .hg-ring:not([hidden])');
       await page.locator('#home-guide [data-action="hg-skip"]').first().tap();
       await page.waitForFunction(() => !document.querySelector("#home-guide"));
       assert.deepEqual(await record(page), before, "a replay changes nothing");

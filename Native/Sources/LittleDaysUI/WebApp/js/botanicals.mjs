@@ -11,7 +11,7 @@
 //
 //   botanical(kind, options)  kind: "corner" | "sprig" | "berry" | "blossom"
 //   captainVignette(options)  pose: "sleep" | "sit" | "ready" | "stamp"
-//   captainPortrait(kind)     "face" | "happy" | "sit-up" (Captain Pack v1)
+//   captainPortrait(kind)     "face" | "happy" | "sit-up" | "peek" (Captain Pack v1)
 //   coverArt(kind)            "everyday" | "captain" ("travel": NEEDS HI-RES)
 //   decorPlan(surface, ctx)   which decorations a surface may show (density)
 //
@@ -49,6 +49,7 @@ export const CAPTAIN_PACK = {
   "captain-face": [360, 386, 120, "APPROVED"],
   "captain-sit-up": [540, 647, 180, "APPROVED"],
   "expr-happy": [360, 452, 120, "APPROVED"],
+  "captain-lie": [540, 640, 180, "APPROVED"],
 };
 const assetOf = (name) => ASSETS[name] || CAPTAIN_PACK[name];
 // Not good enough at their real size yet: never used in the interface.
@@ -106,9 +107,11 @@ export function captainVignette({ pose = "sit", size = 150, place = "inline", cl
 
 // Captain on his own (no props), from Pack v1:
 //   face: front bust, calm (avatars) · happy: smiling, eyes closed ·
-//   sit-up: sitting, looking up (greeting).
+//   sit-up: sitting, looking up (greeting) ·
+//   peek: lying with both front paws forward — rests its paws on a card's
+//   top edge, head and ears above it (the card-edge peek).
 // No outfit is drawn yet: keeper.outfit stays stored and untouched.
-const PORTRAITS = { face: "captain-face", happy: "expr-happy", "sit-up": "captain-sit-up" };
+const PORTRAITS = { face: "captain-face", happy: "expr-happy", "sit-up": "captain-sit-up", peek: "captain-lie" };
 export function captainPortrait(kind = "face", { size = 64, cls = "" } = {}) {
   const name = PORTRAITS[kind] || PORTRAITS.face;
   return art(name, { width: size, place: "inline", cls: ["bot-captain", `cap-${kind in PORTRAITS ? kind : "face"}`, cls].filter(Boolean).join(" ") });

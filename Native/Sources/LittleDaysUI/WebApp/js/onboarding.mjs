@@ -17,7 +17,9 @@ export const ONBOARDING_KEY = "little-days.onboarding";
 
 export const STEPS = [
   { id: "welcome", captain: true },
-  { id: "photos", target: ".v9-home .v9-cta" },
+  // V10.90: the photo step is done by tapping the real button — it opens the
+  // photo picker, and the guide carries on (no separate 下一步).
+  { id: "photos", target: ".v9-home .v9-cta", tap: "today-photos" },
   { id: "ways", target: ".v9-home .today-tiles" },
   { id: "nav", target: '#navigation [data-page="calendar"], #navigation [data-page="books"]' },
   { id: "invite", captain: true },

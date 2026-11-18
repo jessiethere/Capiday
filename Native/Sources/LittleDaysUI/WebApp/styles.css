@@ -27264,3 +27264,58 @@ html[lang="en"] .keeper-perch .keeper-entry::before {
   height: 100%;
   object-fit: contain;
 }
+
+/* =====================================================================
+   V10.90 · New-user guide fine-tuning
+   ===================================================================== */
+/* Welcome: Captain rests both front paws on the card's top edge — head and
+   ears above the card, paws just over its edge (captain-lie: the paws are the
+   bottom ~9% of the picture). The words start below the paws. */
+.hg[data-step="welcome"] .hg-card {
+  padding-top: 30px;
+}
+.hg-captain.hg-peek {
+  top: auto;
+  bottom: calc(100% - 14px);
+  width: 132px;
+  height: auto;
+  z-index: 1;
+}
+.hg-captain.hg-peek .bot {
+  width: 100% !important;
+  height: auto;
+  object-fit: initial;
+}
+/* The photo step: the real 选今天的照片 is the way on (a see-through button
+   exactly over it), so the tip only explains and offers 跳过. */
+.hg-hit {
+  position: absolute;
+  z-index: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+}
+.hg-hit[hidden] {
+  display: none;
+}
+.hg-hit:focus-visible {
+  outline: 2px solid var(--paper);
+  outline-offset: 2px;
+}
+.hg-tap-step .hg-body {
+  margin-bottom: 2px;
+}
+/* 今天怎么记？: the chosen way is a thin olive line on a light green wash —
+   no dark border, no second ring around it. */
+.quick-way.selected {
+  border: 1px solid var(--accent);
+  background: var(--bambooWash);
+  box-shadow: none;
+}
+.quick-way:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+}

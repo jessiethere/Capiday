@@ -48,8 +48,9 @@ ASSETS = {
     "expr-sleepy": ("expressions", (691, 665, 1179, 1237), 360, 96, "Expression sleepy (half-closed eyes)", [12, 15]),
 }
 
-# Founder 2026-11-18 ("可以放"): shipped with V10.89 for the places that use them.
-SHIP = {"captain-face", "captain-sit-up", "expr-happy"}
+# Founder 2026-11-18 ("可以放"): shipped with V10.89 for the places that use them;
+# captain-lie (paws forward) with V10.90 as the card-edge peek on the welcome.
+SHIP = {"captain-face", "captain-sit-up", "expr-happy", "captain-lie"}
 
 
 def clean(img):
