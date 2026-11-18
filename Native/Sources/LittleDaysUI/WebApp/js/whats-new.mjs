@@ -4,6 +4,26 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.83",
+    date: "2026-11-18",
+    zh: {
+      title: "首页「照片手帐」用你自己的照片",
+      items: [
+        "首页「照片手帐」卡片上的两张照片，现在是你手帐里最新的两张照片，下面写着它们那天的日期。",
+        "只用已经保存的手帐页里的照片；在照片墙里隐藏的照片不会出现在这里。",
+        "还没有自己的照片时，用 App 自带的照片素材，每天换一组。",
+      ],
+    },
+    en: {
+      title: "Your own photos on Today's Photo Journal card",
+      items: [
+        "The two photos on the Photo Journal card on Today are now the two newest photos in your journal, with the date they were kept.",
+        "Only photos on saved pages are used; photos you hid on the photo wall never show here.",
+        "Before you have photos of your own, it shows photos from the app's library — a different pair every day.",
+      ],
+    },
+  },
+  {
     version: "10.82",
     date: "2026-11-18",
     zh: {
