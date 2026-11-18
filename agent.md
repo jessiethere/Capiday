@@ -48,6 +48,12 @@
 
 ## 更新日志
 
+### 2026-11-18 — V10.88 全量回归 run-all27 + 固定链接 Version 134
+
+- **run-all27**（V10.88 最终版：水彩资产 + Captain 插画接入）：128 个文件，125 通过、3 失败——`v119`（快速编辑样式按钮超时）、`v185`（键盘弹起时顶栏位置）、`v3`（视频加入后工具条超时），都是以前记录过的偶发项；逐个重跑 3/3 通过。合计 **128/128**（Chromium，**不是真机**）。
+- **固定链接**：Version 134（V10.88 · 水彩植物与 Captain 插画）。上传 `app.js`、`styles.css`、`tokens.css`、`js/botanicals.mjs`、`js/personal-ui.mjs`、`js/whats-new.mjs`、`shared/design-tokens.json`，以及 `botanical/` 下 14 张上线资产（NEEDS HI-RES 的 4 张和被取代的 cover-captain 不在链接里）。
+- **需真机看**：插画在 iPhone 上的清晰度、Captain 在邀请卡 / 盖章提示里的大小；Captain 开启时首页 3D Captain 与插画盖章提示短暂同时出现（已知迁移期混用，见 Captain 迁移审查）。
+
 ### 2026-11-18 — Captain 真实照片（identity source of truth）已收到
 
 - Founder 发来两张 Captain 真实照片（脸部特写、仰躺在腿上）。**照片没有放进仓库**（个人照片；锁屏截图里还有运营商、通知等个人信息），写成文字版身份规格：`docs/CAPTAIN_IDENTITY_MIGRATION.md` 第 1b 节——冷调蓝灰长毛带银色毛尖、颈毛和胸腹蓬松略浅、微楔形脸、直鼻梁、深石板灰鼻头、琥珀 / 浅金色大眼、中大三角立耳带浅色耳毛、长白胡须、大爪子趾间有毛；神态沉静略认真，惊讶时睁大眼。

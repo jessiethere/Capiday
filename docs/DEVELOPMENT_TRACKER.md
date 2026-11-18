@@ -235,3 +235,4 @@ Memory Wall v1.0：**V10.78 已实施，等真机验收**（Founder 2026-11-15 �
 | 2026-11-18 | V10.88（续 4）：按 Founder 规则接入——14 个上线资产（9 APPROVED、5 LIMITED SIZE，限制在清晰尺寸内）、4 个 NEEDS HI-RES 不上线、cover-captain 被 captain-sit 取代；SVG 植物删除；透明底 PNG；Captain 插画用于邀请卡、首次盖章、空月份、Captain 书封；v192 43/43 |
 | 2026-11-18 | Captain Canonical Visual Identity：插画版为唯一长期形象；审查 21 处 Captain 位置（5 已迁移、4 READY、多处 NEEDS CHARACTER ASSET、Looks / Playroom BLOCKED）；Asset Pack v1 需求清单；数据保留规则；未改代码 |
 | 2026-11-18 | Captain 真实照片收到 → 文字版身份规格（冷调蓝灰长毛、银色毛尖、琥珀浅金眼、楔形脸、三角立耳）；照片不入仓库；后续素材提示已记录 |
+| 2026-11-18 | 全量回归 run-all27（V10.88 最终版）：125/128，v119 / v185 / v3 偶发项重跑通过 → 128/128。固定链接 Version 134 |

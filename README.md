@@ -186,6 +186,10 @@ npm run test:browser:v65
 
 ## 更新日志
 
+### 2026-11-18 — V10.88 上线：在线链接 Version 134
+
+- 水彩植物与 Captain 插画已发布到在线链接（Version 134）。全量浏览器回归 128/128（3 个以前就有的偶发项重跑通过）；真机效果待看。
+
 ### 2026-11-18 — Captain 统一为一个插画形象（审查）
 
 - **Captain is transitioning to one unified illustrated Little Keeper identity across Capiday.** 插画版 Captain（灰色长毛、琥珀色眼睛）是唯一的长期形象；3D Captain 只在迁移期保留，Playroom 最后迁移。
