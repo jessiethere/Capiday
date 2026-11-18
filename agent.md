@@ -48,6 +48,11 @@
 
 ## 更新日志
 
+### 2026-11-18 — Captain 真实照片（identity source of truth）已收到
+
+- Founder 发来两张 Captain 真实照片（脸部特写、仰躺在腿上）。**照片没有放进仓库**（个人照片；锁屏截图里还有运营商、通知等个人信息），写成文字版身份规格：`docs/CAPTAIN_IDENTITY_MIGRATION.md` 第 1b 节——冷调蓝灰长毛带银色毛尖、颈毛和胸腹蓬松略浅、微楔形脸、直鼻梁、深石板灰鼻头、琥珀 / 浅金色大眼、中大三角立耳带浅色耳毛、长白胡须、大爪子趾间有毛；神态沉静略认真，惊讶时睁大眼。
+- 与已确认插画对比：灰色长毛、琥珀眼、毛量、三角耳、脸型方向一致；给后续新素材的提示——毛色更偏冷的蓝灰（银色光泽）、眼睛更接近浅金色、保持楔形脸。现有 APPROVED 素材不变。「NEEDS IDENTITY PHOTOS」已解决。
+
 ### 2026-11-18 — Captain Canonical Visual Identity（Founder 决定）+ 迁移审查（只出审查，未改 3D 逻辑）
 
 - **决定**：插画版 Captain 是 Capiday **唯一的长期品牌形象**（canonical character identity）；3D Captain 只是迁移期的 legacy implementation，不再长期双形态并存。

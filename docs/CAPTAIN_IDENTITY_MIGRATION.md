@@ -6,7 +6,7 @@ Founder decision (2026-11-18): **the illustrated Captain is Capiday's one canoni
 
 - **Character**: grey long-haired cat; amber / golden eyes; slightly wedge-shaped, a little pointed face; visibly full coat; triangular ears; never a round chibi face; gentle watercolour / editorial illustration.
 - **Sources**:
-  - **Identity source of truth = real photos of Captain.** Not in the repo yet: **NEEDS IDENTITY PHOTOS**. Keep them out of the public repo unless the Founder says otherwise, because they are personal pictures.
+  - **Identity source of truth = real photos of Captain.** The Founder shared two on 2026-11-18. They are not stored in the repo because they are personal photos; the written identity spec is in section 1b.
   - **Art direction = the approved references**: `docs/visual/captain-scenes-v1.png` and `docs/visual/botanical-board-v1.png`.
   - **If the two disagree**: the real Captain's shape wins, and the reference controls the drawing style.
 - **Not allowed**: redrawing Captain ourselves, SVG versions, or stand-ins in another style. A missing asset is marked **NEEDS CHARACTER ASSET**.
@@ -16,6 +16,26 @@ Founder decision (2026-11-18): **the illustrated Captain is Capiday's one canoni
   - the device log `little-days.captain-stamps`;
   - Playroom preferences.
 - **Outfit mapping**: an existing `outfit` (e.g. `lemon`, `yarn`) stays stored even while illustrated outfit art is missing. Later it maps as `outfit` → the illustrated accessory asset with the same id.
+
+## 1b. Identity from the real photos (Founder, 2026-11-18)
+
+The Founder shared two real photos of Captain: a close-up of the face, and Captain lying on its back in a lap. **They are not stored in the repo**: they are personal photos and the lock-screen shot carries personal details. These notes are the written identity spec.
+
+- **Coat**: long, silky, dense, with an obvious ruff. A cool blue-grey with a silver sheen on the hair tips. The chest and belly are fluffier and a little lighter, with a faint warm-beige undertone deep in the fur.
+- **Face**: a slight wedge; straight nose bridge; dark slate-grey nose leather; shorter fur on the muzzle. Not round: the cheeks are soft, but the face is not chibi.
+- **Eyes**: large and almond-to-round; golden amber (pale gold to yellow-amber), with a thin darker rim at the edge.
+- **Ears**: medium to large, upright, triangular, grey, with paler soft tufts inside.
+- **Whiskers**: long, white / silver.
+- **Paws**: big, grey, with fluffy fur between the toes.
+- **Character**: a calm, slightly serious gaze; curious and wide-eyed when surprised.
+
+**Comparison with the approved illustrations** (`captain-scenes-v1`):
+- **Already right**: grey long-haired cat, amber eyes, full coat, triangular ears, a slightly pointed face.
+- **For future assets** (real shape wins, the reference only sets the style):
+  - **Coat colour** a little cooler: blue-grey with a silver sheen, rather than the warmer brown-grey in some scenes.
+  - **Eye colour** nearer to pale gold.
+  - **Face shape** keeps the wedge.
+- **No change to the current approved assets**. They stay APPROVED; the notes above are briefing for the next Asset Pack.
 
 ## 2. Captain Illustrated Asset Pack v1 (what exists / what is needed)
 
