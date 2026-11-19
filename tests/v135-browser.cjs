@@ -45,7 +45,7 @@ const photo = (n) => ({ name: `LD-photo-${n}.jpg`, mimeType: "image/jpeg", buffe
         await page.waitForSelector(".hero");
       };
       const open = async () => {
-        await page.locator('.keeper-home [data-action="keeper-panel"]').tap();
+        await page.locator('.keeper-home [data-action="keeper-tap"]').tap();
         await page.waitForSelector("#choose-dialog[open] .kp .cp-card");
         return page.evaluate(() => {
           const card = document.querySelector(".kp .cp-card");
@@ -85,9 +85,7 @@ const photo = (n) => ({ name: `LD-photo-${n}.jpg`, mimeType: "image/jpeg", buffe
       };
 
       // Captain on.
-      await page.locator('.keeper-invite [data-action="keeper-onboard"]').tap();
-      await page.waitForSelector(".keeper-onboard");
-      await page.locator('[data-action="keeper-start"]').tap();
+      await page.locator('.keeper-invite [data-action="keeper-start"]').tap(); // V10.93: one decision
       await page.waitForSelector(".keeper-home");
 
       // A · nothing kept today: two real buttons, no list of four, no chat yet.
@@ -196,10 +194,9 @@ const photo = (n) => ({ name: `LD-photo-${n}.jpg`, mimeType: "image/jpeg", buffe
     await page.route("http://127.0.0.1:11434/**", (route) => route.abort());
     await page.goto(`${base}/?dev-local-ai=qwen3.5:4b`);
     await page.waitForSelector(".hero");
-    await page.locator('.keeper-invite [data-action="keeper-onboard"]').tap();
-    await page.locator('[data-action="keeper-start"]').tap();
+    await page.locator('.keeper-invite [data-action="keeper-start"]').tap(); // V10.93: one decision
     await page.waitForSelector(".keeper-home");
-    await page.locator('.keeper-home [data-action="keeper-panel"]').tap();
+    await page.locator('.keeper-home [data-action="keeper-tap"]').tap();
     await page.waitForSelector(".kp .cp-card");
     assert.equal(await page.locator(".kp .keeper-local").innerText(), I18N["kp.local"].zh, "with the model on, the footer is the model's note");
     await page.locator(".kp [data-keeper-say]").fill("今天有点累");

@@ -23,7 +23,7 @@ const transcript = [];
     await page.waitForSelector(".hero");
     const shot = async (name) => { if (shots) await page.screenshot({ path: `${shots}/${name}.png` }); };
     const height = () => page.locator(".kp.corner").evaluate((el) => Math.round(el.getBoundingClientRect().height));
-    const openCorner = async () => { await page.locator(".keeper-entry").tap(); await page.waitForSelector('.kp.corner[data-view="home"]'); };
+    const openCorner = async () => { await page.locator('.keeper-perch [data-action="keeper-tap"]').tap(); await page.waitForSelector('.kp.corner[data-view="home"]'); };
     const close = async () => { await page.locator(".kp .kp-x").first().tap(); await page.waitForSelector("#choose-dialog:not([open])", { state: "attached" }); };
     const say = async (text) => {
       if (!(await page.locator('.kp[data-view="home"]').count())) { await page.locator('.kp [data-action="keeper-view"][data-view="home"]').first().tap(); await page.waitForSelector('.kp[data-view="home"]'); }
@@ -37,9 +37,7 @@ const transcript = [];
     };
 
     // Captain on; one page today whose title must not be quoted without permission.
-    await page.locator('.keeper-invite [data-action="keeper-onboard"]').tap();
-    await page.waitForSelector(".keeper-onboard");
-    await page.locator('[data-action="keeper-start"]').tap();
+    await page.locator('.keeper-invite [data-action="keeper-start"]').tap(); // V10.93: one decision
     await page.waitForSelector(".keeper-home");
     await page.locator('[data-action="today-write"]').first().tap();
     await page.waitForSelector('#journal-canvas [data-inline="title"]');
@@ -188,10 +186,9 @@ const transcript = [];
     await ep.addInitScript(() => localStorage.setItem("little-days.language", "en"));
     await ep.goto(base);
     await ep.waitForSelector(".hero");
-    await ep.locator('.keeper-invite [data-action="keeper-onboard"]').tap();
-    await ep.locator('[data-action="keeper-start"]').tap();
+    await ep.locator('.keeper-invite [data-action="keeper-start"]').tap(); // V10.93: one decision
     await ep.waitForSelector(".keeper-home");
-    await ep.locator(".keeper-entry").tap();
+    await ep.locator('.keeper-perch [data-action="keeper-tap"]').tap();
     await ep.waitForSelector(".kp.corner");
     for (const [text, pattern] of [["Hello, you’re adorable!", /noticed|happy a little longer|pat my head/], ["I’m tired, but I finished a journal page.", /finished a page|It's written|page is kept/], ["what can you do", /sort out today's pages/]]) {
       await ep.locator("[data-keeper-say]").fill(text);

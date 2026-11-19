@@ -48,6 +48,39 @@
 
 ## 更新日志
 
+### 2026-11-19 — V10.93 简化 Captain 首次引导（Founder 产品需求）
+
+- **需求**：
+  - 首次见到 Captain 只做一个决定（让 Captain 加入 / 以后再说）；
+  - 去掉 Quiet / Gentle / Interactive 三张模式卡；
+  - 保留无帽水彩 Captain，介绍去掉 lemon hat；
+  - 名字默认 Captain，之后在设置改；
+  - 加入后是安静陪伴，点击有回应；
+  - 设置里用「允许 Captain 主动打招呼」开关代替模式，新用户默认关；
+  - 保留老用户的开启状态、名字、装扮和明确保存过的问候偏好；旧模式名不等于同意扩大权限；
+  - 日记回应以后在具体页面由用户点「让 Captain 回应这一页」，只限所选内容。
+- **行为规则**（`Public/js/keeper.mjs` modeAllows，一处决定）：
+  - 加入后：`invite`（点击打开 Captain 小角落）和 `chat` 对所有已加入的人开放；
+  - `proactive`（App 内主动问候：首页台词气泡、Captain 旁的小标签）**只看** `keeper.proactive === true`，与旧 mode 无关；
+  - `feedback`（「听听 Captain 怎么说」页面回应）和 `memories`（翻看以前的页面）暂时一律关闭：阅读页不再显示询问按钮；聊天里问回忆，回答「还没有开放，以后在某一页里点『让 Captain 回应这一页』」；
+  - 关闭 Captain 后什么都不出现。
+- **迁移规则**（不改写任何已存数据）：
+  - `enabled` / `name` / `outfit` / `proactive` 原样保留；
+  - `mode`、`allowMemories` 保留在数据里，但不再决定任何事：老的「互动」用户如果没打开过主动打招呼，升级后不会主动说话；打开过 `proactive` 的（任何旧模式）继续会主动打招呼；
+  - 老的「安静」用户升级后点击 Captain 也会打开小角落（点击互动对所有人开放）；
+  - 新用户加入：`enabled: true`、名字 ""（显示 Captain）、装扮 ""（不戴帽）、`proactive: false`。
+- **界面**：
+  - 首页邀请卡和设置里的加入面板文案相同（要让 Captain 陪你写手帐吗？ / 一只喜欢待在手帐旁边的小灰猫。 / 让 Captain 加入 / 以后再说，英文同表），首页卡片一点就加入、留在首页；设置里加入后回到设置；
+  - 设置卡片：名字 + 成长阶段、角色与装扮、和 Captain 玩一会儿、「允许 Captain 主动打招呼」开关、一行说明、关闭 Little Keeper；
+  - 角色与装扮：装扮、改名、同一个开关（去掉「翻看以前的页面」）；
+  - `keeper.animal.catHint` 去掉柠檬帽；
+  - 新 i18n：keeper.join.* / keeper.settings.greet / greetHint / quietNote / kp.mem.later。
+- **测试（Linux / Chromium，不是真机）**：
+  - 新 `tests/v196-browser.cjs` 8/8：新用户加入、以后再说后从设置开启、开关开 / 关后点击仍有回应、四种老数据升级（互动未开问候 / 温柔开过问候 / 安静 / 已关闭）都保留原偏好且不读以前的页面、英文界面、首次引导和设置都没有三档模式。
+  - 改了单元测试 v77 / v103（权限规则），浏览器测试 v71 / v103 / v104 / v105 / v109 / v110 / v113 / v135 / v164 / v165（加入改成一步、点 Captain 打开小角落、模式与「翻看以前的页面」相关步骤改为新规则）。
+  - 单元测试 382/382。
+- **iPhone 真机**：未验证。
+
 ### 2026-11-18 — V10.92 换成 Founder 的 v1 原图（Captain-Illustrated-Asset-Pack-v1.zip）
 
 - **需求**：Founder 上传 v1 原图压缩包（V10.91 第 1 条当时受阻）。用 `poses/card-edge-peek.png`、`expressions/happy.png`、`playroom/01–04` 等原图替换临时裁图。

@@ -46,7 +46,7 @@ export function normalizeKeeper(raw = {}) {
     mode: MODES.includes(k.mode) ? k.mode : "gentle",
     // Separate, revocable permissions.
     allowMemories: k.allowMemories === true, // may look at earlier pages (on this device)
-    proactive: k.proactive === true, // may speak first (Interactive mode only)
+    proactive: k.proactive === true, // may say hello first in the app (V10.93: its own switch)
     aiConsent: k.aiConsent === true, // may send a page to a secure AI service (none exists yet)
     invite: ["shown", "dismissed"].includes(k.invite) ? k.invite : "",
     lastStage: Number.isInteger(k.lastStage) ? k.lastStage : 0,
@@ -59,16 +59,23 @@ export function normalizeKeeper(raw = {}) {
 const NAMES = { bunny: { zh: "小团", en: "Pip" }, cat: { zh: "Captain", en: "Captain" }, westie: { zh: "小白", en: "Snowy" } };
 export const defaultName = (animal, language = "zh") => (NAMES[animal] || NAMES.bunny)[language === "en" ? "en" : "zh"];
 export const keeperName = (keeper, language) => keeper.name || defaultName(keeper.animal, language);
-// What each mode allows (one place, so the UI and tests agree).
+// What Captain may do (one place, so the UI and tests agree).
+// V10.93 (Founder): no more Quiet / Gentle / Interactive. Once Captain has
+// joined it is quiet company, and a tap always gets a response (Captain's
+// corner: chat, play, looks). Each wider thing has its own trigger:
+//   proactive — speaking first in the app: only the person's own switch
+//               (keeper.proactive === true). An old mode name grants nothing.
+//   feedback / memories — reading journal pages: not offered yet. Later only
+//               per page, when the person taps "让 Captain 回应这一页", and
+//               only that page.
+// keeper.mode stays stored (old journals) but no longer decides anything.
 export function modeAllows(keeper, what) {
   if (!keeper?.enabled) return false;
-  const mode = keeper.mode;
-  if (what === "invite") return mode !== "quiet"; // a journaling invitation on Today
-  if (what === "feedback") return mode !== "quiet"; // a reply when asked
-  if (what === "chat") return mode === "interactive";
-  if (what === "proactive") return mode === "interactive" && keeper.proactive;
-  // Earlier pages: only with the person's own "may look at earlier pages" (V10.3: Gentle too — it is asked for in the panel).
-  if (what === "memories") return mode !== "quiet" && Boolean(keeper.allowMemories);
+  if (what === "invite") return true; // a tap opens Captain's corner
+  if (what === "chat") return true;
+  if (what === "proactive") return keeper.proactive === true;
+  if (what === "feedback") return false;
+  if (what === "memories") return false;
   return false;
 }
 

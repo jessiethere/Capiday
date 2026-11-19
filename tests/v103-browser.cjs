@@ -29,9 +29,7 @@ const shots = process.env.SHOTS || "";
     const firstLine = () => page.locator(".kp .cp-card p").innerText();
 
     // Captain on (Gentle), and one page written today.
-    await page.locator('.keeper-invite [data-action="keeper-onboard"]').tap();
-    await page.waitForSelector(".keeper-onboard");
-    await page.locator('[data-action="keeper-start"]').tap();
+    await page.locator('.keeper-invite [data-action="keeper-start"]').tap(); // V10.93: one decision
     await page.waitForSelector(".keeper-home");
     await page.locator('[data-action="today-write"]').first().tap();
     await page.waitForSelector('#journal-canvas [data-inline="title"]');
@@ -44,14 +42,13 @@ const shots = process.env.SHOTS || "";
     await page.waitForSelector(".keeper-home .keeper-bubble", { state: "detached", timeout: 9000 }).catch(() => {});
 
     // 1. Two ways in, one panel; the line knows there is a page today, and changes.
-    const tag = page.locator('.keeper-home [data-action="keeper-panel"]');
-    assert.match(await tag.innerText(), /Captain 在帮你看着这本册子/); // V10.85: the little keeper, not "Ask Captain"
-    const where = await page.evaluate(() => { const r = (sel) => document.querySelector(sel).getBoundingClientRect(); const t = r(".keeper-entry"), c = r(".keeper-home .keeper-tap"), h = (document.querySelector(".v9-hero") || document.querySelector(".v9-hero-wrap")).getBoundingClientRect() /* V10.84: once today is kept, today's card (same wrapper) */; return { tagH: t.height, gap: c.left - t.right, aboveCard: t.bottom <= h.top + 24, inside: t.left >= 0 && t.right <= innerWidth }; });
-    assert.ok(where.tagH >= 44 && Math.abs(where.gap) < 40 && where.aboveCard && where.inside, `the tag sits beside Captain, above the photo-journal card: ${JSON.stringify(where)}`);
+    const tag = page.locator('.keeper-home [data-action="keeper-tap"]');
+    // V10.93: quiet company by default — no tag beside Captain until "say hello first" is on; a tap opens the panel.
+    assert.equal(await page.locator(".keeper-home .keeper-entry").count(), 0);
     assert.equal(await page.locator("#navigation [data-page]").count() <= 5, true, "no new tab");
     await shot("v103-home");
     const lines = [];
-    for (const way of ['.keeper-home [data-action="keeper-panel"]', '.keeper-home [data-action="keeper-tap"]', '.keeper-home [data-action="keeper-panel"]']) {
+    for (const way of ['.keeper-home [data-action="keeper-tap"]', '.keeper-home [data-action="keeper-tap"]', '.keeper-home [data-action="keeper-tap"]']) {
       await page.locator(way).tap();
       await page.waitForSelector(".keeper-chat.kp");
       lines.push(await firstLine());
@@ -115,31 +112,19 @@ const shots = process.env.SHOTS || "";
     await tag.tap();
     passed.push("sort out today (asked in the chat): today's pages in order, each opens its page; no data changed");
 
-    // 4. Look back (V10.35: asked in the chat — no fixed row any more). Without
-    // permission it says how to give it; with it, one of my own earlier pages
-    // (never a sample), which opens.
+    // 4. V10.93 · Look back: earlier pages are not read — not even with the old
+    // allowMemories saved. Later only per page, when the person asks.
     const recall = async () => {
       await page.locator("[data-keeper-say]").fill("看看以前的回忆");
       await page.locator(".kp-send").tap();
       await page.waitForSelector(".kp .keeper-msg.pending", { state: "detached" });
       return page.locator(".kp .keeper-msg.them").last().innerText();
     };
-    assert.match(await recall(), /还没有翻看你以前页面的许可[\s\S]*设置/);
-    assert.equal((await stored()).keeper.allowMemories, false);
-    await shot("v103-memory-ask");
+    assert.match(await recall(), /回看以前的页面还没有开放[\s\S]*让 Captain 回应这一页/);
     await closePanel();
     await page.evaluate(() => {
       const s = JSON.parse(localStorage.getItem("little-days.v1"));
-      s.keeper.allowMemories = true;
-      localStorage.setItem("little-days.v1", JSON.stringify(s));
-    });
-    await page.reload();
-    await page.waitForSelector(".keeper-home");
-    await tag.tap();
-    assert.match(await recall(), /还不多，我们慢慢攒/, "sample days are not offered as my memories");
-    await closePanel();
-    await page.evaluate(() => {
-      const s = JSON.parse(localStorage.getItem("little-days.v1"));
+      s.keeper.allowMemories = true; // saved by an older version
       const d = new Date(); d.setDate(d.getDate() - 4);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
       s.entries = s.entries.filter((e) => e.date !== key);
@@ -149,23 +134,20 @@ const shots = process.env.SHOTS || "";
     await page.reload();
     await page.waitForSelector(".keeper-home");
     await tag.tap();
-    assert.match(await recall(), /湖边的早晨/);
-    await shot("v103-memory");
-    await page.locator('.kp .keeper-msg [data-action="open-day"]').last().tap();
-    await page.waitForSelector(".day-detail");
-    assert.match(await page.locator(".day-detail").innerText(), /湖边的早晨/);
-    await home();
-    passed.push("look back (asked in the chat): without permission it says where to give it; with it, one of my own pages (never a sample), which opens");
+    const said = await recall();
+    assert.match(said, /还没有开放/);
+    assert.doesNotMatch(said, /湖边的早晨/, "an old allowMemories grants nothing");
+    assert.equal((await stored()).keeper.allowMemories, true, "the old value stays stored, untouched");
+    await closePanel();
+    passed.push("look back: not offered (later per page); an old saved permission grants nothing and stays stored");
 
-    // 5. Quiet: no tag, a tap does not open anything.
-    await page.locator('[data-action="nav"][data-page="settings"]').first().tap();
-    await page.locator('[data-action="keeper-set"][data-key="mode"][data-value="quiet"]').tap();
+    // 5. Quiet company by default: no tag; a tap still opens Captain's corner.
     await home();
     assert.equal(await page.locator(".keeper-entry").count(), 0);
     await page.locator('.keeper-home [data-action="keeper-tap"]').tap();
-    await page.waitForTimeout(400);
-    assert.equal(await page.locator("#choose-dialog[open]").count(), 0, "still quiet");
-    passed.push("Quiet mode: no tag, no panel");
+    await page.waitForSelector("#choose-dialog[open] .kp");
+    await closePanel();
+    passed.push("quiet by default: no tag beside Captain; a tap opens Captain's corner");
 
     assert.deepEqual(outside, [], "nothing was requested from anywhere but this device");
     assert.equal((await stored()).keeper.aiConsent, false);

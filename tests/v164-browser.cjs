@@ -61,7 +61,7 @@ const PLACES = [
   { name: "首页 · 我的称呼", open: async (p) => p.locator('[data-action="greeting-name"]').first().click(), field: "[data-greeting-name]" },
   { name: "搜索", open: async (p) => p.locator('[data-action="open-search"]').first().click(), field: "[data-search-input]" },
   { name: "Captain · 聊天", open: async (p) => { await withCaptain(p); await p.locator('[data-action="keeper-tap"]').first().click(); }, field: "[data-keeper-say]" },
-  { name: "Captain · 第一次起名字", open: async (p) => { await SS.touchStore(p); await p.evaluate(() => { const s = JSON.parse(localStorage.getItem("little-days.v1")); s.keeper = { ...(s.keeper || {}), enabled: false, invite: "" }; localStorage.setItem("little-days.v1", JSON.stringify(s)); }); await p.reload(); await p.waitForSelector(".hero"); await p.locator('[data-action="keeper-onboard"]').first().click(); }, field: "[data-keeper-name]" },
+  // V10.93: Captain's first meeting has no name field (renamed in Settings: "设置 · Captain 名字" below).
   { name: "新建手帐本 · 名字", open: async (p) => { await SS.goTab(p, "books"); await p.locator('[data-action="new-book"]').first().click(); }, field: '#form-dialog[open] input[name="title"]' },
   { name: "新建手帐本 · 介绍", open: async (p) => { await SS.goTab(p, "books"); await p.locator('[data-action="new-book"]').first().click(); await p.evaluate(() => document.querySelectorAll("#form-dialog details").forEach((d) => (d.open = true))); }, field: '#form-dialog[open] textarea[name="description"]' },
   { name: "Studio · 页面标题（纸上）", open: async (p) => { await p.locator('[data-action="today-write"]').first().click(); await p.waitForSelector("#journal-canvas"); }, field: '#journal-canvas [data-inline="title"]', leave: SS.leaveStudio },

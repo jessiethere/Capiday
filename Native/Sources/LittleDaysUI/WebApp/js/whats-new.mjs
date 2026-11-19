@@ -4,6 +4,28 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.93",
+    date: "2026-11-19",
+    zh: {
+      title: "认识 Captain 更简单",
+      items: [
+        "第一次见到 Captain 时只需要决定一件事：「让 Captain 加入」或「以后再说」。不用再选陪伴方式，也不用先起名字，名字默认是 Captain，之后可以在设置里改。",
+        "Captain 加入后安静地陪着你；点一下它会眯眼笑一下，再打开 Captain 的小角落。",
+        "设置里用一个「允许 Captain 主动打招呼」开关代替原来的安静 / 温柔 / 互动，默认关闭，只管 App 里的主动问候。",
+        "你之前保存过的 Captain 开关、名字、装扮和主动打招呼都保留。Captain 暂时不会读你以前的页面；以后会在具体某一页里由你点「让 Captain 回应这一页」。",
+      ],
+    },
+    en: {
+      title: "Meeting Captain is simpler",
+      items: [
+        "The first time you meet Captain there is one choice: Welcome Captain, or Maybe later. No modes to pick and no name to type — it's Captain, and you can rename it in Settings.",
+        "Once Captain joins it keeps you quiet company; tap it for a little eyes-closed smile, then Captain's corner opens.",
+        "Settings has one switch, Let Captain say hello first, instead of Quiet / Gentle / Interactive. It's off by default and only covers hellos inside the app.",
+        "What you saved before — Captain on or off, its name, its look and saying hello first — is kept. Captain doesn't read your earlier pages for now; later you'll tap “Let Captain respond to this page” on a page you choose.",
+      ],
+    },
+  },
+  {
     version: "10.92",
     date: "2026-11-18",
     zh: {

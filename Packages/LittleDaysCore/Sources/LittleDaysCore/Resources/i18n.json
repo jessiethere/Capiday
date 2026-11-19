@@ -1105,8 +1105,8 @@
     "en": "Captain Cat"
   },
   "keeper.animal.catHint": {
-    "zh": "灰蓝色的小猫，戴着柠檬帽，安静地帮你看管日记和书架",
-    "en": "a little grey-blue cat in a lemon hat who quietly looks after your journals"
+    "zh": "灰蓝色的小猫，安静地帮你看管日记和书架",
+    "en": "a little grey-blue cat who quietly looks after your journals"
   },
   "keeper.mode.quiet": {
     "zh": "安静",
@@ -1191,6 +1191,38 @@
   "keeper.stage.keeper": {
     "zh": "Little Keeper",
     "en": "Little Keeper"
+  },
+  "keeper.join.title": {
+    "zh": "要让 Captain 陪你写手帐吗？",
+    "en": "Want Captain to keep you company?"
+  },
+  "keeper.join.body": {
+    "zh": "一只喜欢待在手帐旁边的小灰猫。",
+    "en": "A little grey cat who likes to sit beside your journal."
+  },
+  "keeper.join.yes": {
+    "zh": "让 Captain 加入",
+    "en": "Welcome Captain"
+  },
+  "keeper.join.later": {
+    "zh": "以后再说",
+    "en": "Maybe later"
+  },
+  "keeper.settings.greet": {
+    "zh": "允许 Captain 主动打招呼",
+    "en": "Let Captain say hello first"
+  },
+  "keeper.settings.greetHint": {
+    "zh": "打开后，Captain 偶尔会在首页先跟你打个招呼。只在 App 里，不会读你的日记。",
+    "en": "When on, Captain sometimes says hello first on Home — only inside the app, never from your journal."
+  },
+  "keeper.settings.quietNote": {
+    "zh": "Captain 安静地陪着你；点一下它就会回应。它不会读你的日记。",
+    "en": "Captain keeps you quiet company; tap it any time for a response. It never reads your journal."
+  },
+  "kp.mem.later": {
+    "zh": "回看以前的页面还没有开放。以后你可以在某一页里点「让 Captain 回应这一页」，我只看你选的那一页。",
+    "en": "Looking back at earlier pages isn't open yet. Later you'll be able to tap “Let Captain respond to this page” on a page, and I'll look at that page only."
   },
   "keeper.hello": {
     "zh": "你好，我是{name}。",

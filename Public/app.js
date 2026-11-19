@@ -2050,7 +2050,8 @@ function keeperInviteHTML() {
   // (The old sample journal — older test suites only — behaves as before.)
   if (!state().entries.some((e) => !e.isDemo) && readKey("little-days.with-samples") !== "1") return "";
   // V10.88: the approved hi-res Captain illustration (sitting by the books).
-  return `<div class="keeper-invite">${Bot.captainVignette({ pose: "sit", size: 92 })}<div><b>${t("keeper.invite.title")}</b><small>${t("keeper.invite.body")}</small><span class="keeper-invite-actions"><button class="secondary" data-action="keeper-onboard">${t("keeper.invite.yes")}</button><button class="text-button" data-action="keeper-invite-dismiss">${t("keeper.invite.later")}</button></span></div></div>`;
+  // V10.93: one decision — let Captain join (quiet company), or later.
+  return `<div class="keeper-invite">${Bot.captainVignette({ pose: "sit", size: 92 })}<div><b>${t("keeper.join.title")}</b><small>${t("keeper.join.body")}</small><span class="keeper-invite-actions"><button class="secondary" data-action="keeper-start">${t("keeper.join.yes")}</button><button class="text-button" data-action="keeper-invite-dismiss">${t("keeper.join.later")}</button></span></div></div>`;
 }
 // Perched on the top edge of today's notebook card. V10.91: the illustrated
 // Captain looks over the edge (expr-calm); a tap closes its eyes for a
@@ -2070,7 +2071,7 @@ function keeperPerchHTML() {
   const line = keeperLine || (grew ? t("keeper.grew", { stage: t("keeper.stage." + growth.id) }) : spoken);
   const mood = "peek";
   // A small tag beside it opens the same panel as tapping it (not in Quiet mode).
-  const entry = Keeper.modeAllows(k, "invite") && !line ? `<button class="keeper-entry" data-action="keeper-panel">${keeperPanelIcon("book")}${esc(tk("kp.entry", k))}</button>` : "";
+  const entry = Keeper.modeAllows(k, "proactive") && !line ? `<button class="keeper-entry" data-action="keeper-panel">${keeperPanelIcon("book")}${esc(tk("kp.entry", k))}</button>` : "";
   return `<div class="keeper-home keeper-perch">${line ? `<p class="keeper-bubble" role="status"><b>${esc(name)}</b>${esc(line)}</p>` : ""}${entry}<button class="keeper-tap" data-action="keeper-tap" aria-label="${esc(t("keeper.tapLabel", { name }))}"><span class="keeper cap-perch mood-${mood}">${Bot.captainPortrait("calm", { size: 120, cls: "cap-rest" })}${Bot.captainPortrait("happy", { size: 120, cls: "cap-squint" })}</span></button></div>`;
 }
 // V9.0 Home: the three secondary ways to start use the same quiet line
@@ -2477,7 +2478,8 @@ function memoryPageOf(m) {
 function keeperMemoryHTML() {
   const k = keeperNow();
   const name = Keeper.keeperName(k, languageCode());
-  if (!Keeper.modeAllows(k, "memories")) return `<div class="kp-note">${keeperArt("idle")}<p><b>${esc(tk("kp.mem.ask", k))}</b><br>${t("kp.mem.askBody")}</p></div><button class="kp-main" data-action="keeper-allow-memories">${t("kp.mem.allow")}</button><button class="kp-quiet" data-action="keeper-view" data-view="home">${t("kp.mem.no")}</button>`;
+  // V10.93: earlier pages are not read; later only the page the person picks.
+  if (!Keeper.modeAllows(k, "memories")) return `<div class="kp-note">${keeperArt("idle")}<p>${esc(t("kp.mem.later"))}</p></div><button class="kp-quiet" data-action="keeper-view" data-view="home">${t("kp.back")}</button>`;
   keeperMemory ||= Keeper.pickMemory(state(), dateKey(), { exclude: keeperSeen, seed: Math.floor(Math.random() * 1000) });
   const m = keeperMemory;
   if (!m) return `<div class="kp-note">${keeperArt("idle")}<p>${t("kp.mem.none")}</p></div>`;
@@ -2553,7 +2555,8 @@ function keeperReply(intent, typed, fallback = false) {
     return;
   }
   let reply;
-  if (["memory", "week", "shelf"].includes(intent)) {
+  if (intent === "memory" && !Keeper.modeAllows(k, "memories")) reply = { who: "keeper", text: t("kp.mem.later") };
+  else if (["memory", "week", "shelf"].includes(intent)) {
     const answer = Keeper.localChat(intent, { state: state(), keeper: k, language: languageCode(), today: dateKey(), seed: Math.floor(Math.random() * 1000) });
     const values = { ...(answer.values || {}), name };
     if (values.date) values.date = friendlyDate(values.date);
@@ -2574,14 +2577,12 @@ function keeperReply(intent, typed, fallback = false) {
   // Closed meanwhile: the reply waits in the chat; the sheet is not reopened.
   if (open && !refreshKeeperChat()) openKeeperPanel("home");
 }
+// V10.93 (Founder): Captain's first meeting is one decision. No modes, no
+// naming here (Captain by default; renamed later in Settings). Joining makes
+// Captain quiet company; "Maybe later" goes back to where the person was.
 function openKeeperOnboarding() {
-  const k = keeperNow();
-  keeperDraft ||= { animal: k.animal, name: k.name, mode: k.mode };
-  const d = keeperDraft;
-  const intro = `<div class="keeper-intro"><span class="keeper-intro-art" aria-hidden="true">${Bot.captainPortrait("sit-up", { size: 64 })}</span><span><b>${t("keeper.animal.cat")}</b><small>${t("keeper.animal.catHint")}</small></span></div>`;
-  const modes = Keeper.MODES.map((m) => `<button class="keeper-mode ${d.mode === m ? "selected" : ""}" data-action="keeper-pick-mode" data-mode="${m}" aria-pressed="${d.mode === m}"><b>${t("keeper.mode." + m)}</b><small>${t("keeper.mode." + m + "Hint")}</small></button>`).join("");
   const dialog = $("#choose-dialog");
-  dialog.innerHTML = `<div class="choose-sheet keeper-onboard"><div class="choose-grabber" aria-hidden="true"></div><h2>${t("keeper.onboard.title")}</h2><p class="save-help">${t("keeper.onboard.body")}</p>${intro}<h3>${t("keeper.onboard.name")}</h3><input class="name-input" data-keeper-name maxlength="12" value="${esc(d.name)}" placeholder="${esc(Keeper.defaultName(d.animal, languageCode()))}"><h3>${t("keeper.onboard.mode")}</h3><div class="keeper-modes">${modes}</div><p class="save-help keeper-local">🔒 ${t("keeper.onboard.privacy")}</p><button class="primary full-width" data-action="keeper-start">${t("keeper.onboard.start")}</button><button class="choose-cancel" data-action="keeper-onboard-later">${t("keeper.invite.later")}</button></div>`;
+  dialog.innerHTML = `<div class="choose-sheet keeper-onboard"><div class="choose-grabber" aria-hidden="true"></div><div class="keeper-join-art" aria-hidden="true">${Bot.captainPortrait("sit-up", { size: 112 })}</div><h2>${t("keeper.join.title")}</h2><p class="save-help keeper-join-body">${t("keeper.join.body")}</p><button class="primary full-width" data-action="keeper-start">${t("keeper.join.yes")}</button><button class="choose-cancel" data-action="keeper-onboard-later">${t("keeper.join.later")}</button></div>`;
   if (!dialog.open) dialog.showModal();
 }
 document.addEventListener("input", (event) => {
@@ -9231,10 +9232,11 @@ function settingsPageHTML() {
   // -- Little Keeper: a preview and the companion mode; the rest is in its sheet.
   const k = keeperNow();
   let keeper;
-  if (!k.enabled) keeper = `<section class="s2-sec keeper-card">${title("s2.keeper")}<div class="s2-row"><span><b>${t("keeper.invite.title")}</b><small>${t("keeper.settings.offNote")}</small></span><button class="s2-link" data-action="keeper-onboard">${t("keeper.invite.yes")} ›</button></div></section>`;
+  if (!k.enabled) keeper = `<section class="s2-sec keeper-card">${title("s2.keeper")}<div class="s2-row"><span><b>${t("keeper.join.title")}</b><small>${t("keeper.settings.offNote")}</small></span><button class="s2-link" data-action="keeper-onboard">${t("keeper.join.yes")} ›</button></div></section>`;
   else {
     const g = keeperGrowth();
-    keeper = `<section class="s2-sec keeper-card">${title("s2.keeper", `<small>${esc(t("keeper.settings.days", { count: g.reasons.days }))}</small>`)}<div class="s2-keeper">${keeperArt("idle")}<span><b>${esc(Keeper.keeperName(k, languageCode()))}</b><small>${esc(t("s2.keeperLine", { mode: t("keeper.mode." + k.mode), stage: t("keeper.stage." + g.id) }))}</small></span><span class="s2-keeper-links"><button class="s2-link" data-action="settings-sheet" data-sheet="keeper">${t("s2.keeperManage")} ›</button>${Keeper.modeAllows(k, "invite") ? `<button class="s2-link s2-play" data-action="keeper-panel">${esc(tk("s2.keeperPlay", k))} ›</button>` : ""}</span></div><div class="s2-seg" role="group" aria-label="${t("keeper.onboard.mode")}">${Keeper.MODES.map((m) => `<button data-action="keeper-set" data-key="mode" data-value="${m}" class="${k.mode === m ? "selected" : ""}" aria-pressed="${k.mode === m}">${t("keeper.mode." + m)}</button>`).join("")}<button data-action="keeper-disable" aria-pressed="false">${t("s2.keeperOff")}</button></div><p class="s2-hint keeper-mode-hint">${t("keeper.mode." + k.mode + "Hint")} ${t("s2.keeperWhere")}</p></section>`;
+    // V10.93: one switch instead of the three modes; tapping always works.
+    keeper = `<section class="s2-sec keeper-card">${title("s2.keeper", `<small>${esc(t("keeper.settings.days", { count: g.reasons.days }))}</small>`)}<div class="s2-keeper">${keeperArt("idle")}<span><b>${esc(Keeper.keeperName(k, languageCode()))}</b><small>${esc(t("keeper.stage." + g.id))}</small></span><span class="s2-keeper-links"><button class="s2-link" data-action="settings-sheet" data-sheet="keeper">${t("s2.keeperManage")} ›</button><button class="s2-link s2-play" data-action="keeper-panel">${esc(tk("s2.keeperPlay", k))} ›</button></span></div>${toggle('data-action="keeper-toggle" data-key="proactive"', k.proactive === true, t("keeper.settings.greet"), t("keeper.settings.greetHint"))}<p class="s2-hint keeper-mode-hint">${t("keeper.settings.quietNote")} ${t("s2.keeperWhere")}</p><button class="kp-quiet keeper-off" data-action="keeper-disable">${t("keeper.settings.turnOff")}</button></section>`;
   }
   // -- Look & preferences.
   const current = loadTheme();
@@ -9284,9 +9286,10 @@ function settingsSheetHTML(kind) {
     const g = keeperGrowth();
     const config = Keeper.keeperConfig(features);
     const leaves = config.stages.map((_, i) => `<i class="${i <= g.index ? "on" : ""}"></i>`).join("");
-    const row = (key, on, hint, enabled = true) => `<button class="privacy-row s2-toggle" data-action="keeper-toggle" data-key="${key}" role="switch" aria-checked="${on}" ${enabled ? "" : "disabled"}><span><b>${t("keeper.settings." + key)}</b><small>${hint}</small></span><i class="switch ${on ? "on" : ""}" aria-hidden="true"></i></button>`;
-    const quiet = k.mode === "quiet", interactive = k.mode === "interactive";
-    return `${head("s2.keeperManage")}<div class="keeper-profile">${keeperArt("idle")}<span><b>${esc(Keeper.keeperName(k, languageCode()))}</b><small>${esc(t("keeper.stage." + g.id))} · ${esc(t("keeper.settings.days", { count: g.reasons.days }))}</small><span class="keeper-leaves" aria-hidden="true">${leaves}</span></span></div>${keeperLooksHTML()}<label class="s2-field keeper-name-edit">${t("keeper.onboard.name")}<input data-keeper-rename maxlength="12" value="${esc(k.name)}" placeholder="${esc(Keeper.defaultName(k.animal, languageCode()))}"></label>${row("allowMemories", k.allowMemories, quiet ? t("s2.notInQuiet") : t("keeper.settings.allowMemoriesHint"), !quiet)}${row("proactive", k.proactive, interactive ? t("keeper.settings.proactiveHint") : t("keeper.settings.interactiveOnly"), interactive)}<p class="s2-hint">${t("keeper.settings.growthNote")}</p><button class="kp-quiet keeper-off" data-action="keeper-disable">${t("keeper.settings.turnOff")}</button><p class="s2-hint">${t("keeper.settings.offKeeps")}</p>`;
+    const row = (key, on, hint, enabled = true) => `<button class="privacy-row s2-toggle" data-action="keeper-toggle" data-key="${key}" role="switch" aria-checked="${on}" ${enabled ? "" : "disabled"}><span><b>${t(key === "proactive" ? "keeper.settings.greet" : "keeper.settings." + key)}</b><small>${hint}</small></span><i class="switch ${on ? "on" : ""}" aria-hidden="true"></i></button>`;
+    // V10.93: no modes; the hello-first switch (also on the Settings card);
+    // reading earlier pages is not offered (later only per page).
+    return `${head("s2.keeperManage")}<div class="keeper-profile">${keeperArt("idle")}<span><b>${esc(Keeper.keeperName(k, languageCode()))}</b><small>${esc(t("keeper.stage." + g.id))} · ${esc(t("keeper.settings.days", { count: g.reasons.days }))}</small><span class="keeper-leaves" aria-hidden="true">${leaves}</span></span></div>${keeperLooksHTML()}<label class="s2-field keeper-name-edit">${t("keeper.onboard.name")}<input data-keeper-rename maxlength="12" value="${esc(k.name)}" placeholder="${esc(Keeper.defaultName(k.animal, languageCode()))}"></label>${row("proactive", k.proactive === true, t("keeper.settings.greetHint"))}<p class="s2-hint">${t("keeper.settings.growthNote")}</p><button class="kp-quiet keeper-off" data-action="keeper-disable">${t("keeper.settings.turnOff")}</button><p class="s2-hint">${t("keeper.settings.offKeeps")}</p>`;
   }
   if (kind === "privacy") return `${head("s2.privacyNotes")}<ul class="privacy-facts"><li>${t("privacy.factDevice")}</li><li>${t("privacy.factPhotos")}</li><li>${t("privacy.factNothingSent")}</li><li>${t("privacy.factDemo")}</li><li>${t("settings.backupNote")}</li><li>${t("privacy.hideTodayHint")}</li><li>${t("privacy.shareListHint")}</li><li>${t("s2.aiNote")}</li></ul>`;
   if (kind === "licenses") return `${head("settings.licenses")}<p class="s2-hint">${t("settings.licensesNote")}</p><p class="s2-hint">${t("settings.systemFonts")}</p><div class="s2-links">${catalog.fonts.map((font) => `<a href="library/fonts/${font.license}" target="_blank" rel="noopener">${esc(font.name)} · SIL OFL 1.1 ↗</a>`).join("")}<a href="library/stickers/LittleDays-Original-Assets.txt" target="_blank" rel="noopener">Capiday Original Artwork ↗</a></div>`;
@@ -10858,20 +10861,16 @@ async function action(target) {
     if ($("#choose-dialog")?.open) $("#choose-dialog").close();
     return render();
   }
-  if (actionName === "keeper-pick-animal" || actionName === "keeper-pick-mode") {
-    keeperDraft.name = $("[data-keeper-name]")?.value || keeperDraft.name;
-    if (actionName === "keeper-pick-animal") keeperDraft.animal = target.dataset.animal;
-    else keeperDraft.mode = target.dataset.mode;
-    return openKeeperOnboarding();
-  }
   if (actionName === "keeper-start") {
-    const d = { ...keeperDraft, name: ($("[data-keeper-name]")?.value || "").trim() };
+    // V10.93: joining keeps whatever was already saved (name, look, the
+    // hello-first switch); someone new gets the defaults: Captain, no hat,
+    // quiet (no hello first).
     const index = keeperGrowth().index;
-    saveKeeper((k) => Object.assign(k, { enabled: true, animal: d.animal, name: d.name, mode: d.mode, invite: "shown", lastStage: index, since: k.since || dateKey() }));
+    saveKeeper((k) => Object.assign(k, { enabled: true, invite: "shown", lastStage: index, since: k.since || dateKey() }));
     keeperDraft = null;
     keeperLine = "";
-    logEvent("keeper_on", { kind: d.mode });
-    $("#choose-dialog").close();
+    logEvent("keeper_on", {});
+    if ($("#choose-dialog")?.open) $("#choose-dialog").close();
     render();
     return toast(t("keeper.hello", { name: Keeper.keeperName(keeperNow(), languageCode()) }));
   }
@@ -10944,11 +10943,7 @@ async function action(target) {
     keeperMemory = null;
     return openKeeperPanel("memory");
   }
-  if (actionName === "keeper-allow-memories") {
-    saveKeeper((x) => (x.allowMemories = true));
-    keeperMemory = null;
-    return openKeeperPanel("memory");
-  }
+  if (actionName === "keeper-allow-memories") return openKeeperPanel("memory"); // V10.93: not offered (pages wait for a per-page request)
   if (actionName === "keeper-shelf-tap") {
     keeperBounce(target);
     const k = keeperNow();
@@ -10994,7 +10989,9 @@ async function action(target) {
   }
   if (actionName === "keeper-toggle") {
     const key = target.dataset.key;
-    if (!["allowMemories", "proactive"].includes(key)) return; // AI consent waits for a secure service
+    // V10.93: only the hello-first switch; reading pages waits for a per-page
+    // request, AI consent for a secure service.
+    if (key !== "proactive") return;
     saveKeeper((k) => (k[key] = !k[key]));
     return render();
   }

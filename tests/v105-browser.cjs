@@ -23,13 +23,11 @@ const shots = process.env.SHOTS || "";
     const field = page.locator("[data-keeper-say]");
     const send = page.locator(".kp-send");
     const mine = () => page.locator(".kp .keeper-msg.me").count();
-    const openPanel = async () => { await page.locator(".keeper-entry").tap(); await page.waitForSelector('#choose-dialog[open] .kp[data-view="home"]'); };
+    const openPanel = async () => { await page.locator('.keeper-perch [data-action="keeper-tap"]').tap(); await page.waitForSelector('#choose-dialog[open] .kp[data-view="home"]'); };
     const closed = () => page.waitForSelector("#choose-dialog:not([open])", { state: "attached" });
     const draft = () => page.evaluate(() => localStorage.getItem("little-days.keeperDraft"));
 
-    await page.locator('.keeper-invite [data-action="keeper-onboard"]').tap();
-    await page.waitForSelector(".keeper-onboard");
-    await page.locator('[data-action="keeper-start"]').tap();
+    await page.locator('.keeper-invite [data-action="keeper-start"]').tap(); // V10.93: one decision
     await page.waitForSelector(".keeper-home");
 
     // 1. One quiet × at the top; no close button in the action area; Send beside the field.
@@ -177,11 +175,10 @@ const shots = process.env.SHOTS || "";
       await p.goto(base);
       await p.waitForSelector(".hero");
       if (!(await p.locator(".keeper-home").count())) {
-        await p.locator('.keeper-invite [data-action="keeper-onboard"]').tap();
-        await p.locator('[data-action="keeper-start"]').tap();
+        await p.locator('.keeper-invite [data-action="keeper-start"]').tap(); // V10.93: one decision
         await p.waitForSelector(".keeper-home");
       }
-      await p.locator(".keeper-entry").tap();
+      await p.locator('.keeper-perch [data-action="keeper-tap"]').tap();
       await p.waitForSelector(".kp");
       await p.locator("[data-keeper-say]").fill("A fairly long line to see that the field and the Send button still fit side by side");
       const fit = await p.evaluate(() => { const sheet = document.querySelector(".kp").getBoundingClientRect(); const s = document.querySelector(".kp-send").getBoundingClientRect(); return { inside: s.right <= sheet.right && s.bottom <= innerHeight, text: document.querySelector(".kp-send").innerText.trim(), sw: document.documentElement.scrollWidth <= innerWidth + 1 }; });

@@ -88,11 +88,8 @@ test("looking back: my own earlier pages only, never today or a sample, and not 
   assert.equal(K.pickMemory({ entries: [day("2026-11-09", [page("s", "示例")], { isDemo: true })], drafts: {} }, "2026-11-11"), null);
 });
 
-test("earlier pages need the person's own permission (Gentle or Interactive), never in Quiet; the AI hook is unchanged", () => {
+test("V10.93: earlier pages are not read (later only per page, when asked); an old mode or allowMemories grants nothing; the AI hook is unchanged", () => {
   const k = (mode, allowMemories) => K.normalizeKeeper({ enabled: true, mode, allowMemories });
-  assert.equal(K.modeAllows(k("gentle", false), "memories"), false);
-  assert.equal(K.modeAllows(k("gentle", true), "memories"), true);
-  assert.equal(K.modeAllows(k("interactive", true), "memories"), true);
-  assert.equal(K.modeAllows(k("quiet", true), "memories"), false);
+  for (const mode of ["quiet", "gentle", "interactive"]) for (const allow of [false, true]) assert.equal(K.modeAllows(k(mode, allow), "memories"), false, `${mode} / ${allow}`);
   assert.equal(K.createFeedbackService({ remote: null }).canUseRemote(k("gentle", true)), false, "no provider, no remote calls");
 });

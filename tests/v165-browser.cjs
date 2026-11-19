@@ -142,22 +142,24 @@ const layerTop = (page) => page.evaluate(() => document.querySelector("#journal-
       await page.goto(base);
       await page.waitForSelector(".hero");
       await SS.touchStore(page);
+      // V10.93: the name is changed in 角色与装扮 (the first meeting has no name field).
       await page.evaluate(() => {
         const s = JSON.parse(localStorage.getItem("little-days.v1"));
-        s.keeper = { ...(s.keeper || {}), enabled: false, invite: "" };
+        s.keeper = { ...(s.keeper || {}), enabled: true, invite: "shown" };
         localStorage.setItem("little-days.v1", JSON.stringify(s));
       });
       await page.reload();
       await page.waitForSelector(".hero");
-      await page.locator('[data-action="keeper-onboard"]').first().click();
-      const name = page.locator("[data-keeper-name]");
+      await page.locator(".settings-gear").click();
+      await SS.settingsSheet(page, "keeper");
+      const name = page.locator("[data-keeper-rename]");
       await name.click();
       await name.fill("小橘");
       check("起名字输入框的回车键显示「完成」", (await name.getAttribute("enterkeyhint")) === "done");
       await page.keyboard.press("Enter");
       await page.waitForTimeout(150);
-      check("起完名字按回车，键盘收起", await page.evaluate(() => !document.activeElement?.matches?.("[data-keeper-name]")));
-      check("名字还在、面板没有关", (await name.inputValue()) === "小橘" && (await page.locator("#choose-dialog[open] .keeper-onboard").count()) === 1);
+      check("起完名字按回车，键盘收起", await page.evaluate(() => !document.activeElement?.matches?.("[data-keeper-rename]")));
+      check("名字还在、面板没有关", (await name.inputValue()) === "小橘" && (await page.locator(".s2-sheet [data-keeper-rename]").count()) === 1);
       // (V10.84: 今天的计划 is no longer on Home, so its Return test is gone.)
       await page.keyboard.press("Escape");
       await context.close();

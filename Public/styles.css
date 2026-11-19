@@ -27481,3 +27481,27 @@ html[lang="en"] .keeper-perch .keeper-entry::before {
   background: transparent;
   cursor: pointer;
 }
+
+/* =====================================================================
+   V10.93 · Captain's first meeting: one decision
+   ===================================================================== */
+.keeper-onboard .keeper-join-art {
+  display: flex;
+  justify-content: center;
+  margin: 4px 0 2px;
+}
+.keeper-onboard .keeper-join-art .bot {
+  position: relative;
+  width: 112px !important;
+  height: auto;
+}
+.keeper-onboard h2 {
+  text-align: center;
+}
+.keeper-onboard .keeper-join-body {
+  margin: 0 0 14px;
+  text-align: center;
+}
+.keeper-card .keeper-off {
+  margin-top: 6px;
+}

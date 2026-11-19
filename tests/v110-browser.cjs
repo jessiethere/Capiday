@@ -55,9 +55,7 @@ const shots = process.env.SHOTS || "";
 
     // 2. Captain is more present; settings stay here, playing opens Captain's Corner.
     await page.locator('#navigation [data-page="home"]').tap();
-    await page.locator('.keeper-invite [data-action="keeper-onboard"]').tap();
-    await page.waitForSelector(".keeper-onboard");
-    await page.locator('[data-action="keeper-start"]').tap();
+    await page.locator('.keeper-invite [data-action="keeper-start"]').tap(); // V10.93: one decision
     await page.waitForSelector(".keeper-home");
     await settings(page);
     const art = await page.locator(".s2-keeper img.bot-captain").boundingBox();
@@ -72,11 +70,10 @@ const shots = process.env.SHOTS || "";
     await page.locator(".kp .kp-x").first().tap();
     await page.waitForSelector("#choose-dialog:not([open])", { state: "attached" });
     await shot(page, "02-keeper");
-    await page.locator('.s2-seg [data-action="keeper-set"][data-value="quiet"]').tap();
-    await page.waitForSelector('.s2-seg [data-value="quiet"][aria-pressed="true"]');
-    assert.equal(await page.locator(".s2-keeper .s2-play").count(), 0, "Quiet: no play entry (Captain stays quiet)");
-    await page.locator('.s2-seg [data-action="keeper-set"][data-value="gentle"]').tap();
-    passed.push("Little Keeper: Captain at about 92px; 角色与装扮 stays; 和 Captain 玩一会儿 opens Captain's Corner (no chat in Settings); hidden in Quiet mode");
+    // V10.93: no modes — the play entry is always there; one hello-first switch.
+    assert.equal(await page.locator(".keeper-card .s2-seg").count(), 0, "no mode buttons");
+    assert.equal(await page.locator('.keeper-card [data-action="keeper-toggle"][data-key="proactive"]').count(), 1);
+    passed.push("Little Keeper: Captain at about 92px; 角色与装扮 stays; 和 Captain 玩一会儿 opens Captain's Corner (no chat in Settings); one hello-first switch instead of modes");
 
     // 3. Data & Privacy: backup first and easy to find; short lines; full facts in 隐私说明.
     const data = page.locator(".privacy-card");

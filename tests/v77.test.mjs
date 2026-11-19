@@ -18,23 +18,23 @@ test("profile: off by default, old journals have none, bad values fall back", ()
   assert.equal(K.keeperName({ animal: "cat", name: "" }, "zh"), "Captain");
 });
 
-test("modes: Quiet says nothing; Gentle replies when asked; Interactive chats; memories and speaking first need their own OK", () => {
+test("V10.93 permissions: no modes — joined = quiet company with tap responses; hello-first only with its own switch; pages not read", () => {
   const on = (mode, extra = {}) => K.normalizeKeeper({ enabled: true, mode, ...extra });
-  assert.equal(K.modeAllows(on("quiet"), "invite"), false);
-  assert.equal(K.modeAllows(on("quiet"), "feedback"), false);
-  assert.equal(K.modeAllows(on("gentle"), "feedback"), true);
-  assert.equal(K.modeAllows(on("gentle"), "chat"), false);
-  assert.equal(K.modeAllows(on("interactive"), "chat"), true);
-  assert.equal(K.modeAllows(on("interactive"), "memories"), false, "needs allowMemories");
-  assert.equal(K.modeAllows(on("interactive", { allowMemories: true }), "memories"), true);
-  assert.equal(K.modeAllows(on("gentle", { allowMemories: true, proactive: true }), "proactive"), false, "only in Interactive");
-  assert.equal(K.modeAllows(K.normalizeKeeper({ enabled: false, mode: "interactive" }), "chat"), false, "off means nothing");
-  assert.equal(K.todayPrompt({ keeper: on("quiet") }), null);
-  assert.equal(K.todayPrompt({ hour: 20, keeper: on("gentle") }).key, "keeper.prompt.evening");
+  for (const mode of ["quiet", "gentle", "interactive", undefined]) {
+    assert.equal(K.modeAllows(on(mode), "invite"), true, `${mode}: a tap opens Captain's corner`);
+    assert.equal(K.modeAllows(on(mode), "chat"), true);
+    assert.equal(K.modeAllows(on(mode), "feedback"), false, "page replies wait for 让 Captain 回应这一页");
+    assert.equal(K.modeAllows(on(mode, { allowMemories: true }), "memories"), false);
+    assert.equal(K.modeAllows(on(mode), "proactive"), false, `${mode}: an old mode name grants no hello-first`);
+    assert.equal(K.modeAllows(on(mode, { proactive: true }), "proactive"), true, `${mode}: the saved switch is kept`);
+  }
+  assert.equal(K.modeAllows(K.normalizeKeeper({ enabled: false, mode: "interactive", proactive: true }), "chat"), false, "off means nothing");
+  assert.equal(K.modeAllows(K.normalizeKeeper({ enabled: false, proactive: true }), "proactive"), false);
+  assert.equal(K.todayPrompt({ hour: 20, keeper: on("quiet") }).key, "keeper.prompt.evening", "a line is composed; Home shows it only with hello-first on");
   assert.equal(K.todayPrompt({ hour: 20, keptToday: true, keeper: on("gentle") }).key, "keeper.prompt.kept");
   const memory = { title: "海边", years: 1 };
-  assert.equal(K.todayPrompt({ keeper: on("interactive"), memory }).key, "keeper.prompt.afternoon", "no memory without permission");
-  assert.equal(K.todayPrompt({ keeper: on("interactive", { allowMemories: true, proactive: true }), memory }).key, "keeper.prompt.memory");
+  assert.equal(K.todayPrompt({ keeper: on("interactive", { allowMemories: true, proactive: true }), memory }).key, "keeper.prompt.afternoon", "never an earlier page");
+  assert.equal(K.todayPrompt({ keeper: K.normalizeKeeper({ enabled: false }) }), null);
 });
 
 test("growth: per day, capped; sad = happy; length doesn't matter; missing days never subtract; samples don't count", () => {
@@ -76,32 +76,25 @@ test("feedback: the example; hard days met gently; ordinary days; no diagnosis; 
   assert.notEqual(first.text, second.text, "avoids the phrases just used");
 });
 
-test("AI consent is enforced: no remote call without consent; Quiet gives no reply", async () => {
+test("AI consent is enforced; V10.93: page replies are not offered yet, so nothing is composed or sent", async () => {
   let calls = 0;
   const remote = { available: true, respond: async () => (calls++, { text: "remote" }) };
   const service = K.createFeedbackService({ remote });
-  const gentle = K.normalizeKeeper({ enabled: true, mode: "gentle" });
-  const reply = await service.respond({ text: "今天好累" }, gentle);
-  assert.equal(reply.source, "local");
-  assert.equal(calls, 0, "never sent without consent");
-  assert.equal(service.canUseRemote(gentle), false);
-  const consented = { ...gentle, aiConsent: true };
-  assert.equal((await service.respond({ text: "x" }, consented)).source, "remote");
-  assert.equal(calls, 1);
-  assert.equal(await service.respond({ text: "x" }, K.normalizeKeeper({ enabled: true, mode: "quiet", aiConsent: true })), null, "Quiet: no replies at all");
-  const none = K.createFeedbackService({ remote: null });
-  assert.equal((await none.respond({ text: "x" }, consented)).source, "local", "no backend: local");
+  for (const mode of ["quiet", "gentle", "interactive"]) {
+    const k = K.normalizeKeeper({ enabled: true, mode });
+    assert.equal(await service.respond({ text: "今天好累" }, k), null, mode);
+    assert.equal(await service.respond({ text: "x" }, { ...k, aiConsent: true }), null, `${mode} + consent`);
+    assert.equal(service.canUseRemote(k), false, "never without consent");
+  }
+  assert.equal(calls, 0, "nothing sent");
 });
 
-test("chat: earlier pages only with permission; never claims memories it wasn't shown", () => {
+test("chat (V10.93): never names earlier pages, whatever was saved before; counts only", () => {
   const state = { entries: [day("2026-11-01", { title: "窗边的下午" }), day("2026-11-09", { title: "火锅" })], books: [{ id: "daily", title: "日子" }], checks: [], drafts: {} };
-  const k = K.normalizeKeeper({ enabled: true, mode: "interactive" });
-  assert.equal(K.localChat("memory", { state, keeper: k, today: "2026-11-10" }).key, "keeper.chat.needMemories");
-  const allowed = { ...k, allowMemories: true };
-  const m = K.localChat("memory", { state, keeper: allowed, today: "2026-11-10", seed: 0 });
-  assert.equal(m.key, "keeper.chat.memory");
-  assert.equal(m.values.title, "火锅");
-  assert.equal(K.localChat("week", { state, keeper: k, today: "2026-11-10" }).key, "keeper.chat.weekCount", "counts without titles");
-  assert.equal(K.localChat("week", { state, keeper: allowed, today: "2026-11-10" }).values.titles, "火锅");
-  assert.equal(K.localChat("shelf", { state, keeper: k, today: "2026-11-10" }).key, "keeper.chat.shelfTags");
+  for (const extra of [{}, { allowMemories: true }]) {
+    const k = K.normalizeKeeper({ enabled: true, mode: "interactive", ...extra });
+    assert.equal(K.localChat("memory", { state, keeper: k, today: "2026-11-10" }).key, "keeper.chat.needMemories");
+    assert.equal(K.localChat("week", { state, keeper: k, today: "2026-11-10" }).key, "keeper.chat.weekCount", "counts without titles");
+    assert.equal(K.localChat("shelf", { state, keeper: k, today: "2026-11-10" }).key, "keeper.chat.shelfTags");
+  }
 });

@@ -52,9 +52,7 @@ function mockOllama() {
     await page.goto(base);
     await page.waitForSelector(".hero");
     // Captain on, and a page today whose words must never be sent.
-    await page.locator('.keeper-invite [data-action="keeper-onboard"]').tap();
-    await page.locator('[data-action="keeper-pick-mode"][data-mode="interactive"]').tap();
-    await page.locator('[data-action="keeper-start"]').tap();
+    await page.locator('.keeper-invite [data-action="keeper-start"]').tap(); // V10.93: one decision
     await page.waitForSelector("#choose-dialog:not([open])", { state: "attached" }).catch(() => {});
     const secret = "紫色长颈鹿秘密";
     await page.evaluate((words) => {
@@ -69,7 +67,7 @@ function mockOllama() {
     await page.waitForSelector(".hero");
     const before = await page.evaluate(() => localStorage.getItem("little-days.v1"));
     const openCorner = async () => {
-      await page.locator(".keeper-entry").tap();
+      await page.locator('.keeper-perch [data-action="keeper-tap"]').tap();
       await page.waitForSelector('.kp.corner[data-view="home"]');
     };
     const say = async (text) => {
