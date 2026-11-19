@@ -186,6 +186,12 @@ npm run test:browser:v65
 
 ## 更新日志
 
+### 2026-11-19 — V10.95 打字时输入框不再被键盘挡住（CAP-012）
+
+- 在「写字 · 改字体」里打字时，即使 App 测不到键盘位置，也会马上收起大预览、把输入框放到键盘上方；面板标题和「完成」固定在顶部。
+- 设置 → 测试记录 →「打开键盘诊断」：打字时屏幕顶部显示键盘的数值，方便截图排查。
+- 测试：新 v198 20/20（完全不报告键盘的情况），键盘相关的 6 个测试通过；Chromium，不是真机。真机待 Founder 确认。
+
 ### 2026-11-19 — V10.94 日历和集章合在一起
 
 Calendar now serves as the single month navigation surface, while stamps remain as the emotional visual layer across Home and Calendar.

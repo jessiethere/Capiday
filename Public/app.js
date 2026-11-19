@@ -9295,7 +9295,14 @@ function settingsSheetHTML(kind) {
       .join("");
     return `${head("samples.title")}<div class="samples-card"><p class="s2-hint">${t(samples ? "samples.noteKept" : "samples.none", { count: samples })}</p>${samples ? `<h3 class="samples-h">${t("samples.view")}</h3><div class="samples-list">${list}</div><button class="kp-quiet" data-action="samples-remove">${t("samples.remove")}</button>` : ""}</div>`;
   }
-  if (kind === "testlog") return `${head("testlog.title")}<div class="test-log"><p class="s2-hint">${t("testlog.note")}</p><button class="kp-main" data-action="export-events">${t("testlog.export")}</button></div>`;
+  if (kind === "testlog") {
+    // V10.95 (CAP-012): 键盘诊断 — one line at the top while typing, for a phone screenshot.
+    let kbDebug = false;
+    try {
+      kbDebug = localStorage.getItem("little-days.kb-debug") === "1";
+    } catch {}
+    return `${head("testlog.title")}<div class="test-log"><p class="s2-hint">${t("testlog.note")}</p><button class="kp-main" data-action="export-events">${t("testlog.export")}</button><button class="kp-quiet" data-action="kb-debug-toggle" aria-pressed="${kbDebug}">${t(kbDebug ? "testlog.kbOff" : "testlog.kbOn")}</button><p class="s2-hint">${t("testlog.kbNote")}</p></div>`;
+  }
   if (kind === "labs") {
     const on = labsOn();
     return `${head("labs.title")}<div class="labs-card"><p class="s2-hint">${t("labs.note")}</p><button class="kp-main" data-action="labs-toggle" aria-pressed="${on}">${t(on ? "labs.turnOff" : "labs.turnOn")}</button></div>`;
@@ -11070,6 +11077,17 @@ async function action(target) {
     const result = await shareStory(activePage(), exportOptions());
     logEvent(result === "shared" ? "share" : "export", { size: "story", kind: result });
     if (result !== "cancelled") toast(t(result === "shared" ? "share.done" : "share.saved"));
+  }
+  if (actionName === "kb-debug-toggle") {
+    let on = false;
+    try {
+      on = localStorage.getItem("little-days.kb-debug") === "1";
+      if (on) localStorage.removeItem("little-days.kb-debug");
+      else localStorage.setItem("little-days.kb-debug", "1");
+    } catch {}
+    keyboardDiagnostics();
+    render();
+    toast(t(on ? "testlog.kbOffDone" : "testlog.kbOnDone"));
   }
   if (actionName === "labs-toggle") {
     try {
@@ -16239,20 +16257,65 @@ function nativeTop() {
 // after the keyboard closed (e.g. 查看更多封面) a dialog kept its
 // keyboard-sized height — measured in the Simulator: --kb 397px, --vv-h 477px
 // left on an 874-pt screen with no keyboard (CAP-011).
+// V10.95 (CAP-012, reopened on a device 2026-11-19) · The keyboard could be
+// up while nothing here measured it — the iPhone screenshots showed exactly
+// the "no keyboard" layout (the big preview, the field under the keyboard).
+// Measuring is still the first choice; where it may not work (inside the
+// iPhone app, or the pinned link inside another page on an iPhone) and has
+// not worked yet in this session, a field with the caret counts as "keyboard
+// up" at once, with an estimated keyboard line, until a real measurement
+// arrives. Once anything has been measured, only measurements count (so a
+// keyboard closed without a resize never leaves a keyboard-sized gap: CAP-011).
+let keyboardMeasured = false;
+let keyboardEstimated = 0;
+function keyboardEstimate() {
+  if (keyboardMeasured) return 0;
+  const inShell = Boolean(window.webkit?.messageHandlers);
+  if (!(/iPhone|iPod/.test(navigator.userAgent) && (inShell || EMBEDDED))) return 0;
+  // The frame itself got shorter: the page already fits above the keyboard.
+  if (restHeight - window.innerHeight >= 80) return 0;
+  return keyboardGuess(screen.height, screen.width, window.innerHeight);
+}
 function updateVisibleArea() {
   const vv = window.visualViewport;
   const root = document.documentElement;
   if (!vv) return;
   const focused = Boolean(document.activeElement?.matches?.(TYPING_FIELD));
-  const keyboard = focused ? keyboardHeight() : 0;
-  const open = focused && (keyboard > 80 || nativeTop() > 0);
+  const measuredKb = focused ? keyboardHeight() : 0;
+  const measured = focused && (measuredKb > 80 || nativeTop() > 0);
+  if (measured) keyboardMeasured = true;
+  keyboardEstimated = focused && !measured ? keyboardEstimate() : 0;
+  const keyboard = keyboardEstimated || measuredKb;
+  const open = measured || keyboardEstimated > 0;
   root.classList.toggle("kb-open", open);
+  root.classList.toggle("kb-est", keyboardEstimated > 0);
   root.style.setProperty("--vv-top", `${Math.round(vv.offsetTop)}px`);
-  if (open) root.style.setProperty("--vv-h", `${Math.round(visibleHeight())}px`);
+  if (open) root.style.setProperty("--vv-h", `${Math.round(keyboardEstimated ? window.innerHeight - keyboardEstimated : visibleHeight())}px`);
   else root.style.removeProperty("--vv-h");
   // How much of the bottom the keyboard covers (a bottom sheet lifts by this much).
   if (open && keyboard > 80) root.style.setProperty("--kb", `${Math.round(keyboard)}px`);
   else root.style.removeProperty("--kb");
+  keyboardDiagnostics();
+}
+// V10.95 · Developer switch 键盘诊断: one line with what the layout used, so
+// a screenshot from a phone shows it (localStorage little-days.kb-debug = 1).
+function keyboardDiagnostics() {
+  let on = false;
+  try {
+    on = localStorage.getItem("little-days.kb-debug") === "1";
+  } catch {}
+  let box = document.getElementById("kb-debug");
+  if (!on) return box?.remove();
+  if (!box) {
+    box = document.createElement("div");
+    box.id = "kb-debug";
+    box.setAttribute("aria-hidden", "true");
+    document.body.append(box);
+  }
+  const vv = window.visualViewport;
+  const root = document.documentElement;
+  const how = keyboardEstimated ? "estimate" : nativeTop() ? "shell" : keyboardHeight() > 80 ? "viewport" : "none";
+  box.textContent = `kb-open ${root.classList.contains("kb-open") ? 1 : 0} · ${how} · shell ${Math.round(nativeKeyboardTop)} · vv ${Math.round(vv?.height || 0)}@${Math.round(vv?.offsetTop || 0)} · inner ${window.innerHeight} · est ${keyboardEstimated} · ${EMBEDDED ? "frame" : window.webkit?.messageHandlers ? "app" : "web"}`;
 }
 function keepFieldInView() {
   const field = document.activeElement;
@@ -16293,6 +16356,7 @@ function keyboardHeight() {
 // iOS may have scrolled; elsewhere from the layout viewport as before.
 function visibleBand() {
   if (nativeTop()) return { up: true, top: 0, bottom: visibleHeight() };
+  if (keyboardEstimated) return { up: true, top: 0, bottom: window.innerHeight - keyboardEstimated };
   const keyboard = keyboardHeight();
   return { up: keyboard >= 80, top: window.visualViewport?.offsetTop || 0, bottom: window.innerHeight - keyboard };
 }
@@ -16445,7 +16509,9 @@ function keyboardGuess(screenHeight, screenWidth, innerHeight) {
   const portrait = innerHeight >= Math.min(screenHeight, screenWidth);
   // iPhone keyboards with the Chinese candidate row are 0.36–0.39 of the
   // screen's height (portrait); a little more is safer than less.
-  const guess = portrait ? tall * 0.4 : innerHeight * 0.55;
+  // V10.95: with iOS's own ⌃ ⌄ ✓ bar above it (web pages and the iPhone app)
+  // it is 0.45 (measured in the Simulator: 397 of 874 pt) — 0.46.
+  const guess = portrait ? tall * 0.46 : innerHeight * 0.55;
   return Math.round(Math.min(guess, innerHeight * 0.6));
 }
 function clearKeyboardGuess() {

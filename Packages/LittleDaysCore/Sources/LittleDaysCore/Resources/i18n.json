@@ -5429,6 +5429,26 @@
     "zh": "已导出 {count} 条记录",
     "en": "Exported {count} events"
   },
+  "testlog.kbOn": {
+    "zh": "打开键盘诊断",
+    "en": "Turn on keyboard check"
+  },
+  "testlog.kbOff": {
+    "zh": "关闭键盘诊断",
+    "en": "Turn off keyboard check"
+  },
+  "testlog.kbNote": {
+    "zh": "打字时屏幕顶部会出现一行小字（键盘位置等），截图发给我们就能看到问题在哪。",
+    "en": "While you type, a small line at the top shows where the keyboard is — a screenshot of it helps us find the problem."
+  },
+  "testlog.kbOnDone": {
+    "zh": "键盘诊断已打开",
+    "en": "Keyboard check is on"
+  },
+  "testlog.kbOffDone": {
+    "zh": "键盘诊断已关闭",
+    "en": "Keyboard check is off"
+  },
   "labs.title": {
     "zh": "实验室",
     "en": "Labs"

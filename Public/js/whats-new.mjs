@@ -4,6 +4,26 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.95",
+    date: "2026-11-19",
+    zh: {
+      title: "打字时输入框不再被键盘挡住",
+      items: [
+        "在「写字 · 改字体」里打字时，即使 App 没能测到键盘的位置，也会马上收起大预览，把输入框放在键盘上方，你能看到自己在打什么。",
+        "面板标题和「完成」固定在顶部，往下滑设置时也不会滑出屏幕。",
+        "设置 → 测试记录里新增「键盘诊断」：打开后打字时屏幕顶部会有一行小字，截图发给我们就能看到问题在哪。",
+      ],
+    },
+    en: {
+      title: "The keyboard no longer hides what you type",
+      items: [
+        "In Words & type, the big preview steps aside and the field sits above the keyboard as soon as you start typing — even when the app can't measure where the keyboard is.",
+        "The title and Done stay at the top of the panel while you scroll the settings below.",
+        "Settings → Test log has a new keyboard check: while you type, a small line at the top shows where the keyboard is — a screenshot of it helps us find the problem.",
+      ],
+    },
+  },
+  {
     version: "10.94",
     date: "2026-11-19",
     zh: {

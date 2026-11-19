@@ -49,6 +49,27 @@
 
 ## 更新日志
 
+### 2026-11-19 — V10.95 修复 CAP-012（打字时输入框在键盘下面）
+
+- **需求**：Founder 说「修复CAP-012」（真机截图 IMG_9603 / IMG_9604：写文字时键盘弹起，大预览没收起，输入框被压在键盘下面；往上滑才看到，但标题和 Done 滚出去了）。环境信息（TestFlight 还是在线链接、构建号、iOS 版本）还没有回复，所以修复要同时覆盖 App 和在线链接。
+- **根因（2026-11-19 已复现）**：版面规则（V10.70）本身正确，但真机上 App 没有进入「键盘已弹起」（`html.kb-open`），而这个状态以前**只在量到键盘时**才打开（外壳的 `capidayKeyboard` 或 visualViewport 变小）。量不到 = 按没有键盘排版。
+- **修复**（`Public/app.js`、`Public/styles.css`）：
+  - `keyboardEstimate()`：在 iPhone App 外壳（有 `webkit.messageHandlers`）或嵌在别的页面里的在线链接（iPhone），输入框有光标、但还没量到键盘时，按估计的键盘线排版（`kb-open` + `kb-est`，`--vv-h` = innerHeight − 屏幕高 × 0.46，`--kb` = 估计值）。实测值一到就替换。
+  - 本次打开 App 后只要量到过一次键盘，就只用实测值（CAP-011：键盘收起没有 resize 时不能留下空白）。
+  - Safari / 桌面浏览器直接打开：不估计，行为不变（69 个用 iPhone UA 的浏览器测试不受影响）。
+  - `visibleBand()` 也认估计值（纸上的文字同样抬到键盘上方）。
+  - `keyboardGuess` 0.40 → 0.46（实测 iPhone 键盘含 ⌃ ⌄ ✓ 栏 = 397/874）；在线链接里打字条的估计位置随之略高。
+  - 键盘弹起时 `写字 · 改字体` 面板的标题行 sticky、面板本身不滚动。
+  - 键盘诊断：设置 → 测试记录 → 打开键盘诊断（`little-days.kb-debug`），打字时顶部一行：kb-open、来源、外壳键盘位置、visualViewport、innerHeight、估计值、app / frame / web。不挡点击，读屏隐藏。
+  - 新文案 testlog.kbOn / kbOff / kbNote / kbOnDone / kbOffDone；更新记录 10.95。
+- **没有改**：Swift 外壳（键盘消息代码检查过，没有问题）；数据；V10.70 的版面规则。
+- **测试（Linux / Chromium，不是真机）**：
+  - 新 `tests/v198-browser.cjs` 20/20：完全不报告键盘（和真机截图同样的情况），App 外壳和嵌入的在线链接都进入键盘排版；输入框 350–402 在真实键盘线 477 上方；预览 230 → 76 pt；标题 / Done 在 104，滚动后仍在；外壳实测值替换估计值；完成后无残留；量到过之后不再估计；Safari 直接打开不估计；诊断开关。
+  - 键盘相关的 v124 / v162 / v164 / v165 / v166 / v185 通过。
+  - 完整回归：见下面（发布前跑）。
+- **BUG_BACKLOG**：CAP-012 → Fixed — Pending Device Verification（Fix Summary / Verification V10.95）。
+- **iPhone 真机**：未验证。需要 Founder 在 0.2.0 (7) 或在线链接里按复现步骤再试；如果还不对，打开「键盘诊断」截图。
+
 ### 2026-11-19 — V10.94 Calendar × Stamp 合并（Founder 产品需求）
 
 - **需求**：日历和集章合并。Calendar 是月份数据和导航骨架，Stamp 是日历上的一层视觉与情绪；退役独立的集章月份页；首页章卡保留（紧凑），「看整月」进日历本月；日历吸收章的视觉（照片章、描边日期章、安静的空日子、今天、已删页面的空章）；点有记录的日子进入现有的日视图，点空日子是普通空状态；照片墙保留，不加第三种浏览方式；去掉 “Days you skip”，说明改成「记下一天，就留下一枚小印记。」/ “Each day you keep leaves a little mark.”；月份下加本月进度一行；日历视觉升级（衬线月份、纸面、植物角、朱砂）；数据单一来源；不粗暴删除已有资产，不加负向状态，不大规模重构。

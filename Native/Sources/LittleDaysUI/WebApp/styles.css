@@ -27665,3 +27665,31 @@ html[lang="en"] .keeper-perch .keeper-entry::before {
 .cal-card .calendar-legend {
   padding-right: 52px;
 }
+
+/* V10.95 (CAP-012) · While typing in 写字 · 改字体 the title and 完成 stay at
+   the top of the sheet; only the words and settings below them scroll.
+   html.kb-open now also covers "keyboard up but not measured" (an estimated
+   keyboard line, html.kb-est — app.js updateVisibleArea). */
+html.kb-open .choose-sheet.sw > .sw-head {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--c-f7f4ee, #f7f4ee);
+}
+html.kb-open .choose-sheet.sw {
+  overflow: hidden;
+}
+/* 键盘诊断 (developer switch): one quiet line at the top. */
+#kb-debug {
+  position: fixed;
+  top: calc(var(--sat, 0px) + 2px);
+  left: 4px;
+  right: 4px;
+  z-index: 9999;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(47, 42, 38, 0.82);
+  color: #fffdf8;
+  font: 11px/1.4 ui-monospace, Menlo, monospace;
+  pointer-events: none;
+}
