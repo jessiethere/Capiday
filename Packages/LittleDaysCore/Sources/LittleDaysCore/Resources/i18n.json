@@ -187,10 +187,7 @@
     "zh": "回到今天",
     "en": "Back to today"
   },
-  "calendar.memory": {
-    "zh": "生活记忆",
-    "en": "Little moments"
-  },
+  "calendar.memory": { "zh": "按日子", "en": "By day" },
   "calendar.growth": {
     "zh": "成长轨迹",
     "en": "Little steps"
@@ -198,6 +195,26 @@
   "calendar.prev": {
     "zh": "上个月",
     "en": "Previous month"
+  },
+  "calendar.monthKept": {
+    "zh": "这个月留下了 {count} 天",
+    "en": "{count} days kept this month"
+  },
+  "calendar.monthKeptOne": {
+    "zh": "这个月留下了 {count} 天",
+    "en": "{count} day kept this month"
+  },
+  "calendar.monthQuiet": {
+    "zh": "这个月留下的日子",
+    "en": "The days you keep this month"
+  },
+  "calendar.markKept": {
+    "zh": "有记录",
+    "en": "Kept"
+  },
+  "calendar.todayShort": {
+    "zh": "今天",
+    "en": "today"
   },
   "calendar.next": {
     "zh": "下个月",
@@ -10877,19 +10894,19 @@
   "home.writeLine": { "zh": "写一句", "en": "Write a line" },
   "home.backfillShort": { "zh": "补记昨天", "en": "Yesterday" },
   "stamp.kicker": { "zh": "集章卡", "en": "STAMP CARD" },
-  "stamp.monthCount": { "zh": "已集 {count} 枚", "en": "{count} stamps" },
-  "stamp.monthCountOne": { "zh": "已集 {count} 枚", "en": "{count} stamp" },
-  "stamp.monthNone": { "zh": "这个月还没有章", "en": "No stamps yet this month" },
+  "stamp.monthCount": { "zh": "已集 {count} 枚", "en": "{count} days kept" },
+  "stamp.monthCountOne": { "zh": "已集 {count} 枚", "en": "{count} day kept" },
+  "stamp.monthNone": { "zh": "这个月还没有留下的日子", "en": "Nothing kept yet this month" },
   "stamp.total": { "zh": "一共 {count} 枚", "en": "{count} in all" },
   "stamp.totalOne": { "zh": "一共 {count} 枚", "en": "{count} in all" },
-  "stamp.openCard": { "zh": "看整张", "en": "See the card" },
-  "stamp.note": { "zh": "记下一天，就盖一枚章。没记的日子只是空着。", "en": "Each day you keep gets a stamp. Days you skip just stay blank." },
+  "stamp.openCard": { "zh": "看整月", "en": "See the month" },
+  "stamp.note": { "zh": "记下一天，就留下一枚小印记。", "en": "Each day you keep leaves a little mark." },
   "stamp.labelKept": { "zh": "{date}，盖了章", "en": "{date}, stamped" },
   "stamp.labelEmpty": { "zh": "{date}，盖过章，那天的页面已经删掉了", "en": "{date}, stamped once — that day's pages were deleted" },
-  "stamp.labelNone": { "zh": "{date}，没有记", "en": "{date}, nothing kept" },
-  "stamp.labelToday": { "zh": "{date}，今天，还没记", "en": "{date}, today, nothing kept yet" },
+  "stamp.labelNone": { "zh": "{date}", "en": "{date}" },
+  "stamp.labelToday": { "zh": "{date}，今天", "en": "{date}, today" },
   "stamp.pickHint": { "zh": "点一枚章，看那一天。", "en": "Tap a stamp to see that day." },
-  "stamp.monthEmpty": { "zh": "这个月还没有章。记下一天，就会盖上一枚。", "en": "No stamps this month yet. Keep a day and it gets one." },
+  "stamp.monthEmpty": { "zh": "这个月留下的日子会在这里。", "en": "The days you keep this month will be here." },
   "stamp.keptText": { "zh": "这一天留下了页面。", "en": "You kept pages on this day." },
   "stamp.openDay": { "zh": "打开这一天", "en": "Open this day" },
   "stamp.emptyText": { "zh": "这一天的页面已经删掉了，章还留着。删掉的内容不会自动回来。", "en": "This day's pages were deleted; the stamp stays. Deleted pages don't come back on their own." },

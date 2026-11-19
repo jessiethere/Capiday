@@ -103,7 +103,7 @@ async function writeJot(page, text) {
       const small = await page.locator(".home-small .today-tile").evaluateAll((els) => els.map((e) => e.dataset.action));
       check("N 未记录：其他记法收成一行小按钮（自己写 / 手绘 / 更多方式 / 补记昨天）", JSON.stringify(small) === JSON.stringify(["today-write", "today-draw", "quick-open", "backfill"]), JSON.stringify(small));
       const s = await strip(page);
-      check("N 未记录：集章条显示这个月还没有章，今天是空的虚线圈", s.count === "这个月还没有章" && s.stamps[TODAY].cls.includes("none") && s.stamps[TODAY].cls.includes("today"), JSON.stringify(s.stamps[TODAY]));
+      check("N 未记录：集章条显示这个月还没有留下的日子，今天是空的虚线圈", s.count === "这个月还没有留下的日子" && s.stamps[TODAY].cls.includes("none") && s.stamps[TODAY].cls.includes("today"), JSON.stringify(s.stamps[TODAY]));
       check("N 未记录：一周没记就不出现这一周卡片", (await page.locator(".week-card").count()) === 0);
       check("N 首页没有连续打卡 / 断签 / 积分 / 等级字样", !/连续|断签|补签|积分|等级|排行/.test(await page.locator(".hero").innerText()));
       // Order: main action, then (secondary row), stamps, week — 主按钮在集章之前.
@@ -229,18 +229,21 @@ async function writeJot(page, text) {
       await page.locator('.wp-day button[data-date="2026-11-16"]').tap();
       await page.waitForFunction(() => location.hash !== "x" && (document.querySelector("#phone.in-reader") || document.querySelector(".day-view, .day-page, .day-detail")));
       check("Q 这一周：点一天能打开那一天", true);
-      // K · L · the stamp card page: months.
+      // K · L · V10.94: the stamp card's 看整月 opens the Calendar on this month.
       await home(page);
       await page.locator(".stamp-strip").tap();
-      await page.waitForSelector(".stamps-page");
-      check("集章卡：右上一共 6 枚", (await page.locator(".sp-total").innerText()) === "一共 6 枚");
-      check("K 集章卡：11 月 30 天，1 日在周日", (await page.locator(".sp-grid .stamp").count()) === 30 && (await page.locator(".sp-grid .stamp-gap").count()) === 6);
-      await page.locator('.sp-head [data-action="stamps-month"][data-delta="-1"]').tap();
-      check("L 换到 10 月：31 天，已集 2 枚（含 11 月补记的 10 月 20 日）", (await page.locator(".sp-grid .stamp").count()) === 31 && (await page.locator(".sp-count").innerText()) === "已集 2 枚", await page.locator(".sp-count").innerText());
-      check("L 10 月之前没有章：不能再往前翻", await page.locator('.sp-head [data-delta="-1"]').isDisabled());
-      await page.locator('.sp-grid [data-date="2026-10-12"]').tap();
-      check("点一枚章：打开这一天", (await page.locator('.sp-panel [data-action="open-day"][data-date="2026-10-12"]').count()) === 1);
-      check("没记的日子不能点（只是空着）", (await page.locator('.sp-grid button[data-date="2026-10-13"]').count()) === 0);
+      await page.waitForSelector(".cal-card .calendar-grid");
+      check("看整月 → 日历（不是另一个集章页）", (await page.locator(".stamps-page").count()) === 0 && (await page.locator(".cal-kept").innerText()) === "这个月留下了 4 天", await page.locator(".cal-kept").innerText());
+      check("K 日历：11 月 30 天，1 日在周日", (await page.locator(".cal-card .cal-day").count()) === 30 && (await page.locator(".cal-card .calendar-grid > span:not(.weekday)").count()) === 6);
+      await page.locator('.cal-card [data-action="month"][data-delta="-1"]').tap();
+      await page.waitForFunction(() => document.querySelectorAll(".cal-card .cal-day").length === 31);
+      check("L 换到 10 月：31 天，留下了 2 天（含 11 月补记的 10 月 20 日）", (await page.locator(".cal-kept").innerText()) === "这个月留下了 2 天" && (await page.locator('.cal-day[data-date="2026-10-20"] .cal-stamp').count()) === 1, await page.locator(".cal-kept").innerText());
+      await page.locator('.cal-day[data-date="2026-10-13"]').tap();
+      await page.waitForTimeout(300);
+      check("没记的日子：只是空着（不打开阅读）", (await page.locator("#phone.in-reader").count()) === 0 && (await page.locator('.cal-day[data-date="2026-10-13"]').getAttribute("aria-pressed")) === "true");
+      await page.locator('.cal-day[data-date="2026-10-12"]').tap();
+      await page.waitForFunction(() => document.querySelector("#phone.in-reader") || document.querySelector(".day-view, .day-page, .day-detail"));
+      check("点一枚章：打开这一天", true);
       check("D/K/L/M/P/Q · 没有页面错误或系统弹窗", errors.length === 0, errors.join(" | "));
       await context.close();
     }
@@ -291,14 +294,13 @@ async function writeJot(page, text) {
       check("F 删了两页中的一页：还是完整的章", s.stamps["2026-11-06"].cls === "word" && s.count === "已集 2 枚", JSON.stringify(s.stamps["2026-11-06"]));
       check("G 空章不显示已删内容的缩略图", !s.stamps["2026-11-05"].img);
       await page.locator(".stamp-strip").tap();
-      await page.waitForSelector(".stamps-page");
-      await page.locator('.sp-grid [data-date="2026-11-05"]').tap();
-      const panel = await page.locator(".sp-panel").innerText();
-      check("G 点空章：说明页面已删除、不会自动恢复，没有打开已删页面的按钮", panel.includes("页面已经删掉了") && (await page.locator('.sp-panel [data-action="open-day"]').count()) === 0, panel);
-      await page.locator('.sp-panel [data-action="stamp-calendar"]').tap();
-      await page.waitForSelector(".calendar-grid, .day-cell");
+      await page.waitForSelector(".cal-card .calendar-grid");
+      check("G 日历上是一枚空章（虚线），不是缩略图", (await page.locator('.cal-day[data-date="2026-11-05"].st-empty .cal-stamp.cs-gone').count()) === 1 && (await page.locator('.cal-day[data-date="2026-11-05"] img').count()) === 0);
+      await page.locator('.cal-day[data-date="2026-11-05"]').tap();
+      await page.waitForTimeout(300);
       const sel = await page.locator(".day-cell.selected").getAttribute("data-date");
-      check("G 去日历：停在那一天，显示空的一天（没有报错）", sel === "2026-11-05", sel);
+      const summary = await page.locator(".date-summary").innerText();
+      check("G 点空章：停在那一天，显示正常的空状态，不打开已删页面", sel === "2026-11-05" && (await page.locator("#phone.in-reader").count()) === 0 && (await page.locator('.date-summary [data-action="open-day"]').count()) === 0, `${sel} · ${summary}`);
       const st2 = await read(page);
       check("G 看空章不会恢复已删内容", !st2.entries.filter((e) => e.date === "2026-11-05").some((e) => (e.layers || []).length || (e.moments || []).length));
       check("E/F/G · 没有页面错误或系统弹窗", errors.length === 0, errors.join(" | "));
@@ -393,7 +395,7 @@ async function writeJot(page, text) {
         },
       });
       const s = await strip(page);
-      check("English: the stamp card reads 1 stamp", s.count === "1 stamp", s.count);
+      check("English: the stamp card reads 1 day kept", s.count === "1 day kept", s.count);
       const wk = await page.locator(".week-card").innerText();
       check("English: You kept 1 little day this week.", wk.includes("You kept 1 little day this week."), wk);
       const width = await page.evaluate(() => document.documentElement.scrollWidth);

@@ -4,6 +4,30 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.94",
+    date: "2026-11-19",
+    zh: {
+      title: "日历和集章合在一起",
+      items: [
+        "日历现在就是看整月的地方：有照片的日子是一枚圆形照片章，写了字的日子是一圈朱砂描边，没记的日子只是安静的数字。",
+        "首页的集章卡还在；点「看整月」直接打开日历的这个月，不再跳到另一个集章页。",
+        "月份下方写着这个月留下了几天；点有记录的日子打开那一天，点空着的日子可以补记。",
+        "删掉或搬走的页面，在原来的日子留下一圈虚线空章，不显示已删的内容。",
+        "集章卡的说明改成「记下一天，就留下一枚小印记。」照片墙和搜索不变。",
+      ],
+    },
+    en: {
+      title: "Calendar and stamps, together",
+      items: [
+        "The Calendar is now where you see the whole month: a day with your photo is a round photo stamp, a day you wrote is a thin cinnabar ring, and the other days are quiet numbers.",
+        "The stamp card stays on Home; See the month opens the Calendar on this month instead of a separate stamps page.",
+        "Under the month it says how many days you kept. Tap a kept day to open it, or a quiet day to add a page.",
+        "A page you deleted or moved leaves a dashed empty stamp on its old day — never what was deleted.",
+        "The stamp card now reads “Each day you keep leaves a little mark.” The photo wall and search are unchanged.",
+      ],
+    },
+  },
+  {
     version: "10.93",
     date: "2026-11-19",
     zh: {

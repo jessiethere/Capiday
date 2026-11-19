@@ -27505,3 +27505,163 @@ html[lang="en"] .keeper-perch .keeper-entry::before {
 .keeper-card .keeper-off {
   margin-top: 6px;
 }
+
+/* =====================================================================
+   V10.94 · Calendar × Stamp — Calendar is the one month view, in the stamp
+   visual language (the retired stamp card page's paper card, serif month,
+   thin cinnabar outlines, photo stamps, one quiet botanical corner).
+   ===================================================================== */
+.cal-card {
+  position: relative;
+  overflow: hidden;
+  margin: 12px 0 0;
+  padding: 4px 10px 12px;
+  border-radius: 22px;
+  background: var(--paper);
+  box-shadow: 0 0 0 1px rgba(120, 95, 60, 0.06), 0 18px 36px -26px rgba(70, 50, 30, 0.55);
+}
+.cal-card > :not(.bot) {
+  position: relative;
+  z-index: 1;
+}
+.cal-card > .bot-corner-blossom {
+  right: 4px;
+  bottom: 4px;
+}
+.cal-card .month-controls {
+  margin: 14px 0 8px;
+}
+.month-title {
+  text-align: center;
+}
+/* The month in the same editorial serif as the Home stamp card (beats the
+   UI-sans rule on .month-controls h2, which is !important). */
+.cal-card .month-controls .month-title h2 {
+  margin: 0;
+  font-family: var(--type-monthTitle-family, var(--title-serif)) !important;
+  font-size: 28px;
+  font-weight: var(--type-monthTitle-weight, 600);
+  line-height: 1.1;
+  font-variant-numeric: lining-nums;
+}
+.cal-kept {
+  margin: 3px 0 0;
+  font-size: 12px;
+  color: var(--t-a9483a, #a9483a);
+}
+.day-cell.cal-day {
+  --seal: var(--c-a9483a, #a9483a);
+  justify-content: flex-start;
+  min-height: 54px;
+  padding-top: 3px;
+  gap: 0;
+  border-radius: 14px;
+}
+.cal-day .cal-num {
+  font: 13px/1 Georgia, "Songti SC", "Noto Serif CJK SC", serif;
+  color: var(--ink);
+}
+.cal-day.st-none .cal-num {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  color: var(--muted);
+}
+.cal-day.st-none.future .cal-num {
+  opacity: 0.55;
+}
+.cal-day.today .cal-num {
+  color: var(--sageDeep);
+  font-weight: 700;
+}
+.cal-stamp {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+}
+/* kept, no photo: a date stamp — warm white, thin cinnabar outline */
+.cal-stamp.cs-kept {
+  background: var(--c-fffdf8, #fffdf8);
+  border: 1.5px solid var(--seal);
+}
+.cal-stamp.cs-kept .cal-num {
+  color: var(--seal);
+  font-weight: 600;
+}
+/* kept once, pages since deleted: a faint dashed ring */
+.cal-stamp.cs-gone {
+  border: 1.5px dashed color-mix(in srgb, var(--seal) 45%, transparent);
+}
+.cal-stamp.cs-gone .cal-num {
+  color: color-mix(in srgb, var(--seal) 70%, transparent);
+}
+/* a photo stamp: your own photo in a round seal, the date on a small chip */
+.cal-stamp.cs-photo {
+  padding: 2px;
+  border: 1.5px solid var(--seal);
+  background: var(--paper);
+  overflow: hidden;
+}
+.day-cell .cal-stamp.cs-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.cal-day.st-photo .cal-num {
+  position: absolute;
+  top: 31px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1px 4px;
+  border-radius: 7px;
+  background: var(--paper);
+  box-shadow: 0 0 0 1px rgba(120, 95, 60, 0.12);
+  font-size: 10px;
+}
+.cal-day.today .cal-stamp.cs-kept .cal-num,
+.cal-day.today.st-photo .cal-num {
+  color: var(--sageDeep);
+}
+.cal-day .day-dots {
+  bottom: 2px;
+}
+.calendar-legend .lg-stamp {
+  width: 10px;
+  height: 10px;
+  box-sizing: border-box;
+  border: 1.2px solid var(--c-a9483a, #a9483a);
+  background: var(--c-fffdf8, #fffdf8);
+}
+.calendar-legend .lg-stamp.photo {
+  background: var(--c-d7a59c, #d7a59c);
+}
+@media (max-width: 359px) {
+  .cal-stamp,
+  .cal-day.st-none .cal-num {
+    width: 32px;
+    height: 32px;
+  }
+  .cal-day.st-photo .cal-num {
+    top: 25px;
+  }
+}
+/* the month always fits seven columns (the stamps never widen a column) */
+.cal-card .calendar-grid {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px 2px;
+}
+.day-cell.cal-day {
+  min-width: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* The legend keeps clear of the corner sprig. */
+.cal-card .calendar-legend {
+  padding-right: 52px;
+}

@@ -375,7 +375,9 @@ async function noOverflow(page, label) {
     await page.waitForSelector(".hero");
     await nav("calendar");
     const cell = page.locator(`[data-action="select-date"][data-date="${D1}"]`);
-    for (const dot of ["dot-photo", "dot-video", "dot-audio"])
+    // V10.94: the photo shows as the day's stamp; video and sound keep their dots.
+    assert.equal(await cell.locator(".cal-stamp").count(), 1, "the day's stamp");
+    for (const dot of ["dot-video", "dot-audio"])
       assert.equal(await cell.locator(`.${dot}`).count(), 1, dot);
     // V10.42 (counts): the badge counts pages — this day's own page (5 photos) + 3 Moments.
     assert.equal(await cell.locator(".day-dots b").innerText(), "4");

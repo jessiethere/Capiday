@@ -38,7 +38,7 @@ function setup({ lang, keeper }) {
   if (document.documentElement) watch();
   else document.addEventListener("DOMContentLoaded", watch);
 }
-async function boot(browser, { lang = "zh-CN", keeper = true } = {}) {
+async function boot(browser, { lang = "zh-CN", keeper = true, proactive = false } = {}) {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: lang, hasTouch: true });
   await context.addInitScript(setup, { lang: lang === "en" ? "en" : "zh-CN", keeper });
   const page = await context.newPage();
@@ -52,11 +52,13 @@ async function boot(browser, { lang = "zh-CN", keeper = true } = {}) {
   await page.goto(base);
   await page.waitForSelector(".hero");
   await SS.touchStore(page);
-  await page.evaluate((on) => {
+  await page.evaluate(({ on, proactive }) => {
     const s = JSON.parse(localStorage.getItem("little-days.v1"));
     if (on) s.keeper = { ...(s.keeper || {}), enabled: true, invite: "accepted", animal: "cat", name: "Captain" };
+    // V10.93: Captain's Home line shows only once 允许 Captain 主动打招呼 is on (off by default).
+    if (proactive) s.keeper = { ...(s.keeper || {}), proactive: true };
     localStorage.setItem("little-days.v1", JSON.stringify(s));
-  }, keeper);
+  }, { on: keeper, proactive });
   await page.reload();
   await page.waitForSelector(".hero");
   return { page, context, errors };
@@ -147,7 +149,7 @@ const contrastOf = (page, sel) =>
     }
     // ------------------------------------------------ A · D · E · F · G · H (Chinese)
     {
-      const { page, context, errors } = await boot(browser);
+      const { page, context, errors } = await boot(browser, { proactive: true });
       await page.evaluate(() => {
         const s = JSON.parse(localStorage.getItem("little-days.v1"));
         const book = s.books[0].id;
@@ -158,7 +160,10 @@ const contrastOf = (page, sel) =>
       await page.waitForSelector(".hero .stamp-strip");
       await page.waitForTimeout(2600);
       check("A 中文首页：集章卡 / 十一月 / 已集 3 枚", (await page.locator(".stamp-strip .v9-kicker").textContent()) === "集章卡" && (await page.locator(".ss-month").textContent()) === "十一月" && (await page.locator(".ss-count").textContent()) === "已集 3 枚");
-      check("H 首页 Captain：「Captain 在帮你看着这本册子」，不再是「找 Captain」", (await page.locator(".keeper-entry").innerText()).trim() === "Captain 在帮你看着这本册子");
+      // V10.93: with 允许 Captain 主动打招呼 on, Captain greets on Home (a line or the quiet tag).
+      await page.waitForSelector(".keeper-home .keeper-bubble, .keeper-home .keeper-entry");
+      const hiZh = (await page.locator(".keeper-home").innerText()).trim();
+      check("H 首页 Captain：会打招呼，不再是「找 Captain」", hiZh.length > 0 && !hiZh.includes("找 Captain"), hiZh);
       check("G 这一周：浅竹青卡（不是墨色）", await page.evaluate(() => getComputedStyle(document.querySelector(".week-card")).backgroundColor) === "rgb(232, 238, 227)");
       for (const [sel, name] of [[".week-card .wk-line", "主句"], [".week-card .v9-kicker", "小标题"], [".week-card .wk-meta", "记了几天"], [".week-card .wk-go", "翻开看看"]]) {
         const c = await contrastOf(page, sel);
@@ -176,11 +181,13 @@ const contrastOf = (page, sel) =>
       check("F 朱砂不用于按钮 / 主 CTA / 导航", reds === 0);
       // D · the stamp card page.
       await page.locator(".stamp-strip").tap();
-      await page.waitForSelector(".stamps-page");
-      check("D 详情页：小字「月令集章」，大标题「十一月」，年份另起", (await page.locator(".sp-head .v9-kicker").textContent()) === "月令集章" && (await page.locator(".sp-head h1").textContent()) === "十一月" && (await page.locator(".sp-year").textContent()) === "2026");
+      // V10.94: 看整月 opens the Calendar; the month title takes the stamp card's serif.
+      await page.waitForSelector(".cal-card .calendar-grid");
+      const calHead = await page.evaluate(() => { const h = document.querySelector(".cal-card .month-title h2"); return { text: h.textContent, font: getComputedStyle(h).fontFamily, kept: document.querySelector(".cal-kept").textContent, color: getComputedStyle(document.querySelector(".cal-kept")).color }; });
+      check("D 看整月 → 日历：衬线月份「2026年11月」+ 朱砂小字「这个月留下了 3 天」", calHead.text === "2026年11月" && !/PingFang|-apple-system|system-ui/.test(calHead.font.split(",")[0]) && calHead.kept === "这个月留下了 3 天" && calHead.color === "rgb(169, 72, 58)", JSON.stringify(calHead));
       // H · Captain's panel: today first, chat below.
       await home(page);
-      await page.locator(".keeper-entry").tap();
+      await page.locator(".keeper-home .keeper-tap").tap();
       await page.waitForSelector("#choose-dialog[open] .kp");
       const panel = await page.evaluate(() => {
         const d = document.querySelector("#choose-dialog .kp");
@@ -193,7 +200,7 @@ const contrastOf = (page, sel) =>
     }
     // ------------------------------------------------ B · C (English)
     {
-      const { page, context, errors } = await boot(browser, { lang: "en" });
+      const { page, context, errors } = await boot(browser, { lang: "en", proactive: true });
       await page.evaluate(() => {
         const s = JSON.parse(localStorage.getItem("little-days.v1"));
         s.entries.push({ id: "e-en", date: "2026-11-16", title: "Walk home", body: "", bookId: s.books[0].id, layers: [], moments: [], createdAt: "2026-11-16T10:00:00.000Z" });
@@ -201,14 +208,16 @@ const contrastOf = (page, sel) =>
       });
       await page.reload();
       await page.waitForSelector(".hero .stamp-strip");
-      check("C English Home: This month / November / 1 stamp", (await page.locator(".stamp-strip .v9-kicker").textContent()) === "This month" && (await page.locator(".ss-month").textContent()) === "November" && (await page.locator(".ss-count").textContent()) === "1 stamp");
-      check("B English Captain: “Captain is keeping an eye on your little book”", (await page.locator(".keeper-entry").innerText()).replace(/\s+/g, " ").trim() === "Captain is keeping an eye on your little book");
+      check("C English Home: This month / November / 1 day kept", (await page.locator(".stamp-strip .v9-kicker").textContent()) === "This month" && (await page.locator(".ss-month").textContent()) === "November" && (await page.locator(".ss-count").textContent()) === "1 day kept");
+      await page.waitForSelector(".keeper-home .keeper-bubble, .keeper-home .keeper-entry");
+      const hiEn = (await page.locator(".keeper-home").innerText()).replace(/\s+/g, " ").trim();
+      check("B English Captain says hello in English", hiEn.length > 0 && !/[一-鿿]/.test(hiEn), hiEn);
       check("B English This week: “You kept 1 little day this week.”", (await page.locator(".week-card").innerText()).includes("You kept 1 little day this week."));
-      const zhLeft = await page.evaluate(() => [".stamp-strip", ".week-card", ".keeper-entry"].map((s) => document.querySelector(s)?.textContent || "").join(" "));
+      const zhLeft = await page.evaluate(() => [".stamp-strip", ".week-card", ".keeper-home"].map((s) => document.querySelector(s)?.textContent || "").join(" "));
       check("B no Chinese in the English Home parts", !/[一-鿿]/.test(zhLeft), zhLeft);
       await page.locator(".stamp-strip").tap();
-      await page.waitForSelector(".stamps-page");
-      check("C stamp page: kicker Stamps, title November, year below", (await page.locator(".sp-head .v9-kicker").textContent()) === "Stamps" && (await page.locator(".sp-head h1").textContent()) === "November" && (await page.locator(".sp-year").textContent()) === "2026");
+      await page.waitForSelector(".cal-card .calendar-grid");
+      check("C See the month → Calendar: November 2026, 1 day kept this month", (await page.locator(".cal-card .month-title h2").textContent()) === "November 2026" && (await page.locator(".cal-kept").textContent()) === "1 day kept this month");
       const width = await page.evaluate(() => document.documentElement.scrollWidth);
       check("B/C no sideways scroll at 390", width <= 390, String(width));
       check("B/C · no page errors", errors.length === 0, errors.join(" | "));

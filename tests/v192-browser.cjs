@@ -83,7 +83,7 @@ const audit = (page) =>
         const box = el.getBoundingClientRect();
         const cs = getComputedStyle(el);
         const shapes = [box];
-        const card = el.closest(".stamp-strip, .sp-card, .stamps-page, .v9-masthead, .keeper-invite") || el.parentElement;
+        const card = el.closest(".stamp-strip, .cal-card, .v9-masthead, .keeper-invite") || el.parentElement;
         const scope = card.classList.contains("v9-masthead") ? card.parentElement : card;
         const hits = [];
         for (const w of words(scope)) for (const s of shapes) if (Math.min(s.right, w.r.right) - Math.max(s.left, w.r.left) > 2 && Math.min(s.bottom, w.r.bottom) - Math.max(s.top, w.r.top) > 2) hits.push(w.text);
@@ -129,7 +129,7 @@ const kinds = (list) => list.map((d) => KIND(d.asset));
           sprigCeil: B.ASSETS["sprig-5"][2],
           travel: B.coverArt("travel"),
           poses: B.CAPTAIN_POSES,
-          plans: ["home", "stampCard", "stamps"].map((s) => [s, B.withinDensity(B.decorPlan(s, { empty: true }))]),
+          plans: ["home", "stampCard", "stamps", "calendar"].map((s) => [s, B.withinDensity(B.decorPlan(s, { empty: true }))]),
           busyHome: B.decorPlan("home", { photos: 6 }).length,
           busyStamps: B.decorPlan("stamps", { photoStamps: 12 })[0].size,
           limited: Object.entries(B.ASSETS).filter(([, a]) => a[3] === "LIMITED SIZE").map(([n]) => n).sort(),
@@ -158,11 +158,12 @@ const kinds = (list) => list.map((d) => KIND(d.asset));
       check(`${L}: no decoration covers a word or a button on Home`, home.every((d) => d.hits.length === 0), JSON.stringify(home.filter((d) => d.hits.length).map((d) => [d.asset, d.hits])));
       const strip = await page.locator(".stamp-strip > .bot").boundingBox();
       await page.touchscreen.tap(strip.x + strip.width / 2, strip.y + strip.height / 2);
-      await page.waitForSelector(".stamps-page");
+      // V10.94: 看整月 opens the Calendar, which carries the stamp page's paper and corner.
+      await page.waitForSelector(".cal-card .calendar-grid");
       await page.waitForTimeout(300);
       const sp = await audit(page);
-      check(`${L} stamp page: one quiet corner (corner-blossom, ≤ 58pt) + paper grain`, JSON.stringify(sp.map((d) => d.asset)) === JSON.stringify(["corner-blossom"]) && /bot-quiet/.test(sp[0].cls) && sp[0].w <= 58.5 && (await page.locator(".sp-card.paper-grain").count()) === 1, JSON.stringify(sp.map((d) => [d.asset, d.w])));
-      check(`${L} stamp page: no plant covers a word; the month arrows stay on top`, sp.every((d) => d.hits.length === 0) && (await page.evaluate(() => { const a = document.querySelector('.sp-arrow[data-delta="-1"]'); const r = a.getBoundingClientRect(); return document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)?.closest(".sp-arrow") === a; })), JSON.stringify(sp.map((d) => d.hits)));
+      check(`${L} Calendar: one quiet corner (corner-blossom, ≤ 58pt) + paper grain`, JSON.stringify(sp.map((d) => d.asset)) === JSON.stringify(["corner-blossom"]) && /bot-quiet/.test(sp[0].cls) && sp[0].w <= 58.5 && (await page.locator(".cal-card.paper-grain").count()) === 1, JSON.stringify(sp.map((d) => [d.asset, d.w])));
+      check(`${L} Calendar: no plant covers a word; the month arrows and the days stay on top`, sp.every((d) => d.hits.length === 0) && (await page.evaluate(() => { const on = (a) => { const r = a.getBoundingClientRect(); return document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)?.closest("button") === a; }; return [...document.querySelectorAll('.cal-card [data-action="month"], .cal-card .cal-day')].every(on); })), JSON.stringify(sp.map((d) => d.hits)));
       // Interaction surfaces stay clean.
       await SS.tapHidden(page, { action: "edit-date", date: TODAY });
       await page.waitForSelector("#phone.in-studio");
@@ -186,10 +187,11 @@ const kinds = (list) => list.map((d) => KIND(d.asset));
     for (const lang of ["zh-CN", "en"]) {
       const { page, context } = await boot(browser, lang, { days: ["2026-10-08", "2026-10-09"] });
       await SS.tapHidden(page, { action: "stamps-open" });
-      await page.waitForSelector(".stamps-page");
+      await page.waitForSelector(".cal-card .calendar-grid");
       await page.waitForTimeout(300);
       const sp = await audit(page);
-      check(`${lang} empty month: Captain sitting by the books (captain-sit) + one corner; nothing covers the words`, JSON.stringify(kinds(sp).sort()) === JSON.stringify(["corner", "vignette"]) && (await page.locator('.sp-empty-art img[data-asset="captain-sit"]').count()) === 1 && sp.every((d) => d.hits.length === 0), JSON.stringify(sp.map((d) => [d.asset, d.hits])));
+      const quiet = await page.locator(".cal-kept").innerText();
+      check(`${lang} empty month on the Calendar: still one quiet corner, a gentle line (no "0"), nothing covers the words`, JSON.stringify(kinds(sp)) === JSON.stringify(["corner"]) && !/\b0\b|0 天|没有/.test(quiet) && (await page.locator(".cal-card .cal-stamp").count()) === 0 && sp.every((d) => d.hits.length === 0), JSON.stringify([quiet, sp.map((d) => [d.asset, d.hits])]));
       await context.close();
     }
     // Narrow / wide screens.

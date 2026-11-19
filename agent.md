@@ -35,6 +35,7 @@
 - Private 是本轮唯一可用权限；公开和 Shared 禁用。真正的访问控制必须在未来 Vapor 后端实现，好友关系不继承私人内容权限。
 - Blob 事务先完成再更新元数据；迁移/恢复失败不清除原记录。导出备份最多 100 MB 媒体，导入文件 150 MB；暂不自动删除旧 Blob，以保护撤销和恢复。
 - 保存元数据比较已读快照，检测旧标签页；不是跨客户端原子事务。协作将采用数据库 expectedRevision/409 与版本历史。
+- **V10.94 Calendar × Stamp（2026-11-19 Founder）**：Calendar = 月份数据和导航骨架（唯一的整月页面）；Stamp = Calendar 和首页章卡上的一层视觉与情绪表达。章的数据只有一个来源 `Stamps.stampsByDate`（`recordedDays` 账本 + 现有内容，照片墙规则），首页章卡和日历都读它；独立的「月令集章」页退役，旧入口改到日历本月。不加负向状态。
 
 ## 已知问题与下一步
 
@@ -47,6 +48,35 @@
 - Phase 2 明确标记社交演示，Phase 3 真实 Vapor 后端，Phase 4 协作，Phase 5 高级创作/授权音乐；具体见 ROADMAP。
 
 ## 更新日志
+
+### 2026-11-19 — V10.94 Calendar × Stamp 合并（Founder 产品需求）
+
+- **需求**：日历和集章合并。Calendar 是月份数据和导航骨架，Stamp 是日历上的一层视觉与情绪；退役独立的集章月份页；首页章卡保留（紧凑），「看整月」进日历本月；日历吸收章的视觉（照片章、描边日期章、安静的空日子、今天、已删页面的空章）；点有记录的日子进入现有的日视图，点空日子是普通空状态；照片墙保留，不加第三种浏览方式；去掉 “Days you skip”，说明改成「记下一天，就留下一枚小印记。」/ “Each day you keep leaves a little mark.”；月份下加本月进度一行；日历视觉升级（衬线月份、纸面、植物角、朱砂）；数据单一来源；不粗暴删除已有资产，不加负向状态，不大规模重构。
+- **现状审查（实施前）**：
+  1. 数据来源：日历原来自己从 `entries` + `coverPhoto` + `dayMarks` + `calendarBookDays()` 算格子，没有读 `recordedDays` 账本，所以删除页面后的日期在日历上什么也没有，而首页章卡显示空章——两套来源不一致。首页章卡 / 集章页用 `Stamps.stampsByDate`（账本 + 内容，只认自己的照片，遵守照片墙隐藏）。
+  2. 可直接复用：`stampsByDate` / `monthStamps` / `stampCount`、`decorPlan` 角落枝叶、`.paper-grain`、朱砂色、`select-date` → `openDay`、空日子摘要（补记）。
+  3. 退役：`stampsPage()`、`stamps-month` / `stamp-pick` 动作、`stampsView` / `stampPicked` / `stampLabel`、`stamps` 路由。
+  4. 要迁移的视觉：衬线月份大标题、纸面卡片 + 纸纹、一个淡角落枝叶、朱砂描边章、照片章、朱砂的本月计数。
+  5. 首页入口：`stamps-open` 改成打开日历本月，文字「看整月 / See the month」。
+- **信息架构**：首页章卡（紧凑，本月一眼）→「看整月」→ 日历「按日子」本月；日历三种视图不变（按日子 / 成长轨迹（Labs）/ 照片墙），没有第三种「集章」模式。每周回看的「去日历」不变。
+- **单一数据来源**：日历「按日子」模式的格子 = `Stamps.stampsByDate(state())`，本月计数 = `Stamps.monthStamps(...).count`，与首页章卡同一个函数、同一份账本。按手帐本筛选时，章只看那本书的页（`calendarBookDays`），其他不变。补记、改日期、删除最后一页、恢复备份、旧数据迁移都走原来的 Store.update 账本规则（V10.84 起，不变）：补记 → 当天出现章；页面搬走 / 删光 → 原日期留空章；恢复 → 账本随备份回来。
+- **视觉迁移**（`Public/styles.css` V10.94 段）：
+  - `.cal-card`：纸面圆角卡 + 纸纹 + 右下一个淡角落枝叶（`decorPlan("calendar")`，corner-blossom 44 pt，quiet）；
+  - 月份大标题用首页章卡同一个 `--type-monthTitle-family` 衬线字（覆盖全局「界面无衬线」的 `!important`）；下方朱砂小字「这个月留下了 N 天 / N days kept this month」，没有记录的月份写「这个月留下的日子」，不出现 0；
+  - 格子：照片章（38 px 圆形照片 + 朱砂细边 + 日期小签）、描边日期章（白底 1.5 px 朱砂实线）、空章（虚线，只有日期，类名 `cs-gone`，避开全局 `.empty`）、没记的日子只有安静的日期数字；今天保持竹青选中底；视频 / 声音 / 页数小点保留，照片点由照片章代替；
+  - 图例：照片 / 有记录 / 视频 / 声音 / 页（成长只在 Labs）；右侧给角落枝叶留 52 px；
+  - 7 列改为 `minmax(0,1fr)`，320 宽章缩到 32 px，不横向滚动。
+- **退役路由**：`stamps` 页面渲染时改为 `calendar`；`navigate("stamps")` → `calendar`；`stamps-open`（首页章卡、Captain 面板回看）→ 日历本月并选中今天（选中日不在本月时）。`.sp-*` 样式暂留未删（无引用，不影响），`decorPlan("stamps")` 保留供测试。
+- **文案**（`i18n.json`）：stamp.note / openCard / monthCount(One) / monthNone / monthEmpty / labelNone / labelToday 更新；新增 calendar.monthKept(One) / monthQuiet / markKept / todayShort；calendar.memory 「按日子 / By day」。
+- **文件**：`Public/app.js`、`Public/js/botanicals.mjs`、`Public/styles.css`、`Public/js/whats-new.mjs`（10.94）、`Packages/LittleDaysCore/.../i18n.json`、外壳同步；测试 `tests/v197-browser.cjs`（新）、`v188` / `v189` / `v190` / `v192` / `v31`（更新）。
+- **测试（Linux / Chromium，不是真机）**：
+  - 新 `tests/v197-browser.cjs` 35/35：A–N 全部（首页章卡与看整月、月计数、照片章、描边章、安静的空日子、今天 + 章、点有记录 → 日视图、点空日子 → 空状态、日历里补记 → 立刻出章、改日期 → 旧日空章 / 新日完整章且首页一致、翻月、照片墙不变、搜索不变、旧入口落到日历），新用户、390 / 320 宽。
+  - 更新：v188 63/63（集章页检查改为日历；文案「这个月还没有留下的日子」「1 day kept」）、v189 40/40、v190 42/42、v192 43/43、v31 通过。
+  - v190 另外修了 V10.93 漏改的地方：首页 Captain 招呼要先打开「允许 Captain 主动打招呼」（boot 加 `proactive`），检查改为「有招呼、不再是『找 Captain』」，打开面板改为点 Captain。
+  - 单元测试 Node 382/382、Python 23/23（含外壳同步）。
+  - 全量浏览器回归：见下一条（合并后跑）。
+- **未做 / 已知**：`.sp-*` 旧样式未清理；集章页空月份的 Captain 坐姿插画（captain-sit）随页面退役，暂不在日历里出现（日历空月份只用一句温和的话）。
+- **iPhone 真机**：未验证。
 
 ### 2026-11-19 — Bug 记录：CAP-012 真机再次出现（写字面板打字时输入框在键盘下面）
 

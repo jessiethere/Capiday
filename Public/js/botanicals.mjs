@@ -171,7 +171,8 @@ export function coverArt(kind, cls = "") {
 export const DENSITY = { corner: 1, vignette: 1, small: 3 };
 const CORNERS = new Set(["corner", "berry"]);
 
-// surface: "home" | "stampCard" | "stamps". ctx: what is on screen.
+// surface: "home" | "stampCard" | "calendar" | "stamps" (retired page, kept
+// for the decoration tests). ctx: what is on screen.
 export function decorPlan(surface, ctx = {}) {
   const plan = [];
   if (surface === "home") {
@@ -181,6 +182,9 @@ export function decorPlan(surface, ctx = {}) {
   } else if (surface === "stampCard") {
     // The stamp card's one corner: the seasonal berry branch.
     plan.push({ slot: "corner", kind: "berry", variant: 0, size: 56, place: "bl" });
+  } else if (surface === "calendar") {
+    // V10.94: Calendar carries the stamp card's one very subtle corner.
+    plan.push({ slot: "corner", kind: "corner", variant: 1, size: 44, place: "br", tone: "quiet" });
   } else if (surface === "stamps") {
     // One very subtle corner (smaller when the month is full of photo stamps).
     const busy = (ctx.photoStamps || 0) >= 10;

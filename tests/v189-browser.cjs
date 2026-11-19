@@ -134,8 +134,8 @@ function seedDays(list) {
       await home(page);
       const inked = await page.locator(".stamp-strip .stamp.ink-in").count();
       await page.locator(".stamp-strip").tap();
-      await page.waitForSelector(".stamps-page");
-      await page.locator('.sp-head [data-action="stamps-month"][data-delta="-1"]').tap().catch(() => {});
+      await page.waitForSelector(".cal-card .calendar-grid"); // V10.94: 看整月 → the Calendar
+      await page.locator('.cal-card [data-action="month"][data-delta="-1"]').tap().catch(() => {});
       await home(page);
       await home(page);
       check("S9 首页重新显示 / 翻月份：不再播放（首页的章只在第一次显示时落下）", (await moments(page)).length === 1 && (await page.locator(".stamp-strip .stamp.ink-in").count()) === 0, `ink-in first=${inked}`);

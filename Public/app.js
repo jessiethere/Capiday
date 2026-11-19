@@ -595,6 +595,7 @@ function navigate(target) {
   if (LAB_PAGES.includes(target) && !labsOn()) target = "home";
   // B5: Growth (habits, streak) is frozen for now — reachable with Labs on; nothing is deleted.
   if (target === "growth" && !labsOn()) target = "home";
+  if (target === "stamps") target = "calendar"; // V10.94: the stamp card page is retired
   // Back on Home after writing today's first page: the stamp moment.
   if (target === "home") setTimeout(() => maybeCelebrate(), 260);
   if (target === "studio") {
@@ -897,10 +898,9 @@ function todayStoryHTML() {
 // ---------- V10.84 · 集章卡 and 这一周 ----------
 // A stamp is a date that once had a kept page (js/recorded-days.mjs); its
 // face comes from that day (js/stamps.mjs). Nothing here writes the journal:
-// the stamps page and the week page only read it, and a stamp whose pages
-// were deleted opens the calendar on that date — never a page that is gone.
-let stampsView = null; // { year, month } shown on the stamp card page
-let stampPicked = null; // the date picked on the stamp card page
+// Home's stamp card, Calendar (V10.94: the one month view, in the stamp
+// visual language) and the week page only read it, and a stamp whose pages
+// were deleted opens that date's empty day — never a page that is gone.
 let weekView = null; // Monday (YYYY-MM-DD) of the week shown on the week page
 const hasTodayContent = () => stampContentDays(state()).has(dateKey());
 const monthLabel = (year, month, withYear = false) => new Date(year, month - 1, 1).toLocaleDateString(locale(), withYear ? { year: "numeric", month: "long" } : { month: "long" });
@@ -921,11 +921,6 @@ function stampFaceHTML(cell, { today, photos = true, big = false } = {}) {
   if (s.kind === "empty") return { cls: "empty", inner: String(day) };
   const glyph = { voice: "∿", draw: "✎" }[s.kind] || "✓";
   return { cls: `mark ${s.kind}`, inner: photos ? glyph : "" };
-}
-function stampLabel(cell, today) {
-  const when = new Date(`${cell.date}T12:00:00`).toLocaleDateString(locale(), { month: "long", day: "numeric" });
-  if (!cell.stamp) return cell.date === today ? t("stamp.labelToday", { date: when }) : t("stamp.labelNone", { date: when });
-  return t(cell.stamp.kind === "empty" ? "stamp.labelEmpty" : "stamp.labelKept", { date: when });
 }
 // Home: this month's stamp card, small.
 // V10.88 · Home's one small sprig by the date — left out when the first
@@ -991,43 +986,9 @@ function homeSmallActionsHTML(done) {
   const item = (action, iconKind, label, extra = "") => `<button class="today-tile hs-small" data-action="${action}"${extra}>${v9Icon(iconKind)}<b>${label}</b></button>`;
   return `<div class="story-start-row today-tiles v9-secondary home-small" aria-label="${esc(t("home.otherWays"))}">${item("today-write", "write", done ? t("home.writeLine") : t("story.justWrite"), ` title="${esc(t("story.justWriteHint"))}"`)}${item("today-draw", "draw", t("tile.draw"))}<button class="today-tile hs-small moment-cta" data-action="quick-open" data-photo="">${v9Icon("more")}<b>${t("tile.more")}</b></button><button class="today-tile hs-small backfill-link" data-action="backfill" data-date="${addDays(dateKey(), -1)}">${v9Icon("yesterday")}<b>${t("home.backfillShort")}</b></button></div>`;
 }
-// The stamp card page: one month at a time, every month that has stamps.
-function stampsPage() {
-  const today = dateKey();
-  const stamps = Stamps.stampsByDate(state());
-  const [ty, tm] = today.split("-").map(Number);
-  const view = stampsView || { year: ty, month: tm };
-  const card = Stamps.monthStamps(state(), view.year, view.month, stamps);
-  const months = Stamps.stampMonths(state(), stamps);
-  const total = Object.keys(stamps).length;
-  const earliest = months.length ? months[months.length - 1] : { year: ty, month: tm };
-  const key = (m) => m.year * 12 + m.month;
-  const canPrev = key(view) > key(earliest);
-  const canNext = key(view) < ty * 12 + tm;
-  const heads = Array.from({ length: 7 }, (_, i) => `<i>${esc(new Date(2026, 10, 16 + i).toLocaleDateString(locale(), { weekday: "narrow" }))}</i>`).join("");
-  const lead = Array.from({ length: card.lead }, () => '<i class="stamp-gap"></i>').join("");
-  const cells = card.days
-    .map((cell) => {
-      const face = stampFaceHTML(cell, { today, big: true });
-      const label = esc(stampLabel(cell, today));
-      const picked = stampPicked === cell.date ? " picked" : "";
-      if (!cell.stamp) return `<span class="stamp ${face.cls}" aria-label="${label}">${face.inner}</span>`;
-      return `<button class="stamp ${face.cls}${picked}" data-action="stamp-pick" data-date="${cell.date}" aria-label="${label}" aria-pressed="${Boolean(picked)}">${face.inner}</button>`;
-    })
-    .join("");
-  const pickedCell = stampPicked && stamps[stampPicked] && stampPicked.startsWith(`${view.year}-${String(view.month).padStart(2, "0")}`) ? { date: stampPicked, stamp: stamps[stampPicked] } : null;
-  const when = (d) => new Date(`${d}T12:00:00`).toLocaleDateString(locale(), { year: "numeric", month: "long", day: "numeric", weekday: "short" });
-  const panel = pickedCell
-    ? pickedCell.stamp.kind === "empty"
-      ? `<div class="sp-panel empty" role="status"><b>${esc(when(pickedCell.date))}</b><p>${t("stamp.emptyText")}</p><button class="secondary" data-action="stamp-calendar" data-date="${pickedCell.date}">${t("stamp.toCalendar")} ›</button></div>`
-      : `<div class="sp-panel" role="status"><b>${esc(when(pickedCell.date))}</b><p>${t("stamp.keptText")}</p><button class="primary" data-action="open-day" data-date="${pickedCell.date}">${t("stamp.openDay")} ›</button></div>`
-    : `<p class="sp-hint">${t(card.count ? "stamp.pickHint" : "stamp.monthEmpty")}</p>`;
-  // V10.88 · botanical decoration: one subtle corner; an empty month may also show Captain at a seal.
-  const spDecor = Bot.decorPlan("stamps", { empty: !card.count, photoStamps: card.days.filter((cell) => cell.stamp?.kind === "photo").length });
-  const older = months.filter((m) => key(m) !== key(view));
-  const list = older.length ? `<div class="sp-months"><h2>${t("stamp.otherMonths")}</h2>${older.map((m) => `<button data-action="stamps-month" data-year="${m.year}" data-month="${m.month}"><span>${esc(monthLabel(m.year, m.month, true))}</span><small>${esc(stampCount("stamp.monthCount", m.count))}</small></button>`).join("")}</div>` : "";
-  return `<section class="stamps-page"><header class="sp-top"><button class="back-button" data-action="nav" data-page="home">${icon("back")} ${t("back")}</button><span class="sp-total">${esc(stampCount("stamp.total", total))}</span></header><div class="sp-card paper-grain">${spDecor.filter((item) => item.slot === "corner").map((item) => Bot.drawPlanned(item)).join("")}<div class="sp-head"><button class="sp-arrow" data-action="stamps-month" data-delta="-1" aria-label="${t("calendar.prev")}" ${canPrev ? "" : "disabled"}>‹</button><div><small class="v9-kicker">${t("stamp.pageKicker")}</small><h1>${esc(monthLabel(view.year, view.month))}</h1><span class="sp-year">${view.year}</span><p class="sp-count">${esc(card.count ? stampCount("stamp.monthCount", card.count) : t("stamp.monthNone"))}</p></div><button class="sp-arrow" data-action="stamps-month" data-delta="1" aria-label="${t("calendar.next")}" ${canNext ? "" : "disabled"}>›</button></div><div class="sp-week" aria-hidden="true">${heads}</div><div class="sp-grid">${lead}${cells}</div><p class="sp-note">${t("stamp.note")}</p></div>${spDecor.filter((item) => item.slot === "empty").map((item) => `<div class="sp-empty-art">${Bot.drawPlanned(item)}</div>`).join("")}${panel}${list}</section>`;
-}
+// V10.94 · The separate stamp card page (月令集章, its own month grid and
+// month switching) is retired: Calendar is the one month view, and Home's
+// stamp card opens it. Old links to "stamps" land on Calendar.
 // The week page: what this week kept, read only.
 function weekPage() {
   const today = dateKey();
@@ -1115,30 +1076,13 @@ async function stampsAction(actionName, target) {
   // From Captain's panel: close it first.
   if ($("#choose-dialog")?.open && (actionName === "stamps-open" || actionName === "week-open")) $("#choose-dialog").close();
   if (actionName === "stamps-open") {
-    const [year, month] = dateKey().split("-").map(Number);
-    stampsView = { year, month };
-    stampPicked = null;
-    logEvent("stamps_open", {});
-    return navigate("stamps");
-  }
-  if (actionName === "stamps-month") {
-    const current = stampsView || { year: Number(dateKey().slice(0, 4)), month: Number(dateKey().slice(5, 7)) };
-    if (target.dataset.year) stampsView = { year: Number(target.dataset.year), month: Number(target.dataset.month) };
-    else {
-      const d = new Date(current.year, current.month - 1 + Number(target.dataset.delta || 0), 1);
-      stampsView = { year: d.getFullYear(), month: d.getMonth() + 1 };
-    }
-    stampPicked = null;
-    render();
-    $("#app-scroll").scrollTop = 0;
-    return;
-  }
-  if (actionName === "stamp-pick") {
-    stampPicked = stampPicked === target.dataset.date ? null : target.dataset.date;
-    logEvent("stamp_pick", {});
-    render();
-    $(".sp-panel")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-    return;
+    // V10.94: Home's stamp card (看整月) opens Calendar on this month.
+    const today = dateKey();
+    calendarMode = "memory";
+    month = new Date(`${today.slice(0, 7)}-01T12:00:00`);
+    if (!selectedDate || selectedDate.slice(0, 7) !== today.slice(0, 7)) selectedDate = today;
+    logEvent("stamps_open", { to: "calendar" });
+    return navigate("calendar");
   }
   if (actionName === "stamp-calendar") {
     // The pages of this date are gone: the calendar shows its empty day.
@@ -1731,6 +1675,38 @@ function openWallPage() {
     wallReturn = { scroll };
   } else openDay(item.date, item.momentId || undefined);
 }
+// V10.94 · a calendar day in the stamp visual language:
+//   photo  — a round photo stamp (your own photo; photo-wall rules) + the date
+//   kept   — kept, no photo: a warm-white stamp, thin cinnabar outline, date
+//   empty  — kept once, pages since deleted: a faint dashed ring (no photo,
+//            no link to a page that is gone)
+//   none   — nothing kept: just the date, quiet (never "missed")
+// With a journal chosen above the month, only that journal's days are kept
+// days here (and its own photo).
+function calendarStamp(key, stamp, only) {
+  if (only) {
+    if (!only.has(key)) return null;
+    const ref = only.get(key).photos?.[0];
+    return ref ? { kind: "photo", ref } : { kind: "word" };
+  }
+  return stamp || null;
+}
+function calendarStampHTML(stamp, day) {
+  const num = `<span class="cal-num">${day}</span>`;
+  if (!stamp) return { cls: "st-none", html: num };
+  if (stamp.kind === "photo") {
+    const src = safePhoto(stamp.ref);
+    if (src) return { cls: "st-photo", html: `<span class="cal-stamp cs-photo"><img src="${esc(src)}" alt="" loading="lazy" decoding="async"></span>${num}` };
+  }
+  if (stamp.kind === "empty") return { cls: "st-empty", html: `<span class="cal-stamp cs-gone">${num}</span>` };
+  return { cls: "st-kept", html: `<span class="cal-stamp cs-kept">${num}</span>` };
+}
+function calendarDayLabel(key, stamp) {
+  const when = new Date(`${key}T12:00:00`).toLocaleDateString(locale(), { month: "long", day: "numeric" });
+  const today = key === dateKey() ? ` · ${t("calendar.todayShort")}` : "";
+  if (!stamp) return when + today;
+  return t(stamp.kind === "empty" ? "stamp.labelEmpty" : "stamp.labelKept", { date: when }) + today;
+}
 function calendarPage() {
   // B5: 成长轨迹 is frozen with Growth (Labs); the calendar shows memories.
   if (calendarMode === "growth" && !labsOn()) calendarMode = "memory";
@@ -1746,6 +1722,11 @@ function calendarPage() {
       ? ["M", "T", "W", "T", "F", "S", "S"]
       : ["一", "二", "三", "四", "五", "六", "日"];
   const only = calendarMode === "memory" ? calendarBookDays() : null;
+  // V10.94 · Calendar × Stamp: the month's stamps come from the one source
+  // (stamps.mjs over recorded-days.mjs) — the same as Home's stamp card. A
+  // date whose pages were all deleted keeps its (empty) stamp.
+  const stamps = calendarMode === "memory" ? Stamps.stampsByDate(state()) : {};
+  const monthKept = calendarMode === "memory" ? Stamps.monthStamps(state(), year, monthIndex + 1, stamps).count : 0;
   const cells = Array.from({ length: count }, (_, i) => {
     const key = dateKey(new Date(year, monthIndex, i + 1)),
       recorded = only && !only.has(key) ? null : state().entries.find((e) => e.date === key && !isSampleDay(e)),
@@ -1760,12 +1741,20 @@ function calendarPage() {
         : total
           ? `${total} ✦`
           : "";
-    return `<button class="day-cell ${key === selectedDate ? "selected" : ""} ${key === dateKey() ? "today" : ""} ${key > dateKey() ? "future" : ""}" data-action="select-date" data-date="${key}" data-has-content="${marks.hasContent}" aria-label="${key}${recorded ? " " + t("calendar.hasEntry") : ""}${marks.label ? " · " + marks.label : ""}" aria-pressed="${key === selectedDate}"><span>${new Intl.NumberFormat(locale()).format(i + 1)}</span><span class="day-mark">${mark}</span>${calendarMode === "memory" ? marks.html : ""}</button>`;
+    const day = new Intl.NumberFormat(locale()).format(i + 1);
+    const base = `day-cell ${key === selectedDate ? "selected" : ""} ${key === dateKey() ? "today" : ""} ${key > dateKey() ? "future" : ""}`;
+    if (calendarMode === "memory") {
+      const stamp = calendarStamp(key, stamps[key], only);
+      const face = calendarStampHTML(stamp, day);
+      const dots = marks.html.replace('<i class="dot-photo"></i>', "");
+      return `<button class="${base} cal-day ${face.cls}" data-action="select-date" data-date="${key}" data-has-content="${marks.hasContent}" aria-label="${esc(calendarDayLabel(key, stamp))}${marks.label ? " · " + marks.label : ""}" aria-pressed="${key === selectedDate}">${face.html}${dots}</button>`;
+    }
+    return `<button class="${base}" data-action="select-date" data-date="${key}" data-has-content="${marks.hasContent}" aria-label="${key}${recorded ? " " + t("calendar.hasEntry") : ""}${marks.label ? " · " + marks.label : ""}" aria-pressed="${key === selectedDate}"><span>${day}</span><span class="day-mark">${mark}</span></button>`;
   }).join("");
   const top = `<header class="page-top"><div><h1 class="page-title">${t("calendar.title")}</h1><p class="page-subtitle">${t("calendar.subtitle")}</p></div><span class="page-top-actions"><button class="icon-button" data-action="open-search" aria-label="${t("search.open")}">${icon("search")}</button><button class="icon-button" data-action="calendar-today" aria-label="${t("calendar.today")}">${icon("calendar")}</button></span></header>`;
   if (calendarMode === "wall")
     return `${top}<div class="segmented"><button data-action="calendar-mode" data-mode="memory">${t("calendar.memory")}</button>${labsOn() ? `<button data-action="calendar-mode" data-mode="growth">${t("calendar.growth")}</button>` : ""}<button data-action="calendar-mode" data-mode="wall" class="selected">${t("calendar.wall")}</button></div>${calendarBookChips()}${photoWallHTML()}`;
-  return `${top}<div class="segmented"><button data-action="calendar-mode" data-mode="memory" class="${calendarMode === "memory" ? "selected" : ""}">${t("calendar.memory")}</button>${labsOn() ? `<button data-action="calendar-mode" data-mode="growth" class="${calendarMode === "growth" ? "selected" : ""}">${t("calendar.growth")}</button>` : ""}<button data-action="calendar-mode" data-mode="wall" class="${calendarMode === "wall" ? "selected" : ""}">${t("calendar.wall")}</button></div>${calendarMode === "memory" ? calendarBookChips() : ""}<div class="month-controls"><button data-action="month" data-delta="-1" aria-label="${t("calendar.prev")}">${icon("back")}</button><h2>${month.toLocaleDateString(locale(), { month: "long", year: "numeric" })}</h2><button data-action="month" data-delta="1" aria-label="${t("calendar.next")}">${icon("arrow")}</button></div><div class="calendar-grid">${weekdays.map((d) => `<span class="weekday">${d}</span>`).join("")}${"<span></span>".repeat(offset)}${cells}</div>${calendarMode === "memory" ? `<div class="calendar-legend" aria-hidden="true"><span><i class="dot-photo"></i>${t("calendar.markPhoto")}</span><span><i class="dot-video"></i>${t("calendar.markVideo")}</span><span><i class="dot-audio"></i>${t("calendar.markAudio")}</span>${labsOn() ? `<span><i class="dot-growth"></i>${t("calendar.markGrowth")}</span>` : ""}<span><b>3</b>${t("calendar.markMoments")}</span></div>` : ""}<section class="date-summary"><div class="section-heading"><h3>${t(calendarMode === "memory" ? "calendar.dayTitle" : "calendar.growthTitle", { date: shortDate(selectedDate) })}</h3><span class="summary-actions">${entry ? `<button data-action="open-day" data-date="${selectedDate}">${t("calendar.read")}</button>` : ""}${entry || calendarMode !== "memory" ? `<button data-action="edit-date" data-date="${selectedDate}">${t(entry ? "calendar.edit" : "calendar.backfill")}</button>` : ""}${!entry && (clearedDayMemo || clearedDay())?.date === selectedDate ? `<button data-action="day-restore">${t("day.restore")}</button>` : ""}</span></div>${
+  return `${top}<div class="segmented"><button data-action="calendar-mode" data-mode="memory" class="${calendarMode === "memory" ? "selected" : ""}">${t("calendar.memory")}</button>${labsOn() ? `<button data-action="calendar-mode" data-mode="growth" class="${calendarMode === "growth" ? "selected" : ""}">${t("calendar.growth")}</button>` : ""}<button data-action="calendar-mode" data-mode="wall" class="${calendarMode === "wall" ? "selected" : ""}">${t("calendar.wall")}</button></div>${calendarMode === "memory" ? calendarBookChips() : ""}${calendarMode === "memory" ? '<div class="cal-card paper-grain">' + Bot.decorPlan("calendar").map((item) => Bot.drawPlanned(item)).join("") : ""}<div class="month-controls"><button data-action="month" data-delta="-1" aria-label="${t("calendar.prev")}">${icon("back")}</button><div class="month-title"><h2>${month.toLocaleDateString(locale(), { month: "long", year: "numeric" })}</h2>${calendarMode === "memory" ? `<p class="cal-kept">${esc(monthKept ? stampCount("calendar.monthKept", monthKept) : t("calendar.monthQuiet"))}</p>` : ""}</div><button data-action="month" data-delta="1" aria-label="${t("calendar.next")}">${icon("arrow")}</button></div><div class="calendar-grid">${weekdays.map((d) => `<span class="weekday">${d}</span>`).join("")}${"<span></span>".repeat(offset)}${cells}</div>${calendarMode === "memory" ? `<div class="calendar-legend" aria-hidden="true"><span><i class="lg-stamp photo"></i>${t("calendar.markPhoto")}</span><span><i class="lg-stamp kept"></i>${t("calendar.markKept")}</span><span><i class="dot-video"></i>${t("calendar.markVideo")}</span><span><i class="dot-audio"></i>${t("calendar.markAudio")}</span>${labsOn() ? `<span><i class="dot-growth"></i>${t("calendar.markGrowth")}</span>` : ""}<span><b>3</b>${t("calendar.markMoments")}</span></div></div>` : ""}<section class="date-summary"><div class="section-heading"><h3>${t(calendarMode === "memory" ? "calendar.dayTitle" : "calendar.growthTitle", { date: shortDate(selectedDate) })}</h3><span class="summary-actions">${entry ? `<button data-action="open-day" data-date="${selectedDate}">${t("calendar.read")}</button>` : ""}${entry || calendarMode !== "memory" ? `<button data-action="edit-date" data-date="${selectedDate}">${t(entry ? "calendar.edit" : "calendar.backfill")}</button>` : ""}${!entry && (clearedDayMemo || clearedDay())?.date === selectedDate ? `<button data-action="day-restore">${t("day.restore")}</button>` : ""}</span></div>${
     calendarMode === "memory"
       ? entry
         ? memoryCard(entry)
@@ -8568,6 +8557,7 @@ function render() {
     renderTour();
     return;
   }
+  if (page === "stamps") page = "calendar"; // V10.94: retired page
   $("#app").innerHTML = {
     home,
     calendar: calendarPage,
@@ -8585,7 +8575,6 @@ function render() {
     settings: settingsPageHTML,
     inbox: () => inboxHTML(social(), inboxFilter, ctx(), { icon }),
     search: searchPageHTML,
-    stamps: stampsPage,
     week: weekPage,
   }[page]();
   navigation();
@@ -11288,7 +11277,7 @@ async function action(target) {
     return;
   }
   if (actionName.startsWith("jot-") || actionName.startsWith("take-")) return jotAction(actionName, target);
-  if (["stamps-open", "stamps-month", "stamp-pick", "stamp-calendar", "week-open"].includes(actionName)) return stampsAction(actionName, target);
+  if (["stamps-open", "stamp-calendar", "week-open"].includes(actionName)) return stampsAction(actionName, target);
   if (actionName === "today-photos" || actionName === "today-write" || actionName === "today-draw") {
     // Home's "what's worth keeping today?": start straight away, no sheet.
     quickOpenedAt = Date.now();
