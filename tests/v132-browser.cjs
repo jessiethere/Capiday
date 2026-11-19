@@ -40,7 +40,8 @@ const base = process.env.PREVIEW_URL || "http://127.0.0.1:8080";
         const ways = [...document.querySelectorAll("#choose-dialog .quick-way")].map((b) => b.getBoundingClientRect());
         return { vh: innerHeight, also: also.map((r) => [r.top, r.bottom, r.width, r.height]), ways: ways.map((r) => [r.width, r.height]), photos: box("#choose-dialog .quick-photos")?.top, books: box("#choose-dialog .quick-books")?.top, start: box("#choose-dialog .quick-start")?.bottom, fits: [...document.querySelectorAll("#choose-dialog .quick-also button, #choose-dialog .quick-way b")].every((e) => e.scrollWidth <= e.clientWidth + 1) };
       });
-      assert.deepEqual(await page.$$eval("#choose-dialog .quick-also button", (els) => els.map((e) => e.dataset.way)), ["video", "voice", "layout"]);
+      // V10.96: 拍照 (the camera at once) leads the row; the three other ways follow.
+      assert.deepEqual(await page.$$eval("#choose-dialog .quick-also button", (els) => els.map((e) => e.dataset.way || e.dataset.action)), ["quick-camera", "video", "voice", "layout"]);
       for (const [top, bottom] of at.also) assert.ok(top >= 0 && bottom <= at.vh, `${run.lang} ${run.w}: on the first screen (${Math.round(top)}–${Math.round(bottom)} of ${at.vh})`);
       assert.ok(at.also[0][1] < at.photos && at.also[0][1] < at.books, "before the photo source and the book");
       if (run.h >= 900) assert.ok(at.start <= at.vh, "Start is on the first screen too on a tall phone");
