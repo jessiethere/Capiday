@@ -190,8 +190,9 @@ const kinds = (list) => list.map((d) => KIND(d.asset));
       await page.waitForSelector(".cal-card .calendar-grid");
       await page.waitForTimeout(300);
       const sp = await audit(page);
-      const quiet = await page.locator(".cal-kept").innerText();
-      check(`${lang} empty month on the Calendar: still one quiet corner, a gentle line (no "0"), nothing covers the words`, JSON.stringify(kinds(sp)) === JSON.stringify(["corner"]) && !/\b0\b|0 天|没有/.test(quiet) && (await page.locator(".cal-card .cal-stamp").count()) === 0 && sp.every((d) => d.hits.length === 0), JSON.stringify([quiet, sp.map((d) => [d.asset, d.hits])]));
+      const quiet = await page.locator(".cal-card .cal-empty").innerText();
+      // V10.96: Captain sitting by the books comes back for an empty month (small, under the days).
+      check(`${lang} empty month on the Calendar: Captain sitting by the books (captain-sit) + one quiet corner, a gentle line (no "0"); nothing covers the words`, JSON.stringify(kinds(sp).sort()) === JSON.stringify(["corner", "vignette"]) && (await page.locator('.cal-card .cal-empty img[data-asset="captain-sit"]').count()) === 1 && !/\b0\b|0 天|没有/.test(quiet) && (await page.locator(".cal-card .cal-stamp").count()) === 0 && sp.every((d) => d.hits.length === 0), JSON.stringify([quiet, sp.map((d) => [d.asset, d.hits])]));
       await context.close();
     }
     // Narrow / wide screens.

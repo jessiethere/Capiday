@@ -208,6 +208,14 @@
     "zh": "这个月留下的日子",
     "en": "The days you keep this month"
   },
+  "calendar.emptyQuiet": {
+    "zh": "这个月还安安静静的。",
+    "en": "This month is still quiet."
+  },
+  "calendar.emptyCaptain": {
+    "zh": "等你想记的时候，我在。",
+    "en": "I’ll be here when you’re ready."
+  },
   "calendar.markKept": {
     "zh": "有记录",
     "en": "Kept"
@@ -5368,6 +5376,14 @@
   "quick.start.pick": {
     "zh": "选照片（可多选）",
     "en": "Choose photos"
+  },
+  "quick.camera": {
+    "zh": "拍照",
+    "en": "Take Photo"
+  },
+  "quick.files": {
+    "zh": "从「文件」等其他位置选择",
+    "en": "From Files or elsewhere"
   },
   "layout.smart": {
     "zh": "按照片形状自动排",

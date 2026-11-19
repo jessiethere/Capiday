@@ -1691,6 +1691,15 @@ function calendarStamp(key, stamp, only) {
   }
   return stamp || null;
 }
+// V10.96 · A month with nothing kept: a quiet line, and Captain sitting by
+// the books (the picture the retired stamps page used) — small, under the
+// days, never in place of them. Not shown when Captain was turned off or
+// "以后再说" was chosen; there the line stands alone.
+function calendarEmptyHTML() {
+  const k = keeperNow();
+  const withCaptain = k.enabled || k.invite !== "dismissed";
+  return `<div class="cal-empty${withCaptain ? " with-captain" : ""}">${withCaptain ? `<span class="cal-empty-art" aria-hidden="true">${Bot.captainVignette({ pose: "sit", size: 88 })}</span>` : ""}<p><b>${t("calendar.emptyQuiet")}</b>${withCaptain ? `<small>${t("calendar.emptyCaptain")}</small>` : ""}</p></div>`;
+}
 function calendarStampHTML(stamp, day) {
   const num = `<span class="cal-num">${day}</span>`;
   if (!stamp) return { cls: "st-none", html: num };
@@ -1754,7 +1763,7 @@ function calendarPage() {
   const top = `<header class="page-top"><div><h1 class="page-title">${t("calendar.title")}</h1><p class="page-subtitle">${t("calendar.subtitle")}</p></div><span class="page-top-actions"><button class="icon-button" data-action="open-search" aria-label="${t("search.open")}">${icon("search")}</button><button class="icon-button" data-action="calendar-today" aria-label="${t("calendar.today")}">${icon("calendar")}</button></span></header>`;
   if (calendarMode === "wall")
     return `${top}<div class="segmented"><button data-action="calendar-mode" data-mode="memory">${t("calendar.memory")}</button>${labsOn() ? `<button data-action="calendar-mode" data-mode="growth">${t("calendar.growth")}</button>` : ""}<button data-action="calendar-mode" data-mode="wall" class="selected">${t("calendar.wall")}</button></div>${calendarBookChips()}${photoWallHTML()}`;
-  return `${top}<div class="segmented"><button data-action="calendar-mode" data-mode="memory" class="${calendarMode === "memory" ? "selected" : ""}">${t("calendar.memory")}</button>${labsOn() ? `<button data-action="calendar-mode" data-mode="growth" class="${calendarMode === "growth" ? "selected" : ""}">${t("calendar.growth")}</button>` : ""}<button data-action="calendar-mode" data-mode="wall" class="${calendarMode === "wall" ? "selected" : ""}">${t("calendar.wall")}</button></div>${calendarMode === "memory" ? calendarBookChips() : ""}${calendarMode === "memory" ? '<div class="cal-card paper-grain">' + Bot.decorPlan("calendar").map((item) => Bot.drawPlanned(item)).join("") : ""}<div class="month-controls"><button data-action="month" data-delta="-1" aria-label="${t("calendar.prev")}">${icon("back")}</button><div class="month-title"><h2>${month.toLocaleDateString(locale(), { month: "long", year: "numeric" })}</h2>${calendarMode === "memory" ? `<p class="cal-kept">${esc(monthKept ? stampCount("calendar.monthKept", monthKept) : t("calendar.monthQuiet"))}</p>` : ""}</div><button data-action="month" data-delta="1" aria-label="${t("calendar.next")}">${icon("arrow")}</button></div><div class="calendar-grid">${weekdays.map((d) => `<span class="weekday">${d}</span>`).join("")}${"<span></span>".repeat(offset)}${cells}</div>${calendarMode === "memory" ? `<div class="calendar-legend" aria-hidden="true"><span><i class="lg-stamp photo"></i>${t("calendar.markPhoto")}</span><span><i class="lg-stamp kept"></i>${t("calendar.markKept")}</span><span><i class="dot-video"></i>${t("calendar.markVideo")}</span><span><i class="dot-audio"></i>${t("calendar.markAudio")}</span>${labsOn() ? `<span><i class="dot-growth"></i>${t("calendar.markGrowth")}</span>` : ""}<span><b>3</b>${t("calendar.markMoments")}</span></div></div>` : ""}<section class="date-summary"><div class="section-heading"><h3>${t(calendarMode === "memory" ? "calendar.dayTitle" : "calendar.growthTitle", { date: shortDate(selectedDate) })}</h3><span class="summary-actions">${entry ? `<button data-action="open-day" data-date="${selectedDate}">${t("calendar.read")}</button>` : ""}${entry || calendarMode !== "memory" ? `<button data-action="edit-date" data-date="${selectedDate}">${t(entry ? "calendar.edit" : "calendar.backfill")}</button>` : ""}${!entry && (clearedDayMemo || clearedDay())?.date === selectedDate ? `<button data-action="day-restore">${t("day.restore")}</button>` : ""}</span></div>${
+  return `${top}<div class="segmented"><button data-action="calendar-mode" data-mode="memory" class="${calendarMode === "memory" ? "selected" : ""}">${t("calendar.memory")}</button>${labsOn() ? `<button data-action="calendar-mode" data-mode="growth" class="${calendarMode === "growth" ? "selected" : ""}">${t("calendar.growth")}</button>` : ""}<button data-action="calendar-mode" data-mode="wall" class="${calendarMode === "wall" ? "selected" : ""}">${t("calendar.wall")}</button></div>${calendarMode === "memory" ? calendarBookChips() : ""}${calendarMode === "memory" ? '<div class="cal-card paper-grain">' + Bot.decorPlan("calendar").map((item) => Bot.drawPlanned(item)).join("") : ""}<div class="month-controls"><button data-action="month" data-delta="-1" aria-label="${t("calendar.prev")}">${icon("back")}</button><div class="month-title"><h2>${month.toLocaleDateString(locale(), { month: "long", year: "numeric" })}</h2>${calendarMode === "memory" && monthKept ? `<p class="cal-kept">${esc(stampCount("calendar.monthKept", monthKept))}</p>` : ""}</div><button data-action="month" data-delta="1" aria-label="${t("calendar.next")}">${icon("arrow")}</button></div><div class="calendar-grid">${weekdays.map((d) => `<span class="weekday">${d}</span>`).join("")}${"<span></span>".repeat(offset)}${cells}</div>${calendarMode === "memory" && !monthKept ? calendarEmptyHTML() : ""}${calendarMode === "memory" ? `<div class="calendar-legend" aria-hidden="true"><span><i class="lg-stamp photo"></i>${t("calendar.markPhoto")}</span><span><i class="lg-stamp kept"></i>${t("calendar.markKept")}</span><span><i class="dot-video"></i>${t("calendar.markVideo")}</span><span><i class="dot-audio"></i>${t("calendar.markAudio")}</span>${labsOn() ? `<span><i class="dot-growth"></i>${t("calendar.markGrowth")}</span>` : ""}<span><b>3</b>${t("calendar.markMoments")}</span></div></div>` : ""}<section class="date-summary"><div class="section-heading"><h3>${t(calendarMode === "memory" ? "calendar.dayTitle" : "calendar.growthTitle", { date: shortDate(selectedDate) })}</h3><span class="summary-actions">${entry ? `<button data-action="open-day" data-date="${selectedDate}">${t("calendar.read")}</button>` : ""}${entry || calendarMode !== "memory" ? `<button data-action="edit-date" data-date="${selectedDate}">${t(entry ? "calendar.edit" : "calendar.backfill")}</button>` : ""}${!entry && (clearedDayMemo || clearedDay())?.date === selectedDate ? `<button data-action="day-restore">${t("day.restore")}</button>` : ""}</span></div>${
     calendarMode === "memory"
       ? entry
         ? memoryCard(entry)
@@ -5790,8 +5799,9 @@ const QUICK_WAYS = ["photo", "write", "draw"];
 const QUICK_ALSO = ["video", "voice", "layout"];
 const QUICK_ALSO_LABEL = { video: "add.video", voice: "add.sound", layout: "mode.layout" };
 const QUICK_ALSO_GLYPH = { video: "▶", voice: "♪", layout: "▦" };
+// V10.96 · 拍照 is its own action (the camera at once), not a way to pick.
 function quickAlsoHTML() {
-  return `<div class="quick-also" role="group" aria-label="${t("quick.also")}"><span>${t("quick.also")}</span>${QUICK_ALSO.map((w) => `<button data-action="quick-way" data-way="${w}" aria-pressed="${quick.way === w}"><i aria-hidden="true">${QUICK_ALSO_GLYPH[w]}</i>${t(QUICK_ALSO_LABEL[w])}</button>`).join("")}</div>`;
+  return `<div class="quick-also" role="group" aria-label="${t("quick.also")}"><span>${t("quick.also")}</span><button class="quick-camera" data-action="quick-camera"><i aria-hidden="true">◎</i>${t("quick.camera")}</button>${QUICK_ALSO.map((w) => `<button data-action="quick-way" data-way="${w}" aria-pressed="${quick.way === w}"><i aria-hidden="true">${QUICK_ALSO_GLYPH[w]}</i>${t(QUICK_ALSO_LABEL[w])}</button>`).join("")}</div>`;
 }
 function lastQuickWay() {
   try {
@@ -5845,7 +5855,7 @@ function renderQuickRecord() {
       : "";
   $("#choose-dialog").innerHTML = `<div class="choose-sheet quick-sheet"><div class="choose-grabber" aria-hidden="true"></div><h2>${quick.date === dateKey() ? t("quick.title") : t("quick.titleDate", { date: friendlyDate(quick.date) })}</h2><div class="quick-ways" role="group" aria-label="${t("quick.title")}">${QUICK_WAYS.map(way).join("")}</div>${quickAlsoHTML()}${photos}${QUICK_ALSO.includes(quick.way) ? `<p class="quick-also-say">${t("quick.say." + quick.way)}</p>` : ""}${library}<h3>${t("quick.book")}</h3><div class="quick-books">${state()
     .books.map((book) => `<button data-action="quick-book" data-book="${esc(book.id)}" class="${quick.book === book.id ? "selected" : ""}" aria-pressed="${quick.book === book.id}">${coverHTML(book, ctx())}<span>${esc(book.title)}</span></button>`)
-    .join("")}</div><button class="primary full-width quick-start" data-action="${QUICK_ALSO.includes(quick.way) ? "quick-more" : "quick-start"}" data-more="${QUICK_ALSO.includes(quick.way) ? quick.way : ""}">${QUICK_ALSO.includes(quick.way) ? t("quick.start." + quick.way) : t(quick.way === "photo" && quick.photo === "mine" ? "quick.start.pick" : quick.way === "photo" && quick.photo === "pick" ? (quick.lib ? "quick.start.lib" : "quick.start.libPick") : "quick.start." + quick.way)}</button>${pages ? `<button class="quick-continue" data-action="quick-continue">${t("quick.continue", { count: pages })} ›</button>` : ""}<button class="choose-cancel" data-action="choose-close">${t("cancel")}</button></div>`;
+    .join("")}</div><button class="primary full-width quick-start" data-action="${QUICK_ALSO.includes(quick.way) ? "quick-more" : "quick-start"}" data-more="${QUICK_ALSO.includes(quick.way) ? quick.way : ""}">${QUICK_ALSO.includes(quick.way) ? t("quick.start." + quick.way) : t(quick.way === "photo" && quick.photo === "mine" ? "quick.start.pick" : quick.way === "photo" && quick.photo === "pick" ? (quick.lib ? "quick.start.lib" : "quick.start.libPick") : "quick.start." + quick.way)}</button>${quick.way === "photo" && quick.photo === "mine" && nativePhotoLibrary() ? `<button class="quick-files" data-action="quick-files">${t("quick.files")}</button>` : ""}${pages ? `<button class="quick-continue" data-action="quick-continue">${t("quick.continue", { count: pages })} ›</button>` : ""}<button class="choose-cancel" data-action="choose-close">${t("cancel")}</button></div>`;
 }
 // Every record is a new page of today, in the chosen journal.
 // `scoped` (V10.77): opened from a book (书架 写一页 / 书本页 记录新的一页 —
@@ -6015,7 +6025,7 @@ function dropBlankFreshPage() {
 }
 let lastQuick = null; // the sheet's choices, to go back to them on cancel
 async function startQuickRecord() {
-  const { book, way, photo, date, lib, fromHome } = quick;
+  const { book, way, photo, date, lib, fromHome, source } = quick;
   if (way === "photo" && photo === "pick" && !lib) return toast(t("quick.libFirst"));
   lastQuick = { ...quick };
   const scene = todayScene();
@@ -6028,7 +6038,10 @@ async function startQuickRecord() {
     // are chosen does a page start, so Cancel leaves me where I was (Home, or
     // the sheet I came from) and no empty page is left behind.
     if ($("#choose-dialog")?.open) $("#choose-dialog").close();
-    chooseAttachment({ kind: "quick", book, date, home: Boolean(fromHome) && !book });
+    // V10.96: 选照片 opens the photo library at once (iOS app: the system
+    // picker, several photos) — not WebKit's Photo Library / Take Photo /
+    // Choose Files menu. 拍照 opens the camera; 其他来源 the plain file menu.
+    chooseAttachment({ kind: "quick", book, date, home: Boolean(fromHome) && !book }, source === "camera" ? "camera" : source === "files" ? "" : "library");
     return;
   }
   const name = startPage(book, date);
@@ -10680,6 +10693,14 @@ async function action(target) {
     if (grid) grid.scrollTop = scroll;
     return;
   }
+  if ((actionName === "quick-camera" || actionName === "quick-files") && quick) {
+    quick.way = "photo";
+    quick.photo = "mine";
+    quick.source = actionName === "quick-camera" ? "camera" : "files";
+    logEvent("quick_open", { way: "photo", source: quick.source });
+    await startQuickRecord();
+    return;
+  }
   if (actionName === "quick-way" && quick) {
     quick.way = target.dataset.way;
     renderQuickRecord();
@@ -11683,7 +11704,13 @@ $("#camera-input").addEventListener("change", (event) => {
   event.target.value = "";
   if (input && files.length) giveFiles(input, files);
 });
-$("#camera-input").addEventListener("cancel", () => (cameraFor = null));
+$("#camera-input").addEventListener("cancel", () => {
+  // V10.96: cancelling the camera is like cancelling the library — the input
+  // it was for hears it (拍照 from 今天怎么记？ goes back to the sheet).
+  const input = cameraFor;
+  cameraFor = null;
+  input?.dispatchEvent(new Event("cancel"));
+});
 // Cancelled the photo picker on the way in: nothing was started, so I stay
 // where I was. From the "how shall we keep today?" sheet, the sheet comes
 // back with the same choices.

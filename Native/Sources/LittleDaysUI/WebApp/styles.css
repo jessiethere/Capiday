@@ -27693,3 +27693,69 @@ html.kb-open .choose-sheet.sw {
   font: 11px/1.4 ui-monospace, Menlo, monospace;
   pointer-events: none;
 }
+
+/* V10.96 · 今天怎么记？: 拍照 joins the 也可以 row (camera at once); four
+   buttons wrap on narrow phones instead of squeezing. The plain file menu is
+   a quiet line under 选照片 (the iOS app only). */
+.quick-also {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+.quick-also > span {
+  flex: 0 0 100%;
+}
+.quick-also button {
+  flex: 1 1 0;
+  padding: 0 4px;
+  gap: 4px;
+}
+.quick-files {
+  justify-self: center;
+  align-self: center;
+  margin: -2px auto 4px;
+  padding: 6px 10px;
+  border: 0;
+  background: none;
+  font: 500 13px var(--ui-sans);
+  color: var(--t-6f675d, #6f675d);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* V10.96 · Calendar, a month with nothing kept: Captain sitting by the books
+   (88 pt, smaller than on Home) beside one quiet line, under the days. */
+.cal-empty {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 2px 4px 6px;
+  padding-right: 48px; /* the corner sprig */
+}
+.cal-empty-art {
+  flex: none;
+  width: 88px;
+  line-height: 0;
+}
+.cal-empty-art img {
+  width: 100%;
+  height: auto;
+}
+.cal-empty p {
+  margin: 0;
+  display: grid;
+  gap: 3px;
+}
+.cal-empty b {
+  font: 600 15px/1.35 var(--ui-sans);
+  color: var(--ink);
+}
+.cal-empty small {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--t-6f675d, #6f675d);
+}
+.cal-empty:not(.with-captain) {
+  justify-content: center;
+  padding: 0;
+  text-align: center;
+}

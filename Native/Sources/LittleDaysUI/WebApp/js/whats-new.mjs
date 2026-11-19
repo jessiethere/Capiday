@@ -4,6 +4,28 @@
 // languages, not user content.
 export const UPDATES = [
   {
+    version: "10.96",
+    date: "2026-11-19",
+    zh: {
+      title: "选照片直接进相册，拍照单独一个按钮",
+      items: [
+        "在 iPhone App 里点「选照片（可多选）」或首页的「选今天的照片」，直接打开相册，可以多选，不再先弹出「照片图库 / 拍照 / 选取文件」。",
+        "「今天怎么记？」的「也可以」一行新增「拍照」，点了直接打开相机；拍好的照片和相册照片走同一套排版和保存。",
+        "需要从「文件」选图时，点「选照片」下面那行小字。取消相册或相机都会回到原来的地方，什么都不会丢。",
+        "日历里还没有记录的月份，Captain 会坐在日期下面陪着你：「这个月还安安静静的。」",
+      ],
+    },
+    en: {
+      title: "Photos open your library; Take Photo has its own button",
+      items: [
+        "In the iPhone app, Choose photos and Home's photo button open your photo library straight away (several at once) — no more Photo Library / Take Photo / Choose Files menu first.",
+        "How shall we keep today? has a new Take Photo button in the Or row: it opens the camera at once, and the photo goes through the same layout and saving.",
+        "To pick from Files, tap the small line under Choose photos. Cancelling the library or the camera takes you back with nothing lost.",
+        "In a Calendar month with nothing kept yet, Captain sits under the days: “This month is still quiet.”",
+      ],
+    },
+  },
+  {
     version: "10.95",
     date: "2026-11-19",
     zh: {

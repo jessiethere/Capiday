@@ -39,6 +39,7 @@
 
 ## 已知问题与下一步
 
+- **技术债（V10.96 记录）**：旧集章页的样式（`.stamps-page` + `sp-card / sp-empty-art / sp-grid / sp-hint / sp-months / sp-note / sp-panel / sp-total / sp-week / sp-year`，约 2.2 KB）仍在 styles.css，已退役、不参与现有结构、不影响界面；`sp-head / sp-arrow / sp-count / sp-top / sp-up / sp-tcy / sp-mark` 仍被「这一周」使用，不能删。后续单独 cleanup。
 - V3.1：原生 SwiftUI 尚未实现 Day Detail、Moments、自由照片图层与感想 UI（共享模型可解码）；Swift 测试本轮未能运行；单个 Moment 内不能再分多页；PNG 导出为基础版式；滚轮/把手旋转对旋转后的照片按未旋转坐标近似计算宽高。
 - Windows CMD/Python Launcher/默认浏览器仍未实机验证；Linux 已验证 ZIP 布局、空格路径、跨目录与 HTTP。
 - SwiftUI 只有语法/共享模型检查，未进行 iOS SDK 类型检查、模拟器或真机验证；优先原生构建与个人能力对齐。
@@ -48,6 +49,42 @@
 - Phase 2 明确标记社交演示，Phase 3 真实 Vapor 后端，Phase 4 协作，Phase 5 高级创作/授权音乐；具体见 ROADMAP。
 
 ## 更新日志
+
+### 2026-11-19 — V10.96 选照片直接进相册 + 拍照独立入口；日历空月份 Captain；旧集章页记为待清理；Playroom 素材需求
+
+**A. 选照片入口（Founder：点「选照片（可多选）」弹出 Photo Library / Take Photo / Choose Files 系统菜单）**
+- **根因**：V10.81 已经有 App 原生相册（`LittleDaysPhotoPicker.swift`，PHPicker，多选，不需要相册权限）和直接开相机（`#camera-input`，`capture="environment"`），通过 `openPhotoInput(input, way)` 使用。但「今天怎么记？」的「选照片」和首页「选今天的照片」都走 `startQuickRecord` → `chooseAttachment(target)`，**没有传 `way`**，于是直接 `input.click()` 普通 `<input type="file" accept="image/*">`，WKWebView 对它固定弹出三选一菜单。
+- **实现**（只改 `Public/`，不改 Swift）：
+  - `startQuickRecord` 按 `quick.source` 选择：默认 `"library"`（App 里直接 PHPicker，多选；网页里仍是浏览器自己的选择器），`"camera"` 直接开相机，`"files"` 才用普通文件输入（系统菜单）。
+  - 「今天怎么记？」「也可以」一行最前面加「拍照 / Take Photo」（`quick-camera`），点了直接开相机；拍好的照片交给同一个 `#attachment-image-input`，后面的导入、编辑、排版、保存完全相同。
+  - 「选照片」按钮下面一行小字「从『文件』等其他位置选择 / From Files or elsewhere」（`quick-files`），**只在 App 里显示**（网页的选择器本来就有文件）。
+  - 取消相机现在会通知原来的输入框（`cancel`），和取消相册一样回到「今天怎么记？」，选择保留、不留空白页；新手引导的照片步也会接着走。
+  - 「也可以」标签单独一行，四个按钮等宽（390 宽英文、375 宽中文都放得下）。
+- **权限**：PHPicker 不需要相册权限。相机由 iOS 自己处理：拒绝相机权限时 iOS 不给照片，页面收到取消，不假成功、不丢草稿；**网页无法区分「取消」和「拒绝」，所以没有额外提示**（需要真机确认 iOS 自己的提示是否足够）。`NSCameraUsageDescription` 已有（中英）。
+- **限制**：在线链接（网页）里没有 App 的相册通道，「选照片」仍是 iOS 浏览器自己的菜单，网页无法去掉。
+- **其他入口没动**：头像、封面、字段图片、合集、打卡照片等仍用原来的文件输入（不在本次范围，记为后续统一）。Studio 的「从相册选择 / 拍一张照片」V10.81 起就已分开。
+
+**B. 日历空月份 Captain**
+- 只在「按日子」模式下、这个月一枚章都没有时显示：日期格子下面、图例上面，左边 `captain-sit`（Captain 坐在书和小印章旁，原集章页空月份用的同一张，88 pt 宽，比首页的 Captain 小），右边两行：「这个月还安安静静的。」/「等你想记的时候，我在。」（英文 "This month is still quiet." / "I’ll be here when you’re ready."）。
+- 有记录的月份不显示；月份标题下的计数行在空月份不再显示（不出现 0）。
+- **尊重用户选择**：选过「以后再说」或关掉了 Captain（`invite: "dismissed"` 且未开启），只显示第一行，不出现 Captain；还没做过选择的新用户会看到 Captain。
+- 新文案 calendar.emptyQuiet / emptyCaptain。
+
+**C. 旧集章页残留（技术债，暂不清理）**
+- 已确认：`stampsPage()`、`stamps-month` / `stamp-pick` 动作 V10.94 已删除；`stamps` 路由只剩重定向到日历；`decorPlan("stamps")` 保留（v192 测试用）。
+- **残留样式**：`.stamps-page` 和 10 个只给旧页面用的类（`sp-card`、`sp-empty-art`、`sp-grid`、`sp-hint`、`sp-months`、`sp-note`、`sp-panel`、`sp-total`、`sp-week`、`sp-year`），共 23 条规则、约 2.2 KB（styles.css 618 KB 的 0.36%），另有 16 条规则是和其他选择器写在一起的。App 里已经没有任何代码生成这些类名，所以不会匹配、不会影响日历和首页章卡，也不改变样式优先级。
+- **不能一起删的**：`sp-head`、`sp-arrow`、`sp-count`、`sp-top`、`sp-up`、`sp-tcy`、`sp-mark` 仍被「这一周」页面使用。
+- **决定**：不在这次删（和「这一周」的规则交织在一起，拆开有风险，收益只有 2 KB），作为单独的 cleanup 任务：按上面的类名清单删除只属于旧页面的规则，再跑 v188–v192 / v197 和「这一周」截图。
+
+**D. Playroom 素材需求**（`docs/CAPTAIN_IDENTITY_MIGRATION.md` 2d）
+- 新增必需素材 `captain-hug-hat`（一张静态图）+ `hug-hat-1…4`（和 `hug-1…4` 同一张 768×512 画布、同一原点，帽子不跳）：插画版、灰色长毛、脸略尖（真实 Captain）、琥珀色眼睛、柠檬帽、轻抱 / 陪伴、温柔干净、不幼态、不 3D 玩偶感。状态 NEEDS CHARACTER ASSET，我们不自己画。
+- 最小统一素材清单：坐着 / 睡着 / 盖章 / 无帽抱抱 / 看着你记录 已有并上线；轻提醒（`captain-reminder`）和打招呼（`captain-greeting`）已有原图、已批准，但还没用上；**缺**：戴帽抱抱、戴柠檬帽的开心 / 好奇表情（柠檬造型下点一下时帽子不消失）。
+
+**测试（Linux / Chromium，不是真机）**
+- 新 `tests/v199-browser.cjs` 21/21：用模拟的 App 外壳（`littleDaysPhotos` 通道）——选照片直接请求 App 相册、可多选、没有出现系统文件菜单；取消相册回到原面板、选择保留、没有空白页；选两张进入「今天的故事」；拍照直接开相机（capture 输入）、取消回到面板、拍好进入同一流程并保存；「其他位置」是一行小字、只在 App 里；网页里不显示这一行、浏览器选择器可多选；首页「选今天的照片」也直接进相册；英文文案、390 宽不截断。
+- `tests/v197-browser.cjs` 38/38（新增空月份 Captain、有记录的月份没有、关掉 Captain 只剩一句）；`tests/v192-browser.cjs` 43/43（空月份恢复 captain-sit + 一个角落）。
+- 完整回归：见下一条。
+- **iPhone 真机**：未验证。需要在 0.2.0 (7) 上确认：选照片直接进相册且可多选、拍照直接开相机、拒绝相机权限时 iOS 的提示。
 
 ### 2026-11-19 — V10.95 修复 CAP-012（打字时输入框在键盘下面）
 

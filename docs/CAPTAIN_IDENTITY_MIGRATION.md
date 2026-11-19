@@ -64,7 +64,7 @@ Updated 2026-11-18 (evening): the Founder supplied four Pack v1 sheets (transpar
 | Playroom | yarn play, no hat, 4 frames (watch → paw up → paw on ball → ball rolled away) | `play-watch` / `play-reach` / `play-bat` / `play-rolled` (the four 768×512 quadrants of the v1 sheet) | 768×512 each | 256 pt | APPROVED · staged |
 | Playroom | yarn play wearing the lemon hat, 4 frames (notice → reach → nudge → settle) | `play-hat-1…4` (Addendum v1.1) | 768×512 each | 256 pt | APPROVED · staged |
 | Playroom | hug, no hat, 4 frames (notice the heart cushion → lean in → hug → settle) | `hug-1…4` (Addendum v1.1) | 768×512 each | 256 pt | APPROVED · staged |
-| Playroom | hug wearing the lemon hat | — | | | NEEDS CHARACTER ASSET (lemon is the default look) |
+| Playroom | hug wearing the lemon hat | — (requested 2026-11-19 as `captain-hug-hat` + `hug-hat-1…4`, see 2d) | | | NEEDS CHARACTER ASSET (lemon is the default look) |
 
 ## 2b. Pack v1 review notes (2026-11-18)
 
@@ -126,6 +126,37 @@ Received as `Captain-Playroom-Asset-Addendum-v1.1.zip`. Stored in `docs/visual/c
 - `playroom/01–04.png`: stand-in is the quadrants of the play sheet (the same art).
 
 If the Founder sends the structured v1 pack, the cuts are swapped for the exact files.
+
+## 2d. Asset requests (Founder, 2026-11-19)
+
+Founder decision: the Playroom must not stay half in the old 3D lemon-hat system. The illustrated Captain needs the hatted hug, and the Playroom gets a minimum unified set. **Nothing below is drawn by us**: each item is a request for the illustrator. Until it arrives the current behaviour stays (see 2c: in the lemon look a poke plays the yarn-with-hat frames, not a hug).
+
+### `captain-hug-hat` · Captain wearing the lemon hat, giving a gentle hug — REQUIRED
+
+- **Product role**: Playroom / companionship / comfort. In the lemon look (the default outfit for people who chose it), poking Captain plays a hug, like the no-hat look does. It says: Captain is a companion; Captain can gently comfort you; warm, soothing; the lemon hat stays Captain's identity; it sits in the botanical journal style.
+- **Character** (section 1 / 1b): illustrated Captain; grey long-haired cat (cool blue-grey, silver tips, fuller lighter chest); a slight wedge face, a little pointed, from the real Captain; amber / pale-gold eyes; the lemon hat (same piece as `acc-lemon-hat`).
+- **Pose**: hug / soft embrace / companion; calm, eyes soft or closed at the hug.
+- **Style**: gentle, clean, unified with Pack v1 and the botanical board. **Not** babyish, **not** a 3D toy, no chibi round face, no new style.
+- **Must sit beside**: the Home peek, the Calendar empty-month `captain-sit`, the covers.
+- **Delivery**:
+  - one still `captain-hug-hat` (transparent PNG, ≥ 768 px wide; used where a single picture is needed);
+  - and, for the Playroom animation, 4 frames `hug-hat-1…4` on **the same 768×512 canvas and origin as `hug-1…4`** (notice → lean in → hug → settle), so the hat never jumps between frames;
+  - transparent background; no text; the heart cushion as in `hug-1…4` is welcome but optional.
+- **Status**: NEEDS CHARACTER ASSET.
+
+### Minimum unified Captain set for the Playroom and companionship moments
+
+| Need | Asset now | Status |
+|---|---|---|
+| Sitting | `captain-sit` (with books + seal; Calendar empty month since V10.96), `captain-sit-up` (no props) | APPROVED · shipped |
+| Sleeping | `captain-sleep` | APPROVED · shipped |
+| Stamping | `captain-ready` / `captain-stamp` | APPROVED · shipped |
+| Hugging, no hat | `hug-1…4` | APPROVED · shipped (Playroom) |
+| **Hugging, lemon hat** | — | **NEEDS CHARACTER ASSET** (`captain-hug-hat`, `hug-hat-1…4`, above) |
+| Gentle reminder | `captain-reminder` (Pack v1 original `interactions/gentle-reminder.png`) | APPROVED · staged (not used yet; needs a place, e.g. the daily reminder) |
+| Watching you journal | `captain-reading` | APPROVED · shipped (weekly card) |
+| Greeting | `captain-greeting` (Pack v1 original `interactions/greeting.png`) | APPROVED · staged (not used yet) |
+| **Interaction expressions in the lemon look** | `expr-calm` / `expr-happy` / `expr-sleepy` exist without the hat | **NEEDS CHARACTER ASSET**: happy (eyes closed) and curious busts wearing the lemon hat, same 360-px bust frame as Pack v1, so a tap in the lemon look keeps the hat |
 
 ## 3. Where Captain appears today (audit)
 

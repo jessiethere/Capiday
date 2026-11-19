@@ -150,7 +150,12 @@ const cells = (page) =>
       check("K 翻到 10 月：31 天，10 月 20 日是章，计数跟着变", Object.keys(oct).length === 31 && oct["2026-10-20"].face === "st-kept" && (await page.locator(".cal-kept").innerText()) === "这个月留下了 1 天");
       await page.locator('.cal-card [data-action="month"][data-delta="-1"]').tap();
       await page.waitForFunction(() => document.querySelector(".cal-card .month-title h2").textContent === "2026年9月");
-      check("K 没有记录的月份：一句温和的话，没有「0」", (await page.locator(".cal-kept").innerText()) === "这个月留下的日子" && (await page.locator(".cal-card .cal-stamp").count()) === 0);
+      // V10.96: an empty month — Captain sitting by the books (small) and one quiet line.
+      const quietMonth = await page.evaluate(() => { const e = document.querySelector(".cal-card .cal-empty"); const img = e?.querySelector('img[data-asset="captain-sit"]'); const grid = document.querySelector(".cal-card .calendar-grid").getBoundingClientRect(); return { text: e?.textContent || "", kept: document.querySelectorAll(".cal-kept").length, img: img ? Math.round(img.getBoundingClientRect().width) : 0, below: e ? e.getBoundingClientRect().top >= grid.bottom - 1 : false }; });
+      check("K 没有记录的月份：温和的一句 + 小 Captain（在日期下面，88 宽），没有「0」", quietMonth.text.includes("这个月还安安静静的。") && quietMonth.text.includes("等你想记的时候，我在。") && quietMonth.kept === 0 && quietMonth.img > 0 && quietMonth.img <= 88 && quietMonth.below && (await page.locator(".cal-card .cal-stamp").count()) === 0, JSON.stringify(quietMonth));
+      await page.locator('.cal-card [data-action="month"][data-delta="1"]').tap();
+      await page.waitForFunction(() => document.querySelector(".cal-card .month-title h2").textContent === "2026年10月");
+      check("K 有记录的月份没有空状态 Captain", (await page.locator(".cal-card .cal-empty").count()) === 0);
       // N · the separate stamps month page is retired; old links land on the Calendar.
       await page.evaluate(() => {
         const b = document.createElement("button");
@@ -243,10 +248,26 @@ const cells = (page) =>
       const { page, context, errors } = await boot(browser, { data: false });
       await toCalendar(page);
       const c = await cells(page);
-      check("新用户：日历本月一句温和的话，今天没有章也不显示缺席", (await page.locator(".cal-kept").innerText()) === "这个月留下的日子" && c[TODAY].face === "st-none" && c[TODAY].today, JSON.stringify(c[TODAY]));
+      check("新用户：日历本月一句温和的话，今天没有章也不显示缺席", (await page.locator(".cal-card .cal-empty").innerText()).includes("这个月还安安静静的。") && c[TODAY].face === "st-none" && c[TODAY].today, JSON.stringify(c[TODAY]));
       const width = await page.evaluate(() => document.documentElement.scrollWidth);
       check("390 宽：日历 7 列完整，没有横向滚动", width <= 390 && (await page.evaluate(() => { const r = document.querySelector(".cal-card").getBoundingClientRect(); return [...document.querySelectorAll(".cal-card .cal-day")].every((b) => { const x = b.getBoundingClientRect(); return x.left >= r.left - 0.5 && x.right <= r.right + 0.5; }); })), String(width));
       check("新用户 · 没有页面错误或系统弹窗", errors.length === 0, errors.join(" | "));
+      await context.close();
+    }
+    // ------------------------------------------------------------ Captain turned off / 以后再说: the line alone
+    {
+      const { page, context, errors } = await boot(browser, { data: false });
+      await page.evaluate(() => {
+        const s = JSON.parse(localStorage.getItem("little-days.v1"));
+        s.keeper = { ...(s.keeper || {}), enabled: false, invite: "dismissed" };
+        localStorage.setItem("little-days.v1", JSON.stringify(s));
+      });
+      await page.reload();
+      await page.waitForSelector(".hero");
+      await toCalendar(page);
+      const e = await page.evaluate(() => ({ text: document.querySelector(".cal-card .cal-empty")?.textContent || "", cat: document.querySelectorAll(".cal-card .cal-empty img").length }));
+      check("选了「以后再说」/ 关掉 Captain：空月份只有一句话，不出现 Captain", e.text === "这个月还安安静静的。" && e.cat === 0, JSON.stringify(e));
+      check("Captain 关闭 · 没有页面错误", errors.length === 0, errors.join(" | "));
       await context.close();
     }
     // ------------------------------------------------------------ 320 wide
